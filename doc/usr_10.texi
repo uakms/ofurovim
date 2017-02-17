@@ -1,0 +1,2262 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node 大規模な編集, クラッシュからの復帰, GUI を使う, 目次
+@chapter 大規模な編集
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*usr_10.txt*	For Vim version 8.0.  Last change: 2006 Nov 05
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			     Making big changes
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{usr_10.txt}
+@cindex usr_10.txt
+@verbatim
+*usr_10.txt*	For Vim バージョン 8.0.  Last change: 2006 Nov 05
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			     大規模な編集
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+In chapter 4 several ways to make small changes were explained.  This chapter
+goes into making changes that are repeated or can affect a large amount of
+text.  The Visual mode allows doing various things with blocks of text.  Use
+an external program to do really complicated things.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+四章では、小さな変更を加える方法について説明しました。この章では、同じ操作を再実行する方法や、広範囲のテキストを変更する方法を説明します。ビジュアルモードでは選択範囲にさまざまな処理を実行できます。外部プログラムを使えばとても複雑な処理もできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|10.1|	Record and playback commands
+|10.2|	Substitution
+|10.3|	Command ranges
+|10.4|	The global command
+|10.5|	Visual block mode
+|10.6|	Reading and writing part of a file
+|10.7|	Formatting text
+|10.8|	Changing case
+|10.9|	Using an external program
+
+     Next chapter: |usr_11.txt|  Recovering from a crash
+ Previous chapter: |usr_09.txt|  Using the GUI
+Table of contents: |usr_toc.txt|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@menu
+* 操作の記録と再実行::             10.1
+* 置換::                           10.2
+* コマンドの範囲指定::             10.3
+* global コマンド::                10.4
+* 矩形選択::                       10.5
+* ファイルの一部の保存と読み込み:: 10.5
+* テキストの整形::                 10.6
+* 大文字/小文字の変換::            10.7
+* 外部プログラムを使う::           10.8
+@end menu
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*10.1*	Record and playback commands
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{10.1}
+@node 操作の記録と再実行
+@section 操作の記録と再実行
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "." command repeats the preceding change.  But what if you want to do
+something more complex than a single change?  That's where command recording
+comes in.  There are three steps:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{.}" コマンドを使えば直前の変更を繰り返せますが、複数のコマンドを組み合わせた、もっと複雑な操作を繰り返すにはどうすればいいでしょうか。それには記録コマンドを使います。次の手順で記録できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. The "q{register}" command starts recording keystrokes into the register
+   named {register}.  The register name must be between a and z.
+2. Type your commands.
+3. To finish recording, press q (without any extra character).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item
+"q@{register@}" コマンドを実行する。指定したレジスタ @{register@} へのキー入力の記録が開始されます。レジスタ名は a から z のいずれかです。
+@item
+コマンドを入力して編集する。
+@item
+q を押して記録を終了する  (レジスタの指定は必要ない)。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can now execute the macro by typing the command "@{register}".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+記録したマクロは "@@@{register@}" コマンドで実行できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Take a look at how to use these commands in practice.  You have a list of
+filenames that look like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドの使い方を練習してみましょう。次のようなファイル名の一覧があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	stdio.h ~
+	fcntl.h ~
+	unistd.h ~
+	stdlib.h ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+stdio.h
+fcntl.h
+unistd.h
+stdlib.h
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+And what you want is the following:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これを次のように変更します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	#include "stdio.h" ~
+	#include "fcntl.h" ~
+	#include "unistd.h" ~
+	#include "stdlib.h" ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+#include "stdio.h"
+#include "fcntl.h"
+#include "unistd.h"
+#include "stdlib.h"
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You start by moving to the first character of the first line.  Next you
+execute the following commands:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+まず、一行目の行頭に移動してください。そして次のコマンドを実行します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	qa			Start recording a macro in register a.
+	^			Move to the beginning of the line.
+	i#include "<Esc>	Insert the string #include " at the beginning
+				of the line.
+	$			Move to the end of the line.
+	a"<Esc>			Append the character double quotation mark (")
+				to the end of the line.
+	j			Go to the next line.
+	q			Stop recording the macro.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@item qa @tab レジスタ a へのマクロの記録を開始。
+@item ^ @tab 行頭に移動。
+@item i#include "<Esc> @tab 行頭に #include " を挿入。
+@item $ @tab 行末に移動。
+@item a"<Esc> @tab 行末に引用符 (") を追加。
+@item j @tab 次の行に移動。
+@item q @tab マクロの記録を終了。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now that you have done the work once, you can repeat the change by typing the
+command "@a" three times.
+   The "@a" command can be preceded by a count, which will cause the macro to
+be executed that number of times.  In this case you would type: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さて、一回分の作業はこれで終わりました。"@command{@@a}" コマンドを使って変更を繰り返してみてください。
+
+"@command{@@a}" コマンドには繰り返し回数を指定できます。三回繰り返すには、次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	3@a
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+3@@a
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MOVE AND EXECUTE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 移動と実行
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You might have the lines you want to change in various places.  Just move the
+cursor to each location and use the "@a" command.  If you have done that once,
+you can do it again with "@@".  That's a bit easier to type.  If you now
+execute register b with "@b", the next "@@" will use register b.
+   If you compare the playback method with using ".", there are several
+differences.  First of all, "." can only repeat one change.  As seen in the
+example above, "@a" can do several changes, and move around as well.
+Secondly, "." can only remember the last change.  Executing a register allows
+you to make any changes and then still use "@a" to replay the recorded
+commands.  Finally, you can use 26 different registers.  Thus you can remember
+26 different command sequences to execute.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+変更したい行がいろんな場所に分散している場合は、それぞれの場所に移動してから "@command{@@a}" コマンドを使います。一度でも再実行すると、次からは "@command{@@@@}" で同じマクロを再実行できます。"@command{@@@@}" の方が少しだけ入力が簡単です。例えば、"@command{@@b}" でレジスタ b を実行すると、次に "@command{@@@@}" を実行したときはレジスタ b が使われます。
+
+マクロの実行と "@command{.}" にはいくつか違いがあります。まず第一に、"@command{.}" は一つの変更しか繰り返せません。上述の例のように、"@command{@@a}" では複数の変更やカーソルの移動も繰り返せます。第二に、"@command{.}" は直前の変更しか繰り返せません。レジスタを実行する方法なら、他の変更を加えた後でも、"@command{@@a}" を使って、記録されたコマンドを繰り返せます。
+
+最後に、レジスタは 26 個あります。つまり、26 個のコマンド操作を記録しておけるのです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING REGISTERS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec レジスタを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The registers used for recording are the same ones you used for yank and
+delete commands.  This allows you to mix recording with other commands to
+manipulate the registers.
+   Suppose you have recorded a few commands in register n.  When you execute
+this with "@n" you notice you did something wrong.  You could try recording
+again, but perhaps you will make another mistake.  Instead, use this trick:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+記録に用いるレジスタはヤンクや削除で使っているのと同じものです。そのため、レジスタを操作して、記録されたコマンドと他のコマンドを合成することができます。
+
+レジスタ n にいくつかのコマンドが記録されているとします。ところが、"@command{@@n}" で実行してみると、ミスがあることに気づきました。最初から記録をやり直すこともできますが、また何か間違えてしまうかもしれません。代わりに、次のようなテクニックを使ってみましょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	G			Go to the end of the file.
+	o<Esc>			Create an empty line.
+	"np			Put the text from the n register.  You now see
+				the commands you typed as text in the file.
+	{edits}			Change the commands that were wrong.  This is
+				just like editing text.
+	0			Go to the start of the line.
+	"ny$			Yank the corrected commands into the n
+				register.
+	dd			Delete the scratch line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .15 .85
+@item G @tab ファイルの最後にジャンプ。
+@item o<Esc> @tab 空行を作成。
+@item "np @tab レジスタ n の内容をプット。記録されたコマンドがテキストとして表示されます。
+@item @{edits@} @tab 間違っている部分を修正。普通にテキストを編集するのと同じです。
+@item 0 @tab 行頭に移動。
+@item "ny$ @tab 修正したコマンドをレジスタ n にヤンク
+@item dd @tab 不要になった最終行を削除
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now you can execute the corrected commands with "@n".  (If your recorded
+commands include line breaks, adjust the last two items in the example to
+include all the lines.)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さて、"@command{@@n}" で正しいコマンドが実行されるようになりました。(記録されたコマンドに改行が含まれている場合は、上記の最後の二項目はその全内容が含まれるようにしてください)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+APPENDING TO A REGISTER
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec レジスタに追記
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+So far we have used a lowercase letter for the register name.  To append to a
+register, use an uppercase letter.
+   Suppose you have recorded a command to change a word to register c.  It
+works properly, but you would like to add a search for the next word to
+change.  This can be done with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これまで、レジスタ名には小文字を使ってきました。レジスタに追記するには大文字を使います。
+
+単語を変更するためのコマンドがレジスタ c に記録されているとします。これは正しく動作するのですが、変更すべき次の単語を検索する処理を追加したくなりました。次のようにすればできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	qC/word<Enter>q
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+qC/word<Enter>q
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You start with "qC", which records to the c register and appends.  Thus
+writing to an uppercase register name means to append to the register with
+the same letter, but lowercase.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+レジスタ c に追記するために "qC" で記録を開始しています。レジスタ名を大文字で書くと、同じレジスタに追記するという意味になるのです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This works both with recording and with yank and delete commands.  For
+example, you want to collect a sequence of lines into the a register.  Yank
+the first line with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは記録コマンドだけでなく、ヤンクや削除コマンドでも同じです。例えば、いくつかの行をレジスタ a に集めたいとします。最初の行を次のコマンドでヤンクしましょう:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	"aY
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+"aY
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now move to the second line, and type: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の行に移動し、このように入力します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	"AY
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+"AY
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Repeat this command for all lines.  The a register now contains all those
+lines, in the order you yanked them.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これを全ての行で実行します。レジスタ a にはヤンクした順にすべての行が保存されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*10.2*	Substitution						*find-replace*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{10.2}
+@cindex find-replace
+@node 置換
+@section 置換
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ":substitute" command enables you to perform string replacements on a
+whole range of lines.  The general form of this command is as follows: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+":substitute" コマンドを使うと、指定した範囲内の文字列を置換できます。コマンドの書式は次のとおりです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:[range]substitute/from/to/[flags]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:[range]substitute/from/to/[flags]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This command changes the "from" string to the "to" string in the lines
+specified with [range].  For example, you can change "Professor" to "Teacher"
+in all lines with the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドは [range] で指定された行範囲の中の文字列 "from" を文字列 "to" に置換します。例えば、次のコマンドを実行すると、すべての行の "Professor" が "Teacher" に置換されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:%substitute/Professor/Teacher/
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:%substitute/Professor/Teacher/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Note:
+	The ":substitute" command is almost never spelled out completely.
+	Most of the time, people use the abbreviated version ":s".  From here
+	on the abbreviation will be used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+Note:
+"@command{:substitute}" の綴りを完全に入力するような人はまずいません。普通は短縮形の "@command{:s}" が使われます。以降ではこの短縮形を使います。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "%" before the command specifies the command works on all lines.  Without
+a range, ":s" only works on the current line.  More about ranges in the next
+section |10.3|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドの前の "%" はファイル全体を意味する範囲指定です。範囲指定がない場合は、現在行のみ置換されます。範囲指定については次の節で述べます |@ref{10.3, , 10.3}|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+By default, the ":substitute" command changes only the first occurrence on
+each line.  For example, the preceding command changes the line:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+初期設定では、各行の最初に見つかったものだけが変更されます。例えば、上のコマンドを実行すると、次の行は:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Professor Smith criticized Professor Johnson today. ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Professor Smith criticized Professor Johnson today.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+to:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このように変更されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Teacher Smith criticized Professor Johnson today. ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Teacher Smith criticized Professor Johnson today.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To change every occurrence on the line, you need to add the g (global) flag.
+The command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべてを置換するには g (global) フラグを指定してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:%s/Professor/Teacher/g
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:%s/Professor/Teacher/g
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+results in (starting with the original line):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これを実行すると、先程の行は次のようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Teacher Smith criticized Teacher Johnson today. ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Teacher Smith criticized Teacher Johnson today.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Other flags include p (print), which causes the ":substitute" command to print
+out the last line it changes.  The c (confirm) flag tells ":substitute" to ask
+you for confirmation before it performs each substitution.  Enter the
+following: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+フラグは他にもあります。p (print=出力) フラグを指定すると、最後に変更された行が表示されます。c (confirm=確認) フラグを指定すると、一つ一つ確認しながら置換できます。次のようにして使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:%s/Professor/Teacher/c
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:%s/Professor/Teacher/c
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim finds the first occurrence of "Professor" and displays the text it is
+about to change.  You get the following prompt: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"Professor" が現れる最初の場所が検索され、置換される予定のテキストが表示されます。そして、次のようなプロンプトが表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	replace with Teacher (y/n/a/q/l/^E/^Y)?
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Teacher に置換しますか? (y/n/a/q/l/^E/^Y)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+At this point, you must enter one of the following answers:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ここでは次のいずれかの返答が必要です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	y		Yes; make this change.
+	n		No; skip this match.
+	a		All; make this change and all remaining ones without
+			further confirmation.
+	q		Quit; don't make any more changes.
+	l		Last; make this change and then quit.
+	CTRL-E		Scroll the text one line up.
+	CTRL-Y		Scroll the text one line down.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item y Yes; @tab 置換する。
+@item n No; @tab 置換せずにスキップ。
+@item a All; @tab 置換する。以降すべて確認なしで置換する。
+@item q Quit; @tab 置換を終了する。
+@item l Last; @tab 置換をしてから終了する。
+@item CTRL-E @tab 画面を一行上にスクロールする。
+@item CTRL-Y @tab 画面を一行下にスクロールする。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The "from" part of the substitute command is actually a pattern.  The same
+kind as used for the search command.  For example, this command only
+substitutes "the" when it appears at the start of a line: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+置換コマンドの "from" の部分は実際にはパターン (正規表現) です。これは検索コマンドで使うのと同じものです。例えば、次のコマンドでは、行頭に現れる "the" のみが置換されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:s/^the/these/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:s/^the/these/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are substituting with a "from" or "to" part that includes a slash, you
+need to put a backslash before it.  A simpler way is to use another character
+instead of the slash.  A plus, for example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"from" や "to" にスラッシュ (/) を含めるには、バックスラッシュ (\) を前置する必要がありますが、スラッシュの代わりに他の文字を使えばその必要はありません。例えばプラス (+) など:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:s+one/two+one or two+
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:s+one/two+one or two+
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*10.3*	Command ranges
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{10.3}
+@node コマンドの範囲指定
+@section コマンドの範囲指定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ":substitute" command, and many other : commands, can be applied to a
+selection of lines.  This is called a range.
+   The simple form of a range is {number},{number}.  For example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:substitute}" などの @command{:} コマンドは、実行する範囲を指定できます。これを範囲指定(range) と呼びます。
+
+範囲指定の基本形式は @{number@},@{number@} です。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:1,5s/this/that/g
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:1,5s/this/that/g
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Executes the substitute command on the lines 1 to 5.  Line 5 is included.
+The range is always placed before the command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+1 行目から 5 行目まで置換コマンドが実行されます。5 行目も範囲に入ります。範囲指定はコマンドの前に指定してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A single number can be used to address one specific line: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特定の一行だけ指定するには、数字を一つだけ指定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:54s/President/Fool/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:54s/President/Fool/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some commands work on the whole file when you do not specify a range.  To make
+them work on the current line the "." address is used.  The ":write" command
+works like that.  Without a range, it writes the whole file.  To make it write
+only the current line into a file: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一部のコマンドは範囲指定を省略するとファイル全体を処理します。そのようなコマンドで現在行だけを処理するには "." を使います。例えば、":write" コマンドの範囲指定を省略するとファイル全体が保存されますが、現在行だけを保存するには、次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:.write otherfile
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:.write otherfile
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first line always has number one.  How about the last line?  The "$"
+character is used for this.  For example, to substitute in the lines from the
+cursor to the end: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一行目の行番号は 1 です。最終行は "$" で指定できます。例えば、現在行から最終行までの範囲で置換をするには、次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:.,$s/yes/no/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:.,$s/yes/no/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "%" range that we used before, is actually a short way to say "1,$", from
+the first to the last line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+先程使った "%" は "1,$"、つまり一行目から最終行までと同じことです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING A PATTERN IN A RANGE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec パターンを使った範囲指定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Suppose you are editing a chapter in a book, and want to replace all
+occurrences of "grey" with "gray".  But only in this chapter, not in the next
+one.  You know that only chapter boundaries have the word "Chapter" in the
+first column.  This command will work then: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、本のどこかの章を編集していて、その章で使われている "grey" を全て"gray" に置換したいとします。ただし、その章だけを置換、つまり次章は変更したくありません。章は行頭が "Chapter" で始まる行で区切られています。次のコマンドでそれができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:?^Chapter?,/^Chapter/s=grey=gray=g
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:?^Chapter?,/^Chapter/s=grey=gray=g
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can see a search pattern is used twice.  The first "?^Chapter?" finds the
+line above the current position that matches this pattern.  Thus the ?pattern?
+range is used to search backwards.  Similarly, "/^Chapter/" is used to search
+forward for the start of the next chapter.
+   To avoid confusion with the slashes, the "=" character was used in the
+substitute command here.  A slash or another character would have worked as
+well.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パターン検索が二回使われています。最初の "?^Chapter?" では現在行から上に向かって検索しています。この ?pattern? という範囲の書き方は後方検索をするために使います。同様に、"/^Chapter/" で前方検索を行い、次章の先頭を検索しています。
+
+上の例では、説明をわかりやすくするために、置換コマンドの区切りに "=" を使っています。スラッシュでも他の文字でも動作に違いはありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ADD AND SUBTRACT
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 加算と減算
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There is a slight error in the above command: If the title of the next chapter
+had included "grey" it would be replaced as well.  Maybe that's what you
+wanted, but what if you didn't?  Then you can specify an offset.
+   To search for a pattern and then use the line above it: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実は上のコマンドには少しだけ間違いがあります。次章のタイトルに "grey" が含まれていると、それも置換されてしまいます。それが期待どおりの動作ならいいのですが、そうでなければ？ その場合はオフセットを指定すればよいのです。
+
+パターンを検索し、その一行上の行を使うには、次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/Chapter/-1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/Chapter/-1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use any number instead of the 1.  To address the second line below the
+match: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+数字は 1 でなくても構いません。ヒットした行の 2 行下を指定するなら、次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/Chapter/+2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/Chapter/+2
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The offsets can also be used with the other items in a range.  Look at this
+one: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オフセットは他の範囲指定にも使えます。例えば:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:.+3,$-5
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:.+3,$-5
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This specifies the range that starts three lines below the cursor and ends
+five lines before the last line in the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは、現在行の 3 行下から、最終行の 5 行上までの範囲を指定しています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING MARKS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec マークを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Instead of figuring out the line numbers of certain positions, remembering them
+and typing them in a range, you can use marks.
+   Place the marks as mentioned in chapter 3.  For example, use "mt" to mark
+the top of an area and "mb" to mark the bottom.  Then you can use this range
+to specify the lines between the marks (including the lines with the marks): >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+行番号を直接指定する代わりに、マークを使うこともできます。
+
+マークの使い方は三章で説明しました。例えば、範囲指定したい領域の先頭を "@command{mt}" でマークし、領域の末尾を "@command{mb}" でマークします。すると、マークを使って次のように範囲指定をすることができます (マークのある行は範囲に含まれます):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:'t,'b
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:'t,'b
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+VISUAL MODE AND RANGES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec ビジュアルモードと範囲指定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can select text with Visual mode.  If you then press ":" to start a colon
+command, you will see this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビジュアルモードでテキストを選択し、"@key{:}" を押してコマンドラインモードに入ると、次のような表示になります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:'<,'>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:'<,'>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now you can type the command and it will be applied to the range of lines that
+was visually selected.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この状態でコマンドを入力すると、そのコマンドはビジュアル選択した範囲に対して適用されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	When using Visual mode to select part of a line, or using CTRL-V to
+	select a block of text, the colon commands will still apply to whole
+	lines.  This might change in a future version of Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+Note:
+行の一部だけビジュアルモードで選択した場合や、@kbd{CTRL-V} で矩形選択した場合でも、コマンドは行全体に適用されます。これは将来、変更されるかも知れません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The '< and '> are actually marks, placed at the start and end of the Visual
+selection.  The marks remain at their position until another Visual selection
+is made.  Thus you can use the "'<" command to jump to position where the
+Visual area started.  And you can mix the marks with other items: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実は、'< と '> はマークです。ビジュアル選択の始点と終点を示しています。このマークは、次にビジュアル選択するまで同じ場所を指しています。そのため、 "@command{'<}" コマンドでその場所にジャンプすることもできます。マークと他の範囲指定方法を組み合わせることもできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:'>,$
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:'>,$
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This addresses the lines from the end of the Visual area to the end of the
+file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは、選択範囲の終点からファイルの末尾までを範囲指定しています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+A NUMBER OF LINES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 行数指定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you know how many lines you want to change, you can type the number and
+then ":".  For example, when you type "5:", you will get: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+変更したい行数が分かっているなら、その数を入力してから "@key{:}" を押してください。例えば、"@kbd{5:}" と入力すると、次のような表示になります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:.,.+4
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:.,.+4
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now you can type the command you want to use.  It will use the range "."
+(current line) until ".+4" (four lines down).  Thus it spans five lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+続けて、使いたいコマンドを入力してください。これは、"." (現在行) から ".+4" (4 行下) が範囲指定されています。つまり範囲は 5 行ということです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*10.4*	The global command
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{10.4}
+@node global コマンド
+@section global コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ":global" command is one of the more powerful features of Vim.  It allows
+you to find a match for a pattern and execute a command there.  The general
+form is: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+":global" コマンドは Vim の中でも最も強力な機能の一つです。パターンにヒットする行を検索し、その行で、任意のコマンドを実行できます。コマンドの書式は次のとおりです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:[range]global/{pattern}/{command}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:[range]global/@{pattern@}/@{command@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is similar to the ":substitute" command.  But, instead of replacing the
+matched text with other text, the command {command} is executed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:substitute}" コマンドに似ていますが、文字列が置換されるのではなく、@command{@{command@}} コマンドが実行されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	The command executed for ":global" must be one that starts with a
+	colon.  Normal mode commands can not be used directly.  The |:normal|
+	command can do this for you.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+Note:
+"@command{:global}" で実行できるのは ":" で始まるコマンドだけです。ノーマルモードコマンドはそのままでは使えません。|:normal| コマンドを使ってください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Suppose you want to change "foobar" to "barfoo", but only in C++ style
+comments.  These comments start with "//".  Use this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、C++ スタイルのコメント内の "foobar" を "barfoo" に置換したいとします。コメントは "//" で開始されています。次のコマンドを使いましょう:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:g+//+s/foobar/barfoo/g
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:g+//+s/foobar/barfoo/g
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This starts with ":g".  That is short for ":global", just like ":s" is short
+for ":substitute".  Then the pattern, enclosed in plus characters.  Since the
+pattern we are looking for contains a slash, this uses the plus character to
+separate the pattern.  Next comes the substitute command that changes "foobar"
+into "barfoo".
+   The default range for the global command is the whole file.  Thus no range
+was specified in this example.  This is different from ":substitute", which
+works on one line without a range.
+   The command isn't perfect, since it also matches lines where "//" appears
+halfway a line, and the substitution will also take place before the "//".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初の "@command{:g}" は "@command{:global}" の短縮形です。"@command{:substitute}" を "@command{:s}" と縮めるのと同じです。次に "+" 記号で囲まれたパターンがあります。今回はスラッシュを含んだパターンを検索するので、セパレータに "+" を使っています。その後に、"foobar" を"barfoo" に置換するコマンドが続きます。
+
+範囲指定を省略した場合、global コマンドはファイル全体に適用されます。そのため、上の例では範囲指定をしていません。この点は、"@command{:substitute}" が、範囲指定を省略すると現在行だけ処理するのと異なっています。
+
+このコマンドは完璧ではありません。"//" が行の途中にあった場合もヒットしてしまうので、行頭から "//" までの文字も置換されてしまいます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Just like with ":substitute", any pattern can be used.  When you learn more
+complicated patterns later, you can use them here.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:substitute}" と同じく、どんなパターンでも使えます。もっと複雑なパターンを覚えたら使ってみてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*10.5*	Visual block mode
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{10.5}
+@node 矩形選択
+@section 矩形選択
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+With CTRL-V you can start selection of a rectangular area of text.  There are
+a few commands that do something special with the text block.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@kbd{CTRL-V} を使うと、テキストの矩形部分を選択することができます。ここでは、矩形選択でのみ使える特殊なコマンドを説明します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There is something special about using the "$" command in Visual block mode.
+When the last motion command used was "$", all lines in the Visual selection
+will extend until the end of the line, also when the line with the cursor is
+shorter.  This remains effective until you use a motion command that moves the
+cursor horizontally.  Thus using "j" keeps it, "h" stops it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+矩形選択では、"@command{$}" コマンドに特殊な意味があります。"@command{$}" で移動した直後は、選択範囲のすべての行で、選択範囲が行末まで拡張されます。現在行より長い行も行末まで選択されます。この選択効果は、左右の移動をすると失われてしまいます。つまり、"@key{j}" なら効果は残りますが、"@key{h}" では元に戻ってしまいます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+INSERTING TEXT
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec テキストの挿入
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The command  "I{string}<Esc>" inserts the text {string} in each line, just
+left of the visual block.  You start by pressing CTRL-V to enter visual block
+mode.  Now you move the cursor to define your block.  Next you type I to enter
+Insert mode, followed by the text to insert.  As you type, the text appears on
+the first line only.
+   After you press <Esc> to end the insert, the text will magically be
+inserted in the rest of the lines contained in the visual selection.  Example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{I@{string@}@key{<Esc>}}" コマンドを使うと、各行の、矩形選択した左側に @{string@} を挿入できます。例えば、@kbd{CTRL-V} を押して矩形選択を開始し、カーソルを動かして選択範囲を設定します。次に @key{I} を押して挿入モードに入り、テキストを挿入します。このとき、挿入したテキストは最初の行にだけ表示されます。
+
+@key{<Esc>} を押して挿入モードを抜けると、テキストが魔法のように選択範囲の残りの行に挿入されます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	include one ~
+	include two ~
+	include three ~
+	include four ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+include one
+include two
+include three
+include four
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Move the cursor to the "o" of "one" and press CTRL-V.  Move it down with "3j"
+to "four".  You now have a block selection that spans four lines.  Now type: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カーソルを "one" の "o" に移動し @kbd{CTRL-V} を押します。"@command{3j}" で、"four" まで移動します。これで 4 行が矩形選択されました。そして、次のコマンドを入力します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Imain.<Esc>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+Imain.<Esc>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The result:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+結果は次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	include main.one ~
+	include main.two ~
+	include main.three ~
+	include main.four ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+include main.one
+include main.two
+include main.three
+include main.four
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the block spans short lines that do not extend into the block, the text is
+not inserted in that line.  For example, make a Visual block selection that
+includes the word "long" in the first and last line of this text, and thus has
+no text selected in the second line:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+選択範囲の途中に短い行があって、その行の文字が選択範囲に入ってなかった場合は、その行には何も挿入されません。例えば、以下のテキストで、一行目と三行目の"long" を矩形選択します。二行目は短いので何も選択されていません:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	This is a long line ~
+	short ~
+	Any other long line ~
+
+		  ^^^^ selected block
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+This is a long line
+short
+Any other long line
+
+          ^^^^ 選択範囲
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now use the command "Ivery <Esc>".  The result is:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そして、"Ivery @key{<Esc>}" を入力すると、次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	This is a very long line ~
+	short ~
+	Any other very long line ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+This is a very long line
+short
+Any other very long line
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the short line no text was inserted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+短い行には何も挿入されません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the string you insert contains a newline, the "I" acts just like a Normal
+insert command and affects only the first line of the block.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+改行を含むテキストを挿入した場合、"@command{I}" は通常の挿入コマンドと同じ動作をします。つまり、最初の行にだけテキストが挿入されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "A" command works the same way, except that it appends after the right
+side of the block.  And it does insert text in a short line.  Thus you can
+make a choice whether you do or don't want to append text to a short line.
+   There is one special case for "A": Select a Visual block and then use "$"
+to make the block extend to the end of each line.  Using "A" now will append
+the text to the end of each line.
+   Using the same example from above, and then typing "$A XXX<Esc>, you get
+this result:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{A}" コマンドも同様の動作をします。ただし、テキストは右側に挿入されます。そして、短い行にもテキストが挿入されます。"@command{I}" と使い分ければ、短い行にテキストを挿入するかどうかを選択することができます。
+
+"@command{A}" には特別な場合が一つあります。矩形選択時に "@command{$}" を使って各行の行末まで選択範囲を拡張した場合、"@command{A}" を使うと各行の行末にテキストが追加されます。
+
+上と同じ例を使って、今度は "$A XXX@key{<Esc>}" と入力すると、結果は次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	This is a long line XXX ~
+	short XXX ~
+	Any other long line XXX ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+This is a long line XXX
+short XXX
+Any other long line XXX
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This really requires using the "$" command.  Vim remembers that it was used.
+Making the same selection by moving the cursor to the end of the longest line
+with other movement commands will not have the same result.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{$}" を使わなければこの効果は出せません。Vim は "@command{$}" が使われたかどうかを記憶しています。カーソルを一番長い行の行末に移動し、見た目の選択範囲を同じにしても、同じ結果にはなりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CHANGING TEXT
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec テキストの変更
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Visual block "c" command deletes the block and then throws you into Insert
+mode to enable you to type in a string.  The string will be inserted in each
+line in the block.
+   Starting with the same selection of the "long" words as above, then typing
+"c_LONG_<Esc>", you get this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+矩形選択で "@command{c}" コマンドを使うと、選択範囲が削除され、挿入モードに入ります。入力された文字列は選択されていた各行に挿入されます。
+
+上と同じ例を使って、"long" を選択しているときに今度は "c_LONG_@key{<Esc>}" と入力すると、結果は次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	This is a _LONG_ line ~
+	short ~
+	Any other _LONG_ line ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+This is a _LONG_ line
+short
+Any other _LONG_ line
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Just like with "I" the short line is not changed.  Also, you can't enter a
+newline in the new text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"I" コマンドの場合と同じく、短い行は無視されます。また、新しい文字列には改行は入力できません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "C" command deletes text from the left edge of the block to the end of
+line.  It then puts you in Insert mode so that you can type in a string,
+which is added to the end of each line.
+   Starting with the same text again, and typing "Cnew text<Esc>" you get:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{C}" コマンドの場合は、ブロックの左端から行末までが削除されます。そして、挿入モードに入り、文字列を入力できるようになります。その文字列は各行の行末に追加されます。
+
+また同じ例ですが、今度は "Cnew text@key{<Esc>}" と入力すると、結果は次のようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	This is a new text ~
+	short ~
+	Any other new text ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+This is a new text
+short
+Any other new text
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Notice that, even though only the "long" word was selected, the text after it
+is deleted as well.  Thus only the location of the left edge of the visual
+block really matters.
+   Again, short lines that do not reach into the block are excluded.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+注意すべきは、"long" という単語だけが選択されていても、これを実行すると、行末まで全部消えてしまう点です。つまり、選択範囲の左端の位置だけが意味を持ちます。
+
+繰り返しですが、文字が選択されていない短い行はここでも無視されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Other commands that change the characters in the block:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+その他に、矩形選択内の文字列を変更するコマンドには次のようなものがあります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	~	swap case	(a -> A and A -> a)
+	U	make uppercase  (a -> A and A -> A)
+	u	make lowercase  (a -> a and A -> a)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item ~ @tab 大文字/小文字切換え (a -> A and A -> a)
+@item U @tab 大文字化する        (a -> A and A -> A)
+@item u @tab 小文字化する        (a -> a and A -> a)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+FILLING WITH A CHARACTER
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 一つの文字で埋める
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To fill the whole block with one character, use the "r" command.  Again,
+starting with the same example text from above, and then typing "rx":
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+選択範囲全体を一つの文字で埋めるには "@command{r}" コマンドを使います。またまた、上で用いた例ですが、今度は "long" を選択した上で "@command{rx}" と入力します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	This is a xxxx line ~
+	short ~
+	Any other xxxx line ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+This is a xxxx line
+short
+Any other xxxx line
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+	Note:
+	If you want to include characters beyond the end of the line in the
+	block, check out the 'virtualedit' feature in chapter 25.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+Note:
+行末を越えて矩形選択したい場合は、25 章の 'virtualedit' の説明を参照してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SHIFTING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec シフト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The command ">" shifts the selected text to the right one shift amount,
+inserting whitespace.  The starting point for this shift is the left edge of
+the visual block.
+   With the same example again, ">" gives this result:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{>}" コマンドを使うと、選択されたテキストを右側にシフトできます。間は空白で埋められます。シフトの開始位置は矩形選択の左端です。
+
+また同じ例を使って、今度は "@command{>}" を実行すると次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	This is a	  long line ~
+	short ~
+	Any other	  long line ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+This is a     long line
+short
+Any other     long line
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The shift amount is specified with the 'shiftwidth' option.  To change it to
+use 4 spaces: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+シフトされる桁数は 'shiftwidth' オプションで設定します。これを 4 に変更するには次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set shiftwidth=4
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set shiftwidth=4
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "<" command removes one shift amount of whitespace at the left
+edge of the block.  This command is limited by the amount of text that is
+there; so if there is less than a shift amount of whitespace available, it
+removes what it can.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{<}" コマンドを使うと、選択範囲の左側にある空白を一つのシフト分だけ削除できます。このコマンドは選択範囲の左側にある空白の量によって制限されます。つまり、空白がシフト量より少ない場合は、可能な範囲だけ空白が削除されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+JOINING LINES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 行の結合
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "J" command joins all selected lines together into one line.  Thus it
+removes the line breaks.  Actually, the line break, leading white space and
+trailing white space is replaced by one space.  Two spaces are used after a
+line ending (that can be changed with the 'joinspaces' option).
+   Let's use the example that we got so familiar with now.  The result of
+using the "J" command:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{J}" コマンドを使うと、選択範囲の行を一行に連結できます。つまり改行が削除されます。正確には、改行、行頭の空白、行末の空白、が一つの空白で置換されます('@option{joinspaces}' オプションで動作を変更できます)。
+
+さて、また同じ例を使って、今度は "@command{J}" を実行します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	This is a long line short Any other long line ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+This is a long line short Any other long line
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "J" command doesn't require a blockwise selection.  It works with "v" and
+"V" selection in exactly the same way.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{J}" コマンドは矩形選択以外でも使えます。"@command{v}" や "@command{V}" で選択した場合も全く同じ動作をします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you don't want the white space to be changed, use the "gJ" command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+空白を変更したくない場合は、"gJ" コマンドを使ってください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*10.6*	Reading and writing part of a file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{10.6}
+@node ファイルの一部の保存と読み込み
+@section ファイルの一部の保存と読み込み
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you are writing an e-mail message, you may want to include another file.
+This can be done with the ":read {filename}" command.  The text of the file is
+put below the cursor line.
+   Starting with this text:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メールを書いているとき、他のファイルを取り込みたいことがあるかもしれません。それには "@command{:read @{filename@}}" コマンドを使います。指定したファイルの内容が現在行の下にプットされます。
+
+次の文章でやってみましょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Hi John, ~
+	Here is the diff that fixes the bug: ~
+	Bye, Pierre. ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Hi John,
+Here is the diff that fixes the bug:
+Bye, Pierre.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Move the cursor to the second line and type: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カーソルを二行目に移動し、次のコマンドを入力します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:read patch
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:read patch
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The file named "patch" will be inserted, with this result:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"patch" という名前のファイルが挿入され、次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Hi John, ~
+	Here is the diff that fixes the bug: ~
+	2c2 ~
+	<	for (i = 0; i <= length; ++i) ~
+	--- ~
+	>	for (i = 0; i < length; ++i) ~
+	Bye, Pierre. ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Hi John,
+Here is the diff that fixes the bug:
+2c2
+<   for (i = 0; i <= length; ++i)
+---
+>   for (i = 0; i < length; ++i)
+Bye, Pierre.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ":read" command accepts a range.  The file will be put below the last line
+number of this range.  Thus ":$r patch" appends the file "patch" at the end of
+the file.
+   What if you want to read the file above the first line?  This can be done
+with the line number zero.  This line doesn't really exist, you will get an
+error message when using it with most commands.  But this command is allowed:
+>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:read}" コマンドに範囲指定すると、指定されたファイルが範囲指定された行の下にプットされます。例えば、"@command{:$r patch}" なら、"patch" の内容がファイルの末尾に追加されます。
+
+ファイルの先頭に読み込むにはどうすればいいでしょうか。それには、行番号 0 を指定します。そのような行は実際にはないので、他のコマンドに指定するとエラーになるかもしれませんが、このコマンドでは指定できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:0read patch
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:0read patch
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The file "patch" will be put above the first line of the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"patch" の内容がファイルの先頭にプットされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+WRITING A RANGE OF LINES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec ファイルの一部だけ保存
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To write a range of lines to a file, the ":write" command can be used.
+Without a range it writes the whole file.  With a range only the specified
+lines are written: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルの一部だけ保存するには、"@command{:write}" コマンドを使います。範囲指定を省略するとファイル全体が保存されますが、範囲指定すると、指定した範囲の行だけが保存されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:.,$write tempo
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:.,$write tempo
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This writes the lines from the cursor until the end of the file into the file
+"tempo".  If this file already exists you will get an error message.  Vim
+protects you from accidentally overwriting an existing file.  If you know what
+you are doing and want to overwrite the file, append !: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドで、現在行から最終行までが "tempo" に保存されます。ファイルが既に存在している場合はエラーメッセージが表示されるので、間違ってファイルを上書きする心配はありません。ファイルを上書きしたい場合は、! を付けてください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:.,$write! tempo
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:.,$write! tempo
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CAREFUL: The ! must follow the ":write" command immediately, without white
+space.  Otherwise it becomes a filter command, which is explained later in
+this chapter.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+注意: ! は "@command{:write}" コマンドの直後に指定してください。間に空白を入れると、フィルタコマンドになってしまいます。フィルタコマンドについては後で説明します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+APPENDING TO A FILE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec ファイルに追記する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the first section of this chapter was explained how to collect a number of
+lines into a register.  The same can be done to collect lines in a file.
+Write the first line with this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この章の最初の節で、複数の行をレジスタに集める方法を説明しました。同じように、複数の行をファイルに集めることができます。まず、次のコマンドで最初の行を保存してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:.write collection
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:.write collection
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now move the cursor to the second line you want to collect, and type this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次に、二行目として保存したい行に移動し、次のように入力します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:.write >>collection
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:.write >>collection
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ">>" tells Vim the "collection" file is not to be written as a new file,
+but the line must be appended at the end.   You can repeat this as many times
+as you like.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新規ファイルとして保存するのではなく、">>" を使って、ファイルの末尾に追記することを指示しています。あとは必要なだけこの操作を繰り返してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*10.7*	Formatting text
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{10.7}
+@node テキストの整形
+@section テキストの整形
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you are typing plain text, it's nice if the length of each line is
+automatically trimmed to fit in the window.  To make this happen while
+inserting text, set the 'textwidth' option: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+文章を入力しているとき、行が画面内に収まるように自動的に改行してくれたら便利ですよね。そうするには、'@option{textwidth}' オプションを設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set textwidth=72
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set textwidth=72
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You might remember that in the example vimrc file this command was used for
+every text file.  Thus if you are using that vimrc file, you were already
+using it.  To check the current value of 'textwidth': >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+vimrc ファイルの見本 (|vimrc_example.vim|) で、テキストファイルが開かれたときにこのオプションが設定されるようにしていたのを覚えているでしょうか。したがって、@file{vimrc} ファイルの見本をそのまま使っているなら、オプションは既に設定されています。現在の '@option{textwidth}' の設定を確認するには、次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set textwidth
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set textwidth
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now lines will be broken to take only up to 72 characters.  But when you
+insert text halfway a line, or when you delete a few words, the lines will get
+too long or too short.  Vim doesn't automatically reformat the text.
+   To tell Vim to format the current paragraph: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これで、行が 72 文字より長くなった行が改行されるようになりました。ただし、行の途中からテキストを挿入したときや、単語削除をしたときは、行が 72 文字よりも長くなったり短くなったりします。既存の文章が自動的に再整形されたりはしません。
+
+現在の段落を整形するには、次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	gqap
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+gqap
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This starts with the "gq" command, which is an operator.  Following is "ap",
+the text object that stands for "a paragraph".  A paragraph is separated from
+the next paragraph by an empty line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは "@command{gq}" というオペレータで始まるコマンドです。次に "ap" というテキストオブジェクトが指定されています。これは "a paragraph" (一つの段落) という意味です。
+
+段落は、空行で区切られたテキストです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	A blank line, which contains white space, does NOT separate
+	paragraphs.  This is hard to notice!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+Note:
+空行 (改行文字だけの行) と空白行 (空白文字だけの行) は違います。段落の区切りは「空行」だけです。見た目では気づきにくいので注意！
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Instead of "ap" you could use any motion or text object.  If your paragraphs
+are properly separated, you can use this command to format the whole file: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"ap" 以外のテキストオブジェクトや、移動コマンドも指定できます。段落が正しく分割されているなら、次のコマンドでファイル全体を整形できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	gggqG
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+gggqG
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"gg" takes you to the first line, "gq" is the format operator and "G" the
+motion that jumps to the last line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは、"@command{gg}" で一行目に移動し、"@command{gq}" で整形オペレータを指定、"@command{G}" でファイル末尾までジャンプしています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In case your paragraphs aren't clearly defined, you can format just the lines
+you manually select.  Move the cursor to the first line you want to format.
+Start with the command "gqj".  This formats the current line and the one below
+it.  If the first line was short, words from the next line will be appended.
+If it was too long, words will be moved to the next line.  The cursor moves to
+the second line.  Now you can use "." to repeat the command.  Keep doing this
+until you are at the end of the text you want to format.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+段落の区切りが明確でない場合は、手動で行を選択して整形してください。整形したい範囲の最初の行に移動し、"gqj" コマンドを使います。現在行と次の行が整形されます。現在行が短い場合は、次の行の単語が現在行に移動します。現在行が長い場合は、現在行の単語が次の行に移動します。カーソルは次の行に移動しているので、"." でコマンドを再実行できます。あとは必要なだけ繰り返してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*10.8*	Changing case
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{10.8}
+@node 大文字/小文字の変換
+@section 大文字/小文字の変換
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You have text with section headers in lowercase.  You want to make the word
+"section" all uppercase.  Do this with the "gU" operator.  Start with the
+cursor in the first column: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"section header" という小文字のテキストがあります。これを、"section" だけ大文字にするには、"gU" オペレータを使います。カーソルを先頭に移動して、コマンドを実行してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			     gUw
+<	section header	    ---->      SECTION header
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+                 gUw
+<   section header      ---->      SECTION header
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "gu" operator does exactly the opposite: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"gu" オペレータで小文字に変換できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			     guw
+<	SECTION header	    ---->      section header
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+                 guw
+<    SECTION header     ---->      section header
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can also use "g~" to swap case.  All these are operators, thus they work
+with any motion command, with text objects and in Visual mode.
+   To make an operator work on lines you double it.  The delete operator is
+"d", thus to delete a line you use "dd".  Similarly, "gugu" makes a whole line
+lowercase.  This can be shortened to "guu".  "gUgU" is shortened to "gUU" and
+"g~g~" to "g~~".  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"g~" を使うと、大文字と小文字を切り替えることができます。今説明したのは全てオペレータなので、移動コマンドやテキストオブジェクトやビジュアルモードと組み合わせることができます。
+
+オペレータを行に適用するには、オペレータを二回繰り返してください。例えば、"d" は削除オペレータなので、"dd" で一行削除になります。同じように、"gugu" で行全体が小文字になります。もっと短く、"guu" でも構いません。"gUgU" は "gUU"、"g~g~" は "g~~" と短縮できます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				g~~ 
+<	Some GIRLS have Fun    ---->   sOME girls HAVE fUN ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+                g~~
+<   Some GIRLS have Fun    ---->   sOME girls HAVE fUN
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*10.9*	Using an external program
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{10.9}
+@node 外部プログラムを使う
+@section 外部プログラムを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim has a very powerful set of commands, it can do anything.  But there may
+still be something that an external command can do better or faster.
+   The command "!{motion}{program}" takes a block of text and filters it
+through an external program.  In other words, it runs the system command
+represented by {program}, giving it the block of text represented by {motion}
+as input.  The output of this command then replaces the selected block.
+   Because this summarizes badly if you are unfamiliar with UNIX filters, take
+a look at an example.  The sort command sorts a file.  If you execute the
+following command, the unsorted file input.txt will be sorted and written to
+output.txt.  (This works on both UNIX and Microsoft Windows.) >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim には強力なコマンドがたくさんあるので何でもできますが、外部プログラムを使った方がもっとキレイで高速に処理できる場合もあります。
+
+"@command{!@{motion@}@{program@}}" コマンドを使うと、ファイルの一部を、外部プログラムでフィルタすることができます。つまり、@{program@} で指定したプログラムが実行され、@{motion@} で指定した範囲のテキストがプログラムに入力され、指定された範囲のテキストがプログラムの出力で置き換えられます。
+
+UNIX のフィルタに馴染のない方にはわかりにくいと思うので、例を交えて説明します。sort コマンドはファイルの中身をソート (並べ替え) するコマンドです。次のコマンドを実行すると、ソートされていない @file{input.txt} の中身が整列され、@file{output.txt} に保存されます。(この例は UNIX でも Microsoft Windows でも動作します)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	sort <input.txt >output.txt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+sort <input.txt >output.txt
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now do the same thing in Vim.  You want to sort lines 1 through 5 of a file.
+You start by putting the cursor on line 1.  Next you execute the following
+command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さて、同じことを Vim でやってみましょう。1 行目から 5 行目までをソートしてみます。カーソルを一行目に移動して、次のコマンドを実行します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	!5G
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+!5G
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "!" tells Vim that you are performing a filter operation.  The Vim editor
+expects a motion command to follow, indicating which part of the file to
+filter.  The "5G" command tells Vim to go to line 5, so it now knows that it
+is to filter lines 1 (the current line) through 5.
+   In anticipation of the filtering, the cursor drops to the bottom of the
+screen and a ! prompt displays.  You can now type in the name of the filter
+program, in this case "sort".  Therefore, your full command is as follows: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{!}" はフィルタを実行するためのコマンドです。次に、移動コマンドを実行し、フィルタに渡す範囲を指定しています。"5G" は 5 行目に移動するコマンドなので、1 行目(現在行) から 5 行目までがフィルタの範囲として指定されます。
+
+カーソルが画面の一番下に移動し、! プロンプトが表示されるので、フィルタプログラムの名前を入力してください。この場合なら "@command{sort}" ですね。したがって、コマンドは全部で次のようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	!5Gsort<Enter>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+!5Gsort<Enter>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The result is that the sort program is run on the first 5 lines.  The output
+of the program replaces these lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドを実行すると、最初の五行が sort プログラムで処理され、元のテキストが、プログラムの出力で置き換えられます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	line 55			      line 11
+	line 33			      line 22
+	line 11		-->	      line 33
+	line 22			      line 44
+	line 44			      line 55
+	last line		      last line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+line 55               line 11
+line 33               line 22
+line 11     -->       line 33
+line 22               line 44
+line 44               line 55
+last line             last line
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "!!" command filters the current line through a filter.  In Unix the "date"
+command prints the current time and date.  "!!date<Enter>" replaces the current
+line with the output of "date".  This is useful to add a timestamp to a file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{!!}" コマンドを使うと、現在行をフィルタできます。Unix では "@command{date}" コマンドで現在の日時を出力できるので、"@command{!!date@key{<Enter>}}" で現在行を "date" の出力で置き換えることができます。これはファイルに日付を挿入するのに便利です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+WHEN IT DOESN'T WORK
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec うまく動作しない場合
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Starting a shell, sending it text and capturing the output requires that Vim
+knows how the shell works exactly.  When you have problems with filtering,
+check the values of these options:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+シェルを起動し、テキストを入力し、出力を取り込むためには、シェルが正しく実行できるように設定されている必要があります。フィルタ処理に問題がある場合は、以下のオプションを確認してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	'shell'		specifies the program that Vim uses to execute
+			external programs.
+	'shellcmdflag'	argument to pass a command to the shell
+	'shellquote'	quote to be used around the command
+	'shellxquote'	quote to be used around the command and redirection
+	'shelltype'	kind of shell (only for the Amiga)
+	'shellslash'	use forward slashes in the command (only for
+			MS-Windows and alikes)
+	'shellredir'	string used to write the command output into a file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item 'shell' @ tab 外部プログラムを実行するために使われるプログラムの指定
+@item 'shellcmdflag' @ tab シェルにコマンドを渡すための引数指定
+@item 'shellquote' @ tab コマンドを囲むためのクォート文字
+@item 'shellxquote' @ tab コマンドとリダイレクトを囲むためのクォート文字
+@item 'shelltype' @ tab シェルの種類 (Amiga専用)
+@item 'shellslash' @ tab ファイル名のバックスラッシュをスラッシュにする (MS-Windows 系専用)
+@item 'shellredir' @ tab コマンドの出力をファイルに保存するために指定する文字列
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On Unix this is hardly ever a problem, because there are two kinds of shells:
+"sh" like and "csh" like.  Vim checks the 'shell' option and sets related
+options automatically, depending on whether it sees "csh" somewhere in
+'shell'.
+   On MS-Windows, however, there are many different shells and you might have
+to tune the options to make filtering work.  Check the help for the options
+for more information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unix では、設定する必要はほとんどありません。なぜなら、おそらく sh 系か csh 系のシェルが使われているからです。Vim は 'shell' に "csh" という文字列が含まれているかどうかでシェルの種類を判断し、関連したオプションを自動的に設定します。
+
+しかし、MS-Windows ではいろんなシェルがあるので、フィルタを動作させるためには、オプションを設定する必要があるかもしれません。詳しくはオプションのヘルプを参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+READING COMMAND OUTPUT
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec コマンドの出力を読み込む
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To read the contents of the current directory into the file, use this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カレントディレクトリの内容を読み込むには、次のようにします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+on Unix: >
+	:read !ls
+on MS-Windows: >
+	:read !dir
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unix系:
+@example
+:read !ls
+@end example
+
+MS-Windows系:
+@example
+:read !dir
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The output of the "ls" or "dir" command is captured and inserted in the text,
+below the cursor.  This is similar to reading a file, except that the "!" is
+used to tell Vim that a command follows.
+   The command may have arguments.  And a range can be used to tell where Vim
+should put the lines: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{ls}" や "@command{dir}" コマンドの出力が取り込まれ、カーソルの下に挿入されます。これはファイルの読み込みに似ていますが、"@command{!}" を使ってコマンドを指定している点が違います。
+
+コマンドに引数を指定することもできます。出力をプットする場所を指定することもできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:0read !date -u
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:0read !date -u
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This inserts the current time and date in UTC format at the top of the file.
+(Well, if you have a date command that accepts the "-u" argument.)  Note the
+difference with using "!!date": that replaced a line, while ":read !date" will
+insert a line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはファイルの先頭に現在の日付と時間を UTC 形式で挿入します ("-u" 引数が使える date コマンドが必要ですよ。当たり前ですが...)。Note: "@command{!!date}" が現在行を置き換えるのに対して、"@command{:read !date}" は行を挿入するという点が違います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+WRITING TEXT TO A COMMAND
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec コマンドにテキストを入力する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Unix command "wc" counts words.  To count the words in the current file: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unix の "@command{wc}" コマンドは単語を数えることができます。編集中のファイル内の単語を数えるには、次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:write !wc
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:write !wc
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is the same write command as before, but instead of a file name the "!"
+character is used and the name of an external command.  The written text will
+be passed to the specified command as its standard input.  The output could
+look like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは上述の write コマンドと似ていますが、"@command{!}" を使って外部プログラムを指定している点が違います。テキストがコマンドの標準入力に渡され、次のような結果が表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+       4      47     249 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+4      47     249
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "wc" command isn't verbose.  This means you have 4 lines, 47 words and 249
+characters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{wc}" コマンドは冗長なメッセージを出力しません。この出力は、行数が 4、単語数が 47、文字数が 249 であることを示しています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Watch out for this mistake: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のような間違いに気をつけてください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:write! wc
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:write! wc
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will write the file "wc" in the current directory, with force.  White
+space is important here!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはカレントディレクトリの "@command{wc}" というファイルに強制上書きするコマンドです。空白は重要ですよ！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+REDRAWING THE SCREEN
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 画面の再描画
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the external command produced an error message, the display may have been
+messed up.  Vim is very efficient and only redraws those parts of the screen
+that it knows need redrawing.  But it can't know about what another program
+has written.  To tell Vim to redraw the screen: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+外部プログラムがエラーを起こした場合、画面がめちゃくちゃになってしまうことがあります。Vim は必要だと思われる最小限の領域だけを再描画しますが、他のプログラムの出力内容を完全に把握することはできません。次のコマンドで画面を再描画できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	CTRL-L
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+CTRL-L
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+Next chapter: |usr_11.txt|  Recovering from a crash
+
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+@end ifset

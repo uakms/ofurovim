@@ -1,0 +1,790 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node クラッシュからの復帰, 便利な小技, 大規模な編集, 目次
+@chapter クラッシュからの復帰
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*usr_11.txt*	For Vim version 8.0.  Last change: 2010 Jul 20
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			   Recovering from a crash
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{usr_11.txt}
+@cindex usr_11.txt
+@verbatim
+*usr_11.txt*	For Vim バージョン 8.0.  Last change: 2010 Jul 20
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			   クラッシュからの復帰
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Did your computer crash?  And you just spent hours editing?  Don't panic!  Vim
+stores enough information to be able to restore most of your work.  This
+chapter shows you how to get your work back and explains how the swap file is
+used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マシンがクラッシュした？ しかも何時間もかけて編集していたところだった？ 慌てないで！ 作業を復元するための情報がハードディスクに記録されています。この章では、作業の復元方法や、スワップファイルの扱いについて説明します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|11.1|	Basic recovery
+|11.2|	Where is the swap file?
+|11.3|	Crashed or not?
+|11.4|	Further reading
+
+     Next chapter: |usr_12.txt|  Clever tricks
+ Previous chapter: |usr_10.txt|  Making big changes
+Table of contents: |usr_toc.txt|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@menu
+* リカバリの基本::
+* スワップファイルはどこにある？::
+* クラッシュした？::
+* さらなる情報::
+@end menu
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*11.1*	Basic recovery
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{11.1}
+@node リカバリの基本
+@section リカバリの基本
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In most cases recovering a file is quite simple, assuming you know which file
+you were editing (and the harddisk is still working).  Start Vim on the file,
+with the "-r" argument added: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ほとんどの場合、編集していたファイルの名前さえ覚えていれば (そしてハードディスクが正しく動いていれば) ファイルのリカバリはとても簡単です。Vim を起動するときに、ファイル名に "-r" 引数を付けるだけです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim -r help.txt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+vim -r help.txt
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will read the swap file (used to store text you were editing) and may read
+bits and pieces of the original file.  If Vim recovered your changes you will
+see these messages (with different file names, of course):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スワップファイル (編集中の文書を保持するのに使われる) が読み込まれ、編集していたファイルのかけらが読み込まれます。変更がリカバリされると次のようなメッセージが表示されます (もちろん、ファイル名は違うでしょう):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Using swap file ".help.txt.swp" ~
+	Original file "~/vim/runtime/doc/help.txt" ~
+	Recovery completed. You should check if everything is OK. ~
+	(You might want to write out this file under another name ~
+	and run diff with the original file to check for changes) ~
+	You may want to delete the .swp file now. ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Using swap file ".help.txt.swp"
+Original file "~/vim/runtime/doc/help.txt"
+Recovery completed. You should check if everything is OK.
+(You might want to write out this file under another name
+and run diff with the original file to check for changes)
+You may want to delete the .swp file now.
+@end verbatim
+
+日本語:
+@verbatim
+スワップファイル ".help.txt.swp" を使用中
+原本ファイル "~/vim/runtime/doc/help.txt"
+リカバリが終了しました. 全てが正しいかチェックしてください.
+(変更をチェックするために, このファイルを別の名前で保存した上で
+原本ファイルとの diff を実行すると良いでしょう)
+それから.swpファイルを削除してください
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To be on the safe side, write this file under another name: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+念のため、ファイルを違う名前で保存しましょう:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:write help.txt.recovered
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:write help.txt.recovered
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Compare the file with the original file to check if you ended up with what you
+expected.  Vimdiff is very useful for this |08.7|.  For example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+原本ファイルと比較して、正しく復元できたどうかを確認してください。それには vimdiff (|@ref{08.7, , 08.7}|) が便利です。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:write help.txt.recovered
+	:edit #
+	:diffsp help.txt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:write help.txt.recovered
+:edit #
+:diffsp help.txt
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Watch out for the original file to contain a more recent version (you saved
+the file just before the computer crashed).  And check that no lines are
+missing (something went wrong that Vim could not recover).
+   If Vim produces warning messages when recovering, read them carefully.
+This is rare though.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+復元したファイルが、原本ファイル (クラッシュする前に保存してあったファイル) の内容を含んでいることを確認し、失われた行がないかどうかも確認してください (Vim がリカバリに失敗することもあるので)。
+
+リカバリ時に警告メッセージが表示された場合は、それを注意深く読んでください。まあ、そんなことは滅多にありませんが。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the recovery resulted in text that is exactly the same as the file
+contents, you will get this message:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+リカバリ後のテキストがファイル内のテキストと同じ場合は次のようなメッセージが表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Using swap file ".help.txt.swp" ~
+	Original file "~/vim/runtime/doc/help.txt" ~
+	Recovery completed. Buffer contents equals file contents. ~
+	You may want to delete the .swp file now. ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Using swap file ".help.txt.swp"
+Original file "~/vim/runtime/doc/help.txt"
+Recovery completed. Buffer contents equals file contents.
+You may want to delete the .swp file now.
+@end verbatim
+
+日本語:
+@verbatim
+スワップファイル ".help.txt.swp" を使用中
+原本ファイル "~/vim/runtime/doc/help.txt"
+リカバリが終了しました. バッファの内容とファイルの内容は同じです.
+それから.swpファイルを削除してください
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This usually happens if you already recovered your changes, or you wrote the
+file after making changes.  It is safe to delete the swap file now.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これが起こるのは既にファイルをリカバリしていたか、何か変更したあとでファイルを保存していた場合などです。この場合は安全にスワップファイルを削除できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is normal that the last few changes can not be recovered.  Vim flushes the
+changes to disk when you don't type for about four seconds, or after typing
+about two hundred characters.  This is set with the 'updatetime' and
+'updatecount' options.  Thus when Vim didn't get a chance to save itself when
+the system went down, the changes after the last flush will be lost.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+普通は、クラッシュ直前の変更はリカバリできません。スワップファイルは、四秒間入力がなかったときや、約 200 文字入力されるごとに、ディスクに書き出されます。この動作は '@option{updatetime}' と '@option{updatecount}' で設定できます。ですから、変更を保存する間もなしにシステムがダウンすると、最後に書き出した後の変更は失われてしまうのです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you were editing without a file name, give an empty string as argument: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+名前のないファイルを編集していた場合は、引数に空文字列を与えてください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim -r ""
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+vim -r ""
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You must be in the right directory, otherwise Vim can't find the swap file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは正しいディレクトリで実行してください。ディレクトリが違うとスワップファイルを検出できません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*11.2*	Where is the swap file?
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{11.2}
+@node スワップファイルはどこにある？
+@section スワップファイルはどこにある？
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim can store the swap file in several places.  Normally it is in the same
+directory as the original file.  To find it, change to the directory of the
+file, and use: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スワップファイルはいろんな場所に保存できます。通常は原本ファイルと同じディレクトリに保存されます。スワップファイルを見つけるには、ファイルのあるディレクトリに移動して、次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim -r
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+vim -r
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will list the swap files that it can find.  It will also look in other
+directories where the swap file for files in the current directory may be
+located.  It will not find swap files in any other directories though, it
+doesn't search the directory tree.
+   The output could look like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+検出されたスワップファイルの一覧が表示されます。カレントディレクトリのファイルのスワップファイルが別ディレクトリにある場合はそれも表示されます。ディレクトリツリーを再帰的に処理したりはしません。
+
+出力は次のようなものです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Swap files found: ~
+	   In current directory: ~
+	1.    .main.c.swp ~
+		  owned by: mool   dated: Tue May 29 21:00:25 2001 ~
+		 file name: ~mool/vim/vim6/src/main.c ~
+		  modified: YES ~
+		 user name: mool   host name: masaka.moolenaar.net ~
+		process ID: 12525 ~
+	   In directory ~/tmp: ~
+	      -- none -- ~
+	   In directory /var/tmp: ~
+	      -- none -- ~
+	   In directory /tmp: ~
+	      -- none -- ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+スワップファイルが複数見つかりました:
+   現在のディレクトリ:
+1.    .main.c.swp
+        所有者: mool   日付: Tue May 29 21:00:25 2001
+    ファイル名: ~mool/vim/vim6/src/main.c
+      変更状態: あり
+    ユーザー名: mool   ホスト名: masaka.moolenaar.net
+    プロセスID: 12525
+   ディレクトリ ~/tmp:
+      -- なし --
+   ディレクトリ /var/tmp:
+      -- なし --
+   ディレクトリ /tmp:
+      -- なし --
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If there are several swap files that look like they may be the one you want to
+use, a list is given of these swap files and you are requested to enter the
+number of the one you want to use.  Carefully look at the dates to decide
+which one you want to use.
+   In case you don't know which one to use, just try them one by one and check
+the resulting files if they are what you expected.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+リカバリを実行したとき、スワップファイルが複数見つかった場合は、スワップファイルの一覧が表示されるので、使いたいスワップファイルを番号で選択してください。日付を見て慎重に選択してください。
+
+どれを指定したらよいかわからない場合は、一つずつ試して中身を確認してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING A SPECIFIC SWAP FILE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec スワップファイルを直接指定する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you know which swap file needs to be used, you can recover by giving the
+swap file name.  Vim will then finds out the name of the original file from
+the swap file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使いたいスワップファイルがわかっている場合は、スワップファイルの名前を指定すればリカバリすることができます。原本ファイルの名前はスワップファイルから取得されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	vim -r .help.txt.swo
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+vim -r .help.txt.swo
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is also handy when the swap file is in another directory than expected.
+Vim recognizes files with the pattern *.s[uvw][a-z] as swap files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはスワップファイルが本来の場所以外にあるときも便利です。Vim は *.s[uvw][a-z] のパターンにマッチするファイルをスワップファイルとして認識します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If this still does not work, see what file names Vim reports and rename the
+files accordingly.  Check the 'directory' option to see where Vim may have
+put the swap file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+うまく動作しない場合は、Vim が表示したファイル名を見て、それにしたがってファイル名を変更してください。'@option{directory}' オプションを確認し、スワップファイルが保存される場所も確認してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	Vim tries to find the swap file by searching the directories in the
+	'dir' option, looking for files that match "filename.sw?".  If
+	wildcard expansion doesn't work (e.g., when the 'shell' option is
+	invalid), Vim does a desperate try to find the file "filename.swp".
+	If that fails too, you will have to give the name of the swapfile
+	itself to be able to recover the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+Note:
+スワップファイルには、'dir' オプションに指定されたディレクトリ内の、"filename.sw?" というパターンにマッチしたファイルが使われます。ワイルドカードの展開ができなかった (例えば 'shell' オプションが無効であった) 場合は、"filname.swp" というファイルが検索されます。それも失敗した場合は、スワップファイルを直接指定してリカバリするしかありません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*11.3*	Crashed or not?					*ATTENTION* *E325*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{11.3}
+@cindex ATTENTION
+@cindex E325
+@node クラッシュした？
+@section クラッシュした？
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim tries to protect you from doing stupid things.  Suppose you innocently
+start editing a file, expecting the contents of the file to show up.  Instead,
+Vim produces a very long message:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim には、うっかりミスを防止するための仕組みがあります。ファイルを開こうとしたときに、次のようなメッセージが表示されることがあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		E325: ATTENTION ~
+	Found a swap file by the name ".main.c.swp" ~
+		  owned by: mool   dated: Tue May 29 21:09:28 2001 ~
+		 file name: ~mool/vim/vim6/src/main.c ~
+		  modified: no ~
+		 user name: mool   host name: masaka.moolenaar.net ~
+		process ID: 12559 (still running) ~
+	While opening file "main.c" ~
+		     dated: Tue May 29 19:46:12 2001 ~
+ ~
+	(1) Another program may be editing the same file. ~
+	    If this is the case, be careful not to end up with two ~
+	    different instances of the same file when making changes. ~
+	    Quit, or continue with caution. ~
+ ~
+	(2) An edit session for this file crashed. ~
+	    If this is the case, use ":recover" or "vim -r main.c" ~
+	    to recover the changes (see ":help recovery"). ~
+	    If you did this already, delete the swap file ".main.c.swp" ~
+	    to avoid this message. ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+E325:注意
+次の名前でスワップファイルを見つけました ".main.c.swp"
+        所有者: mool   日付: Tue May 29 21:09:28 2001
+    ファイル名: ~mool/vim/vim6/src/main.c
+      変更状態: なし
+        ユーザー名: mool   ホスト名: masaka.moolenaar.net
+    プロセスID: 12559 (まだ実行中)
+次のファイルを開いている最中 "main.c"
+          日付: Tue May 29 19:46:12 2001
+
+(1) 別のプログラムが同じファイルを編集しているかもしれません.
+    この場合には, 変更をした際に最終的に, 同じファイルの異なる
+    2つのインスタンスができてしまうことに注意してください.
+    終了するか, 注意しながら続けます.
+
+(2) このファイルの編集セッションがクラッシュした.
+    この場合には ":recover" か "vim -r main.c"
+    を使用して変更をリカバーします(":help recover" を参照).
+    既にこれを行ったのならば, スワップファイル ".main.c.swp"
+    を消せばこのメッセージを回避できます.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You get this message, because, when starting to edit a file, Vim checks if a
+swap file already exists for that file.  If there is one, there must be
+something wrong.  It may be one of these two situations.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルを開くとき、スワップファイルが既に存在するかどうかがチェックされます。既に存在しているなら、何かがおかしくなっているのです。原因は次の二つの内のどちらかでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Another edit session is active on this file.  Look in the message for the
+   line with "process ID".  It might look like this:
+
+		process ID: 12559 (still running) ~
+
+   The text "(still running)" indicates that the process editing this file
+   runs on the same computer.  When working on a non-Unix system you will not
+   get this extra hint.  When editing a file over a network, you may not see
+   the hint, because the process might be running on another computer.  In
+   those two cases you must find out what the situation is yourself.
+      If there is another Vim editing the same file, continuing to edit will
+   result in two versions of the same file.  The one that is written last will
+   overwrite the other one, resulting in loss of changes.  You better quit
+   this Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item
+別のセッションが同じファイルを編集している。上記メッセージの "プロセスID"の行に注目してください。次のようになっていますね:
+
+@verbatim
+プロセスID: 12559 (まだ実行中)
+@end verbatim
+
+"(まだ実行中)" というのは、このファイルを編集しているプロセスが、同じマシン上で実行されていることを示しています。この情報は Unix 以外のシステムでは表示されないかもしれません。ネットワーク越しにファイルを編集している場合も、この情報は表示されません。なぜなら、そのプロセスは他のコンピュータで実行されているからです。そのような場合は、自分で状況を判断してください。
+
+別の Vim が同じファイルを編集している場合、そのまま編集を続けると同じファイルの二つのバージョンができてしまいます。後から書き込まれたファイルがもう一方のファイルを上書きしてしまうので、変更内容が失われることになります。このような場合は、そのまま Vim を終了したほうがいいでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+2. The swap file might be the result from a previous crash of Vim or the
+   computer.  Check the dates mentioned in the message.  If the date of the
+   swap file is newer than the file you were editing, and this line appears:
+
+		modified: YES ~
+
+   Then you very likely have a crashed edit session that is worth recovering.
+      If the date of the file is newer than the date of the swap file, then
+   either it was changed after the crash (perhaps you recovered it earlier,
+   but didn't delete the swap file?), or else the file was saved before the
+   crash but after the last write of the swap file (then you're lucky: you
+   don't even need that old swap file).  Vim will warn you for this with this
+   extra line:
+
+      NEWER than swap file! ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+Vim またはマシンがクラッシュしたのでスワップファイルが残っている。メッセージの日付を確認してください。スワップファイルの日付が開こうとしたファイルよりも新しく、メッセージに次の行が含まれている場合:
+
+@verbatim
+変更状態: あり
+@end verbatim
+
+この場合、クラッシュしたセッションが存在し、リカバリすべき内容が含まれている可能性があります。
+
+ファイルの日付がスワップファイルの日付よりも新しい場合、クラッシュした後に何らかの変更が加えられた可能性があります (おそらく、リカバリした後に、スワップファイルを消し忘れたのではないですか?)。もしくは、スワップファイルが更新されてからクラッシュするまでの間にファイルが保存されたのかもしれません (それならラッキーです。古いスワップファイルは必要ありません)。そういう場合は、次のような警告が表示されます:
+
+@verbatim
+スワップファイルよりも新しいです!
+@end verbatim
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+UNREADABLE SWAP FILE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 読めないスワップファイル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Sometimes the line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ときどき、スワップファイルの名前の下に、次の行が表示されることがあります
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	[cannot be read] ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+[読込めません]
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+will appear under the name of the swap file.  This can be good or bad,
+depending on circumstances.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これには良い状態と悪い状態があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is good if a previous editing session crashed without having made any
+changes to the file.  Then a directory listing of the swap file will show
+that it has zero bytes.  You may delete it and proceed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以前のセッションがファイルに変更を加えることなくクラッシュした場合は良い状態です。その場合、ゼロバイトのスワップファイルが作成されているはずです。それを削除して作業を続けてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is slightly bad if you don't have read permission for the swap file.  You
+may want to view the file read-only, or quit.  On multi-user systems, if you
+yourself did the last changes under a different login name, a logout
+followed by a login under that other name might cure the "read error".  Or
+else you might want to find out who last edited (or is editing) the file and
+have a talk with them.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スワップファイルの読み込み権限があなたにない場合は少し悪い状態です。ファイルを読み込み専用で開くか、Vim を終了するかしてください。マルチユーザーシステムで、あなたが違う名前でログインしていたときに変更を加えていたのだとしたら、その名前でログインしなおせば "読み込みエラー" を直せるかもしれません。あるいは、そのファイルを最後に変更した (している) 人を探して話し合う必要があるかもしれません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is very bad if it means there is a physical read error on the disk
+containing the swap file.  Fortunately, this almost never happens.
+You may want to view the file read-only at first (if you can), to see the
+extent of the changes that were "forgotten".  If you are the one in charge of
+that file, be prepared to redo your last changes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スワップファイルを保存しているディスクが物理的に故障している場合はとても悪い状態です。幸いにも、そんなことはほとんど起こりません。(可能なら) まず、ファイルを読み込み専用で開き、変更がどの程度失われたか確認してください。あなたがそのファイルの責任者なら、変更をやり直す覚悟を決めましょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+WHAT TO DO?					*swap-exists-choices*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@cindex swap-exists-choices
+@unnumberedsubsec どうしますか？
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If dialogs are supported you will be asked to select one of five choices:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ダイアログがサポートされている場合、次の五つの選択肢が表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  Swap file ".main.c.swp" already exists! ~
+  [O]pen Read-Only, (E)dit anyway, (R)ecover, (Q)uit, (A)bort, (D)elete it: ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+スワップファイル ".main.c.swp" が既にあります!
+読込専用で開く([O]), とにかく編集する((E)), 復活させる((R)),
+削除する((D)), 終了する((Q)), 中止する((A)):
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+O  Open the file readonly.  Use this when you just want to view the file and
+   don't need to recover it.  You might want to use this when you know someone
+   else is editing the file, but you just want to look in it and not make
+   changes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @samp
+@item "O"
+ファイルを読み込み専用で開く。リカバリが必要なくて、ただファイルを表示したい場合に選択してください。他の誰かがファイルを編集しているときに、ファイルの内容を変更したいのではなく、確認だけしたい場合にも使えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+E  Edit the file anyway.  Use this with caution!  If the file is being edited
+   in another Vim, you might end up with two versions of the file.  Vim will
+   try to warn you when this happens, but better be safe then sorry.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "E"
+ファイルを普通に編集する。注意！他の Vim がそのファイルを編集中の場合、そのファイルの二つのバージョンができてしまいます。そうなる前に Vim は警告を発しますが、後で残念なことにならないように、最初から安全な選択をしましょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+R  Recover the file from the swap file.  Use this if you know that the swap
+   file contains changes that you want to recover.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "R"
+スワップファイルを使ってファイルを復元する。復元すべき内容がスワップファイルに含まれていることがわかっている場合に使ってください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Q  Quit.  This avoids starting to edit the file.  Use this if there is another
+   Vim editing the same file.
+      When you just started Vim, this will exit Vim.  When starting Vim with
+   files in several windows, Vim quits only if there is a swap file for the
+   first one.  When using an edit command, the file will not be loaded and you
+   are taken back to the previously edited file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "Q"
+終了する。ファイル編集を取り止めます。他の Vim が同じファイルを編集している場合に使ってください。
+
+Vim を起動中なら、Vim が終了します。複数のファイルを開こうとしていた場合、Vim が終了するのは、それが最初のファイルだった場合のみです。":edit" コマンドで開こうとしていた場合は、ファイルを開かずに、直前のファイルに戻ります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A  Abort.  Like Quit, but also abort further commands.  This is useful when
+   loading a script that edits several files, such as a session with multiple
+   windows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "A"
+停止する。「終了する」に似ていますが、コマンドも即座に停止します。例えば、複数のファイルを開くようなスクリプトを実行したときに、スクリプトを即座に停止させることができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+D  Delete the swap file.  Use this when you are sure you no longer need it.
+   For example, when it doesn't contain changes, or when the file itself is
+   newer than the swap file.
+      On Unix this choice is only offered when the process that created the
+   swap file does not appear to be running.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "D"
+スワップファイルを削除する。スワップファイルが不要なことがはっきりしている場合に使ってください。例えば、スワップファイルが変更を何も含んでいない場合や、ファイル本体の日付がスワップファイルより新しい場合に使います。
+
+Unixでは、スワップファイルを生成したプロセスがまだ実行中の場合、この選択肢は表示されません。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you do not get the dialog (you are running a version of Vim that does not
+support it), you will have to do it manually.  To recover the file, use this
+command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ダイアログが表示されない (ダイアログをサポートしていない Vim を使っている) 場合は、手動で復元作業を実行してください。ファイルを復元するには、次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:recover
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:recover
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Vim cannot always detect that a swap file already exists for a file.  This is
+the case when the other edit session puts the swap files in another directory
+or when the path name for the file is different when editing it on different
+machines.  Therefore, don't rely on Vim always warning you.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スワップファイルの存在を常に検出できるとは限りません。例えば、他のセッションが別のディレクトリにスワップファイルを保存している場合や、他のマシンのファイルを編集しているためにファイルのパスが違っている場合などです。ですから、警告が表示されないからといって安心しないでください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you really don't want to see this message, you can add the 'A' flag to the
+'shortmess' option.  But it's very unusual that you need this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スワップファイルの警告を表示したくない場合は、'@option{shortmess}' オプションに "A" フラグを追加してください。しかし特別な理由がなければ設定を変更する必要はないでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For remarks about encryption and the swap file, see |:recover-crypt|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+暗号化時のスワップファイルの扱いについては |:recover-crypt| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*11.4*	Further reading
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{11.4}
+@node さらなる情報
+@section さらなる情報
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|swap-file|	An explanation about where the swap file will be created and
+		what its name is.
+|:preserve|	Manually flushing the swap file to disk.
+|:swapname|	See the name of the swap file for the current file.
+'updatecount'	Number of key strokes after which the swap file is flushed to
+		disk.
+'updatetime'	Timeout after which the swap file is flushed to disk.
+'swapsync'	Whether the disk is synced when the swap file is flushed.
+'directory'	List of directory names where to store the swap file.
+'maxmem'	Limit for memory usage before writing text to the swap file.
+'maxmemtot'	Same, but for all files in total.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item |swap-file| @tab スワップファイルの名前と作成される場所の説明。
+@item |:preserve| @tab スワップファイルを手動でディスクに書き込む。
+@item |:swapname| @tab カレントファイル用のスワップファイルの名前を表示する。
+@item 'updatecount' @tab キーストロークの数。指定された数だけキーが入力されると、スワップファイルがディスクに書き込まれる。
+@item 'updatetime' @tab タイムアウト値。指定された時間内に入力がなかったら、スワップファイルがディスクに書き込まれる。
+@item 'swapsync' @tab スワップファイルを書き込んだときにディスクを同期するかどうか。
+@item 'directory' @tab スワップファイルが保存されるディレクトリの一覧。
+@item 'maxmem' @tab テキストをスワップファイルに保存せずに扱えるメモリの上限。
+@item 'maxmemtot' @tab 同上。ただし、全ファイルの合計値。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+Next chapter: |usr_12.txt|  Clever tricks
+
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+@end ifset
