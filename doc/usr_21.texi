@@ -1,0 +1,1327 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node 中断と再開, ファイルを探す, コマンドラインを素早く入力する, 目次
+@unnumbered 中断と再開
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*usr_21.txt*	For Vim version 8.0.  Last change: 2012 Nov 02
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			   Go away and come back
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{usr_21.txt}
+@cindex usr_21.txt
+@verbatim
+*usr_21.txt*	For Vim バージョン 8.0.  Last change: 2012 Nov 02
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+				  中断と再開
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+This chapter goes into mixing the use of other programs with Vim.  Either by
+executing program from inside Vim or by leaving Vim and coming back later.
+Furthermore, this is about the ways to remember the state of Vim and restore
+it later.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この章では、Vim と他のプログラムを並行して使う方法を説明します。Vim の中から外部プログラムを実行したり、Vim を一次的に中断することでそれを実現できます。さらに、作業状態を記録しておいて、後から復元する方法も説明します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|21.1|	Suspend and resume
+|21.2|	Executing shell commands
+|21.3|	Remembering information; viminfo
+|21.4|	Sessions
+|21.5|	Views
+|21.6|	Modelines
+
+     Next chapter: |usr_22.txt|  Finding the file to edit
+ Previous chapter: |usr_20.txt|  Typing command-line commands quickly
+Table of contents: |usr_toc.txt|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@menu
+* サスペンドとレジューム::   21.1
+* シェルコマンドの実行::     21.2
+* viminfo に情報を記録する:: 21.3
+* セッション::               21.4
+* ビュー::                   21.5
+* モードライン::             21.6
+@end menu
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*21.1*	Suspend and resume
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{21.1}
+@node サスペンドとレジューム
+@section サスペンドとレジューム
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Like most Unix programs Vim can be suspended by pressing CTRL-Z.  This stops
+Vim and takes you back to the shell it was started in.  You can then do any
+other commands until you are bored with them.  Then bring back Vim with the
+"fg" command. >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他の Unix プログラムと同様に、Vim も @kbd{CTRL-Z} でサスペンドできます。@kbd{CTRL-Z} を押すと Vim が停止し、実行元のシェルに制御が戻ります。そこで好きなだけ他のコマンドを実行できます。Vim に戻るには "@command{fg}" コマンドを使います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	CTRL-Z
+	{any sequence of shell commands}
+	fg
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+CTRL-Z
+@{任意のシェルコマンドを実行@}
+fg
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You are right back where you left Vim, nothing has changed.
+   In case pressing CTRL-Z doesn't work, you can also use ":suspend".
+Don't forget to bring Vim back to the foreground, you would lose any changes
+that you made!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+サスペンドする前とまったく同じ状態に戻ることができます。
+@kbd{CTRL-Z} を押しても反応がなかった場合は "@command{:suspend}" コマンドを使ってください。Vim をフォアグラウンドに戻すのを忘れないでください。戻さなかった場合は編集作業が失われてしまいます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Only Unix has support for this.  On other systems Vim will start a shell for
+you.  This also has the functionality of being able to execute shell commands.
+But it's a new shell, not the one that you started Vim from.
+   When you are running the GUI you can't go back to the shell where Vim was
+started.  CTRL-Z will minimize the Vim window instead.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この機能は Unix でのみサポートされています。他のシステムでは新しいシェルが起動されるでしょう。シェルのコマンドが使えることに違いはありませんが、しかしそれは Vim を実行したシェルではなく、新しいシェルです。
+GUI で実行しているときは実行元のシェルに戻ることはできません。@command{CTRL-Z} を押すと Vim ウィンドウが最小化されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*21.2*	Executing shell commands
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{21.2}
+@node シェルコマンドの実行
+@section シェルコマンドの実行
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To execute a single shell command from Vim use ":!{command}".  For example, to
+see a directory listing: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一つのシェルコマンドを実行するには "@command{:!@{command@}}" を使います。例えば、ディレクトリのファイル一覧を見るには次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:!ls
+	:!dir
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:!ls    (Unix 環境)
+:!dir   (MS-DOS/MS-Windows 環境)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first one is for Unix, the second one for MS-Windows.
+   Vim will execute the program.  When it ends you will get a prompt to hit
+<Enter>.  This allows you to have a look at the output from the command before
+returning to the text you were editing.
+   The "!" is also used in other places where a program is run.  Let's take
+a look at an overview:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+外部プログラムが実行されます。コマンドの実行が終わると @key{<Enter>} キーの入力を促すプロンプトが表示されるので、コマンドの出力を確認してから通常画面に戻ってください。
+"!" は他のコマンドで外部プログラムを指定するときにも使われます。次のコマンドで指定できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:!{program}		execute {program}
+	:r !{program}		execute {program} and read its output
+	:w !{program}		execute {program} and send text to its input
+	:[range]!{program}	filter text through {program}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item :!@{program@} @tab @{program@} を実行する
+@item :r !@{program@} @tab @{program@} を実行し、その出力を読み込む
+@item :w !@{program@} @tab @{program@} を実行し、標準入力にテキストを書き込む
+@item :[range]!@{program@} @tab @{program@} を実行し、テキストをフィルタリングする
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Notice that the presence of a range before "!{program}" makes a big
+difference.  Without it executes the program normally, with the range a number
+of text lines is filtered through the program.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"!@{program@}" に範囲指定をするとまったく違う動作になるので注意してください。範囲指定がなければ単純にプログラムが実行されるだけですが、範囲指定があると、その範囲のテキストがプログラムでフィルタ処理されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Executing a whole row of programs this way is possible.  But a shell is much
+better at it.  You can start a new shell this way: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この方法で外部プログラムを何度でも実行できますが、続けてたくさん実行したい場合はシェルを起動した方がいいでしょう。次のコマンドで新しいシェルを起動できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:shell
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:shell
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is similar to using CTRL-Z to suspend Vim.  The difference is that a new
+shell is started.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@kbd{CTRL-Z} で Vim をサスペンドしたときの動作に似ていますが、新しいシェルが起動されるという点が違います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When using the GUI the shell will be using the Vim window for its input and
+output.  Since Vim is not a terminal emulator, this will not work perfectly.
+If you have trouble, try toggling the 'guipty' option.  If this still doesn't
+work well enough, start a new terminal to run the shell in.  For example with:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GUI を使っている場合は、シェルの入出力に Vim ウィンドウが使われます。Vim は端末エミュレータではないので、端末の機能を完全に再現することはできません。うまく動作しない場合は、'@option{guipty}' オプションを設定してみてください。それでも動作しない場合は、新しい端末を作成し、そこでシェルを実行してください。例えば、次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:!xterm&
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:!xterm&
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*21.3*	Remembering information; viminfo
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{21.3}
+@node viminfo に情報を記録する
+@section viminfo に情報を記録する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+After editing for a while you will have text in registers, marks in various
+files, a command line history filled with carefully crafted commands.  When
+you exit Vim all of this is lost.  But you can get it back!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストを保持しているレジスタ、いろんな場所に設定されたマーク、慎重に書き上げたコマンドが記録されたコマンドライン履歴などは、Vim を終了するとすべて失われてしまいます。ただし、それらを復元することは可能です！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The viminfo file is designed to store status information:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+viminfo ファイルには以下の情報を記録できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Command-line and Search pattern history
+	Text in registers
+	Marks for various files
+	The buffer list
+	Global variables
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @bullet
+@item コマンドライン履歴と検索履歴
+@item レジスタ
+@item マーク
+@item バッファリスト
+@item グローバル変数
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Each time you exit Vim it will store this information in a file, the viminfo
+file.  When Vim starts again, the viminfo file is read and the information
+restored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim を終了すると、これらの情報が @file{viminfo} ファイルに保存されます。次に Vim を起動すると、@file{viminfo} ファイルが読み込まれ、状態が復元されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'viminfo' option is set by default to restore a limited number of items.
+You might want to set it to remember more information.  This is done through
+the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{viminfo}' オプションの初期設定では、あまり多くの情報は記録されません。たくさんの情報を記録したい場合は、次のコマンドで設定してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set viminfo=string
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set viminfo=string
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The string specifies what to save.  The syntax of this string is an option
+character followed by an argument.  The option/argument pairs are separated by
+commas.
+   Take a look at how you can build up your own viminfo string.  First, the '
+option is used to specify how many files for which you save marks (a-z).  Pick
+a nice even number for this option (1000, for instance).  Your command now
+looks like this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"string" の部分に、記録したい情報を指定します。設定の書式は、オプション文字と引数の組み合わせをコンマ (@samp{,}) で区切ったリストです。
+'@option{viminfo}' の設定方法を順番に見ていきましょう。まず、@option{'} オプションを設定してみます。@option{'} オプションには、マーク (a-z) を記録するファイルの数を指定できます。適当な数 (例えば 1000) を設定しましょう。コマンドは次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set viminfo='1000
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set viminfo='1000
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The f option controls whether global marks (A-Z and 0-9) are stored.  If this
+option is 0, none are stored.  If it is 1 or you do not specify an f option,
+the marks are stored.  You want this feature, so now you have this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+f オプションには、グローバルマーク (A-Z と 0-9) を記録するかどうかを指定できます。引数が 0 なら何も記録されません。f オプションを指定しない、あるいは引数に 1 を指定すると、マークが保存されます。このオプションを指定すると、コマンドは次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set viminfo='1000,f1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set viminfo='1000,f1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The < option controls how many lines are saved for each of the registers.  By
+default, all the lines are saved.  If 0, nothing is saved.  To avoid adding
+thousands of lines to your viminfo file (which might never get used and makes
+starting Vim slower) you use a maximum of 500 lines: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@option{<} オプションには、レジスタの行数制限を指定できます。初期設定ではすべての行が記録されます。引数が 0 なら何も記録されません。何千行もの (起動を遅くする以外に使い道のない) テキストを @file{viminfo} ファイルに記録したくはないので、500 行に制限してみます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set viminfo='1000,f1,<500
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set viminfo='1000,f1,<500
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<
+Other options you might want to use:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他にも次のようなオプションがあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:	number of lines to save from the command line history
+	@	number of lines to save from the input line history
+	/	number of lines to save from the search history
+	r	removable media, for which no marks will be stored (can be
+		used several times)
+	!	global variables that start with an uppercase letter and
+		don't contain lowercase letters
+	h	disable 'hlsearch' highlighting when starting
+	%	the buffer list (only restored when starting Vim without file
+		arguments)
+	c	convert the text using 'encoding'
+	n	name used for the viminfo file (must be the last option)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .9
+@item : @tab 記録するコマンドライン履歴の数
+@item @ @tab 記録する入力行履歴の数
+@item / @tab 記録する検索履歴の数
+@item r @tab 指定されたリムーバブルメディア上のファイルのマークを記録しない (複数指定可)
+@item ! @tab 名前がすべて大文字のグローバル変数を記録する
+@item h @tab 起動直後に '@option{hlsearch}' による強調表示をしない
+@item % @tab バッファリスト (Vim をファイル引数なしで起動したときのみ復元されます)
+@item c @tab テキストを '@option{encoding}' で変換する
+@item n @tab viminfo ファイルの名前 (このオプションは末尾に指定する必要があります)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See the 'viminfo' option and |viminfo-file| for more information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+詳細は '@file{viminfo}' と |viminfo-file| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you run Vim multiple times, the last one exiting will store its
+information.  This may cause information that previously exiting Vims stored
+to be lost.  Each item can be remembered only once.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim を複数起動した場合は、最後に終了した Vim の状態が記録されます。それより前に終了した Vim が記録した情報は失われます。記録できるのは一つの状態だけです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+GETTING BACK TO WHERE YOU STOPPED VIM
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 前回の場所に戻る
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You are halfway editing a file and it's time to leave for holidays.  You exit
+Vim and go enjoy yourselves, forgetting all about your work.  After a couple
+of weeks you start Vim, and type:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルの編集中に終業時間が来てしまいました。明日から休暇です。Vim を終了し、家路につきましょう。仕事の事はすべて忘れて休暇を楽しんでください。数週間後、仕事に戻ったら、Vim を立ち上げて、こう入力します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	'0
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+'0
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+And you are right back where you left Vim.  So you can get on with your work.
+   Vim creates a mark each time you exit Vim.  The last one is '0.  The
+position that '0 pointed to is made '1.  And '1 is made to '2, and so forth.
+Mark '9 is lost.
+   The |:marks| command is useful to find out where '0 to '9 will take you.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すると、最後に編集していた場所に戻れます。これで仕事が続けられますね。
+Vim を終了するたびにマークが設定されます。最新のマークは '0 です。マークは '0 から '1 へ、'1 から '2 へ、しだいにずれていき、'9 まで記録されます。
+'0 から '9 までのマークがどこを指しているのかは |:marks| コマンドで確認できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+GETTING BACK TO SOME FILE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 最近開いたファイルに戻る
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to go back to a file that you edited recently, but not when
+exiting Vim, there is a slightly more complicated way.  You can see a list of
+files by typing the command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最近開いたファイルを再び開きたい場合はすこし面倒です (前回の Vim 終了時に開いていたファイルではなくてまさに最近開いたファイルのこと)。次のコマンドでファイルの一覧を表示できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:oldfiles
+<	1: ~/.viminfo ~
+	2: ~/text/resume.txt ~
+	3: /tmp/draft ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:oldfiles
+@end example
+@verbatim
+1: ~/.viminfo
+2: ~/text/resume.txt~
+3: /tmp/draft
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now you would like to edit the second file, which is in the list preceded by
+"2:".  You type: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+2 番目のファイル ("2:" の行) を開きたい場合は次のように入力します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:e #<2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:e #<2
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Instead of ":e" you can use any command that has a file name argument, the
+"#<2" item works in the same place as "%" (current file name) and "#"
+(alternate file name).  So you can also split the window to edit the third
+file: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:e}" 以外にも、ファイル名を引数に取るコマンドならどれを使っても構いません。"#<2" という表記は "%" (カレントファイル) や "#" (オルタネートファイル) と同じ要領で使用できます。例えば次のようにすると、3 番目のファイルを分割ウィンドウで開くことができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:split #<3
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:split #<3
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+That #<123 thing is a bit complicated when you just want to edit a file.
+Fortunately there is a simpler way: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+単にファイルを開きたい場合には #<123 という指定は少し面倒かもしれませんね。もっと簡単な方法があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:browse oldfiles
+<	1: ~/.viminfo ~
+	2: ~/text/resume.txt ~
+	3: /tmp/draft ~
+	-- More --
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:browse oldfiles
+@end example
+@verbatim
+1: ~/.viminfo
+2: ~/text/resume.txt
+3: /tmp/draft
+-- More --
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You get the same list of files as with |:oldfiles|.  If you want to edit
+"resume.txt" first press "q" to stop the listing.  You will get a prompt:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:oldfiles| と同じようにファイル一覧が表示されます。"@file{resume.txt}" を開きたい場合にはまず "q" を押して表示を止めます。プロンプトが表示されるので:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Type number and <Enter> (empty cancels): ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@display
+番号と @key{<Enter>} を入力してください (空でキャンセル):
+@end display
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Type "2" and press <Enter> to edit the second file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"2" を入力して @key{<Enter>} を押し、2 番目のファイルを開きます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+More info at |:oldfiles|, |v:oldfiles| and |c_#<|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+詳細は |:oldfiles|、|v:oldfiles|、|c_#<| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MOVE INFO FROM ONE VIM TO ANOTHER
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 他の Vim に情報を移動する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use the ":wviminfo" and ":rviminfo" commands to save and restore the
+information while still running Vim.  This is useful for exchanging register
+contents between two instances of Vim, for example.  In the first Vim do: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:wviminfo}" コマンドと "@command{:rviminfo}" コマンドを使うと、Vim の実行中でも @file{viminfo} ファイルの保存と復元ができます。例えば、他の Vim からレジスタの内容をコピーすることができます。片方の Vim で次のようにして保存し:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:wviminfo! ~/tmp/viminfo
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:wviminfo! ~/tmp/viminfo
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+And in the second Vim do: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もう一方の Vim でそれを読み込みます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:rviminfo! ~/tmp/viminfo
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:rviminfo! ~/tmp/viminfo
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Obviously, the "w" stands for "write" and the "r" for "read".
+   The ! character is used by ":wviminfo" to forcefully overwrite an existing
+file.  When it is omitted, and the file exists, the information is merged into
+the file.
+   The ! character used for ":rviminfo" means that all the information is
+used, this may overwrite existing information.  Without the ! only information
+that wasn't set is used.
+   These commands can also be used to store info and use it again later.  You
+could make a directory full of viminfo files, each containing info for a
+different purpose.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+言うまでもなく、"w" は "write"、"r" は "read" の意味です。
+既存のファイルに上書きするときは、"@command{:wviminfo}" に @samp{!} を付けてください。@samp{!} を指定しなかった場合は、現在の情報と既存のファイルの情報がマージされます。
+"@command{:rviminfo}" に @samp{!} を付けると、ファイルのすべての情報が使われます。つまり、現在の情報が上書きされます。@samp{!} を指定しなかった場合は、まだ設定されていない情報だけが使われます。
+これらのコマンドを使えば、状態を保存しておいて後で再利用することもできます。例えば、@file{viminfo} 専用のディレクトリに状態を保存しておき、目的ごとに使い分けることも可能です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*21.4*	Sessions
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{21.4}
+@node セッション
+@section セッション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Suppose you are editing along, and it is the end of the day.  You want to quit
+work and pick up where you left off the next day.  You can do this by saving
+your editing session and restoring it the next day.
+   A Vim session contains all the information about what you are editing.
+This includes things such as the file list, window layout, global variables,
+options and other information.  (Exactly what is remembered is controlled by
+the 'sessionoptions' option, described below.)
+   The following command creates a session file: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+作業が終わらない内に 1 日が終わってしまった場合、その日の作業を中断し、次の日に同じ状態で作業を再開できたら便利ですよね。編集セッションを保存しておけば、作業状態を復元することができます。
+セッションには、作業状態に関するすべての情報が保存されます。例えば、ファイルリスト、ウィンドウレイアウト、グローバル変数、オプションの設定などです。(正確には、下記で説明されている '@option{sessionoptions}' に指定された項目が保存されます。)
+次のコマンドでセッションファイルを作成できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:mksession vimbook.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:mksession vimbook.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Later if you want to restore this session, you can use this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+セッションを復元するには、次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:source vimbook.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:source vimbook.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to start Vim and restore a specific session, you can use the
+following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の起動と同時にセッションを再開するには、次のようにして Vim を起動します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim -S vimbook.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+vim -S vimbook.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This tells Vim to read a specific file on startup.  The 'S' stands for
+session (actually, you can source any Vim script with -S, thus it might as
+well stand for "source").
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が起動し、指定したファイルが読み込まれます。'S' はセッション (Session) の意味です (実際には、-S には Vim script ならなんでも指定できるので、"source" を意味しているとも言えます)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The windows that were open are restored, with the same position and size as
+before.  Mappings and option values are like before.
+   What exactly is restored depends on the 'sessionoptions' option.  The
+default value is "blank,buffers,curdir,folds,help,options,winsize".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以前に開いていたウィンドウが、同じ場所、同じ大きさで作成されます。マップやオプションの設定も復元されます。
+復元される情報は '@option{sessionoptions}' オプションで設定できます。初期設定は "@samp{blank,buffers,curdir,folds,help,options,winsize}" です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	blank		keep empty windows
+	buffers		all buffers, not only the ones in a window
+	curdir		the current directory
+	folds		folds, also manually created ones
+	help		the help window
+	options		all options and mappings
+	winsize		window sizes
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .2 .7
+@item @tab blank @tab 空のウィンドウ
+@item @tab buffers @tab すべてのバッファ (ウィンドウに表示されていないバッファも含む)
+@item @tab curdir @tab カレントディレクトリ
+@item @tab folds @tab 折り畳み (手動で設定したものも含む)
+@item @tab help @tab ヘルプウィンドウ
+@item @tab options @tab すべてのオプションとマップ
+@item @tab winsize @tab ウィンドウの大きさ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Change this to your liking.  To also restore the size of the Vim window, for
+example, use: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+好きなように設定してください。例えば、Vim ウィンドウの大きさも復元したい場合は、次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set sessionoptions+=resize
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set sessionoptions+=resize
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SESSION HERE, SESSION THERE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec こっちにもセッション、あっちにもセッション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The obvious way to use sessions is when working on different projects.
+Suppose you store your session files in the directory "~/.vim".  You are
+currently working on the "secret" project and have to switch to the "boring"
+project: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+セッションは、複数のプロジェクトで仕事をするときなどに使われます。例えば、"@file{~/.vim}" にセッションファイルを保存するとします。そして、"secret" プロジェクトで作業している最中に、"boring" プロジェクトで作業する必要がでてきました:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:wall
+	:mksession! ~/.vim/secret.vim
+	:source ~/.vim/boring.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:wall
+:mksession! ~/.vim/secret.vim
+:source ~/.vim/boring.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This first uses ":wall" to write all modified files.  Then the current session
+is saved, using ":mksession!".  This overwrites the previous session.  The
+next time you load the secret session you can continue where you were at this
+point.  And finally you load the new "boring" session.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初に、"@command{:wall}" ですべてのファイルを保存します。次に、現在のセッションを "@command{:mksession!}" で保存します。以前のセッション情報が上書きされました。後で secret セッションをロードすると今現在の状態から作業を再開できます。最後に、"boring" セッションをロードします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you open help windows, split and close various windows, and generally mess
+up the window layout, you can go back to the last saved session: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ヘルプを開いたり、ウィンドウを分割したり閉じたりして、ウィンドウレイアウトが乱れてしまった場合、セッションをロードし直せば元に戻せます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:source ~/.vim/boring.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:source ~/.vim/boring.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Thus you have complete control over whether you want to continue next time
+where you are now, by saving the current setup in a session, or keep the
+session file as a starting point.
+   Another way of using sessions is to create a window layout that you like to
+use, and save this in a session.  Then you can go back to this layout whenever
+you want.
+   For example, this is a nice layout to use:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+毎回新しいセッションを保存するか、あるいは最初に保存したセッションを使い続けるかは自由に選択できます。
+セッションには他の使い方もあります。例えば、好みのウィンドウレイアウトをセッションに保存しておけば、いつでも好きなときにそのレイアウトに戻ることができます。
+例えば、このようなレイアウトは使いやすいでしょう:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	+----------------------------------------+
+	|		   VIM - main help file  |
+	|					 |
+	|Move around:  Use the cursor keys, or "h|
+	|help.txt================================|
+	|explorer   |				 |
+	|dir	    |~				 |
+	|dir	    |~				 |
+	|file	    |~				 |
+	|file	    |~				 |
+	|file	    |~				 |
+	|file	    |~				 |
+	|~/=========|[No File]===================|
+	|					 |
+	+----------------------------------------+
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
++----------------------------------------+
+|                  VIM - main help file  |
+|                                        |
+|Move around:  Use the cursor keys, or "h|
+|help.txt================================|
+|explorer   |                            |
+|dir        |~                           |
+|dir        |~                           |
+|file       |~                           |
+|file       |~                           |
+|file       |~                           |
+|file       |~                           |
+|~/=========|[No File]===================|
+|                                        |
++----------------------------------------+
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This has a help window at the top, so that you can read this text.  The narrow
+vertical window on the left contains a file explorer.  This is a Vim plugin
+that lists the contents of a directory.  You can select files to edit there.
+More about this in the next chapter.
+   Create this from a just started Vim with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ヘルプウィンドウが上部に表示され、いつでも参照できます。左端の縦長のウィンドウはファイルエクスプローラーという Vim のプラグインです。ディレクトリのファイル一覧を表示し、その中からファイルを選択して開くことができます。詳しくは次章で説明します。
+このようなウィンドウを作るには、Vim を起動してから次のコマンドを実行します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:help
+	CTRL-W w
+	:vertical split ~/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:help
+CTRL-W w
+:vertical split ~/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can resize the windows a bit to your liking.  Then save the session with:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウの大きさを調節し、セッションを保存してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:mksession ~/.vim/mine.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:mksession ~/.vim/mine.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now you can start Vim with this layout: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これで、同じレイアウトで Vim を起動できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim -S ~/.vim/mine.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+vim -S ~/.vim/mine.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Hint: To open a file you see listed in the explorer window in the empty
+window, move the cursor to the filename and press "O".  Double clicking with
+the mouse will also do this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{Hint:} エクスプローラーでファイルを選択し、空のウィンドウでファイルを開くには、ファイル名の場所にカーソルを移動して "O" を押します。マウスのダブルクリックでも同じ動作になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+UNIX AND MS-WINDOWS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec UNIX と MS-WINDOWS
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some people have to do work on MS-Windows systems one day and on Unix another
+day.  If you are one of them, consider adding "slash" and "unix" to
+'sessionoptions'.  The session files will then be written in a format that can
+be used on both systems.  This is the command to put in your vimrc file: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows と Unix を両方使わなければならない人もいるでしょう。そのような人は、'@option{sessionoptions}' に "@var{slash}" と "@var{unix}" を追加した方がいいかもしれません。その設定で保存されたセッションファイルはどちらのシステムでも使えます。次のコマンドを @file{vimrc} ファイルに追加してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set sessionoptions+=unix,slash
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set sessionoptions+=unix,slash
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will use the Unix format then, because the MS-Windows Vim can read and
+write Unix files, but Unix Vim can't read MS-Windows format session files.
+Similarly, MS-Windows Vim understands file names with / to separate names, but
+Unix Vim doesn't understand \.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+セッションファイルが Unix 形式で保存されるようになります。MS-Windows の Vim は Unix 形式のセッションファイルを読み書きできますが、Unix の Vim は MS-Windows 形式のセッションファイルを読み込むことができません。同様に、MS-Windows の Vim は @samp{/} で区切られたファイル名を処理できますが、Unix の Vim は @samp{\} を処理できません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SESSIONS AND VIMINFO
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec セッション と viminfo
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Sessions store many things, but not the position of marks, contents of
+registers and the command line history.  You need to use the viminfo feature
+for these things.
+   In most situations you will want to use sessions separately from viminfo.
+This can be used to switch to another session, but keep the command line
+history.  And yank text into registers in one session, and paste it back in
+another session.
+   You might prefer to keep the info with the session.  You will have to do
+this yourself then.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+セッションファイルにはたくさんの情報が保存されますが、マークやレジスタ、コマンドライン履歴などは保存されません。それらの情報を保存するには viminfo を使ってください。
+セッションと viminfo は分けて使うことが多いと思います。他のセッションに切り換えてもコマンドライン履歴をそのまま残すことができますし、テキストをレジスタにヤンクし、他のセッションでペーストするということもできます。
+セッションと viminfo を同時に使いたい場合は、自分で保存してください。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:mksession! ~/.vim/secret.vim
+	:wviminfo! ~/.vim/secret.viminfo
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:mksession! ~/.vim/secret.vim
+:wviminfo! ~/.vim/secret.viminfo
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+And to restore this again: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+復元するには次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:source ~/.vim/secret.vim
+	:rviminfo! ~/.vim/secret.viminfo
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:source ~/.vim/secret.vim
+:rviminfo! ~/.vim/secret.viminfo
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*21.5*	Views
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{21.5}
+@node ビュー
+@section ビュー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A session stores the looks of the whole of Vim.  When you want to store the
+properties for one window only, use a view.
+   The use of a view is for when you want to edit a file in a specific way.
+For example, you have line numbers enabled with the 'number' option and
+defined a few folds.  Just like with sessions, you can remember this view on
+the file and restore it later.  Actually, when you store a session, it stores
+the view of each window.
+   There are two basic ways to use views.  The first is to let Vim pick a name
+for the view file.  You can restore the view when you later edit the same
+file.  To store the view for the current window: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+セッションは Vim 全体の表示設定を扱います。1 つのウィンドウに関する設定だけ保存したい場合は、ビューを使います。
+ビューは、ファイルごとに表示設定を変更したい場合に使います。例えば、'@option{number}' を設定して行番号を表示し、いくつかの折り畳みを定義した場合に、その情報を保存して、後で復元することができます。実際のところ、セッションには、各ウィンドウのビューが保存されているのです。
+ビューの使い方は 2 つあります。1 つは、ビューファイルの名前を Vim に決めさせる方法です。保存したビューは、同じ名前のファイルを開いているときに復元できます。カレントウィンドウのビューを保存するには、次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:mkview
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:mkview
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will decide where to store the view.  When you later edit the same file
+you get the view back with this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビューを保存する場所は自動的に決定されます。後で同じファイルを開いたときに、次のコマンドでビューを復元できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:loadview
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:loadview
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+That's easy, isn't it?
+   Now you want to view the file without the 'number' option on, or with all
+folds open, you can set the options to make the window look that way.  Then
+store this view with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+簡単ですね。
+さて、同じファイルを違う設定で表示してみましょう。'@option{number}' オプションをオフに設定、あるいは折り畳みをすべて開き、ウィンドウの表示を変更してみます。そして、次のコマンドでビューを保存します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:mkview 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:mkview 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Obviously, you can get this back with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+当然、次のようにして復元します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:loadview 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:loadview 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now you can switch between the two views on the file by using ":loadview" with
+and without the "1" argument.
+   You can store up to ten views for the same file this way, one unnumbered
+and nine numbered 1 to 9.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これで、"@command{:loadview}" と "@command{:loadview 1}" を使って、同じファイルの 2 つのビューを切り替えられるようになりました。
+ファイル一つにつき、番号なしのビューと、1 から 9 までの 9 個のビュー、合わせて 10 個のビューが使えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+A VIEW WITH A NAME
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 名前付きのビュー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The second basic way to use views is by storing the view in a file with a name
+you choose.  This view can be loaded while editing another file.  Vim will
+then switch to editing the file specified in the view.  Thus you can use this
+to quickly switch to editing another file, with all its options set as you
+saved them.
+   For example, to save the view of the current file: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビューのもう 1 つの使用方法は、指定したファイルにビューを保存する方法です。この方法なら、他のファイルを開いていてもビューを復元できます。ビューを復元すると、ビューに関連付けられたファイルが開くので、編集するファイルを素早く切り替える方法としても使えます。
+例えば、カレントファイルのビューを保存するには、次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:mkview ~/.vim/main.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:mkview ~/.vim/main.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can restore it with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のコマンドで復元できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:source ~/.vim/main.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:source ~/.vim/main.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*21.6*	Modelines
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{21.6}
+@node モードライン
+@section モードライン
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When editing a specific file, you might set options specifically for that
+file.  Typing these commands each time is boring.  Using a session or view for
+editing a file doesn't work when sharing the file between several people.
+   The solution for this situation is adding a modeline to the file.  This is
+a line of text that tells Vim the values of options, to be used in this file
+only.
+   A typical example is a C program where you make indents by a multiple of 4
+spaces.  This requires setting the 'shiftwidth' option to 4.  This modeline
+will do that:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル固有の設定を、ファイルを開くたびに設定しても構いませんが、何度も何度も同じコマンドを入力するのはうんざりですよね。セッションやビューでは同じ設定を他人と共有できません。
+そのような場合にはモードラインを使います。モードラインとは、ファイル固有の設定をファイル内に記述するための仕組みです。
+例えば、C 言語ファイルのインデントをスペース 4 個分に設定したい場合に使います。それには '@option{shiftwidth}' オプションを 4 に設定する必要があるので、モードラインは次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/* vim:set shiftwidth=4: */ ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+/* vim:set shiftwidth=4: */ ~
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Put this line as one of the first or last five lines in the file.  When
+editing the file, you will notice that 'shiftwidth' will have been set to
+four.  When editing another file, it's set back to the default value of eight.
+   For some files the modeline fits well in the header, thus it can be put at
+the top of the file.  For text files and other files where the modeline gets
+in the way of the normal contents, put it at the end of the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この行を、ファイルの先頭または末尾から五行以内のどこかに書いてください。そのファイルを開くと '@option{shiftwidth}' が自動的に設定されます。他のファイルを開くと、初期設定の 8 に戻ります。
+モードラインをファイルヘッダーに書くのが適当な場合はファイルの先頭にモードラインを書きます。テキストファイルなど、モードラインがその内容を邪魔してしまうような場合は末尾に書きます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'modelines' option specifies how many lines at the start and end of the
+file are inspected for containing a modeline.  To inspect ten lines: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{modelines}' オプションでモードラインの有効範囲を設定できます。ファイルの先頭または末尾からの行数で指定してください。例えば、10 行にしたい場合は次のように設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set modelines=10
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set modelines=10
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'modeline' option can be used to switch this off.  Do this when you are
+working as root on Unix or Administrator on MS-Windows, or when you don't
+trust the files you are editing: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+モードライン機能を無効にするには '@option{modeline}' オプションをオフに設定します。Unix の root や MS-Windows の Administrator として作業する場合や、信用できないファイルを開く場合に設定してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set nomodeline
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set nomodeline
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use this format for the modeline:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+モードラインは次の書式で書きます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	any-text vim:set {option}={value} ... : any-text ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+any-text vim:set @{option@}=@{value@} ... : any-text
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "any-text" indicates that you can put any text before and after the part
+that Vim will use.  This allows making it look like a comment, like what was
+done above with /* and */.
+   The " vim:" part is what makes Vim recognize this line.  There must be
+white space before "vim", or "vim" must be at the start of the line.  Thus
+using something like "gvim:" will not work.
+   The part between the colons is a ":set" command.  It works the same way as
+typing the ":set" command, except that you need to insert a backslash before a
+colon (otherwise it would be seen as the end of the modeline).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+モードラインの前後、"any-text" の部分はどんな文字列でも構いません。例えば上述の例のように、@samp{/*} と @samp{*/} で囲んでコメントにすることができます。
+Vim は " vim:" という部分を見てモードラインを認識します。直前に空白のある "vim"、または行頭の "vim" だけが認識されます。つまり、例えば "gvim:" は機能しません。
+2 つのコロン (:) の間には "@command{:set}" コマンドを記述します。これは通常の "@command{:set}" コマンドと同じです。ただし、コロンの前にバックスラッシュ (@samp{\}) を置く必要があります (バックスラッシュがない場合はそれがモードラインの終端だと認識されます)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Another example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	// vim:set textwidth=72 dir=c\:\tmp:  use c:\tmp here ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+// vim:set textwidth=72 dir=c\:\tmp:  use c:\tmp here
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There is an extra backslash before the first colon, so that it's included in
+the ":set" command.  The text after the second colon is ignored, thus a remark
+can be placed there.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初のコロンにはバックスラッシュが前置されているので、それは "@command{:set}" コマンドの一部です。2 つ目のコロン以降は無視されるので、説明を書くことができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For more details see |modeline|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+詳細は |modeline| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+Next chapter: |usr_22.txt|  Finding the file to edit
+
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+@end ifset

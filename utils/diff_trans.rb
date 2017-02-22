@@ -1,6 +1,6 @@
 # Author: nakinor
 # Created: 2017-01-26
-# Revised: 2017-02-16
+# Revised: 2017-02-21
 
 TAG_JA_START =
   '> @ifset JA  @c ----------- v -----------  JA  ----------- v -----------'
@@ -18,9 +18,10 @@ def diff_docs(ifn)
   removed_fin = removed_lan.gsub(/^> @.*\n/, "")
   judge = removed_fin.gsub(/[0-9]+a[0-9].+?\n|> \n/, "")
   if judge.size == 0
-    puts "-----" + ifn + "\n\033[32mNot Modified.\033[0m"
+    puts ifn + " --- \033[32mNot Modified.\033[0m"
   else
-    puts "\033[31m-----" + ifn + "\033[0m\n" + judge
+    puts "\033[31m" + ifn +
+      " --- MODIFIED! Check the following diffs.\033[0m\n" + judge
   end
 end
 

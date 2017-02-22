@@ -1,0 +1,924 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node 特殊なファイルを編集する, 素早く入力する, ファイルを探す, 目次
+@unnumbered 特殊なファイルを編集する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*usr_23.txt*	For Vim version 8.0.  Last change: 2006 Apr 24
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			     Editing other files
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{usr_23.txt}
+@cindex usr_23.txt
+@verbatim
+*usr_23.txt*	For Vim バージョン 8.0.  Last change: 2006 Apr 24
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			   特殊なファイルを編集する
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+This chapter is about editing files that are not ordinary files.  With Vim you
+can edit files that are compressed or encrypted.  Some files need to be
+accessed over the internet.  With some restrictions, binary files can be
+edited as well.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この章では特殊なファイルの編集について説明します。圧縮ファイルや暗号化されたファイルを編集できます。多少不便ですが、バイナリファイルも編集できます。インターネット越しにファイルアクセスする方法も説明します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|23.1|	DOS, Mac and Unix files
+|23.2|	Files on the internet
+|23.3|	Encryption
+|23.4|	Binary files
+|23.5|	Compressed files
+
+     Next chapter: |usr_24.txt|  Inserting quickly
+ Previous chapter: |usr_22.txt|  Finding the file to edit
+Table of contents: |usr_toc.txt|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@menu
+* DOS、Mac、Unix形式のファイル:: 23.1
+* インターネット上のファイル::   23.2
+* 暗号化                    ::   23.3
+* バイナリファイル          ::   23.4
+* 圧縮ファイル             ::    23.5
+@end menu
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*23.1*	DOS, Mac and Unix files
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{23.1}
+@node DOS、Mac、Unix形式のファイル
+@section DOS、Mac、Unix形式のファイル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Back in the early days, the old Teletype machines used two characters to
+start a new line.  One to move the carriage back to the first position
+(carriage return, <CR>), another to move the paper up (line feed, <LF>).
+   When computers came out, storage was expensive.  Some people decided that
+they did not need two characters for end-of-line.  The UNIX people decided
+they could use <Line Feed> only for end-of-line.  The Apple people
+standardized on <CR>.  The MS-DOS (and Microsoft Windows) folks decided to
+keep the old <CR><LF>.
+   This means that if you try to move a file from one system to another, you
+have line-break problems.  The Vim editor automatically recognizes the
+different file formats and handles things properly behind your back.
+   The option 'fileformats' contains the various formats that will be tried
+when a new file is edited.  The following command, for example, tells Vim to
+try UNIX format first and MS-DOS format second: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+その昔、旧いテレタイプマシンは改行のために 2 つの文字を使っていました。1 つ目の文字 (キャリッジリターン。<CR>) でキャリッジを初期位置に戻し、2 つ目の文字 (ラインフィード。<LF>) で用紙を送っていたのです。
+コンピュータが登場した頃は記憶装置がとても高価だったので、改行のために 2 文字も使う必要はないと考える人たちがいました。UNIX の人々は <LF> だけを使って改行することに決めました。Apple の人々は <CR> を標準としました。MS-DOS (と Microsoft Windows) の人々は <CR><LF> を使い続けました。
+このような事情により、異なるシステム間でファイルを交換するときには改行文字の非互換が問題になります。Vim はファイル形式を自動的に認識し、それを適切に処理することができます。
+'@option{fileformats}' オプションを設定して使用するファイル形式を指定してください。例えば、最初に Unix 形式を試し、次に MS-DOS 形式を試すには、次のように設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set fileformats=unix,dos
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set fileformats=unix,dos
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You will notice the format in the message you get when editing a file.  You
+don't see anything if you edit a native file format.  Thus editing a Unix file
+on Unix won't result in a remark.  But when you edit a dos file, Vim will
+notify you of this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルを開いたときのメッセージにファイル形式が表示されることがあります。システム標準のファイル形式だった場合は表示されません。例えば、Unix で Unix 形式のファイルを編集するときに注意は必要ないでしょう。しかし、DOS 形式のファイルなら注意が必要です。次のようなメッセージが表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	"/tmp/test" [dos] 3L, 71C ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+"/tmp/test" [dos] 3L, 71C ~
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For a Mac file you would see "[mac]".
+   The detected file format is stored in the 'fileformat' option.  To see
+which format you have, execute the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Mac 形式なら "[mac]" と表示されます。
+ファイル形式は '@option{fileformat}' オプションに設定されます。現在のファイル形式を確認するには、次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set fileformat?
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set fileformat?
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The three names that Vim uses are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim では次の 3 つの名前が使われます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	unix		<LF>
+	dos		<CR><LF>
+	mac		<CR>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .4 .5
+@item @tab unix @tab <LF>
+@item @tab dos @tab <CR><LF>
+@item @tab mac @tab <CR>
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING THE MAC FORMAT
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec Mac 形式を使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On Unix, <LF> is used to break a line.  It's not unusual to have a <CR>
+character halfway a line.  Incidentally, this happens quite often in Vi (and
+Vim) scripts.
+   On the Macintosh, where <CR> is the line break character, it's possible to
+have a <LF> character halfway a line.
+   The result is that it's not possible to be 100% sure whether a file
+containing both <CR> and <LF> characters is a Mac or a Unix file.  Therefore,
+Vim assumes that on Unix you probably won't edit a Mac file, and doesn't check
+for this type of file.  To check for this format anyway, add "mac" to
+'fileformats': >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unix では <LF> が改行文字です。行の途中に <CR> 文字がくることは普通はありません。ただし、Vi (と Vim) のスクリプトでは <CR> 文字が使われることがあります。
+Macintosh では <CR> が改行文字なので、行の途中に <LF> 文字を使うことができます。つまり、<CR> と <LF> を両方含んでいるファイルは、ファイル形式を 100% 確実に判別することはできません。
+そのため、Unix では Mac 形式の改行はチェックされません。おそらく、Unix で Mac 形式のファイルを編集することはあまりないでしょう。どうしても Mac 形式のファイルを使いたい場合は '@option{fileformats}' オプションに "@var{mac}" を追加してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set fileformats+=mac
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set fileformats+=mac
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Then Vim will take a guess at the file format.  Watch out for situations where
+Vim guesses wrong.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これで、Mac 形式の改行が認識されるようになります。ただし、正しく認識できないことがあるので注意してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+OVERRULING THE FORMAT
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec ファイル形式を指定する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you use the good old Vi and try to edit an MS-DOS format file, you will
+find that each line ends with a ^M character.  (^M is <CR>).  The automatic
+detection avoids this.  Suppose you do want to edit the file that way?  Then
+you need to overrule the format: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+古き良き Vi で MS-DOS 形式のファイルを開くと、すべての行末に @samp{^M} が付きます。(@samp{^M} = <CR>)。Vim では改行が自動認識されるので、そのようなことにはなりません。敢えて昔の動作を再現したい場合は、ファイル形式を指定してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:edit ++ff=unix file.txt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:edit ++ff=unix file.txt
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "++" string is an item that tells Vim that an option name follows, which
+overrules the default for this single command.  "++ff" is used for
+'fileformat'.  You could also use "++ff=mac" or "++ff=dos".
+   This doesn't work for any option, only "++ff" and "++enc" are currently
+implemented.  The full names "++fileformat" and "++encoding" also work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"++" に続いてオプション名を指定することで、コマンドの設定を変更できます。'@option{fileformat}' なら "++ff" です。もちろん "++ff=mac" または "++ff=dos" と設定することもできます。
+この方法ではすべてのオプションを設定できません。現在のところ "++ff" と "++enc" だけが実装されています。"++fileformat" や "++encoding" のようにフルネームでも指定できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CONVERSION
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec ファイル形式の変換
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use the 'fileformat' option to convert from one file format to
+another.  Suppose, for example, that you have an MS-DOS file named README.TXT
+that you want to convert to UNIX format.  Start by editing the MS-DOS format
+file: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{fileformat}' オプションを使ってファイル形式を変換できます。例えば、@file{README.TXT} を MS-DOS 形式から UNIX 形式に変換してみます。まず、MS-DOS 形式のファイルを開きます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	vim README.TXT
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+vim README.TXT
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will recognize this as a dos format file.  Now change the file format to
+UNIX: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル形式は自動的に認識されます。では、ファイル形式を変換しましょう:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set fileformat=unix
+	:write
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set fileformat=unix
+:write
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The file is written in Unix format.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルは Unix 形式で保存されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*23.2*	Files on the internet
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{23.2}
+@node インターネット上のファイル
+@section インターネット上のファイル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Someone sends you an e-mail message, which refers to a file by its URL.  For
+example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+誰かがあなたにメールを出しました。メールには URL が書いてあります。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	You can find the information here: ~
+		ftp://ftp.vim.org/pub/vim/README ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+そのことならここに情報があったよ。
+        ftp://ftp.vim.org/pub/vim/README
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You could start a program to download the file, save it on your local disk and
+then start Vim to edit it.
+   There is a much simpler way.  Move the cursor to any character of the URL.
+Then use this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他のプログラムを使ってファイルをダウンロードし、それを Vim で開いても構いませんが、もっと簡単な方法があります。カーソルを URL の上に移動して次のコマンドを入力してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	gf
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+gf
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+With a bit of luck, Vim will figure out which program to use for downloading
+the file, download it and edit the copy.  To open the file in a new window use
+CTRL-W f.
+   If something goes wrong you will get an error message.  It's possible that
+the URL is wrong, you don't have permission to read it, the network connection
+is down, etc.  Unfortunately, it's hard to tell the cause of the error.  You
+might want to try the manual way of downloading the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+運が良ければ、ダウンロード用のプログラムが実行され、ダウンロードされたファイルが開かれます。新しいウィンドウで開きたい場合は "@kbd{CTRL-W f}" を使ってください。
+ダウンロードが失敗してエラーメッセージが表示された場合は、次のような原因が考えられます。
+@itemize @minus
+@item URL が間違っている。
+@item アクセス権限がない。
+@item ネットワークがダウンしている。
+@item その他。
+@end itemize
+残念ながら、エラーの原因を把握するのは非常に困難です。エラーが起きた場合は手作業でファイルをダウンロードしてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Accessing files over the internet works with the netrw plugin.  Currently URLs
+with these formats are recognized:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+インターネット経由のファイルアクセスは netrw プラグインによって実行されます。現在、以下の形式の URL が認識可能です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	ftp://		uses ftp
+	rcp://		uses rcp
+	scp://		uses scp
+	http://		uses wget (reading only)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .3 .6
+@item @tab ftp:// @tab ftp を使う
+@item @tab rcp:// @tab rcp を使う
+@item @tab scp:// @tab scp を使う
+@item @tab http:// @tab wget を使う (読込専用)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim doesn't do the communication itself, it relies on the mentioned programs
+to be available on your computer.  On most Unix systems "ftp" and "rcp" will
+be present.  "scp" and "wget" might need to be installed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim 自身は通信機能を持っていません。インターネットアクセスは外部プログラムを使って実行されます。"ftp" と "rcp" はほとんどの Unix システムで利用できるはずです。"scp" と "wget" は別途インストールする必要があるかもしれません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim detects these URLs for each command that starts editing a new file, also
+with ":edit" and ":split", for example.  Write commands also work, except for
+http://.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:edit}" や "@command{:split}" などのコマンドでファイルを開くときにも URL を指定できます。もちろん保存もできます (http:// は不可)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For more information, also about passwords, see |netrw|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パスワードの指定方法など、詳細は|netrw|を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*23.3*	Encryption
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{23.3}
+@node 暗号化
+@section 暗号化
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some information you prefer to keep to yourself.  For example, when writing
+a test on a computer that students also use.  You don't want clever students
+to figure out a way to read the questions before the exam starts.  Vim can
+encrypt the file for you, which gives you some protection.
+   To start editing a new file with encryption, use the "-x" argument to start
+Vim.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+情報を秘密にしたいことがあると思います。例えば、生徒と共有のコンピュータを使ってテストを作成している場合、賢い生徒にテスト問題を盗み見られてしまうようでは困ります。Vim の暗号化機能を使って情報を保護しましょう。
+ファイルを暗号化するには、Vim の起動引数に "-x" を指定します。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim -x exam.txt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+vim -x exam.txt
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim prompts you for a key used for encrypting and decrypting the file:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロンプトが表示されるので、ファイルを暗号化または複号するための鍵を入力してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Enter encryption key: ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+暗号化用のキーを入力してください:
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Carefully type the secret key now.  You cannot see the characters you type,
+they will be replaced by stars.  To avoid the situation that a typing mistake
+will cause trouble, Vim asks you to enter the key again:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+慎重に秘密鍵を入力してください。入力した文字は表示されません。代わりにスター (@samp{*}) が表示されます。入力ミスがあると大変なので、念のため、もう一度同じ鍵を入力してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Enter same key again: ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+もう一度同じキーを入力してください:
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can now edit this file normally and put in all your secrets.  When you
+finish editing the file and tell Vim to exit, the file is encrypted and
+written.
+   When you edit the file with Vim, it will ask you to enter the same key
+again.  You don't need to use the "-x" argument.  You can also use the normal
+":edit" command.  Vim adds a magic string to the file by which it recognizes
+that the file was encrypted.
+   If you try to view this file using another program, all you get is garbage.
+Also, if you edit the file with Vim and enter the wrong key, you get garbage.
+Vim does not have a mechanism to check if the key is the right one (this makes
+it much harder to break the key).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルの編集方法は通常のファイルと同じです。秘密にしたいことを書き込んでください。ファイルを保存すると、暗号化されて保存されます。
+次にそのファイルを Vim で開くと、鍵を入力するためのプロンプトが表示されます。既に暗号化されたファイルを開くときは "-x" 引数を指定する必要はありません。通常の "@command{:edit}" コマンドで開くこともできます。暗号化ファイルにはマジック文字列が埋め込まれているので、Vim は暗号化ファイルを認識できます。
+他のプログラムで暗号化ファイルを開くと、ゴミが表示されます。たとえ Vim で開いたとしても、不正な鍵を使った場合は、やはりゴミが表示されます。鍵が正しいかどうかを判断する機能は Vim にはありません (暗号をより強固なものにするため)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SWITCHING ENCRYPTION ON AND OFF
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 暗号化と解除
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To disable the encryption of a file, set the 'key' option to an empty string:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルの暗号化を解除するには、'@option{key}' オプションに空文字を設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:set key=
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set key=
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The next time you write the file this will be done without encryption.
+   Setting the 'key' option to enable encryption is not a good idea, because
+the password appears in the clear.  Anyone shoulder-surfing can read your
+password.
+   To avoid this problem, the ":X" command was created.  It asks you for an
+encryption key, just like the "-x" argument did: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+空に設定してからファイルを保存すると、暗号化されずに保存されます。
+'@option{key}' オプションに鍵を設定すれば暗号化を有効にできますが、それは安全ではありません。パスワードがコマンドラインに表示されるので、肩越しに盗み見られてしまいます。
+安全に暗号化を有効にするには、"@command{:X}" コマンドを使ってください。"-x" 引数を使ったときと同じプロンプトが表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:X
+	Enter encryption key: ******
+	Enter same key again: ******
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:X
+暗号化用のキーを入力してください: ******
+もう一度同じキーを入力してください: ******
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+LIMITS ON ENCRYPTION
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 暗号化の限界
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The encryption algorithm used by Vim is weak.  It is good enough to keep out
+the casual prowler, but not good enough to keep out a cryptology expert with
+lots of time on his hands.  Also you should be aware that the swap file is not
+encrypted; so while you are editing, people with superuser privileges can read
+the unencrypted text from this file.
+   One way to avoid letting people read your swap file is to avoid using one.
+If the -n argument is supplied on the command line, no swap file is used
+(instead, Vim puts everything in memory).  For example, to edit the encrypted
+file "file.txt" without a swap file use the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の暗号アルゴリズムは脆弱です。いたずら小僧を撃退するには十分ですが、暗号エキスパートのハックには耐えられません。さらに、スワップファイルが暗号化されないことにも注意が必要です。ファイルを編集している間、スーパーユーザー権限さえあれば誰でも平文のスワップファイルを読むことができます。
+スワップファイルを使わないというのも一つの手です。起動引数に "-n" を指定すれば、スワップファイルは作成されなくなります (代わりにメモリが使われます)。例えば、暗号化した "@file{file.txt}" をスワップファイル無しで開くには、次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim -x -n file.txt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+vim -x -n file.txt
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When already editing a file, the swapfile can be disabled with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+既にファイルを編集中なら、次のコマンドでスワップファイルを無効にできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:setlocal noswapfile
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:setlocal noswapfile
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Since there is no swapfile, recovery will be impossible.  Save the file a bit
+more often to avoid the risk of losing your changes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スワップファイルが無いということは、リカバリできないということです。普段よりまめにファイルを保存し、クラッシュによるリスクを抑えましょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+While the file is in memory, it is in plain text.  Anyone with privilege can
+look in the editor's memory and discover the contents of the file.
+   If you use a viminfo file, be aware that the contents of text registers are
+written out in the clear as well.
+   If you really want to secure the contents of a file, edit it only on a
+portable computer not connected to a network, use good encryption tools, and
+keep the computer locked up in a big safe when not in use.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メモリ上のファイルは暗号化されていません。権限さえあれば誰でもエディタのメモリを調べてファイルの内容を知ることができます。
+@file{viminfo} ファイルを使っている場合、レジスタの中身が平文で保存されることにも注意が必要です。
+本気でファイルを秘密にしたいなら、ネットワークから切り離したマシンで作業し、強力な暗号化ツールを使い、そのマシンを使わないときは金庫に入れておきましょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*23.4*	Binary files
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{23.4}
+@node バイナリファイル
+@section バイナリファイル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can edit binary files with Vim.  Vim wasn't really made for this, thus
+there are a few restrictions.  But you can read a file, change a character and
+write it back, with the result that only that one character was changed and
+the file is identical otherwise.
+   To make sure that Vim does not use its clever tricks in the wrong way, add
+the "-b" argument when starting Vim: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はバイナリファイルを編集できます。専用ツールではないので若干の制限はありますが、ファイルを読み込み、編集し、保存できます。
+Vim の便利な (そして今は邪魔な) 機能を無効にするために、"-b" 引数を付けて Vim を起動してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim -b datafile
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+vim -b datafile
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This sets the 'binary' option.  The effect of this is that unexpected side
+effects are turned off.  For example, 'textwidth' is set to zero, to avoid
+automatic formatting of lines.  And files are always read in Unix file format.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{binary}' オプションがオンになります。これにより、余計な機能が無効になります。例えば、'@option{textwidth}' が 0 に設定され、自動整形が無効になります。そして、ファイルは Unix 形式で読み込まれます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Binary mode can be used to change a message in a program.  Be careful not to
+insert or delete any characters, it would stop the program from working.  Use
+"R" to enter replace mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バイナリモードを使うと、例えば実行ファイルのメッセージを変更できます。ただし、文字を挿入したり削除したりするとプログラムが動かなくなってしまうので注意してください。"@command{R}" コマンドの置換モードを使いましょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Many characters in the file will be unprintable.  To see them in Hex format: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バイナリファイルには非印字可能文字がたくさんあります。これを 16 進数で表示するには、次のように設定してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set display=uhex
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set display=uhex
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Otherwise, the "ga" command can be used to see the value of the character
+under the cursor.  The output, when the cursor is on an <Esc>, looks like
+this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+あるいは、調べたい文字にカーソルを移動して "@command{ga}" コマンドを使います。例えば、@key{<Esc>} の上で "@command{ga}" を実行すると、次のように表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	<^[>  27,  Hex 1b,  Octal 033 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+<^[>  27,  Hex 1b,  Octal 033 ~
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There might not be many line breaks in the file.  To get some overview switch
+the 'wrap' option off: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルに含まれている改行コードが少ない場合、'@option{wrap}' オプションをオフにすると全体をざっくり眺めることができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set nowrap
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set nowrap
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+BYTE POSITION
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec バイト位置
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To see on which byte you are in the file use this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のコマンドで現在のカーソル位置をバイト単位で表示できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	g CTRL-G
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+g CTRL-G
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The output is verbose:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+冗長なメッセージが表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    Col 9-16 of 9-16; Line 277 of 330; Word 1806 of 2058; Byte 10580 of 12206 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+列 9-16 / 9-16; 行 277 / 330; 単語 1806 / 2058; バイト 10580 / 12206
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The last two numbers are the byte position in the file and the total number of
+bytes.  This takes into account how 'fileformat' changes the number of bytes
+that a line break uses.
+    To move to a specific byte in the file, use the "go" command.  For
+example, to move to byte 2345: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+末尾の数字に注目してください。カーソルの位置とファイルの大きさがバイト単位で表示されています。'@option{fileformat}' の設定による改行の種類もちゃんと考慮されています。
+指定したバイト位置に移動するには "@command{go}" コマンドを使います。例えば、2345 バイト目に移動するには、次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	2345go
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+2345go
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING XXD
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec XXDを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A real binary editor shows the text in two ways: as it is and in hex format.
+You can do this in Vim by first converting the file with the "xxd" program.
+This comes with Vim.
+   First edit the file in binary mode: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+本物のバイナリエディタは、テキスト表示と 16 進表示の二通りの方法でファイルを表示します。"xxd" を使ってファイルを変換すれば Vim でも同じように表示できます。"xxd" は Vim に付属しています。
+まず、ファイルをバイナリモードで開いてください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim -b datafile
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+vim -b datafile
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now convert the file to a hex dump with xxd: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そして、xxd を使って16進数ダンプ形式に変換します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:%!xxd
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:%!xxd
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The text will look like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストは次のように変換されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	0000000: 1f8b 0808 39d7 173b 0203 7474 002b 4e49  ....9..;..tt.+NI ~
+	0000010: 4b2c 8660 eb9c ecac c462 eb94 345e 2e30  K,.`.....b..4^.0 ~
+	0000020: 373b 2731 0b22 0ca6 c1a2 d669 1035 39d9  7;'1.".....i.59. ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+0000000: 1f8b 0808 39d7 173b 0203 7474 002b 4e49  ....9..;..tt.+NI ~
+0000010: 4b2c 8660 eb9c ecac c462 eb94 345e 2e30  K,.`.....b..4^.0 ~
+0000020: 373b 2731 0b22 0ca6 c1a2 d669 1035 39d9  7;'1.".....i.59. ~
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can now view and edit the text as you like.  Vim treats the information as
+ordinary text.  Changing the hex does not cause the printable character to be
+changed, or the other way around.
+   Finally convert it back with:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+あとは、好きなようにテキストを編集してください。普通のテキストを編集するのと同じです。16 進数部分を変更しても、テキスト部分は更新されません。逆も同様です。
+編集が済んだら変換し、テキストに戻します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:%!xxd -r
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:%!xxd -r
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Only changes in the hex part are used.  Changes in the printable text part on
+the right are ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+16 進数部分への変更だけが反映されます。右側のテキスト部分への変更は無視されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See the manual page of xxd for more information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+詳細は xxd のマニュアルを参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*23.5*	Compressed files
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{23.5}
+@node 圧縮ファイル
+@section 圧縮ファイル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is easy: You can edit a compressed file just like any other file.  The
+"gzip" plugin takes care of decompressing the file when you edit it.  And
+compressing it again when you write it.
+   These compression methods are currently supported:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは簡単です。圧縮ファイルを編集するのに特別な操作は必要ありません。ただファイルを開くだけです。"gzip" プラグインが展開の面倒をみてくれます。ファイルを保存すれば勝手に圧縮してくれます。
+現在、以下の圧縮形式がサポートされています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	.Z	compress
+	.gz	gzip
+	.bz2	bzip2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .4 .5
+@item @tab .Z @tab compress
+@item @tab .gz @tab gzip
+@item @tab .bz2 @tab bzip2
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim uses the mentioned programs to do the actual compression and
+decompression.  You might need to install the programs first.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実際の圧縮と展開には上記のプログラムが使われます。無い場合は別途インストールしてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+Next chapter: |usr_24.txt|  Inserting quickly
+
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+@end ifset

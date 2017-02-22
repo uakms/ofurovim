@@ -1,0 +1,1644 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node 検索コマンドと正規表現, 折り畳み, 繰り返し, 目次
+@unnumbered 検索コマンドと正規表現
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*usr_27.txt*	For Vim version 8.0.  Last change: 2010 Mar 28
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			 Search commands and patterns
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{usr_27.txt}
+@cindex usr_27.txt
+@verbatim
+*usr_27.txt*	For Vim バージョン 8.0.  Last change: 2010 Mar 28
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			    検索コマンドと正規表現
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+In chapter 3 a few simple search patterns were mentioned |03.9|.  Vim can do
+much more complex searches.  This chapter explains the most often used ones.
+A detailed specification can be found here: |pattern|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+3 章で検索パターンについて簡単に説明しました |@ref{03.9, , 03.9}|。Vim ではもっと複雑な検索もできます。この章では、よく使われる検索パターンについて説明します。詳細な仕様については |pattern| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|27.1|	Ignoring case
+|27.2|	Wrapping around the file end
+|27.3|	Offsets
+|27.4|	Matching multiple times
+|27.5|	Alternatives
+|27.6|	Character ranges
+|27.7|	Character classes
+|27.8|	Matching a line break
+|27.9|	Examples
+
+     Next chapter: |usr_28.txt|  Folding
+ Previous chapter: |usr_26.txt|  Repeating
+Table of contents: |usr_toc.txt|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@menu
+* 大文字と小文字を区別しない:: 27.1
+* ファイルの端で折り返す::     27.2
+* オフセット::                 27.3
+* 繰り返しマッチ::             27.4
+* 選択肢::                     27.5
+* 文字範囲::                   27.6
+* 文字クラス::                 27.7
+* 改行記号にマッチ::           27.8
+* 例::                         27.9
+@end menu
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*27.1*	Ignoring case
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{27.1}
+@node 大文字と小文字を区別しない
+@section 大文字と小文字を区別しない
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+By default, Vim's searches are case sensitive.  Therefore, "include",
+"INCLUDE", and "Include" are three different words and a search will match
+only one of them.
+   Now switch on the 'ignorecase' option: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+初期設定では大文字と小文字は区別されます。つまり "include" と "INCLUDE" と "Include" は 3 つの別々の単語として扱われ、検索してもどれか一つにしかマッチしません。
+'@option{ignorecase}' オプションをオンにしてみましょう:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set ignorecase
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set ignorecase
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Search for "include" again, and now it will match "Include", "INCLUDE" and
+"InClUDe".  (Set the 'hlsearch' option to quickly see where a pattern
+matches.)
+   You can switch this off again with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"include" を検索すると、"Include" にも "INCLUDE" にも "InClUDe" にもマッチします。('@option{hlsearch}' オプションをオンにするとパターンにマッチした箇所を簡単に確認できます。)
+次のコマンドでオプションをオフにできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set noignorecase
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set noignorecase
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+But let's keep it set, and search for "INCLUDE".  It will match exactly the
+same text as "include" did.  Now set the 'smartcase' option: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+しかしまだ設定は変更せずに、そのまま "INCLUDE" を検索してみます。"include" を検索したときとまったく同じテキストがマッチします。次に '@option{smartcase}' オプションをオンに設定してみます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set ignorecase smartcase
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set ignorecase smartcase
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you have a pattern with at least one uppercase character, the search
+becomes case sensitive.  The idea is that you didn't have to type that
+uppercase character, so you must have done it because you wanted case to
+match.  That's smart!
+    With these two options set you find the following matches:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パターンに大文字が含まれているときに限り、大文字と小文字が区別されるようになります。これは、大文字を入力するのは大文字と小文字を区別したいときだけだろうという考えに基づいています。スマートでしょ!
+この 2 つのオプションを設定すると次のようにマッチします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	pattern			matches	~
+	word			word, Word, WORD, WoRd, etc.
+	Word			Word
+	WORD			WORD
+	WoRd			WoRd
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .2 .7
+@item @tab パターン @tab マッチ
+@item @tab word @tab word, Word, WORD, WoRd, etc.
+@item @tab Word @tab Word
+@item @tab WORD @tab WORD
+@item @tab WoRd @tab WoRd
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CASE IN ONE PATTERN
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec パターンの中で指定する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to ignore case for one specific pattern, you can do this by
+prepending the "\c" string.  Using "\C" will make the pattern to match case.
+This overrules the 'ignorecase' and 'smartcase' options, when "\c" or "\C" is
+used their value doesn't matter.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ある特定のパターンの中でだけ大文字と小文字の区別を無視したい場合は、パターンに "\c" をつけます。大文字と小文字を区別したいときは "\C" を使います。"\c" と "\C" の指定は '@option{ignorecase}' と '@option{smartcase}' の設定よりも優先されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	pattern			matches	~
+	\Cword			word
+	\CWord			Word
+	\cword			word, Word, WORD, WoRd, etc.
+	\cWord			word, Word, WORD, WoRd, etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .2 .7
+@item @tab パターン @tab マッチ
+@item @tab \Cword @tab word
+@item @tab \CWord @tab Word
+@item @tab \cword @tab word, Word, WORD, WoRd, etc.
+@item @tab \cWord @tab word, Word, WORD, WoRd, etc.
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A big advantage of using "\c" and "\C" is that it sticks with the pattern.
+Thus if you repeat a pattern from the search history, the same will happen, no
+matter if 'ignorecase' or 'smartcase' was changed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"\c" と "\C" の大きな利点はそれがパターンに埋め込まれていることです。検索履歴からパターンを再利用したときなどに、同じ検索結果を期待できます。'@option{ignorecase}' や '@option{smartcase}' の設定は影響しません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	The use of "\" items in search patterns depends on the 'magic' option.
+	In this chapter we will assume 'magic' is on, because that is the
+	standard and recommended setting.  If you would change 'magic', many
+	search patterns would suddenly become invalid.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+検索パターンでの "\" の扱いは '@option{magic}' オプションに依存します。この章では '@option{magic}' がオンに設定されていることを前提にしています。それが標準設定であり推奨設定です。'@option{magic}' を変更してしまうと今まで使えていた検索パターンが使えなくなってしまうかもしれません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	If your search takes much longer than you expected, you can interrupt
+	it with CTRL-C on Unix and  CTRL-Break on MS-DOS and MS-Windows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+検索がなかなか終わらない場合は @kbd{CTRL-C} (Unix) または @kbd{CTRL-Break} (MS-DOSと MS-Windows) で処理を中断できます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*27.2*	Wrapping around the file end
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{27.2}
+@node ファイルの端で折り返す
+@section ファイルの端で折り返す
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+By default, a forward search starts searching for the given string at the
+current cursor location.  It then proceeds to the end of the file.  If it has
+not found the string by that time, it starts from the beginning and searches
+from the start of the file to the cursor location.
+   Keep in mind that when repeating the "n" command to search for the next
+match, you eventually get back to the first match.  If you don't notice this
+you keep searching forever!  To give you a hint, Vim displays this message:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+前方検索を実行すると現在のカーソル位置から処理が開始し、指定された文字列が検索されます。そしてファイルの末尾まで検索が進みます。ファイルの末尾まで検索しても文字列が見つからない場合は、ファイルの先頭からカーソル位置に向かって検索が継続します。
+"@command{n}" コマンドを使って順々に検索を進めている場合もそのうち最初にヒットした場所に戻ってきます。これに気がつかないと永遠に検索を続けることになってしまいます！そのようなことがないように、次のようなメッセージが表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	search hit BOTTOM, continuing at TOP ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@display
+下まで検索したので上に戻ります
+@end display
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you use the "?" command, to search in the other direction, you get this
+message:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{?}" コマンドを使って逆方向に検索している場合は次のメッセージが表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	search hit TOP, continuing at BOTTOM ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@display
+上まで検索したので下に戻ります
+@end display
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Still, you don't know when you are back at the first match.  One way to see
+this is by switching on the 'ruler' option: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+それでも気づかないことがあるかもしれません。'ruler' オプションをオンにすると確認しやすくなります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set ruler
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set ruler
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will display the cursor position in the lower righthand corner of the
+window (in the status line if there is one).  It looks like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウの右下隅 (ステータスラインがあるときはその中) にカーソルの位置が表示されます。次のような表示です:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	101,29       84% ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+101,29       84%
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first number is the line number of the cursor.  Remember the line number
+where you started, so that you can check if you passed this position again.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初の数字はカーソルの行番号です。検索を開始した行番号を覚えておいて、検索が 1 周してないか確認しましょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+NOT WRAPPING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 折り返さない
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To turn off search wrapping, use the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+検索を折り返さないようにするには次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set nowrapscan
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set nowrapscan
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now when the search hits the end of the file, an error message displays:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+検索がファイルの末尾に達するとエラーメッセージが表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	E385: search hit BOTTOM without match for: forever ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@display
+E385: 下まで検索しましたが該当箇所はありません: forever
+@end display
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Thus you can find all matches by going to the start of the file with "gg" and
+keep searching until you see this message.
+   If you search in the other direction, using "?", you get:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべての箇所を検索したい場合は "gg" でファイルの先頭に移動してからこのメッセージが表示されるまで検索を繰り返してください。
+"?" を使って逆方向に検索した場合は次のメッセージが表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	E384: search hit TOP without match for: forever ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@display
+E384: 上まで検索しましたが該当箇所はありません: forever
+@end display
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*27.3*	Offsets
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{27.3}
+@node オフセット
+@section オフセット
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+By default, the search command leaves the cursor positioned on the beginning
+of the pattern.  You can tell Vim to leave it some other place by specifying
+an offset.  For the forward search command "/", the offset is specified by
+appending a slash (/) and the offset: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+通常、検索コマンドを実行すると、パターンにヒットした場所の先頭にカーソルが移動します。オフセットを指定することで別の場所に移動することができます。前方検索コマンドの "@samp{/}" の場合、パターンの後ろに "@samp{/}" とオフセット値を指定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/default/2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/default/2
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This command searches for the pattern "default" and then moves to the
+beginning of the second line past the pattern.  Using this command on the
+paragraph above, Vim finds the word "default" in the first line.  Then the
+cursor is moved two lines down and lands on "an offset".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"default" というパターンが検索され、見つかった場所から二行下の行頭にカーソルが移動します。例えばこのコマンドで今読んでいる段落を検索すると、1 行目に "default" が見つかるので、カーソルはその 2 行下 (つまりこの行) に移動することになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the offset is a simple number, the cursor will be placed at the beginning
+of the line that many lines from the match.  The offset number can be positive
+or negative.  If it is positive, the cursor moves down that many lines; if
+negative, it moves up.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オフセットに数値を指定すると、マッチした行から指定した行数だけ移動した行の行頭にカーソルが移動します。オフセット値には負の数も指定できます。正の数ならカーソルが下に移動し、負の数なら上に移動します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CHARACTER OFFSETS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 文字オフセット
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "e" offset indicates an offset from the end of the match.  It moves the
+cursor onto the last character of the match.  The command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"e" はマッチした文字列の末尾を示すオフセットです。マッチした文字列の末尾にカーソルが移動します。次のように使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/const/e
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/const/e
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+puts the cursor on the "t" of "const".
+   From that position, adding a number moves forward that many characters.
+This command moves to the character just after the match: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"const" の "t" にカーソルが移動します。
+オフセットに数値を足すと、その場所からさらにカーソルを進めることができます。次のコマンドではマッチした文字列の後ろにカーソルが移動します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/const/e+1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/const/e+1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A positive number moves the cursor to the right, a negative number moves it to
+the left.  For example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+正の数ならカーソルが右に動き、負の数なら左に動きます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/const/e-1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/const/e-1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+moves the cursor to the "s" of "const".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"const" の "s" にカーソルが移動します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the offset begins with "b", the cursor moves to the beginning of the
+pattern.  That's not very useful, since leaving out the "b" does the same
+thing.  It does get useful when a number is added or subtracted.  The cursor
+then goes forward or backward that many characters.  For example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オフセットに "b" を指定すると、マッチした文字列の先頭に移動できます。これはオフセット指定無しの動作と同じなので単体では使い道はありません。数値を足したり引いたりしたい場合に使います。指定した数だけカーソルを前後に移動できます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/const/b+2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/const/b+2
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Moves the cursor to the beginning of the match and then two characters to the
+right.  Thus it lands on the "n".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マッチした文字列の先頭から 2 文字右にカーソルが移動します。つまり "n" の上です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+REPEATING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 繰り返し
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To repeat searching for the previously used search pattern, but with a
+different offset, leave out the pattern: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+直前に使った検索パターンを、別のオフセットを使って再検索したい場合は、パターン指定を省略します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/that
+	//e
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/that
+//e
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Is equal to: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは次の指定と同じです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/that/e
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/that/e
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To repeat with the same offset: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同じオフセットを使って再検索したい場合は:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"n" does the same thing.  To repeat while removing a previously used offset: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"n" と同じ動作になります。オフセット指定を無効にして再検索したい場合は次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	//
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+//
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SEARCHING BACKWARDS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 後方検索
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "?" command uses offsets in the same way, but you must use "?" to separate
+the offset from the pattern, instead of "/": >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"?" コマンドでも同じようにオフセットを指定できますが、パターンとオフセットを区切るのは "/" ではなく "?" になります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	?const?e-2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+?const?e-2
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "b" and "e" keep their meaning, they don't change direction with the use
+of "?".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"b" と "e" の意味は同じです。"?" を使う場合でも方向は逆になりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+START POSITION
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 検索開始位置
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When starting a search, it normally starts at the cursor position.  When you
+specify a line offset, this can cause trouble.  For example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+検索は通常、現在のカーソル位置から開始します。オフセットを指定するとうまくいかないときがあります。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/const/-2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/const/-2
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This finds the next word "const" and then moves two lines up.  If you
+use "n" to search again, Vim could start at the current position and find the same
+"const" match.  Then using the offset again, you would be back where you started.
+You would be stuck!
+   It could be worse: Suppose there is another match with "const" in the next
+line.  Then repeating the forward search would find this match and move two
+lines up.  Thus you would actually move the cursor back!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@samp{const}" を検索してその 2 行上に移動します。"n" を使って再検索すると、その場所から検索を開始して同じ場所の "@samp{const}" がヒットします。そして、再びオフセットが適用されて元の場所に戻ってきます。まったく移動できません。
+次の行に "@samp{const}" があった場合はもっとおかしなことになります。検索を実行すると次の行がヒットして、その 2 行上にカーソルが移動するので、カーソルが逆方向に移動してしまうのです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you specify a character offset, Vim will compensate for this.  Thus the
+search starts a few characters forward or backward, so that the same match
+isn't found again.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+文字オフセットを使った場合はそうなりません。オフセット指定の分だけ検索開始位置がずれるので、同じものが再びヒットすることはありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*27.4*	Matching multiple times
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{27.4}
+@node 繰り返しマッチ
+@section 繰り返しマッチ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "*" item specifies that the item before it can match any number of times.
+Thus: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ある文字を任意の数だけマッチさせたい場合は "*" を使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/a*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/a*
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+matches "a", "aa", "aaa", etc.  But also "" (the empty string), because zero
+times is included.
+   The "*" only applies to the item directly before it.  Thus "ab*" matches
+"a", "ab", "abb", "abbb", etc.  To match a whole string multiple times, it
+must be grouped into one item.  This is done by putting "\(" before it and
+"\)" after it.  Thus this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは "a" でも "aa" でも "aaa" でもマッチします。0 回というのも任意の数に含まれるので "" (空文字列) もマッチします。
+"*" は直前の文字に対してだけ適用されます。"ab*" なら "a"、"ab"、"abb"、"abbb" などがマッチします。単語を繰り返したい場合は、その単語をグループにまとめなければなりません。"@samp{\(}" と "@samp{\)}" で単語を囲んでください。次のように使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/\(ab\)*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/\(ab\)*
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Matches: "ab", "abab", "ababab", etc.  And also "".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"ab"、"abab"、"ababab"、"" などにマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To avoid matching the empty string, use "\+".  This makes the previous item
+match one or more times. >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+空文字列にマッチさせたくない場合は "@samp{\+}" を使います。直前の文字が一つ以上あるときだけマッチするようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/ab\+
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/ab\+
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Matches "ab", "abb", "abbb", etc.  It does not match "a" when no "b" follows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"ab"、"abb"、"abbb" などにマッチします。"b" が後ろに付いていない "a" にはマッチしません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To match an optional item, use "\=".  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+0 または 1 つの文字にマッチさせたい場合は "\=" を使います。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/folders\=
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/folders\=
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Matches "folder" and "folders".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"folder" と "folders" がマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SPECIFIC COUNTS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 回数指定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To match a specific number of items use the form "\{n,m}".  "n" and "m" are
+numbers.  The item before it will be matched "n" to "m" times |inclusive|.
+Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特定の数だけ文字をマッチさせるには "\@{n,m@}" を使います。"n" と "m" に数字を指定します。直前の文字が "n" から "m" の数だけ連続している場合にマッチします。
+例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/ab\{3,5}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/ab\@{3,5@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+matches "abbb", "abbbb" and "abbbbb".
+  When "n" is omitted, it defaults to zero.  When "m" is omitted it defaults
+to infinity.  When ",m" is omitted, it matches exactly "n" times.
+Examples:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"abbb"、"abbbb"、"abbbbb" にマッチします。
+"n" を省略した場合は 0 が使われます。"m" が省略された場合は繰り返し回数は無制限になります。",m" を省略した場合は、正確に "n" 回の繰り返しにマッチします。
+例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	pattern		match count ~
+	\{,4}		0, 1, 2, 3 or 4
+	\{3,}		3, 4, 5, etc.
+	\{0,1}		0 or 1, same as \=
+	\{0,}		0 or more, same as *
+	\{1,}		1 or more, same as \+
+	\{3}		3
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .3 .6
+@item @tab pattern @tab match count
+@item @tab \@{,4@} @tab 0, 1, 2, 3 or 4
+@item @tab \@{3,@} @tab 3, 4, 5, etc.
+@item @tab \@{0,1@} @tab 0 or 1 (\= と同じ)
+@item @tab \@{0,@} @tab 0 以上 (* と同じ)
+@item @tab \@{1,@} @tab 1 以上 (\+ と同じ)
+@item @tab \@{3@} @tab 3
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MATCHING AS LITTLE AS POSSIBLE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 最短一致
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The items so far match as many characters as they can find.  To match as few
+as possible, use "\{-n,m}".  It works the same as "\{n,m}", except that the
+minimal amount possible is used.
+   For example, use: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+今まで説明した繰り返し指定は、可能な限りたくさんの文字列にマッチしようとします。できるだけ少ない回数だけマッチさせるには "\@{-n,m@}" を使います。動作は "\@{n,m@}" とほとんど同じですが、最短一致が使われます。
+例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/ab\{-1,3}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/ab\@{-1,3@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Will match "ab" in "abbb".  Actually, it will never match more than one b,
+because there is no reason to match more.  It requires something else to force
+it to match more than the lower limit.
+   The same rules apply to removing "n" and "m".  It's even possible to remove
+both of the numbers, resulting in "\{-}".  This matches the item before it
+zero or more times, as few as possible.  The item by itself always matches
+zero times.  It is useful when combined with something else.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"abbbb" の中の "ab" だけがマッチします。一つの "b" にマッチするだけで条件を満たすので、二つ目以降の "b" には絶対にマッチしません。後ろに他のパターンが続いているなら最小回数以上の文字にもマッチします。
+"n" と "m" を省略した場合も同じルールが適用されます。両方の数字を省略して "\@{-@}" とすることもできます。これは直前の文字が 0 回以上繰り返されている場合に最小の数だけマッチします。単体で使った場合は常に 0 回にマッチします。他のパターンと組み合わせて使うと便利です。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/a.\{-}b
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/a.\@{-@}b
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This matches "axb" in "axbxb".  If this pattern would be used: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"axbxb" の中の "axb" にマッチします。次のパターンを使った場合は:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/a.*b
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/a.*b
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It would try to match as many characters as possible with ".*", thus it
+matches "axbxb" as a whole.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+".*" は可能な限り多くの文字にマッチするので "axbxb" 全体がマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*27.5*	Alternatives
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{27.5}
+@node 選択肢
+@section 選択肢
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "or" operator in a pattern is "\|".  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パターンの中で "or" (または) を指定するには "@samp{\|}" を使います。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/foo\|bar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/foo\|bar
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This matches "foo" or "bar".  More alternatives can be concatenated: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"foo" と "bar" のどちらかがマッチします。複数の選択肢を指定できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/one\|two\|three
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/one\|two\|three
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Matches "one", "two" and "three".
+   To match multiple times, the whole thing must be placed in "\(" and "\)": >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"one"、"two"、"three" のどれかにマッチします。
+複数回マッチさせるには、全体を "@samp{\(}" と "@samp{\)}" で囲みます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/\(foo\|bar\)\+
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/\(foo\|bar\)\+
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This matches "foo", "foobar", "foofoo", "barfoobar", etc.
+   Another example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"foo"、"foobar"、"foofoo"、"barfoobar" などにマッチします。
+もう一つの例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/end\(if\|while\|for\)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/end\(if\|while\|for\)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This matches "endif", "endwhile" and "endfor".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"endif"、"endwhile"、"endfor" にマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A related item is "\&".  This requires that both alternatives match in the
+same place.  The resulting match uses the last alternative.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@samp{\&}" も似たような条件指定です。指定された選択肢がすべて同じ場所でマッチします。マッチ結果としては最後の選択肢が使われます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/forever\&...
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/forever\&...
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This matches "for" in "forever".  It will not match "fortuin", for example.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"forever" の "for" にマッチします。"fortuin" にはマッチしません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*27.6*	Character ranges
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{27.6}
+@node 文字範囲
+@section 文字範囲
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To match "a", "b" or "c" you could use "/a\|b\|c".  When you want to match all
+letters from "a" to "z" this gets very long.  There is a shorter method: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"a"、"b"、"c" のどれかにマッチさせるには "/a\|b\|c" が使えます。しかし "a" から "z" までの文字をマッチさせようとするとパターンが長くなってしまいます。簡単な方法があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/[a-z]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/[a-z]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The [] construct matches a single character.  Inside you specify which
+characters to match.  You can include a list of characters, like this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@samp{[]} は一つの文字にマッチします。マッチさせたい文字を @samp{[]} の中に指定します。次のようにして文字を一つずつ指定することもできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/[0123456789abcdef]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/[0123456789abcdef]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will match any of the characters included.  For consecutive characters
+you can specify the range.  "0-3" stands for "0123".  "w-z" stands for "wxyz".
+Thus the same command as above can be shortened to: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+指定された文字の中から一つがマッチします。文字が連続している場合は文字範囲を指定できます。例えば "0-3" は "0123" という意味です。"w-z" は "wxyz" という意味になります。上記の例は次のように短くできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/[0-9a-f]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/[0-9a-f]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To match the "-" character itself make it the first or last one in the range.
+These special characters are accepted to make it easier to use them inside a
+[] range (they can actually be used anywhere in the search pattern):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+文字 "@samp{-}" 自体をマッチさせたい場合は @samp{[]} の中の一番最初か最後に書いてください。@samp{[]} の中では以下の特殊文字が使えます (これらは @samp{[]} の中でなくても使えます):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	\e	<Esc>
+	\t	<Tab>
+	\r	<CR>
+	\b	<BS>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .4 .5
+@item \e @tab <Esc>
+@item \t @tab <Tab>
+@item \r @tab <CR>
+@item \b @tab <BS>
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are a few more special cases for [] ranges, see |/[]| for the whole
+story.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@samp{[]} の中では他にも特殊な指定方法が使えます。詳細は |/[]| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+COMPLEMENTED RANGE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 文字範囲の補集合
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To avoid matching a specific character, use "^" at the start of the range.
+The [] item then matches everything but the characters included.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マッチして欲しくない文字を指定したい場合は、文字範囲の先頭に "^" を指定します。すると、指定した文字以外の文字がマッチするようになります。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/"[^"]*"
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/"[^"]*"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	 "	  a double quote
+	  [^"]	  any character that is not a double quote
+	      *	  as many as possible
+	       "  a double quote again
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .2 .7
+@item @tab " @tab ダブルクォート
+@item @tab [^"] @tab ダブルクォート以外の文字が
+@item @tab * @tab 可能な限りたくさん
+@item @tab " @tab ダブルクォート
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This matches "foo" and "3!x", including the double quotes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"foo" や "3!x" がマッチします (ダブルクォートもマッチに含まれる)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+PREDEFINED RANGES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 定義済み文字範囲
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A number of ranges are used very often.  Vim provides a shortcut for these.
+For example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一般的な文字範囲はあらかじめ定義されています。
+例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/\a
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/\a
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Finds alphabetic characters.  This is equal to using "/[a-zA-Z]".  Here are a
+few more of these:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+アルファベット文字が検索されます。これは "/[a-zA-Z]" と同じです。他にも次のようなものがあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	item	matches			equivalent ~
+	\d	digit			[0-9]
+	\D	non-digit		[^0-9]
+	\x	hex digit		[0-9a-fA-F]
+	\X	non-hex digit		[^0-9a-fA-F]
+	\s	white space		[ 	]     (<Tab> and <Space>)
+	\S	non-white characters	[^ 	]     (not <Tab> and <Space>)
+	\l	lowercase alpha		[a-z]
+	\L	non-lowercase alpha	[^a-z]
+	\u	uppercase alpha		[A-Z]
+	\U	non-uppercase alpha	[^A-Z]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .1 .4 .4
+@item @tab item @tab matches @tab equivalent
+@item @tab \d @tab 数字 @tab [0-9]
+@item @tab \D @tab 数字以外 @tab [^0-9]
+@item @tab \x @tab 16 進数の数字 @tab [0-9a-fA-F]
+@item @tab \X @tab 16 進数の数字以外 @tab [^0-9a-fA-F]
+@item @tab \s @tab 空白文字 @tab [      ]     (<Tab>か<Space>)
+@item @tab \S @tab 空白文字以外 @tab [^     ]     (<Tab>か<Space>以外)
+@item @tab \l @tab 小文字アルファベット @tab [a-z]
+@item @tab \L @tab 小文字アルファベット以外 @tab [^a-z]
+@item @tab \u @tab 大文字アルファベット @tab [A-Z]
+@item @tab \U @tab 大文字アルファベット以外 @tab [^A-Z]
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	Using these predefined ranges works a lot faster than the character
+	range it stands for.
+	These items can not be used inside [].  Thus "[\d\l]" does NOT work to
+	match a digit or lowercase alpha.  Use "\(\d\|\l\)" instead.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+定義済み文字範囲は普通の文字範囲よりも処理が高速です。
+これらのアイテムは @samp{[]} の中では指定できません。つまり "[\d\l]" と書いたとしても数字と小文字にはマッチしません。"\(\d\|\l\)" を使ってください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See |/\s| for the whole list of these ranges.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+定義済み文字範囲の一覧は |/\s| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*27.7*	Character classes
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{27.7}
+@node 文字クラス
+@section 文字クラス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The character range matches a fixed set of characters.  A character class is
+similar, but with an essential difference: The set of characters can be
+redefined without changing the search pattern.
+   For example, search for this pattern: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+文字範囲は特定の文字のセットにマッチします。文字クラスも似たようなものですが、検索パターンを変更せずに文字のセットを変更できるという違いがあります。
+例えば、次のパターンを検索します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/\f\+
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/\f\+
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "\f" items stands for file name characters.  Thus this matches a sequence
+of characters that can be a file name.
+   Which characters can be part of a file name depends on the system you are
+using.  On MS-Windows, the backslash is included, on Unix it is not.  This is
+specified with the 'isfname' option.  The default value for Unix is: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"\f" はファイル名に使える文字を表します。つまりこのパターンはファイル名として使える文字列にマッチします。
+どの文字がファイル名として使えるかはシステムによって異なります。MS-Windows では "\" が使えますが Unix では使えません。これは '@option{isfname}' オプションで指定されています。Unix の初期設定:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set isfname
+	isfname=@,48-57,/,.,-,_,+,,,#,$,%,~,=
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set isfname
+isfname=@,48-57,/,.,-,_,+,,,#,$,%,~,=
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For other systems the default value is different.  Thus you can make a search
+pattern with "\f" to match a file name, and it will automatically adjust to
+the system you are using it on.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他のシステムでは初期設定が変わります。ファイル名にマッチさせたいときに "\f" を使えば、そのパターンはいろいろなシステムで使えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	Actually, Unix allows using just about any character in a file name,
+	including white space.  Including these characters in 'isfname' would
+	be theoretically correct.  But it would make it impossible to find the
+	end of a file name in text.  Thus the default value of 'isfname' is a
+	compromise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Unix では空白などのどんな文字でもファイル名に使えます。'@option{isfname}' にそ	れらの文字を設定するのは理論的には正しいことです。しかしその場合、テキストの中からファイル名を切り出すのが困難になってしまいます。したがって、'@option{isfname}' の初期設定にはすべての文字は含まれていません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The character classes are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のような文字クラスがあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	item	matches				option ~
+	\i	identifier characters		'isident'
+	\I	like \i, excluding digits
+	\k	keyword characters		'iskeyword'
+	\K	like \k, excluding digits
+	\p	printable characters		'isprint'
+	\P	like \p, excluding digits
+	\f	file name characters		'isfname'
+	\F	like \f, excluding digits
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .2 .5 .2
+@item @tab item	@tab matches @tab option
+@item @tab \i @tab 識別子に使える文字 @tab '@option{isident}'
+@item @tab \I @tab \i から数字を抜いたもの @tab
+@item @tab \k @tab キーワードとなる文字 @tab '@option{iskeyword}'
+@item @tab \K @tab \k から数字を抜いたもの @tab
+@item @tab \p @tab 印刷可能文字 @tab '@option{isprint}'
+@item @tab \P @tab \p から数字を抜いたもの @tab
+@item @tab \f @tab ファイル名に使える文字 @tab '@option{isfname}'
+@item @tab \F @tab \f から数字を抜いたもの @tab
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*27.8*	Matching a line break
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{27.8}
+@node 改行記号にマッチ
+@section 改行記号にマッチ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim can find a pattern that includes a line break.  You need to specify where
+the line break happens, because all items mentioned so far don't match a line
+break.
+   To check for a line break in a specific place, use the "\n" item: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+改行を含んだパターンを検索することができます。改行の位置は明示的に指定する必要があります。今までに説明したパターンアイテムはどれも改行にマッチしません。
+改行の場所を指定するには "\n" を使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/the\nword
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/the\nword
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will match at a line that ends in "the" and the next line starts with
+"word".  To match "the word" as well, you need to match a space or a line
+break.  The item to use for it is "\_s": >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+行末が "the" で終わり、次の行の行頭が "word" になっている行がマッチします。"the word" にもマッチさせたい場合は、スペースと改行の両方をマッチさせる必要があります。それには "\_s" を使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/the\_sword
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/the\_sword
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To allow any amount of white space: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+間に空白をいくつでも挟めるようにするには:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/the\_s\+word
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/the\_s\+word
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This also matches when "the  " is at the end of a line and "   word" at the
+start of the next one.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは、行末が "@samp{the   }" で終わり、次の行の行頭が "@samp{   word}" で始まっているような場所にもマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"\s" matches white space, "\_s" matches white space or a line break.
+Similarly, "\a" matches an alphabetic character, and "\_a" matches an
+alphabetic character or a line break.  The other character classes and ranges
+can be modified in the same way by inserting a "_".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"\s" は空白にマッチします。"\_s" は空白と改行にマッチします。
+同様に、"\a" はアルファベットにマッチし、"\_a" はアルファベットと改行にマッチします。他の文字クラスや文字範囲も同様に、"_" を付けることによって改行にもマッチするようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Many other items can be made to match a line break by prepending "\_".  For
+example: "\_." matches any character or a line break.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他の多くのパターンアイテムも "\_" を付けることによって改行にマッチさせることができます。例えば、"\_." は改行を含めたすべての文字にマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	"\_.*" matches everything until the end of the file.  Be careful with
+	this, it can make a search command very slow.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"\_.*" はファイル末尾までのすべての文字がマッチします。検索コマンドの動作が遅くなるかもしれないので注意してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Another example is "\_[]", a character range that includes a line break: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"\_[]" を使うと文字範囲にも改行を追加できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/"\_[^"]*"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/"\_[^"]*"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This finds a text in double quotes that may be split up in several lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ダブルクォートで囲まれたテキストが検索されます。間には改行も含むことができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*27.9*	Examples
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{27.9}
+@node 例
+@section 例
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here are a few search patterns you might find useful.  This shows how the
+items mentioned above can be combined.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+便利そうな検索パターンをいくつか説明します。今までに説明したパターンをどのように使えばいいかを示します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+FINDING A CALIFORNIA LICENSE PLATE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec カリフォルニア州のナンバープレートを探す
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A sample license plate number is "1MGU103".  It has one digit, three uppercase
+letters and three digits.  Directly putting this into a search pattern: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"1MGU103" という番号を検索してみます。これは一つの数字、3 つの大文字アルファベット、3 つの数字、から成っています。そのままパターンに置き換えてみます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/\d\u\u\u\d\d\d
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/\d\u\u\u\d\d\d
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Another way is to specify that there are three digits and letters with a
+count: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同じものが並んでいる部分は回数指定に置き換えることができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/\d\u\{3}\d\{3}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/\d\u\@{3@}\d\@{3@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Using [] ranges instead: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@samp{[]} 指定を使うこともできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/[0-9][A-Z]\{3}[0-9]\{3}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/[0-9][A-Z]\@{3@}[0-9]\@{3@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Which one of these you should use?  Whichever one you can remember.  The
+simple way you can remember is much faster than the fancy way that you can't.
+If you can remember them all, then avoid the last one, because it's both more
+typing and slower to execute.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+あなたならどれを使いますか? どれでも覚えやすいものを使ってください。簡単に覚えられる方法を使う方がそうでないものを頑張って覚えるよりずっと効率がよくなります。最後の例は他より長くて実行速度も遅いので、どれでも覚えられるという場合は選択肢から外してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+FINDING AN IDENTIFIER
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 識別子を見つける
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In C programs (and many other computer languages) an identifier starts with a
+letter and further consists of letters and digits.  Underscores can be used
+too.  This can be found with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+C 言語 (などのほとんどの言語) では、識別子は英文字で始まってその後に英数字が続きます。アンダースコアも使えるかもしれません。次のパターンでそのような文字を検索できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/\<\h\w*\>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/\<\h\w*\>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"\<" and "\>" are used to find only whole words.  "\h" stands for "[A-Za-z_]"
+and "\w" for "[0-9A-Za-z_]".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"\<" と "\>" は単語全体をマッチさせるための指定です。"\h" は "[A-Za-z_]" と同じ意味で、"\w" は "[0-9A-Za-z_]" と同じ意味になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	"\<" and "\>" depend on the 'iskeyword' option.  If it includes "-",
+	for example, then "ident-" is not matched.  In this situation use: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"\<" と "\>" の動作は '@option{iskeyword}' オプションに依存します。例えば "-" が含まれている場合、上記パターンは "ident-" にマッチしません。次のパターンを使ってください:
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		/\w\@<!\h\w*\w\@!
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/\w\@@<!\h\w*\w\@@!
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	This checks if "\w" does not match before or after the identifier.
+	See |/\@<!| and |/\@!|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+識別子の前後の文字が "\w" にマッチしないかどうかをチェックしています。
+|/\@@<!| と |/\@@!| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+Next chapter: |usr_28.txt|  Folding
+
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+@end ifset

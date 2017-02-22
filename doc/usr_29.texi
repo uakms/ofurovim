@@ -1,0 +1,1653 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node プログラムの中を移動する, プログラムの編集, 折り畳み, 目次
+@unnumbered プログラムの中を移動する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*usr_29.txt*	For Vim version 8.0.  Last change: 2016 Feb 27
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			    Moving through programs
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{usr_29.txt}
+@cindex usr_29.txt
+@verbatim
+*usr_29.txt*	For Vim バージョン 8.0.  Last change: 2016 Feb 27
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			   プログラムの中を移動する
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The creator of Vim is a computer programmer.  It's no surprise that Vim
+contains many features to aid in writing programs.  Jump around to find where
+identifiers are defined and used.  Preview declarations in a separate window.
+There is more in the next chapter.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の作者はプログラマです。当然、プログラムを書くための機能が Vim にはたくさんあります。この章では、識別子が定義された場所、あるいは使われている場所にジャンプしたり、その定義を別のウィンドウでプレビューしたりする方法を説明します。プログラミング関連の機能は次章でも説明します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|29.1|	Using tags
+|29.2|	The preview window
+|29.3|	Moving through a program
+|29.4|	Finding global identifiers
+|29.5|	Finding local identifiers
+
+     Next chapter: |usr_30.txt|  Editing programs
+ Previous chapter: |usr_28.txt|  Folding
+Table of contents: |usr_toc.txt|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@menu
+* タグを使う::                 29.1
+* プレビューウィンドウ::       29.2
+* プログラムの中を移動する.::   29.3
+* グローバル識別子を検索する:: 29.4
+* ローカル識別子を検索する::   29.5
+@end menu
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*29.1*	Using tags
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{29.1}
+@node タグを使う
+@section タグを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+What is a tag?  It is a location where an identifier is defined.  An example
+is a function definition in a C or C++ program.  A list of tags is kept in a
+tags file.  This can be used by Vim to directly jump from any place to the
+tag, the place where an identifier is defined.
+   To generate the tags file for all C files in the current directory, use the
+following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+タグとは、識別子が定義された場所のことです。例えば C や C++ の関数定義がそうです。タグの一覧はタグファイルに保存されます。Vim はタグファイルに対応しており、タグ、つまり識別子の定義場所に直接ジャンプできます。
+カレントディレクトリのすべての C ファイルからタグを生成するには、次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	ctags *.c
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+ctags *.c
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"ctags" is a separate program.  Most Unix systems already have it installed.
+If you do not have it yet, you can find Exuberant ctags here:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"ctags" は Vim に付属してません。ほとんどの Unix システムには最初からインストールされています。持っていない場合は Exuberant ctags を使ってください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	http://ctags.sf.net ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@url{http://ctags.sf.net}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now when you are in Vim and you want to go to a function definition, you can
+jump to it by using the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim のコマンドラインから次のコマンドを実行すると関数定義にジャンプできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:tag startlist
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:tag startlist
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This command will find the function "startlist" even if it is in another file.
+   The CTRL-] command jumps to the tag of the word that is under the cursor.
+This makes it easy to explore a tangle of C code.  Suppose, for example, that
+you are in the function "write_block".  You can see that it calls
+"write_line".  But what does "write_line" do?  By placing the cursor on the
+call to "write_line" and pressing CTRL-], you jump to the definition of this
+function.
+   The "write_line" function calls "write_char".  You need to figure out what
+it does.  So you position the cursor over the call to "write_char" and press
+CTRL-].  Now you are at the definition of "write_char".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"startlist" 関数が検索されます。他のファイルで定義されていても検索可能です。@kbd{CTRL-]} コマンドを使うとカーソルの下の単語をタグとみなしてジャンプできます。これは複雑な C コードの探索を簡単にしてくれます。例えば、"write_block" 関数の中で "write_line" の呼び出しを見つけたとき、その関数の動作を知りたかったら、"write_line" にカーソルを合わせて @kbd{CTRL-]} を押せば、その関数の定義にジャンプできます。
+"write_line" の中で "write_char" が呼ばれていたら、その関数の動作も調べる必要があります。"write_char" にカーソルを合わせて @kbd{CTRL-]} を押しましょう。これで "write_char" の定義に移動できました。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	+-------------------------------------+
+	|void write_block(char **s; int cnt)  |
+	|{				      |
+	|   int i;			      |
+	|   for (i = 0; i < cnt; ++i)	      |
+	|      write_line(s[i]);	      |
+	|}	    |			      |
+	+-----------|-------------------------+
+		    |
+	     CTRL-] |
+		    |	 +----------------------------+
+		    +--> |void write_line(char *s)    |
+			 |{			      |
+			 |   while (*s != 0)	      |
+			 |	write_char(*s++);     |
+			 |}	  |		      |
+			 +--------|-------------------+
+				  |
+			   CTRL-] |
+				  |    +------------------------------------+
+				  +--> |void write_char(char c)		    |
+				       |{				    |
+				       |    putchar((int)(unsigned char)c); |
+				       |}				    |
+				       +------------------------------------+
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
++-------------------------------------+
+|void write_block(char **s; int cnt)  |
+|{                                    |
+|   int i;                            |
+|   for (i = 0; i < cnt; ++i)         |
+|      write_line(s[i]);              |
+|}          |                         |
++-----------|-------------------------+
+            |
+     CTRL-] |
+            |    +----------------------------+
+            +--> |void write_line(char *s)    |
+                 |{                           |
+                 |   while (*s != 0)          |
+                 |      write_char(*s++);     |
+                 |}       |                   |
+                 +--------|-------------------+
+                          |
+                   CTRL-] |
+                          |    +------------------------------------+
+                          +--> |void write_char(char c)             |
+                               |{                                   |
+                               |    putchar((int)(unsigned char)c); |
+                               |}                                   |
+                               +------------------------------------+
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ":tags" command shows the list of tags that you traversed through:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+":tags" コマンドで移動経路を確認できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:tags
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:tags
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	  # TO tag	   FROM line  in file/text ~
+	  1  1 write_line	   8  write_block.c ~
+	  2  1 write_char	   7  write_line.c ~
+	> ~
+>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+# TO tag         FROM line  in file/text
+1  1 write_line          8  write_block.c
+2  1 write_char          7  write_line.c
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Now to go back.  The CTRL-T command goes to the preceding tag.  In the example
+above you get back to the "write_line" function, in the call to "write_char".
+   This command takes a count argument that indicates how many tags to jump
+back.  You have gone forward, and now back.  Let's go forward again.  The
+following command goes to the tag on top of the list: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+では元の場所に戻りましょう。@kbd{CTRL-T} で直前のタグに戻れます。上の例であれば、"write_line" 関数の中の "write_char" の呼び出しに戻ることになります。このコマンドはカウント指定を付けてジャンプする回数を指定できます。前方にジャンプして、そして戻ってくることができましたね。もう一度前方に移動してみましょう。次のコマンドでタグリストの前方に移動できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:tag
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:tag
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can prefix it with a count and jump forward that many tags.  For example:
+":3tag".  CTRL-T also can be preceded with a count.
+   These commands thus allow you to go down a call tree with CTRL-] and back
+up again with CTRL-T.  Use ":tags" to find out where you are.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドの前にカウント指定を付けてジャンプする回数を指定できます。例えば "@command{:3tag}" のように使います。@kbd{CTRL-T} も同様に回数指定できます。
+このように、@kbd{CTRL-]} をで呼び出しをたどり、@kbd{CTRL-T}でさかのぼることができます。"@command{:tags}" コマンドで現在地を確認できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SPLIT WINDOWS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec ウィンドウを分割する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ":tag" command replaces the file in the current window with the one
+containing the new function.  But suppose you want to see not only the old
+function but also the new one?  You can split the window using the ":split"
+command followed by the ":tag" command.  Vim has a shorthand command that does
+both: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:tag}" コマンドはカレントウィンドウを使ってジャンプ先のファイルを表示します。しかし現在の関数とジャンプ先の関数を同時に表示したいこともあると思います。"@command{:split}" コマンドでウィンドウを分割してから "@command{:tag}" コマンドを使うという方法もありますが、専用の短縮コマンドが用意されています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:stag tagname
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:stag tagname
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To split the current window and jump to the tag under the cursor use this
+command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カーソルの下の単語にタグジャンプするときにウィンドウを分割したい場合は次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	CTRL-W ]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+CTRL-W ]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If a count is specified, the new window will be that many lines high.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カウント指定を付けて新しいウィンドウの高さを指定できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MORE TAGS FILES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 複数のタグファイルを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you have files in many directories, you can create a tags file in each of
+them.  Vim will then only be able to jump to tags within that directory.
+   To find more tags files, set the 'tags' option to include all the relevant
+tags files.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルが複数のディレクトリに分れている場合、ディレクトリ毎にタグファイルを作ることもできますが、その方法だとタグファイルと同じディレクトリのファイルにしかジャンプできません。
+タグファイルが複数ある場合は '@option{tags}' オプションを設定して、関連するすべてのタグファイルが検索されるようにしてください。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set tags=./tags,./../tags,./*/tags
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set tags=./tags,./../tags,./*/tags
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This finds a tags file in the same directory as the current file, one
+directory level higher and in all subdirectories.
+   This is quite a number of tags files, but it may still not be enough.  For
+example, when editing a file in "~/proj/src", you will not find the tags file
+"~/proj/sub/tags".  For this situation Vim offers to search a whole directory
+tree for tags files.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カレントファイルと同じディレクトリ、その 1 つ上のディレクトリ、すべてのサブディレクトリからタグファイルが検索されます。
+これでかなり多くのタグファイルが使えるようになりましたが、まだ十分ではないかもしれません。例えば "~/proj/src" を編集しているときに "~/proj/sub/tags" を見つけることができません。そのような場合はディレクトリツリー全体を検索するように設定します。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set tags=~/proj/**/tags
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set tags=~/proj/**/tags
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ONE TAGS FILE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+タグファイルを一つだけ使う
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When Vim has to search many places for tags files, you can hear the disk
+rattling.  It may get a bit slow.  In that case it's better to spend this
+time while generating one big tags file.  You might do this overnight.
+   This requires the Exuberant ctags program, mentioned above.  It offers an
+argument to search a whole directory tree: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+たくさんの場所からタグファイルを検索しているときは、ハードディスクがガリガリと音を立てるのが聞こえると思います。これは効率が良くありません。そんなときは少し時間を掛けて 1 つの巨大なタグファイルを生成するのがベストです。寝ている間にでもやってしまうといいでしょう。
+それには上述した Exuberant ctags が必要です。このプログラムにはディレクトリツリー全体を検索するためのオプションがあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	cd ~/proj
+	ctags -R .
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+cd ~/proj
+ctags -R .
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The nice thing about this is that Exuberant ctags recognizes various file
+types.  Thus this doesn't work just for C and C++ programs, also for Eiffel
+and even Vim scripts.  See the ctags documentation to tune this.
+   Now you only need to tell Vim where your big tags file is: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Exuberant ctags のいいところは、いろんなファイルタイプを認識してくれるところです。C や C++ だけでなく Effiel や Vim script も処理できます。詳しくは ctags のドキュメントを参照してください。
+これで、巨大なタグファイルを 1 つだけ指定するだけでよくなりました:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set tags=~/proj/tags
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set tags=~/proj/tags
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MULTIPLE MATCHES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+定義の重複
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When a function is defined multiple times (or a method in several classes),
+the ":tag" command will jump to the first one.  If there is a match in the
+current file, that one is used first.
+   You can now jump to other matches for the same tag with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同じ名前の関数が何度も定義されている場合、あるいは複数のクラスで同名のメソッドが定義されている場合、"@command{:tag}" コマンドは最初に見つかったタグにジャンプします。カレントファイル内にタグがある場合はそれが優先されます。
+タグが重複している場合は次のコマンドで別のタグにジャンプできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:tnext
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:tnext
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Repeat this to find further matches.  If there are many, you can select which
+one to jump to: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もう一度実行するとさらに別のタグにジャンプできます。タグがたくさんある場合は次のコマンドでタグを選択できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:tselect tagname
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:tselect tagname
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will present you with a list of choices:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このような選択画面が表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	  # pri kind tag	       file ~
+	  1 F	f    mch_init	       os_amiga.c ~
+		       mch_init() ~
+	  2 F	f    mch_init	       os_mac.c ~
+		       mch_init() ~
+	  3 F	f    mch_init	       os_msdos.c ~
+		       mch_init(void) ~
+	  4 F	f    mch_init	       os_riscos.c ~
+		       mch_init() ~
+	Enter nr of choice (<CR> to abort):  ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+  # pri kind tag               file
+  1 F   f    mch_init          os_amiga.c
+               mch_init()
+  2 F   f    mch_init          os_mac.c
+              mch_init()
+  3 F   f    mch_init          os_msdos.c
+              mch_init(void)
+  4 F   f    mch_init          os_riscos.c
+              mch_init()
+Enter nr of choice (<CR> to abort):
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can now enter the number (in the first column) of the match that you would
+like to jump to.  The information in the other columns give you a good idea of
+where the match is defined.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+(行頭の) 番号を入力してジャンプしたい場所を選択してください。他の列にはタグの場所を示すヒントが表示されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To move between the matching tags, these commands can be used:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のコマンドで他の重複タグに移動できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:tfirst			go to first match
+	:[count]tprevious	go to [count] previous match
+	:[count]tnext		go to [count] next match
+	:tlast			go to last match
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .4 .5
+@item @tab :tfirst @tab go to first match
+@item @tab :[count]tprevious @tab go to [count] previous match
+@item @tab :[count]tnext @tab go to [count] next match
+@item @tab :tlast @tab go to last match
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If [count] is omitted then one is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[count] を省略すると 1 が使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+GUESSING TAG NAMES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec タグ名の推測
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Command line completion is a good way to avoid typing a long tag name.  Just
+type the first bit and press <Tab>: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドライン補完を使うと長いタグ名の入力が簡単になります。最初の数文字を入力してから <Tab> キーを押してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:tag write_<Tab>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:tag write_<Tab>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You will get the first match.  If it's not the one you want, press <Tab> until
+you find the right one.
+   Sometimes you only know part of the name of a function.  Or you have many
+tags that start with the same string, but end differently.  Then you can tell
+Vim to use a pattern to find the tag.
+   Suppose you want to jump to a tag that contains "block".  First type
+this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初にマッチしたタグが補完されます。それが意図したタグでない場合は、目的のタグが見つかるまで @key{<Tab>} キーを押してください。
+関数名の一部しか知らない場合や、同じ文字で始まるタグ (後半だけが違っている) がたくさんある場合は、パターンを使ってタグを検索できます。例えば、名前に "block" が含まれているタグにジャンプする場合は、まず次のように入力します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:tag /block
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:tag /block
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now use command line completion: press <Tab>.  Vim will find all tags that
+contain "block" and use the first match.
+   The "/" before a tag name tells Vim that what follows is not a literal tag
+name, but a pattern.  You can use all the items for search patterns here.  For
+example, suppose you want to select a tag that starts with "write_": >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そして、コマンドライン補完を使います。@key{<Tab>} キーを押してください。"block" を含むタグが検索され、最初にマッチしたタグが使われます。
+タグ名の前に "/" を付けると、続くタグ名はそのまま使われず、パターンとして解釈されます。検索パターンと同じ機能がすべて使えます。例えば、"write_" で始まるタグを選択したい場合は次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:tselect /^write_
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:tselect /^write_
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "^" specifies that the tag starts with "write_".  Otherwise it would also
+be found halfway a tag name.  Similarly "$" at the end makes sure the pattern
+matches until the end of a tag.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初の "^" はタグ名が "write_" で始まることを示しています。"^" がない場合はタグ名の途中にもマッチしてしまいます。同様に、"$" を最後に付けるとタグ名の末尾にマッチするようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+A TAGS BROWSER
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec タグブラウザー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Since CTRL-] takes you to the definition of the identifier under the cursor,
+you can use a list of identifier names as a table of contents.  Here is an
+example.
+   First create a list of identifiers (this requires Exuberant ctags): >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@kbd{CTRL-]} を使うとカーソルの下にある識別子の定義にジャンプできますが、これを利用すると、識別子の一覧を目次として使うことができます。例を示します。まず識別子の一覧を作ります (Exuberant ctags が必要です)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	ctags --c-types=f -f functions *.c
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+ctags --c-types=f -f functions *.c
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now start Vim without a file, and edit this file in Vim, in a vertically split
+window: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そして Vim をファイル指定なしで起動し、作成したファイルを縦分割ウィンドウで開きます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim
+	:vsplit functions
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+vim
+:vsplit functions
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The window contains a list of all the functions.  There is some more stuff,
+but you can ignore that.  Do ":setlocal ts=99" to clean it up a bit.
+   In this window, define a mapping: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウにはすべての関数の一覧が表示されています。関数以外の名前も含まれているかもしれませんが、それは無視してください。"@command{:setlocal ts=99}" を実行して表示を見やすくします。
+このウィンドウで、次のマップを定義します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:nnoremap <buffer> <CR> 0ye<C-W>w:tag <C-R>"<CR>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:nnoremap <buffer> <CR> 0ye<C-W>w:tag <C-R>"<CR>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Move the cursor to the line that contains the function you want to go to.
+Now press <Enter>.  Vim will go to the other window and jump to the selected
+function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+表示したい関数の行に移動して @key{<Enter>} を押すと、カーソルが他のウィンドウに移動して、選択した関数にジャンプします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+RELATED ITEMS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 関連項目
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To make case in tag names be ignored, you can set 'ignorecase' while leaving
+'tagcase' as "followic", or set 'tagcase' to "ignore".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+タグ名の大文字と小文字を無視する場合には、'@option{tagcase}' を "@var{ignore}" に設定するか、'@option{tagcase}' を "@var{followic}" のまま変更せず '@option{ignorecase}' をオンに設定してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'tagbsearch' option tells if the tags file is sorted or not.  The default
+is to assume a sorted tags file, which makes a tags search a lot faster, but
+doesn't work if the tags file isn't sorted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{tagbsearch}' オプションにはタグファイルがソートされているかどうかを設定します。初期設定ではソート済みに設定されています。これはタグの検索を高速に実行できますが、ソートされていないタグファイルを扱えなくなります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'taglength' option can be used to tell Vim the number of significant
+characters in a tag.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{taglength}' オプションはタグの識別に使う文字数を指定するのに使います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Cscope is a free program.  It does not only find places where an identifier is
+declared, but also where it is used.  See |cscope|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+cscope はフリーのプログラムです。識別子の定義場所を探すだけでなく、それが使われている場所も検索できます。|cscope| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*29.2*	The preview window
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{29.2}
+@node プレビューウィンドウ
+@section プレビューウィンドウ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you edit code that contains a function call, you need to use the correct
+arguments.  To know what values to pass you can look at how the function is
+defined.  The tags mechanism works very well for this.  Preferably the
+definition is displayed in another window.  For this the preview window can be
+used.
+   To open a preview window to display the function "write_char": >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コードの中で関数を呼び出すときには、その引数を正確に把握する必要があります。引数の意味は関数の定義を見ればわかります。タグの仕組みを使えば簡単に確認できますが、できれば別のウィンドウに定義を表示したいところです。それにはプレビューウィンドウを使います。
+次のようにすると "write_char" 関数をプレビューウィンドウで表示できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:ptag write_char
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:ptag write_char
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will open a window, and jumps to the tag "write_char".  Then it takes you
+back to the original position.  Thus you can continue typing without the need
+to use a CTRL-W command.
+   If the name of a function appears in the text, you can get its definition
+in the preview window with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウが開いて "write_char" タグにジャンプします。カーソルの位置は動かないので @kbd{CTRL-W} コマンドを使って戻る必要はありません。
+テキストの中に関数名がある場合は、次のコマンドでその定義をプレビューウィンドウで表示できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	CTRL-W }
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+CTRL-W @}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There is a script that automatically displays the text where the word under
+the cursor was defined.  See |CursorHold-example|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カーソルの下にある単語の定義場所を自動的に表示してくれるスクリプトもあります。|CursorHold-example|参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To close the preview window use this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プレビューウィンドウを閉じるには次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:pclose
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:pclose
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To edit a specific file in the preview window, use ":pedit".  This can be
+useful to edit a header file, for example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プレビューウィンドウでファイルを開きたい場合は "@command{:pedit}" を使います。例えばヘッダーファイルを表示するような場合に便利です:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:pedit defs.h
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:pedit defs.h
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Finally, ":psearch" can be used to find a word in the current file and any
+included files and display the match in the preview window.  This is
+especially useful when using library functions, for which you do not have a
+tags file.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最後に "@command{:psearch}" コマンドを紹介します。カレントファイルおよびインクルードされているファイルから単語を検索して、ヒットした場所をプレビューウィンドウで表示できます。これは例えば、ライブラリ関数を使っていて、それ用のタグファイルを作っていないときに使います。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:psearch popen
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:psearch popen
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will show the "stdio.h" file in the preview window, with the function
+prototype for popen():
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@file{stdio.h}" がプレビューウィンドウで開き、popen() 関数のプロトタイプが表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	FILE	*popen __P((const char *, const char *)); ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+FILE	*popen __P((const char *, const char *)); ~
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can specify the height of the preview window, when it is opened, with the
+'previewheight' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プレビューウィンドウの高さは '@option{previewheight}' オプションで設定できます (最初に開いたときに使われる)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*29.3*	Moving through a program
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{29.3}
+@node プログラムの中を移動する.
+@section プログラムの中を移動する.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Since a program is structured, Vim can recognize items in it.  Specific
+commands can be used to move around.
+   C programs often contain constructs like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プログラムには構造があるので、構文を認識することが可能です。その情報を利用して移動するコマンドが用意されています。
+例えば C のプログラムには次のような構文がよく現れます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	#ifdef USE_POPEN ~
+	    fd = popen("ls", "r") ~
+	#else ~
+	    fd = fopen("tmp", "w") ~
+	#endif ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+#ifdef USE_POPEN
+    fd = popen("ls", "r")
+#else
+    fd = fopen("tmp", "w")
+#endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+But then much longer, and possibly nested.  Position the cursor on the
+"#ifdef" and press %.  Vim will jump to the "#else".  Pressing % again takes
+you to the "#endif".  Another % takes you to the "#ifdef" again.
+   When the construct is nested, Vim will find the matching items.  This is a
+good way to check if you didn't forget an "#endif".
+   When you are somewhere inside a "#if" - "#endif", you can jump to the start
+of it with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もっと長いかもしれませんし、入れ子になっていることもあります。"#ifdef" に移動して @key{%} を押すと "#else" にジャンプできます。もう一度 @key{%} を押すと "#endif" にジャンプします。さらに @key{%} を押すと "#ifdef" に戻ります。
+構文が入れ子になっている場合は、正しく対応しているものが検索されます。これは "#endif" の書き忘れがないかどうか確認するのに便利です。
+"#if" と "#endif" の間にカーソルがあるとき、次のコマンドで開始位置にジャンプできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	[#
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+[#
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are not after a "#if" or "#ifdef" Vim will beep.  To jump forward to
+the next "#else" or "#endif" use: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"#if" や "#ifdef" の中にいない場合は警告音が鳴ります。前方の "#else" または "#endif" に移動するには次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	]#
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+]#
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These two commands skip any "#if" - "#endif" blocks that they encounter.
+Example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのコマンドは、途中にある "#if" - "#endif" ブロックをスキップします。
+例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	#if defined(HAS_INC_H) ~
+	    a = a + inc(); ~
+	# ifdef USE_THEME ~
+	    a += 3; ~
+	# endif ~
+	    set_width(a); ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+#if defined(HAS_INC_H)
+    a = a + inc();
+# ifdef USE_THEME
+    a += 3;
+# endif
+    set_width(a);
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+With the cursor in the last line, "[#" moves to the first line.  The "#ifdef"
+- "#endif" block in the middle is skipped.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カーソルが最後の行にあるとき、"[#" で最初の行に移動できます。途中の "#ifdef" - "#endif" ブロックはスキップされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MOVING IN CODE BLOCKS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec コードブロック内の移動
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In C code blocks are enclosed in {}.  These can get pretty long.  To move to
+the start of the outer block use the "[[" command.  Use "][" to find the end.
+This assumes that the "{" and "}" are in the first column.
+   The "[{" command moves to the start of the current block.  It skips over
+pairs of {} at the same level.  "]}" jumps to the end.
+   An overview:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+C のコードブロックは @{@} で囲まれています。ブロックはかなり大きい場合もあります。アウターブロック (最も外側のブロック) の開始位置に移動するには "@command{[[}" コマンドを使います。"@command{][}" でブロックの末尾に移動できます。このコマンドは行頭の "@{" と"@}" をブロックの区切りとして認識します。
+"[@{" コマンドで現在のブロックの開始位置に移動できます。同じレベルの @{@} ペアはスキップされます。"]@}" で末尾に移動できます。
+つまりこのような動作です:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			function(int a)
+	   +->		{
+	   |		    if (a)
+	   |	   +->	    {
+	[[ |	   |		for (;;)	       --+
+	   |	   |	  +->	{			 |
+	   |	[{ |	  |	    foo(32);		 |     --+
+	   |	   |   [{ |	    if (bar(a))  --+	 | ]}	 |
+	   +--	   |	  +--		break;	   | ]}  |	 |
+		   |		}		 <-+	 |	 | ][
+		   +--		foobar(a)		 |	 |
+			    }			       <-+	 |
+			}				       <-+
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+                function(int a)
+   +->          {
+   |                if (a)
+   |       +->      {
+[[ |       |            for (;;)               --+
+   |       |      +->   {                        |
+   |    [{ |      |         foo(32);             |     --+
+   |       |   [{ |         if (bar(a))  --+     | ]}    |
+   +--     |      +--           break;     | ]}  |       |
+           |            }                <-+     |       | ][
+           +--          foobar(a)                |       |
+                     }                         <-+       |
+                }                                      <-+
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When writing C++ or Java, the outer {} block is for the class.  The next level
+of {} is for a method.  When somewhere inside a class use "[m" to find the
+previous start of a method.  "]m" finds the next start of a method.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+C++ や Java では、最も外側の @{@} ブロックはクラスです。その次のレベルの @{@} はメソッドです。クラスの中で "[m" を使うと、前のメソッドの開始位置に移動できます。"]m" で次のメソッドの開始位置に移動できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Additionally, "[]" moves backward to the end of a function and "]]" moves
+forward to the start of the next function.  The end of a function is defined
+by a "}" in the first column.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"[]" で前の関数の末尾に移動、"]]" で次の関数の開始位置に移動できます。行頭が "@}" で始まる行が関数の末尾として認識されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				int func1(void)
+				{
+					return 1;
+		  +---------->  }
+		  |
+	      []  |		int func2(void)
+		  |	   +->	{
+		  |    [[  |		if (flag)
+	start	  +--	   +--			return flag;
+		  |    ][  |		return 2;
+		  |	   +->	}
+	      ]]  |
+		  |		int func3(void)
+		  +---------->	{
+					return 3;
+				}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+                        int func1(void)
+                        {
+                                return 1;
+          +---------->  }
+          |
+      []  |             int func2(void)
+          |        +->  {
+          |    [[  |            if (flag)
+start     +--      +--                  return flag;
+          |    ][  |            return 2;
+          |        +->  }
+      ]]  |
+          |             int func3(void)
+          +---------->  {
+                                 return 3;
+                        }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Don't forget you can also use "%" to move between matching (), {} and [].
+That also works when they are many lines apart.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+()、@{@}、[] などの対括弧に移動する場合は "%" も使えることを忘れないでください。括弧の間に複数の行がはさまっていても機能します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MOVING IN BRACES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec カッコ内の移動
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "[(" and "])" commands work similar to "[{" and "]}", except that they
+work on () pairs instead of {} pairs.
+>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"[(" と "])" は "[@{" と "]@}" と機能は同じです。ただし、@{@} のペアではなく () のペアに対して動作します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				  [(
+<		    <--------------------------------
+			      <-------
+		if (a == b && (c == d || (e > f)) && x > y) ~
+				  -------------->
+			  --------------------------------> >
+				       ])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+                  [(
+    <--------------------------------
+              <-------
+if (a == b && (c == d || (e > f)) && x > y)
+                  -------------->
+          -------------------------------->
+                       ])
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+MOVING IN COMMENTS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec コメント内の移動
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To move back to the start of a comment use "[/".  Move forward to the end of a
+comment with "]/".  This only works for /* - */ comments.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コメントの開始位置に戻るには "[/" コマンドを使います。コメントの終了位置に移動するには "]/" を使います。これは /* - */ 形式のコメントのみ対応しています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	  +->	  +-> /*
+	  |    [/ |    * A comment about      --+
+       [/ |	  +--  * wonderful life.	| ]/
+	  |	       */		      <-+
+	  |
+	  +--	       foo = bar * 3;	      --+
+						| ]/
+		       /* a short comment */  <-+
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+   +->     +-> /*
+   |    [/ |    * A comment about      --+
+[/ |       +--  * wonderful life.        | ]/
+   |            */                     <-+
+   |
+   +--          foo = bar * 3;         --+
+                                         | ]/
+                /* a short comment */  <-+
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*29.4*	Finding global identifiers
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{29.4}
+@node グローバル識別子を検索する
+@section グローバル識別子を検索する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You are editing a C program and wonder if a variable is declared as "int" or
+"unsigned".  A quick way to find this is with the "[I" command.
+   Suppose the cursor is on the word "column".  Type: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+C プログラムを編集していて、変数の型が "int" なのか "unsigned" なのか分からなかったら、"[I" コマンドで簡単に確認できます。
+例えば、"column" という単語の上でコマンドを実行すると:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	[I
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+[I
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will list the matching lines it can find.  Not only in the current file,
+but also in all included files (and files included in them, etc.).  The result
+looks like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マッチした行が一覧表示されます。カレントファイルとインクルードファイル (さらにその中でインクルードされているファイル) が検索されます。検索結果は次のように表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	structs.h ~
+	 1:   29     unsigned     column;    /* column number */ ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+structs.h
+ 1:   29     unsigned     column;    /* column number */
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The advantage over using tags or the preview window is that included files are
+searched.  In most cases this results in the right declaration to be found.
+Also when the tags file is out of date.  Also when you don't have tags for the
+included files.
+   However, a few things must be right for "[I" to do its work.  First of all,
+the 'include' option must specify how a file is included.  The default value
+works for C and C++.  For other languages you will have to change it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+インクルードファイルも検索されるという点が、タグやプレビューウィンドウを使った検索よりも便利です。たいていは正しい定義場所が見つかります。タグファイルが更新されていなくても、インクルードファイル用のタグファイルがなくても機能します。
+ただし、"[I" が動作するためには少し条件があります。ファイルのインクルードを認識するために、'@option{include}' オプションが正しく設定されていなければなりません。初期設定は C と C++ 用に設定されているので、他の言語では設定を変更する必要があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+LOCATING INCLUDED FILES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec インクルードファイルの場所
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   Vim will find included files in the places specified with the 'path'
+option.  If a directory is missing, some include files will not be found.  You
+can discover this with this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+インクルードファイルは '@option{path}' オプションに設定された場所から検索されます。設定に含まれていないディレクトリがあると、いくつかのインクルードファイルは検出できないかもしれません。次のコマンドで検出できないファイルを確認できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:checkpath
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:checkpath
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It will list the include files that could not be found.  Also files included
+by the files that could be found.  An example of the output:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+検出できなかったインクルードファイルの一覧が表示されます。インクルードファイルの中のインクルードも検査されます。次のような結果が表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	--- Included files not found in path --- ~
+	<io.h> ~
+	vim.h --> ~
+	  <functions.h> ~
+	  <clib/exec_protos.h> ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+--- Included files not found in path ---
+<io.h>
+vim.h -->
+  <functions.h>
+  <clib/exec_protos.h>
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "io.h" file is included by the current file and can't be found.  "vim.h"
+can be found, thus ":checkpath" goes into this file and checks what it
+includes.  The "functions.h" and "clib/exec_protos.h" files, included by
+"vim.h" are not found.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カレントファイルでインクルードしている "io.h" が見つかっていません。"vim.h" は見つかったので "@command{:checkpath}" はさらにそのファイルのインクルードも検査しました。そして、"functions.h" と "clib/exec_protos.h" が見つかりませんでした。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	Vim is not a compiler.  It does not recognize "#ifdef" statements.
+	This means every "#include" statement is used, also when it comes
+	after "#if NEVER".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Vim はコンパイラではないので、"#ifdef" ステートメントを認識しません。つまり、"#if NEVER" で囲まれている "#include" ステートメントもすべて検査されます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To fix the files that could not be found, add a directory to the 'path'
+option.  A good place to find out about this is the Makefile.  Look out for
+lines that contain "-I" items, like "-I/usr/local/X11".  To add this directory
+use: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この問題を修正するには '@option{path}' オプションにディレクトリを追加します。Makefile を見れば必要なディレクトリがわかると思います。"-I/usr/local/X11" のように、"-I" が使われている行を調べてください。次のコマンドでディレクトリを追加できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set path+=/usr/local/X11
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set path+=/usr/local/X11
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When there are many subdirectories, you can use the "*" wildcard.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+サブディレクトリがたくさんある場合はワイルドカード "*" が使えます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set path+=/usr/*/include
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set path+=/usr/*/include
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This would find files in "/usr/local/include" as well as "/usr/X11/include".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これで "/usr/local/include/" や "/usr/X11/include/" などが検索対象になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When working on a project with a whole nested tree of included files, the "**"
+items is useful.  This will search down in all subdirectories.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ディレクトリツリーのあちこちにインクルードファイルがあるようなプロジェクトでは "**" が便利です。すべてのサブディレクトリを検索できます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set path+=/projects/invent/**/include
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set path+=/projects/invent/**/include
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will find files in the directories:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば次のようなディレクトリからファイルが検索されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/projects/invent/include ~
+	/projects/invent/main/include ~
+	/projects/invent/main/os/include ~
+	etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+/projects/invent/include
+/projects/invent/main/include
+/projects/invent/main/os/include
+etc.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are even more possibilities.  Check out the 'path' option for info.
+   If you want to see which included files are actually found, use this
+command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+設定方法は他にもあります。'@option{path}' オプションの説明を確認してください。
+実際に検出されたインクルードファイルを確認したい場合は次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:checkpath!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:checkpath!
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You will get a (very long) list of included files, the files they include, and
+so on.  To shorten the list a bit, Vim shows "(Already listed)" for files that
+were found before and doesn't list the included files in there again.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+インクルードされているファイルの (長大な) 一覧が表示されます。出力を短くするため、同じファイルを見つけた場合は "(Already listed)" とだけ表示し、その中のインクルードファイルは表示しません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+JUMPING TO A MATCH
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 定義場所にジャンプする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"[I" produces a list with only one line of text.  When you want to have a
+closer look at the first item, you can jump to that line with the command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"[I" はマッチした行だけを一覧表示します。その周辺を見たい場合は、次のコマンドで最初のマッチにジャンプします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	[<Tab>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+[<Tab>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can also use "[ CTRL-I", since CTRL-I is the same as pressing <Tab>.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@key{<Tab>} と @kbd{CTRL-I} は同じなので "@command{[ CTRL-I}" でも構いません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The list that "[I" produces has a number at the start of each line.  When you
+want to jump to another item than the first one, type the number first: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"[I" で表示される一覧には番号が付いています。最初の項目以外の場所にジャンプしてい場合は番号を指定してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	3[<Tab>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+3[<Tab>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Will jump to the third item in the list.  Remember that you can use CTRL-O to
+jump back to where you started from.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+3 番目のマッチにジャンプします。@kbd{CTRL-O} で元の場所に戻れることをお忘れなく。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+RELATED COMMANDS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 関連コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	[i		only lists the first match
+	]I		only lists items below the cursor
+	]i		only lists the first item below the cursor
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .1 .8
+@item @tab [i @tab 最初のマッチだけ表示
+@item @tab ]I @tab カーソルより後ろのマッチを一覧表示
+@item @tab ]i @tab カーソルより後ろの最初のマッチだけ表示
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+FINDING DEFINED IDENTIFIERS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 定義済識別子の検索
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "[I" command finds any identifier.  To find only macros, defined with
+"#define" use: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"[I" コマンドはすべての識別子を検索します。"#define" で定義されたマクロだけを検索するには次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	[D
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+[D
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Again, this searches in included files.  The 'define' option specifies what a
+line looks like that defines the items for "[D".  You could change it to make
+it work with other languages than C or C++.
+   The commands related to "[D" are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドもインクルードファイルが検索対象になります。検索される行の書式は '@option{define}' オプションで指定します。C と C++ 以外の言語では設定を変更する必要があります。
+次のような "[D" に関連したコマンドがあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	[d		only lists the first match
+	]D		only lists items below the cursor
+	]d		only lists the first item below the cursor
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .1 .8
+@item @tab [d @tab only lists the first match
+@item @tab ]D @tab only lists items below the cursor
+@item @tab ]d @tab only lists the first item below the cursor
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*29.5*	Finding local identifiers
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{29.5}
+@node ローカル識別子を検索する
+@section ローカル識別子を検索する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "[I" command searches included files.  To search in the current file only,
+and jump to the first place where the word under the cursor is used: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"[I" コマンドはインクルードファイルの中も検索します。カーソルの下の単語が最初に現れる場所を、カレントファイルの中だけ検索し、その場所にジャンプするには、次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	gD
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+gD
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Hint: Goto Definition.  This command is very useful to find a variable or
+function that was declared locally ("static", in C terms).  Example (cursor on
+"counter"):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{Hint:} Goto Definition (定義に移動)。このコマンドはローカル (C 用語で "static") に定義された変数や関数を検索するのに便利です。例 (カーソルは "counter" の上):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	   +->   static int counter = 0;
+	   |
+	   |     int get_counter(void)
+	gD |     {
+	   |	     ++counter;
+	   +--	     return counter;
+		 }
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+   +->   static int counter = 0;
+   |
+   |     int get_counter(void)
+gD |     {
+   |         ++counter;
+   +--       return counter;
+         }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To restrict the search even further, and look only in the current function,
+use this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さらに検索範囲を狭めて、現在の関数の中だけ検索したい場合は次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	gd
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+gd
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will go back to the start of the current function and find the first
+occurrence of the word under the cursor.  Actually, it searches backwards to
+an empty line above a "{" in the first column.  From there it searches forward
+for the identifier.  Example (cursor on "idx"):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在の関数の開始位置から最初に単語が使われている場所が検索されます。実際に、行頭が "@{" で始まる行を後方検索して、その上の空行まで戻り、そこから識別子を前方検索しています。例 (カーソルは "idx" の上):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		int find_entry(char *name)
+		{
+	   +->	    int idx;
+	   |
+	gd |	    for (idx = 0; idx < table_len; ++idx)
+	   |		if (strcmp(table[idx].name, name) == 0)
+	   +--		    return idx;
+		}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+        int find_entry(char *name)
+        {
+   +->      int idx;
+   |
+gd |        for (idx = 0; idx < table_len; ++idx)
+   |            if (strcmp(table[idx].name, name) == 0)
+   +--              return idx;
+        }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+Next chapter: |usr_30.txt|  Editing programs
+
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+@end ifset

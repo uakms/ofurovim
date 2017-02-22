@@ -1,35 +1,51 @@
 PRG = /usr/local/bin/texi2any
 HTML_OPT = --html --no-split --css-include=style.css
-ORIG = $(HOME)/dev/vim/runtime/
+ORIG = $(HOME)/dev/vim/runtime
 TRAN = ./
+
+REFMANUALS = \
+	doc/help.texi \
+	doc/quickref.texi \
+	doc/uganda.texi \
+	doc/sponsor.texi \
+	doc/intro.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
-	doc/usr_01.texi \
-	doc/usr_02.texi \
-	doc/usr_03.texi \
-	doc/usr_04.texi \
-	doc/usr_05.texi \
-	doc/usr_06.texi \
-	doc/usr_07.texi \
-	doc/usr_08.texi \
-	doc/usr_09.texi \
-	doc/usr_10.texi \
-	doc/usr_11.texi \
-	doc/usr_12.texi
+	doc/usr_01.texi doc/usr_02.texi doc/usr_03.texi doc/usr_04.texi \
+	doc/usr_05.texi doc/usr_06.texi doc/usr_07.texi doc/usr_08.texi \
+	doc/usr_09.texi doc/usr_10.texi doc/usr_11.texi doc/usr_12.texi \
+	doc/usr_20.texi doc/usr_21.texi doc/usr_22.texi doc/usr_23.texi \
+	doc/usr_24.texi doc/usr_25.texi doc/usr_26.texi doc/usr_27.texi \
+	doc/usr_28.texi doc/usr_29.texi doc/usr_30.texi doc/usr_31.texi \
+	doc/usr_32.texi
 
-html: htmls/usrman.html ;
-pdf: pdfs/userman.pdf ;
+usrhtml: htmls/usrman.html ;
+refhtml: htmls/refman.html ;
+usrpdf: pdfs/userman.pdf ;
+refpdf: pdfs/refrman.pdf ;
 
 htmls/usrman.html: $(USRMANUALS)
-	${PRG} ${HTML_OPT} -o $@ $<
+	@${PRG} ${HTML_OPT} -o $@ $<
+
+htmls/refman.html: $(REFMANUALS)
+	@${PRG} ${HTML_OPT} -o $@ $<
 
 pdfs/userman.pdf: $(USRMANUALS)
 	@ PDFTEX=luatex texi2pdf -c -o $@ $<
 
+pdfs/refrman.pdf: $(REFMANUALS)
+	@ PDFTEX=luatex texi2pdf -c -o $@ $<
+
 diffja:
-	@ ORIG_DOC=$(ORIG) ruby utils/diff_trans.rb $(USRMANUALS)
+	@cp $(ORIG)/doc/usr_24.txt $(ORIG)/doc/org_usr_24.txt
+	@iconv -f LATIN1 -t UTF8 $(ORIG)/doc/org_usr_24.txt > $(ORIG)/doc/usr_24.txt
+	@ ORIG_DOC=$(ORIG) ruby utils/diff_trans.rb $(USRMANUALS) $(REFMANUALS)
+	@mv $(ORIG)/doc/org_usr_24.txt $(ORIG)/doc/usr_24.txt
+
+nvcheck:
+	@nvcheck doc/*.texi
 
 clean:
-	@rm htmls/*
-	@rm pdfs/*
+	@rm -r htmls/*
+	@rm -r pdfs/*

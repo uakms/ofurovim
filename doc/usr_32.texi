@@ -1,0 +1,529 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node undo ツリー, , GUI を活用する, 目次
+@unnumbered undo ツリー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*usr_32.txt*	For Vim version 8.0.  Last change: 2010 Jul 20
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			      The undo tree
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{usr_32.txt}
+@cindex usr_32.txt
+@verbatim
+*usr_32.txt*	For Vim バージョン 8.0.  Last change: 2010 Jul 20
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			      undo ツリー
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Vim provides multi-level undo.  If you undo a few changes and then make a new
+change you create a branch in the undo tree.  This text is about moving
+through the branches.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim にはマルチレベルの undo 機能があります。変更を undo してから新しい変更を加えると、undo ツリーに枝が作成されます。このテキストでは、枝を移動する方法を説明します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|32.1|	Undo up to a file write
+|32.2|	Numbering changes
+|32.3|	Jumping around the tree
+|32.4|	Time travelling
+
+     Next chapter: |usr_40.txt|  Make new commands
+ Previous chapter: |usr_31.txt|  Exploiting the GUI
+Table of contents: |usr_toc.txt|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@menu
+* ファイル保存時への undo:: 32.1
+* 変更の番号付け::          32.2
+* ツリーを飛び回る::        32.3
+* タイムトラベル::          32.4
+@end menu
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*32.1*	Undo up to a file write
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{32.1}
+@node ファイル保存時への undo
+@section ファイル保存時への undo
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Sometimes you make several changes, and then discover you want to go back to
+when you have last written the file.  You can do that with this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+いくつかの変更を加えた後で、やっぱり最後にファイルを保存したときの状態に戻りたいなと思うようなことがときどきあります。そんなときは次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:earlier 1f
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:earlier 1f
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "f" stands for "file" here.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"f" は "file" を意味します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can repeat this command to go further back in the past.  Or use a count
+different from 1 to go back faster.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドを繰り返し実行してさらに過去に戻ることができます。あるいは、1 より大きなカウント指定をすればもっと素早く過去に戻れます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you go back too far, go forward again with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+戻り過ぎてしまったときは次のコマンドで進むことができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:later 1f
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:later 1f
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that these commands really work in time sequence.  This matters if you
+made changes after undoing some changes.  It's explained in the next section.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+このコマンドは時間を基準にして移動します。これは undo した後で何か変更を加えていた場合に重要になってきます。それについては次の節で説明します。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Also note that we are talking about text writes here.  For writing the undo
+information in a file see |undo-persistence|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ここではテキストの保存の話をしています。undo 情報のファイルへの保存については |undo-persistence| を参照してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*32.2*	Numbering changes
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{32.2}
+@node 変更の番号付け
+@section 変更の番号付け
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In section |02.5| we only discussed one line of undo/redo.  But it is also
+possible to branch off.  This happens when you undo a few changes and then
+make a new change.  The new changes become a branch in the undo tree.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+セクション |@ref{02.5, , 02.5}| では一本道の undo/redo について説明しましたが、実は、undo/redo は分岐することができます。変更を undo してから新しい変更を加えると、新しい変更が undo ツリーの枝になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Let's start with the text "one".  The first change to make is to append
+" too".  And then move to the first 'o' and change it into 'w'.  We then have
+two changes, numbered 1 and 2, and three states of the text:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"one" というテキストから始めましょう。最初に " too" を追加します。次に @samp{too} の 1 つ目の 'o' を 'w' に変更します。これで、2 つの変更 (番号 1、2) と、テキストの 3 つの状態ができました。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		one ~
+		 |
+	      change 1
+		 |
+	      one too ~
+		 |
+	      change 2
+		 |
+	      one two ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+  one
+   |
+change 1
+   |
+one too
+   |
+change 2
+   |
+one two
+@end verbatim
+
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If we now undo one change, back to "one too", and change "one" to "me" we
+create a branch in the undo tree:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+1 つだけ変更を undo して "one too" の状態に戻り、"one" を "me" に変更します。すると、undo ツリーに枝が作成されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		one ~
+		 |
+	      change 1
+		 |
+	      one too ~
+	      /     \
+	 change 2  change 3
+	    |	      |
+	 one two    me too ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+       one
+        |
+     change 1
+        |
+     one too
+     /     \
+change 2  change 3
+   |         |
+one two    me too
+@end verbatim
+
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can now use the |u| command to undo.  If you do this twice you get to
+"one".  Use |CTRL-R| to redo, and you will go to "one too".  One more |CTRL-R|
+takes you to "me too".  Thus undo and redo go up and down in the tree, using
+the branch that was last used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この状態で |u| コマンドを使って undo してみてください。2 回 undo すると "one" に戻ります。|CTRL-R| で redo すると "one too" になります。もう 1 度 |CTRL-R| を実行すると "me too" になります。このように、undo/redo を実行すると、最後に使われた枝を上下に移動できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+What matters here is the order in which the changes are made.  Undo and redo
+are not considered changes in this context.  After each change you have a new
+state of the text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+重要なのは変更が作成される順番です。undo ツリーにおいては、undo と redo は変更とはみなされません。それぞれの変更の後にはテキストの新しい状態があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that only the changes are numbered, the text shown in the tree above has
+no identifier.  They are mostly referred to by the number of the change above
+it.  But sometimes by the number of one of the changes below it, especially
+when moving up in the tree, so that you know which change was just undone.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+変更にだけ番号が付きます。上図のツリーに示されている "テキスト" の部分には番号が付きません。テキストは、その上の変更番号によって参照されます。ただし、ツリーを上に移動したときなどは、下の変更番号によって参照されます (どの変更が undo されたかわかるように)。
+@end quotation
+@{訳注: 例えば上図の "one too" から undo/redo したときのメッセージ:
+@multitable @columnfractions .25 .35 .35
+@item undo したとき: @tab 1 change; before #1 @tab <- 下の番号が使われる
+@item redo したとき: @tab 1 change; after #3 @tab
+@end multitable
+@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*32.3*	Jumping around the tree
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{32.3}
+@node ツリーを飛び回る
+@section ツリーを飛び回る
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+So how do you get to "one two" now?  You can use this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さて、"one two" の状態を得るにはどうすればいいでしょうか。次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:undo 2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:undo 2
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The text is now "one two", you are below change 2.  You can use the |:undo|
+command to jump to below any change in the tree.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストが "one two" (change 2 の下) になります。|:undo| コマンドを使うと、指定した変更の下にジャンプできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now make another change: change "one" to "not":
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しい変更を加えてみましょう。"one" を "not" に変更します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		one ~
+		 |
+	      change 1
+		 |
+	      one too ~
+	      /     \
+	 change 2  change 3
+	    |	      |
+	 one two    me too ~
+	    |
+	 change 4
+	    |
+	 not two ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+       one
+        |
+     change 1
+        |
+     one too
+     /     \
+change 2  change 3
+   |         |
+one two    me too
+   |
+change 4
+   |
+not two
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now you change your mind and want to go back to "me too".  Use the |g-|
+command.  This moves back in time.  Thus it doesn't walk the tree upwards or
+downwards, but goes to the change made before.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+何か考えが変わって "me too" に戻りたくなった場合は、|g-| コマンドを使います。このコマンドは時間を基準にして戻ります。ツリーを上下に移動するのではなく、直前の変更に移動します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can repeat |g-| and you will see the text change:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|g-| を繰り返し実行すると、テキストは次のように変化します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	me too ~
+	one two ~
+	one too ~
+	one ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+me too
+one two
+one too
+one
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use |g+| to move forward in time:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|g+| を使えば時間を進めることができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	one ~
+	one too ~
+	one two ~
+	me too ~
+	not two ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+one
+one too
+one two
+me too
+not two
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Using |:undo| is useful if you know what change you want to jump to.  |g-| and
+|g+| are useful if you don't know exactly what the change number is.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジャンプしたい変更番号が分かっているときには |:undo| が便利です。番号がよく分からないときには |g-| と |g+| が便利です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can type a count before |g-| and |g+| to repeat them.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|g-| と |g+| にカウント指定を付けると実行回数を指定できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*32.4*	Time travelling
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{32.4}
+@node タイムトラベル
+@section タイムトラベル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you have been working on text for a while the tree grows to become big.
+Then you may want to go to the text of some minutes ago.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+しばらくテキストを編集すると、ツリーは大きく成長します。そのとき、数分前のテキストに戻りたいと思うことがあるかもしれません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To see what branches there are in the undo tree use this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+undo ツリーにどのような枝があるかを確認するには次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:undolist
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:undolist
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	number changes  time ~
+	     3       2  16 seconds ago
+	     4       3  5 seconds ago
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .2 .2 .5
+@item @tab number @tab changes @tab time
+@item @tab 3 @tab 2 @tab 16 seconds ago
+@item @tab 4 @tab 3 @tab 5 seconds ago
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here you can see the number of the leaves in each branch and when the change
+was made.  Assuming we are below change 4, at "not two", you can go back ten
+seconds with this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+枝に付いている葉の数と、変更された時間が表示されます。今、change 4 の下 ("not two") にいるとして、10 秒前に戻るには次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:earlier 10s
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:earlier 10s
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Depending on how much time you took for the changes you end up at a certain
+position in the tree.  The |:earlier| command argument can be "m" for minutes,
+"h" for hours and "d" for days.  To go all the way back use a big number: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+指定した時間だけ戻り、ツリーの特定の位置へ移動できます。|:earlier| コマンドの引数は "m" で分、"h" で時間、"d" で日を指定することもできます。すべての変更を元に戻したい場合は大きな値を指定してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:earlier 100d
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:earlier 100d
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To travel forward in time again use the |:later| command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+時間を進めるには |:later| コマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:later 1m
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:later 1m
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The arguments are "s", "m" and "h", just like with |:earlier|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:earlier| と同様に、"s"、"m"、"h" で単位を指定します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want even more details, or want to manipulate the information, you can
+use the |undotree()| function.  To see what it returns: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+undo 情報の詳細を見たい、触りたい、という場合は |undotree()| 関数を使ってください。関数が何を返すかは次のコマンドで確認できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:echo undotree()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:echo undotree()
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+Next chapter: |usr_40.txt|  Make new commands
+
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+@end ifset

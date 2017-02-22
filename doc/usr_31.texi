@@ -1,0 +1,732 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node GUI を活用する, undo ツリー, プログラムの編集, 目次
+@unnumbered GUI を活用する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*usr_31.txt*	For Vim version 8.0.  Last change: 2007 May 08
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			      Exploiting the GUI
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{usr_31.txt}
+@cindex usr_31.txt
+*usr_31.txt*	For Vim バージョン 8.0.  Last change: 2007 May 08
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+				GUI を活用する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Vim works well in a terminal, but the GUI has a few extra items.  A file
+browser can be used for commands that use a file.  A dialog to make a choice
+between alternatives.  Use keyboard shortcuts to access menu items quickly.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は端末でも動作しますが、GUI 版の Vim にはさらに追加機能があります。ファイルブラウザーを使ってファイルを選択したり、操作を確認するためのダイアログを表示したり、キーボードショートカットを使ってメニューにアクセスしたりできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|31.1|	The file browser
+|31.2|	Confirmation
+|31.3|	Menu shortcuts
+|31.4|	Vim window position and size
+|31.5|	Various
+
+     Next chapter: |usr_32.txt|  The undo tree
+ Previous chapter: |usr_30.txt|  Editing programs
+Table of contents: |usr_toc.txt|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@menu
+* ファイルブラウザー.::          31.1
+* 操作確認::                     31.2
+* メニューのショートカット::     31.3
+* Vim ウィンドウの位置とサイズ:: 31.4
+* その他.::                      31.5
+@end menu
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*31.1*	The file browser
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{31.1}
+@node ファイルブラウザー.
+@section ファイルブラウザー.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When using the File/Open... menu you get a file browser.  This makes it easier
+to find the file you want to edit.  But what if you want to split a window to
+edit another file?  There is no menu entry for this.  You could first use
+Window/Split and then File/Open..., but that's more work.
+   Since you are typing most commands in Vim, opening the file browser with a
+typed command is possible as well.  To make the split command use the file
+browser, prepend "browse": >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[ファイル]/[開く...] メニューを実行するとファイルブラウザーが表示されます。ファイルブラウザーを使えば簡単にファイルを探すことができます。しかし例えば、[ウィンドウを分割して開く] などのメニューは用意されていません。[ウィンドウ]/[分割] を実行してから [ファイル]/[開く...] を実行することもできますが、面倒ですよね。他のコマンドと同様、ファイルブラウザーもコマンド入力で開くことができます。例えば、@command{split} コマンドに "browse" を付けることで、ファイルブラウザーを使うことができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:browse split
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:browse split
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Select a file and then the ":split" command will be executed with it.  If you
+cancel the file dialog nothing happens, the window isn't split.
+   You can also specify a file name argument.  This is used to tell the file
+browser where to start.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+選択したファイルが "@option{:split}" コマンドで開かれます。キャンセルボタンを押した場合は何も実行されず、ウィンドウも分割されません。引数にファイルを指定すると、ファイルブラウザーの初期ディレクトリとして使われます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:browse split /etc
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:browse split /etc
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The file browser will pop up, starting in the directory "/etc".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"/etc" ディレクトリでファイルブラウザーが開きます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ":browse" command can be prepended to just about any command that opens a
+file.
+   If no directory is specified, Vim will decide where to start the file
+browser.  By default it uses the same directory as the last time.  Thus when
+you used ":browse split" and selected a file in "/usr/local/share", the next
+time you use a ":browse" it will start in "/usr/local/share" again.
+   This can be changed with the 'browsedir' option.  It can have one of three
+values:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:browse}" コマンドはファイルを開くためのコマンドと組み合わせて使います。
+ディレクトリを指定しなかった場合は、適切なディレクトリが選択されます。初期設定では、最後に使ったディレクトリが使われます。例えば、"@command{:browse split}" で "@samp{/usr/local/share}" のファイルを開いた場合、次に "@command{:browse}" を使ったときは "@samp{/usr/local/share}" が使われます。
+この動作は '@option{browsedir}' オプションで変更できます。次の値を設定できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	last		Use the last directory browsed (default)
+	buffer		Use the same directory as the current buffer
+	current		use the current directory
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .3 .7
+@item @tab last @tab 最後に使ったディレクトリ (初期設定)
+@item @tab buffer @tab カレントバッファと同じディレクトリ
+@item @tab current @tab カレントディレクトリ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, when you are in the directory "/usr", editing the file
+"/usr/local/share/readme", then the command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、カレントディレクトリが "@samp{/usr}" で、"@samp{/usr/local/share/readme}" を開いているとき、次のコマンドを実行すると:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set browsedir=buffer
+	:browse edit
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set browsedir=buffer
+:browse edit
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Will start the browser in "/usr/local/share".  Alternatively: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@samp{/usr/local/share}" でブラウザーが開きます。次のように設定すると:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set browsedir=current
+	:browse edit
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set browsedir=current
+:browse edit
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Will start the browser in "/usr".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@samp{/usr}" で開きます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	To avoid using the mouse, most file browsers offer using key presses
+	to navigate.  Since this is different for every system, it is not
+	explained here.  Vim uses a standard browser when possible, your
+	system documentation should contain an explanation on the keyboard
+	shortcuts somewhere.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+大抵のファイルブラウザーではキーボードが使えるので、マウスを使わなくても操作できます。操作方法はシステム依存なのでここでは説明しません。Vim は (可能な限り) 標準のブラウザーを使用します。システムのドキュメントにキーボードショートカットの説明が載っているはずです。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you are not using the GUI version, you could use the file explorer window
+to select files like in a file browser.  However, this doesn't work for the
+":browse" command.  See |netrw-browse|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GUI を使っていない場合でも、ファイルエクスプローラーを使えばファイルブラウザーと同じようにファイルを選択できます。ただし、"@command{:browse}" コマンドは使えません。|netrw-browse| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*31.2*	Confirmation
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{31.2}
+@node 操作確認
+@section 操作確認
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim protects you from accidentally overwriting a file and other ways to lose
+changes.  If you do something that might be a bad thing to do, Vim produces an
+error message and suggests appending ! if you really want to do it.
+   To avoid retyping the command with the !, you can make Vim give you a
+dialog.  You can then press "OK" or "Cancel" to tell Vim what you want.
+   For example, you are editing a file and made changes to it.  You start
+editing another file with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルが上書きされたり変更が失われたりするような操作は、間違って実行してしまわないように保護されています。何かがマズいことになりそうなときは「本当にその操作を実行したい場合は @samp{!} を付けてください」というようなエラーメッセージが表示されます。同じコマンドを再度入力したくない場合は、ダイアログを使うと便利です。"OK" か "Cancel" を選ぶだけで動作を指示できます。
+例えば、ファイルを開いて変更を加えてから、次のコマンドで別のファイルを開きます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:confirm edit foo.txt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:confirm edit foo.txt
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will pop up a dialog that looks something like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すると、次のようなダイアログが表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	+-----------------------------------+
+	|				    |
+	|   ?	Save changes to "bar.txt"?  |
+	|				    |
+	|   YES   NO		 CANCEL     |
+	+-----------------------------------+
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
++-----------------------------------+
+|                                   |
+|   ?   Save changes to "bar.txt"?  |
+|                                   |
+|   YES   NO         CANCEL         |
++-----------------------------------+
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now make your choice.  If you do want to save the changes, select "YES".  If
+you want to lose the changes for ever: "NO".  If you forgot what you were
+doing and want to check what really changed use "CANCEL".  You will be back in
+the same file, with the changes still there.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルを保存したい場合は "YES" を選択します。変更を破棄したい場合は "NO" を選択します。戻って状態を確認したい場合は "CANCEL" を選択します。"CANCEL" を選択すると元のファイルに戻れます。変更は失われません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Just like ":browse", the ":confirm" command can be prepended to most commands
+that edit another file.  They can also be combined: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:browse}" と同様、"@command{:confirm}" もファイルを開くためのコマンドと組み合わせることができます。同時に使うこともできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:confirm browse edit
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:confirm browse edit
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will produce a dialog when the current buffer was changed.  Then it will
+pop up a file browser to select the file to edit.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カレントバッファが未保存ならダイアログが表示されます。そして、ファイルブラウザーが表示され、ファイルを選択できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	In the dialog you can use the keyboard to select the choice.
+	Typically the <Tab> key and the cursor keys change the choice.
+	Pressing <Enter> selects the choice.  This depends on the system
+	though.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ダイアログはキーボードで操作できます。一般的には、@key{<TAB>} キーと矢印キーで選択を変更し、@key{<Enter>} で決定します。操作方法はシステムにより異なります。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you are not using the GUI, the ":confirm" command works as well.  Instead
+of popping up a dialog, Vim will print the message at the bottom of the Vim
+window and ask you to press a key to make a choice. >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:conform}" コマンドは CUI 版の Vim でも使えます。ダイアログの代わりに Vim ウィンドウの下部にメッセージが表示されるので、キーを押して操作を選択してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:confirm edit main.c
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:confirm edit main.c
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	Save changes to "Untitled"? ~
+	[Y]es, (N)o, (C)ancel:  ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Save changes to "Untitled"?
+[Y]es, (N)o, (C)ancel:
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can now press the single key for the choice.  You don't have to press
+<Enter>, unlike other typing on the command line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+どれか一つのキーを押すと選択できます。コマンドラインでの入力とは違い、@key{<Enter>} を押す必要はありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*31.3*	Menu shortcuts
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{31.3}
+@node メニューのショートカット
+@section メニューのショートカット
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The keyboard is used for all Vim commands.  The menus provide a simple way to
+select commands, without knowing what they are called.  But you have to move
+your hand from the keyboard and grab the mouse.
+   Menus can often be selected with keys as well.  This depends on your
+system, but most often it works this way.  Use the <Alt> key in combination
+with the underlined letter of a menu.  For example, <A-w> (<Alt> and w) pops
+up the Window menu.
+   In the Window menu, the "split" item has the p underlined.  To select it,
+let go of the <Alt> key and press p.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+キーボードを使えばすべてのコマンドを実行できます。メニューは (複雑な) コマンドを簡単に使うための手段を提供しますが、キーボードから手を離してマウスを使わなければなりません。
+メニューはキーボードでも選択できます。キーボードが使えるかどうかはシステム依存ですが、大抵は大丈夫です。メニューを選択するには、メニューの下線付きの文字と @key{<Alt>} キーを組み合わせて使います。例えば、@kbd{<A-w>} (@key{<Alt>}とw) で [ウィンドウ] メニューが表示されます。
+[ウィンドウ] メニューの "分割(p)" アイテムは @samp{p} に下線が付いているので、@key{<Alt>} キーを押したまま @key{p} を押せば選択できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+After the first selection of a menu with the <Alt> key, you can use the cursor
+keys to move through the menus.  <Right> selects a submenu and <left> closes
+it.  <Esc> also closes a menu.  <Enter> selects a menu item.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@key{<Alt>} キーでメニューを表示した後は、カーソルキーを使ってメニューを選択できます。サブメニューは @key{<Right>} で開いて @key{<Left>} で閉じることができます。閉じるのは @key{<Esc>} でも可能です。@key{<Enter>} でメニューを実行します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There is a conflict between using the <Alt> key to select menu items, and
+using <Alt> key combinations for mappings.  The 'winaltkeys' option tells Vim
+what it should do with the <Alt> key.
+   The default value "menu" is the smart choice: If the key combination is a
+menu shortcut it can't be mapped.  All other keys are available for mapping.
+   The value "no" doesn't use any <Alt> keys for the menus.  Thus you must use
+the mouse for the menus, and all <Alt> keys can be mapped.
+   The value "yes" means that Vim will use any <Alt> keys for the menus.  Some
+<Alt> key combinations may also do other things than selecting a menu.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@key{<Alt>} キーはメニュー選択とキーマップの両方で使われるので操作が衝突します。@key{<Alt>} キーの動作は '@option{winaltkeys}' オプションで設定できます。
+初期設定は "@var{menu}" です。メニューのショートカットと同じキーはマップできませんが、他のキーはマップすることができます。
+設定を "@var{no}" にすると、@key{<Alt>} キーを使ってメニューを選択できなくなります。メニューを選択するにはマウスを使う必要がありますが、すべての @key{<Alt>} キーをマップできます。
+設定を "@var{yes}" にすると、@key{<Alt>} キーはメニューのために使われます。いくつかの @var{<Alt>} キー操作はメニュー選択以外の動作になることもあります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*31.4*	Vim window position and size
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{31.4}
+@node Vim ウィンドウの位置とサイズ
+@section Vim ウィンドウの位置とサイズ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To see the current Vim window position on the screen use: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のコマンドでスクリーン上の Vim ウィンドウの位置を確認できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:winpos
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:winpos
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will only work in the GUI.  The output may look like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドは GUI でのみ機能します。次のような出力が表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Window position: X 272, Y 103 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Window position: X 272, Y 103
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The position is given in screen pixels.  Now you can use the numbers to move
+Vim somewhere else.  For example, to move it to the left a hundred pixels: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+位置は画面のピクセル単位です。数値を指定して Vim ウィンドウを移動することもできます。例えば、左に 100 ピクセル移動するには次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:winpos 172 103
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:winpos 172 103
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Note:
+	There may be a small offset between the reported position and where
+	the window moves.  This is because of the border around the window.
+	This is added by the window manager.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+指定した位置と実際に移動した位置が少しずれることがあります。これはウィンドウの枠があるからです。ウィンドウマネージャーがずれを引き起こします。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use this command in your startup script to position the window at a
+specific position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドを起動スクリプトに書けば好きな位置でウィンドウを開くことができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The size of the Vim window is computed in characters.  Thus this depends on
+the size of the font being used.  You can see the current size with this
+command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim ウィンドウのサイズは文字数で計算されるので、実際の幅はフォントの大きさに依存します。次のコマンドで現在のサイズを確認できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set lines columns
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set lines columns
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To change the size set the 'lines' and/or 'columns' options to a new value: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+サイズを変更するには '@option{lines}' と '@option{columns}' を設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set lines=50
+	:set columns=80
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set lines=50
+:set columns=80
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Obtaining the size works in a terminal just like in the GUI.  Setting the size
+is not possible in most terminals.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+CUI 端末でもサイズを取得することができますが、ほとんどの端末ではサイズを変更できません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can start the X-Windows version of gvim with an argument to specify the
+size and position of the window: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+X-Windows 版の gvim では、ウィンドウの位置とサイズを起動引数で指定できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	gvim -geometry {width}x{height}+{x_offset}+{y_offset}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+gvim -geometry @{width@}x@{height@}+@{x_offset@}+@{y_offset@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{width} and {height} are in characters, {x_offset} and {y_offset} are in
+pixels.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{width@} と @{height@} は文字数です。@{x_offset@} と @{y_offset@} はピクセル数です。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	gvim -geometry 80x25+100+300
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+gvim -geometry 80x25+100+300
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*31.5*	Various
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{31.5}
+@node その他.
+@section その他.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use gvim to edit an e-mail message.  In your e-mail program you must
+select gvim to be the editor for messages.  When you try that, you will
+see that it doesn't work: The mail program thinks that editing is finished,
+while gvim is still running!
+   What happens is that gvim disconnects from the shell it was started in.
+That is fine when you start gvim in a terminal, so that you can do other work
+in that terminal.  But when you really want to wait for gvim to finish, you
+must prevent it from disconnecting.  The "-f" argument does this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+gvim はメールの編集にも使えます。そのためには、メーラーを設定して、gvim をエディタとして選択する必要があります。しかしそれだけではうまくいきません。gvim がまだ実行中にも関わらず、メーラーは、gvim が編集を終えたものと判断してしまいます。
+gvim が起動するとき、gvim はシェルから分離されます。これは、端末から gvim を起動したときに、gvim と端末を平行して使うことができるので便利です。gvim が終了するまで待機させたい場合は分離をしないようにする必要があります。それには "-f" 引数を使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	gvim -f file.txt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+gvim -f file.txt
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "-f" stands for foreground.  Now Vim will block the shell it was started
+in until you finish editing and exit.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"-f" は "foreground" (操作中) の意味です。Vim を終了するまでシェルがブロックされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+DELAYED START OF THE GUI
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec GUI の遅延スタート
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On Unix it's possible to first start Vim in a terminal.  That's useful if you
+do various tasks in the same shell.  If you are editing a file and decide you
+want to use the GUI after all, you can start it with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unix では gvim を vim として起動することができます。これはシェルの中だけで作業を完結したい場合に便利です。ファイルの編集中に GUI を使いたくなったら、次のコマンドで GUI を開始できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:gui
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:gui
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will open the GUI window and no longer use the terminal.  You can continue
+using the terminal for something else.  The "-f" argument is used here to run
+the GUI in the foreground.  You can also use ":gui -f".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GUI ウィンドウが開いて端末が開放されるので、同じ端末で他の作業を開始できます。"-f" 引数を指定するとフォアグラウンドで GUI を開始できます。"@command{:gui -f}" のように指定します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+THE GVIM STARTUP FILE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec gvim の起動ファイル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When gvim starts, it reads the gvimrc file.  That's similar to the vimrc file
+used when starting Vim.  The gvimrc file can be used for settings and commands
+that are only to be used when the GUI is going to be started.  For example,
+you can set the 'lines' option to set a different window size: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+gvim を起動すると、@file{gvimrc} ファイルが読み込まれます。これは Vim を起動したときに使われる @file{vimrc} ファイルのようなものです。@file{gvimrc} には、GUI を開始したときだけ使いたい設定やコマンドを記述します。例えば、'@option{lines}' オプションを設定してウィンドウのサイズを変更できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set lines=55
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set lines=55
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You don't want to do this in a terminal, since its size is fixed (except for
+an xterm that supports resizing).
+   The gvimrc file is searched for in the same locations as the vimrc file.
+Normally its name is "~/.gvimrc" for Unix and "$VIM/_gvimrc" for MS-Windows.
+The $MYGVIMRC environment variable is set to it, thus you can use this command
+to edit the file, if you have one: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末ではウィンドウサイズは固定なのでこの設定は必要ありません (サイズの変更をサポートしている xterm もありますが)。
+gvimrc は vimrc と同じ場所から検索されます。通常、Unix では "@file{~/.gvimrc}"、MS-Windows では "@file{$VIM/_gvimrc}" が使われます。
+@env{$MYGVIMRC} 環境変数に、読み込まれたファイルの名前が設定されるので、次のコマンドでそのファイルを開くことができます (ファイルが存在するなら): >
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:edit $MYGVIMRC
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:edit $MYGVIMRC
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   If for some reason you don't want to use the normal gvimrc file, you can
+specify another one with the "-U" argument: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+何らかの理由で通常の @file{gvimrc} を使いたくない場合は、"-U" 引数で他のファイルを指定できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	gvim -U thisrc ...
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+gvim -U thisrc ...
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+That allows starting gvim for different kinds of editing.  You could set
+another font size, for example.
+   To completely skip reading a gvimrc file: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+いつもと違う設定で gvim を起動できます。例えばフォントのサイズを変更するなど。@file{gvimrc} を読み込みたくない場合は次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	gvim -U NONE ...
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+gvim -U NONE ...
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+Next chapter: |usr_32.txt|  The undo tree
+
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+@end ifset

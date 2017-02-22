@@ -1,0 +1,1752 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node プログラムの編集, GUI を活用する, プログラムの中を移動する, 目次
+@unnumbered プログラムの編集
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*usr_30.txt*	For Vim version 8.0.  Last change: 2007 Nov 10
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			      Editing programs
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{usr_30.txt}
+@cindex usr_30.txt
+@verbatim
+*usr_30.txt*	For Vim バージョン 8.0.  Last change: 2007 Nov 10
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			       プログラムの編集
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Vim has various commands that aid in writing computer programs.  Compile a
+program and directly jump to reported errors.  Automatically set the indent
+for many languages and format comments.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プログラミングに役立つ機能が Vim にはたくさんあります。プログラムをコンパイルしてエラーが出た行にジャンプしたり、言語に合わせて自動的にインデントしたり、コメントを整形したりできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|30.1|	Compiling
+|30.2|	Indenting C files
+|30.3|	Automatic indenting
+|30.4|	Other indenting
+|30.5|	Tabs and spaces
+|30.6|	Formatting comments
+
+     Next chapter: |usr_31.txt|  Exploiting the GUI
+ Previous chapter: |usr_29.txt|  Moving through programs
+Table of contents: |usr_toc.txt|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@menu
+* コンパイル::             30.1
+* C 言語系インデント::     30.1
+* インデント設定の自動化:: 30.1
+* その他のインデント::     30.1
+* タブとスペース::         30.1
+* コメントの整形::         30.1
+@end menu
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*30.1*	Compiling
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{30.1}
+@node コンパイル
+@section コンパイル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim has a set of so called "quickfix" commands.  They enable you to compile a
+program from within Vim and then go through the errors generated and fix them
+(hopefully).  You can then recompile and fix any new errors that are found
+until finally your program compiles without any error.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim にはクイックフィックス (QuickFix) 機能があります。これは、Vim の中でプログラムをコンパイルして、エラーになった場所に移動し、エラーを修正するための機能です。そうして、正常にコンパイルできるまでコンパイルとエラー修正を繰り返します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The following command runs the program "make" (supplying it with any argument
+you give) and captures the results: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のコマンドは "make" を実行し、その出力を読み込みます (引数はそのまま渡されます):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:make {arguments}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:make @{arguments@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If errors were generated, they are captured and the editor positions you where
+the first error occurred.
+   Take a look at an example ":make" session.  (Typical :make sessions generate
+far more errors and fewer stupid ones.)  After typing ":make" the screen looks
+like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+エラーが発生するとそれが認識され、最初のエラーにカーソルが移動します。
+"@command{:make}" の使い方を実際に見てみましょう。(典型的な :make セッションはもっと多くのエラーあるいは少しのゴミを出力しますが) "@command{:make}" を実行すると次のような出力が画面に表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:!make | &tee /tmp/vim215953.err ~
+	gcc -g -Wall -o prog main.c sub.c ~
+	main.c: In function 'main': ~
+	main.c:6: too many arguments to function 'do_sub' ~
+	main.c: At top level: ~
+	main.c:10: parse error before '}' ~
+	make: *** [prog] Error 1 ~
+
+	2 returned ~
+	"main.c" 11L, 111C ~
+	(3 of 6): too many arguments to function 'do_sub' ~
+	Press ENTER or type command to continue ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:!make | &tee /tmp/vim215953.err
+gcc -g -Wall -o prog main.c sub.c
+main.c: In function 'main':
+main.c:6: too many arguments to function 'do_sub'
+main.c: At top level:
+main.c:10: parse error before '}'
+make: *** [prog] Error 1
+
+2 returned
+"main.c" 11L, 111C
+(3 of 6): too many arguments to function 'do_sub'
+Hit ENTER or type command to continue
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+From this you can see that you have errors in the file "main.c".  When you
+press <Enter>, Vim displays the file "main.c", with the cursor positioned on
+line 6, the first line with an error.  You did not need to specify the file or
+the line number, Vim knew where to go by looking in the error messages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"main.c" の中でエラーが発生していることが確認できると思います。@key{<Enter>} を押すと "main.c" ファイルが開き、6 行目 (最初のエラー) にカーソルが移動します。自分でファイルを開く必要はありません。Vim はエラーメッセージを認識できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		+---------------------------------------------------+
+		|int main()					    |
+		|{						    |
+		|	int i=3;				    |
+      cursor -> |	do_sub("foo");				    |
+		|	++i;					    |
+		|	return (0);				    |
+		|}						    |
+		|}						    |
+		| ~						    |
+		|(3 of 12): too many arguments to function 'do_sub' |
+		+---------------------------------------------------+
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+          +---------------------------------------------------+
+          |int main()                                         |
+          |{                                                  |
+          |       int i=3;                                    |
+cursor -> |       do_sub("foo");                              |
+          |       ++i;                                        |
+          |       return (0);                                 |
+          |}                                                  |
+          |}                                                  |
+          | ~                                                 |
+          |(3 of 12): too many arguments to function 'do_sub' |
+          +---------------------------------------------------+
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The following command goes to where the next error occurs: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドで次のエラーに移動できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:cnext
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:cnext
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim jumps to line 10, the last line in the file, where there is an extra '}'.
+   When there is not enough room, Vim will shorten the error message.  To see
+the whole message use: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カーソルが 10 行目に移動します。ファイルの最終行に余分な '@}' がありますね。長すぎるエラーメッセージは省略して表示されます。全部を表示するには次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:cc
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:cc
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can get an overview of all the error messages with the ":clist" command.
+The output looks like this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべてのエラーメッセージを表示するには "@command{:clist}" コマンドを使います。次のような出力が表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:clist
+<	3 main.c: 6:too many arguments to function 'do_sub' ~
+	5 main.c: 10:parse error before '}' ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:clist
+@end example
+@verbatim
+3 main.c: 6:too many arguments to function 'do_sub'
+5 main.c: 10:parse error before '}'
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Only the lines where Vim recognized a file name and line number are listed
+here.  It assumes those are the interesting lines and the rest is just boring
+messages.  However, sometimes unrecognized lines do contain something you want
+to see.  Output from the linker, for example, about an undefined function.
+To see all the messages add a "!" to the command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル名と行番号が認識された行だけが表示されますが、それは、重要なのはそのような行だけで、他の行は無駄なメッセージであると判断されるからです。しかし時には、認識されなかった行が重要な情報を含んでいることもあります。例えばリンカが未解決の関数をエラー表示した場合などです。すべてのメッセージを表示するにはコマンドに "!" を付けます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:clist!
+<	1 gcc -g -Wall -o prog main.c sub.c ~
+	2 main.c: In function 'main': ~
+	3 main.c:6: too many arguments to function 'do_sub' ~
+	4 main.c: At top level: ~
+	5 main.c:10: parse error before '}' ~
+	6 make: *** [prog] Error 1 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:clist!
+@end example
+@verbatim
+1 gcc -g -Wall -o prog main.c sub.c
+2 main.c: In function 'main':
+3 main.c:6: too many arguments to function 'do_sub'
+4 main.c: At top level:
+5 main.c:10: parse error before '}'
+6 make: *** [prog] Error 1
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will highlight the current error.  To go back to the previous error, use:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在のエラーは強調表示されます。前のエラーに戻るには次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:cprevious
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:cprevious
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Other commands to move around in the error list:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+エラーリストを移動するコマンドは他にもあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:cfirst		to first error
+	:clast		to last error
+	:cc 3		to error nr 3
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .4 .5
+@item @tab :cfirst @tab 最初のエラー
+@item @tab :clast @tab 最後のエラー
+@item @tab :cc 3 @tab 3つ目のエラー
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING ANOTHER COMPILER
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 他のコンパイラを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The name of the program to run when the ":make" command is executed is defined
+by the 'makeprg' option.  Usually this is set to "make", but Visual C++ users
+should set this to "nmake" by executing the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:make}" コマンドが実際に実行するプログラムは '@option{makeprg}' オプションで設定します。通常は "make" に設定されていますが、例えば Visual C++ を使う場合は "nmake" に設定する必要があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set makeprg=nmake
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set makeprg=nmake
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can also include arguments in this option.  Special characters need to
+be escaped with a backslash.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプションにはプログラムの引数も含めることができます。特殊文字はバックスラッシュでエスケープしてください。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set makeprg=nmake\ -f\ project.mak
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set makeprg=nmake\ -f\ project.mak
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can include special Vim keywords in the command specification.  The %
+character expands to the name of the current file.  So if you execute the
+command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プログラムの設定には特殊なキーワードが使えます。文字 % はカレントファイルの名前に展開されます。例えば次のように設定すると:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:set makeprg=make\ %:S
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set makeprg=make\ %:S
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you are editing main.c, then ":make" executes the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@file{main.c} を編集しているときに "@command{:make}" を実行すると次のコマンドが実行されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	make main.c
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+make main.c
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is not too useful, so you will refine the command a little and use the :r
+(root) modifier: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これ自体はそれほど便利ではありませんが、すこし変更して :r (root) 修飾子を使うとどうでしょう:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set makeprg=make\ %:r:S.o
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set makeprg=make\ %:r:S.o
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now the command executed is as follows: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これで、実行されるコマンドは次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	make main.o
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+make main.o
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+More about these modifiers here: |filename-modifiers|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+修飾子については |filename-modifiers| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+OLD ERROR LISTS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 古いエラーリスト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Suppose you ":make" a program.  There is a warning message in one file and an
+error message in another.  You fix the error and use ":make" again to check if
+it was really fixed.  Now you want to look at the warning message.  It doesn't
+show up in the last error list, since the file with the warning wasn't
+compiled again.  You can go back to the previous error list with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば "@command{:make}" を実行したときに、一つのファイルで警告メッセージが出て、他のファイルではエラーが出たとします。エラーを修正し、本当に直ったかどうかを確認するためにもう一度 "@command{:make}" を実行しました。さて、ここで先程の警告メッセージを確認しようとしても、エラーリストには警告メッセージありません。なぜなら、警告メッセージを出したファイルは再コンパイルされなかったからです。次のコマンドで古いエラーリストに戻ることができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:colder
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:colder
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Then use ":clist" and ":cc {nr}" to jump to the place with the warning.
+   To go forward to the next error list: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:clist}" と "@command{:cc @{nr@}}" を使って、警告が発生した場所にジャンプしましょう。
+次のコマンドで新しいエラーリストに戻れます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:cnewer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:cnewer
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim remembers ten error lists.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+全部で 10 個までのエラーリストを保持しておくことができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SWITCHING COMPILERS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 他のコンパイラを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You have to tell Vim what format the error messages are that your compiler
+produces.  This is done with the 'errorformat' option.  The syntax of this
+option is quite complicated and it can be made to fit almost any compiler.
+You can find the explanation here: |errorformat|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コンパイラが出力するエラーメッセージの書式を調べ、'@option{errorformat}' オプションを設定する必要があります。このオプションの構文は非常に複雑ですが、どのようなコンパイラにも対応できます。詳しい説明は |errorformat| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You might be using various different compilers.  Setting the 'makeprg' option,
+and especially the 'errorformat' each time is not easy.  Vim offers a simple
+method for this.  For example, to switch to using the Microsoft Visual C++
+compiler: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+複数のコンパイラを使うとき、コンパイラを変更するたびに '@option{makeprg}' や'@option{errorformat}' を設定するのは面倒ですよね。簡単な方法が用意されています。例えば、Microsoft Visual C++ なら次のように設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:compiler msvc
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:compiler msvc
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will find the Vim script for the "msvc" compiler and set the appropriate
+options.
+   You can write your own compiler files.  See |write-compiler-plugin|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"msvc" 用のスクリプトが検索され、適切なオプションが設定されます。
+自分で設定スクリプトを書くこともできます。|write-compiler-plugin| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+OUTPUT REDIRECTION
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 出力のリダイレクト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ":make" command redirects the output of the executed program to an error
+file.  How this works depends on various things, such as the 'shell'.  If your
+":make" command doesn't capture the output, check the 'makeef' and
+'shellpipe' options.  The 'shellquote' and 'shellxquote' options might also
+matter.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:make}" コマンドは、実行したプログラムの出力をエラーファイルにリダイレクトします。その動作はいろいろな要因に依存しています (例えば '@option{shell}' オプション)。
+"@command{:make}" コマンドがプログラムの出力を拾えていないようなら、'@option{makeef}' オプションと '@option{shellpipe}' オプションを確認してみてください。'@option{shellquote}' オプションと'@option{shellxquote}' オプションも関係あるかもしれません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In case you can't get ":make" to redirect the file for you, an alternative is
+to compile the program in another window and redirect the output into a file.
+Then have Vim read this file with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+どうしても "@command{:make}" コマンドのリダイレクトが機能しない場合は、シェルからコンパイルを実行して、その出力をファイルにリダイレクトしてください。そして、次のコマンドでそのファイルを読み込みます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:cfile {filename}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:cfile @{filename@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Jumping to errors will work like with the ":make" command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:make}" コマンドと同様にエラーにジャンプできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*30.2*	Indenting C style text
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{30.2}
+@node C 言語系インデント
+@section C 言語系インデント
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A program is much easier to understand when the lines have been properly
+indented.  Vim offers various ways to make this less work.  For C or C style
+programs like Java or C++, set the 'cindent' option.  Vim knows a lot about C
+programs and will try very hard to automatically set the indent for you.  Set
+the 'shiftwidth' option to the amount of spaces you want for a deeper level.
+Four spaces will work fine.  One ":set" command will do it: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プログラムを適切にインデントするとコードが読みやすくなります。Vim の機能を使えばインデントするのは簡単です。C 言語、あるいは C++ や Java などの C スタイルのプログラムなら '@option{cindent}' オプションをオンに設定してください。C 言語のインデントは組み込みで用意されていて、複雑な構文でも適切にインデントできます。インデントに使うスペースの数は '@option{shiftwidth}' オプションで設定します。スペース 4 個くらいが適切でしょうか。次のコマンドで設定できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set cindent shiftwidth=4
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set cindent shiftwidth=4
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+With this option enabled, when you type something such as "if (x)", the next
+line will automatically be indented an additional level.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このオプションを設定すると、例えば "if (x)" と入力したときに、次の行が自動的にインデントされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				    if (flag)
+	Automatic indent   --->		do_the_work();
+	Automatic unindent <--	    if (other_flag) {
+	Automatic indent   --->		do_file();
+	keep indent			do_some_more();
+	Automatic unindent <--	    }
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+                            if (flag)
+Automatic indent   --->        do_the_work();
+Automatic unindent <--      if (other_flag) {
+Automatic indent   --->         do_file();
+keep indent                     do_some_more();
+Automatic unindent <--      }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you type something in curly braces ({}), the text will be indented at the
+start and unindented at the end.  The unindenting will happen after typing the
+'}', since Vim can't guess what you are going to type.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+波カッコ (@{@}) の中でテキストを入力すると、最初の行でインデントが増え、最後の行でインデントが減ります。インデントが減るのは '@}' を押したタイミングです (入力を予測することはできないので)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+One side effect of automatic indentation is that it helps you catch errors in
+your code early.  When you type a } to finish a function, only to find that
+the automatic indentation gives it more indent than what you expected, there
+is probably a } missing.  Use the "%" command to find out which { matches the
+} you typed.
+   A missing ) and ; also cause extra indent.  Thus if you get more white
+space than you would expect, check the preceding lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動インデントには、コーディングのミスを早く発見できるという副作用があります。例えば、関数の最後で @} を入力したときに、インデントが本来よりも多くなったとしたら、どこかで @} を入力し忘れています。"@command{%}" コマンドを使って、最後に入力した @} と対になっている @{ を探しましょう。
+同様に、@samp{)} や @samp{;} を忘れると、次の行のインデントが増えます。もし予想よりもインデントが多くなってしまった場合は直前の行を確認してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you have code that is badly formatted, or you inserted and deleted lines,
+you need to re-indent the lines.  The "=" operator does this.  The simplest
+form is: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+書式が汚いコードを編集するとき、あるいは編集によってインデントが崩れてしまった場合、コードを再インデントする必要があります。それには "=" オペレータを使います。最も単純なのは次の使い方です:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	==
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+==
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This indents the current line.  Like with all operators, there are three ways
+to use it.  In Visual mode "=" indents the selected lines.  A useful text
+object is "a{".  This selects the current {} block.  Thus, to re-indent the
+code block the cursor is in: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在行がインデントされます。他のオペレータと同様、使い方は 3 通りあります。ビジュアルモードで "=" を使うと、選択範囲の行がインデントされます。テキストオブジェクトで便利なのは "a@{" です。これは現在のブロックを選択します。つまり、次のコマンドでコードのブロックをインデントできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	=a{
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+=a@{
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+I you have really badly indented code, you can re-indent the whole file with:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コードが根本的に汚い場合は、次のコマンドでファイル全体を再インデントできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	gg=G
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+gg=G
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+However, don't do this in files that have been carefully indented manually.
+The automatic indenting does a good job, but in some situations you might want
+to overrule it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ただし、手作業で丁寧にインデントされたファイルに対してこれを実行してはいけません。自動インデントは良い仕事をしてくれますが、場合によってはそのルールを破る必要もあるからです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SETTING INDENT STYLE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec インデントスタイルの設定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Different people have different styles of indentation.  By default Vim does a
+pretty good job of indenting in a way that 90% of programmers do.  There are
+different styles, however; so if you want to, you can customize the
+indentation style with the 'cinoptions' option.
+   By default 'cinoptions' is empty and Vim uses the default style.  You can
+add various items where you want something different.  For example, to make
+curly braces be placed like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+インデントスタイルは人によってさまざまです。初期設定では 90% のプログラマが満足するようなスタイルに設定されています。しかし、世の中にはいろいろなスタイルがあるので、必要なら、'@option{cinoptions}' を設定することで、インデントスタイルをカスタマイズできます。
+'@option{cinoptions}' の初期設定は空です。その場合はデフォルトのスタイルが使われます。このオプションに値を追加していくことでスタイルを変更できます。例えば、波カッコの位置を次のようにしたい場合は:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if (flag) ~
+	  { ~
+	    i = 8; ~
+	    j = 0; ~
+	  } ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if (flag)
+  {
+    i = 8;
+    j = 0;
+  }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set cinoptions+={2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set cinoptions+=@{2
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are many of these items.  See |cinoptions-values|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+設定できる項目はたくさんあります。|cinoptions-values| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*30.3*	Automatic indenting
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{30.3}
+@node インデント設定の自動化
+@section インデント設定の自動化
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You don't want to switch on the 'cindent' option manually every time you edit
+a C file.  This is how you make it work automatically: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+C ファイルを開くたびに '@option{cindent}' オプションを設定するのは面倒ですよね。インデントの設定は自動化できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:filetype indent on
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:filetype indent on
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Actually, this does a lot more than switching on 'cindent' for C files.  First
+of all, it enables detecting the type of a file.  That's the same as what is
+used for syntax highlighting.
+   When the filetype is known, Vim will search for an indent file for this
+type of file.  The Vim distribution includes a number of these for various
+programming languages.  This indent file will then prepare for automatic
+indenting specifically for this file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実際には、C ファイルに対して '@option{cindent}' をオンにする以外の機能も有効になります。まず最初に、ファイルタイプの認識が有効になります。認識機能は構文強調表示で使われているものと同じです。
+ファイルタイプが認識されると、そのファイルタイプ用のインデントファイルが検索されます。Vim にはさまざまな言語に対応したインデントファイルが付属しています。インデントファイルが読み込まれ、自動インデントのための設定が行われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you don't like the automatic indenting, you can switch it off again: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+インデント設定の自動化は次のコマンドでオフにできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:filetype indent off
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:filetype indent off
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you don't like the indenting for one specific type of file, this is how you
+avoid it.  Create a file with just this one line: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特定のファイルタイプだけインデントを無効にしたい場合は、次のような一行だけのファイルを作成してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:let b:did_indent = 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:let b:did_indent = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now you need to write this in a file with a specific name:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これを、決められた名前で保存します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	{directory}/indent/{filetype}.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+@{directory@}/indent/@{filetype@}.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The {filetype} is the name of the file type, such as "cpp" or "java".  You can
+see the exact name that Vim detected with this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{filetype@} は "cpp" や "java" といったファイルタイプの名前です。次のコマンドでVim が使っている名前を確認できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set filetype
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set filetype
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In this file the output is:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えばこのヘルプファイルなら次のように表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	filetype=help ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+filetype=help
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Thus you would use "help" for {filetype}.
+   For the {directory} part you need to use your runtime directory.  Look at
+the output of this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+したがって、@{filetype@} には "help" が入ります。
+@{directory@} はランタイムディレクトリです。次のコマンドの出力を調べてください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	set runtimepath
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+set runtimepath
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now use the first item, the name before the first comma.  Thus if the output
+looks like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ここでは先頭のパスを使います。つまり、出力が次のようなら:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	runtimepath=~/.vim,/usr/local/share/vim/vim60/runtime,~/.vim/after ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+runtimepath=~/.vim,/usr/local/share/vim/vim60/runtime,~/.vim/after
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You use "~/.vim" for {directory}.  Then the resulting file name is:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{directory@} には "~/.vim" が入ります。したがって、ファイル名は次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	~/.vim/indent/help.vim ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+~/.vim/indent/help.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Instead of switching the indenting off, you could write your own indent file.
+How to do that is explained here: |indent-expression|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+インデントをオフにするのではなく、自分のインデントファイルを作成したい場合は、|indent-expression| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*30.4*	Other indenting
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{30.4}
+@node その他のインデント
+@section その他のインデント
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The most simple form of automatic indenting is with the 'autoindent' option.
+It uses the indent from the previous line.  A bit smarter is the 'smartindent'
+option.  This is useful for languages where no indent file is available.
+'smartindent' is not as smart as 'cindent', but smarter than 'autoindent'.
+   With 'smartindent' set, an extra level of indentation is added for each {
+and removed for each }.  An extra level of indentation will also be added for
+any of the words in the 'cinwords' option.  Lines that begin with # are
+treated specially: all indentation is removed.  This is done so that
+preprocessor directives will all start in column 1.  The indentation is
+restored for the next line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最もシンプルな自動インデントは '@option{autoindent}' オプションを使う方法です。これは直前の行と同じインデントを使います。'@option{smartindent}' はもう少しスマートです。これはインデントファイルが用意されていないような場合に使います。'@option{smartindent}' は '@option{cindent}' より低機能ですが、'@option{autoindent}' よりは高機能です。
+'@option{smartindent}' をオンにすると、@{ でインデントが一つ増え、@} で減ります。さらに、'@option{cinwords}' オプションに設定された単語が現れた場合もインデントが増えます。@samp{#} で始まる行は特別扱いされ、一切インデントされません。つまり、プリプロセッサーディレクティブの行はインデントされません。その次の行は通常通りインデントされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CORRECTING INDENTS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec インデントの訂正
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you are using 'autoindent' or 'smartindent' to get the indent of the
+previous line, there will be many times when you need to add or remove one
+'shiftwidth' worth of indent.  A quick way to do this is using the CTRL-D and
+CTRL-T commands in Insert mode.
+   For example, you are typing a shell script that is supposed to look like
+this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{autoindent}' や '@option{smartindent}' を設定すると、直前の行と同じインデントを使うことができますが、自分でインデントを ('@option{shiftwidth}' の幅ずつ) 増やしたり減らしたりする必要も多々あります。それには挿入モードで @kbd{CTRL-D} と @kbd{CTRL-T} を使うと簡単です。例えば、次のようなシェルスクリプトを入力してみましょう:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if test -n a; then ~
+	   echo a ~
+	   echo "-------" ~
+	fi ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if test -n a; then
+   echo a
+   echo "-------"
+fi
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Start off by setting these options: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+まず、次のオプションを設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set autoindent shiftwidth=3
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set autoindent shiftwidth=3
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You start by typing the first line, <Enter> and the start of the second line:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一行目を入力し、@key{<Enter>} を押して二行目を開始します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if test -n a; then ~
+	echo ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if test -n a; then
+echo
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now you see that you need an extra indent.  Type CTRL-T.  The result:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+2 行目にはインデントが必要ですね。@kbd{CTRL-T} を押します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if test -n a; then ~
+	   echo ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if test -n a; then
+   echo
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The CTRL-T command, in Insert mode, adds one 'shiftwidth' to the indent, no
+matter where in the line you are.
+   You continue typing the second line, <Enter> and the third line.  This time
+the indent is OK.  Then <Enter> and the last line.  Now you have this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+挿入モードの @kbd{CTRL-T} コマンドは、'@option{shiftwidth}' の幅だけインデントを増やします。カーソルの位置は関係ありません。
+2 行目を入力し、@key{<Enter>} を押して 3 行目を開始します。3 行目のインデントは問題ありません。@key{<Enter>} を押して最後の行を入力します。テキストは次のようになりました:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if test -n a; then ~
+	   echo a ~
+	   echo "-------" ~
+	   fi ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if test -n a; then
+   echo a
+   echo "-------"
+   fi
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To remove the superfluous indent in the last line press CTRL-D.  This deletes
+one 'shiftwidth' worth of indent, no matter where you are in the line.
+   When you are in Normal mode, you can use the ">>" and "<<" commands to
+shift lines.  ">" and "<" are operators, thus you have the usual three ways to
+specify the lines you want to indent.  A useful combination is: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最後の行の余分なインデントを削除するには @kbd{CTRL-D} 押します。これは '@option{shiftwidth}' の幅だけインデントを減らします。カーソルの位置は関係ありません。
+ノーマルモードでは "@command{>>}" コマンドと "@command{<<}" コマンドで同様の操作ができます。">" と"<" はオペレータなので、他のオペレータと同様に、インデントを変更する範囲を 3 通りの方法で指定できます。次の組み合わせが特に便利です:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	>i{
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+>i@{
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This adds one indent to the current block of lines, inside {}.  The { and }
+lines themselves are left unmodified.  ">a{" includes them.  In this example
+the cursor is on "printf":
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在のブロックのインデントが増えます。変更されるのは @{@} の中だけで、@{ と @} 自体の行は変更されません。">a@{" なら @{@} も含まれます。次の例では、カーソルは "@samp{printf}" の上にあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	original text		after ">i{"		after ">a{"
+
+	if (flag)		if (flag)		if (flag) ~
+	{			{			    { ~
+	printf("yes");		    printf("yes");	    printf("yes"); ~
+	flag = 0;		    flag = 0;		    flag = 0;  ~
+	}			}			    } ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+original text          after ">i{"             after ">a{"
+
+if (flag)              if (flag)               if (flag)
+{                      {                           {
+printf("yes");             printf("yes");          printf("yes");
+flag = 0;                  flag = 0;               flag = 0;
+}                       }                          }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*30.5*	Tabs and spaces
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{30.5}
+@node タブとスペース
+@section タブとスペース
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'tabstop' is set to eight by default.  Although you can change it, you quickly
+run into trouble later.  Other programs won't know what tabstop value you
+used.  They probably use the default value of eight, and your text suddenly
+looks very different.  Also, most printers use a fixed tabstop value of eight.
+Thus it's best to keep 'tabstop' alone.  (If you edit a file which was written
+with a different tabstop setting, see |25.3| for how to fix that.)
+   For indenting lines in a program, using a multiple of eight spaces makes
+you quickly run into the right border of the window.  Using a single space
+doesn't provide enough visual difference.  Many people prefer to use four
+spaces, a good compromise.
+   Since a <Tab> is eight spaces and you want to use an indent of four spaces,
+you can't use a <Tab> character to make your indent.  There are two ways to
+handle this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{tabstop}' の初期設定は 8 です。変更することはできますが、それはトラブルの元になります。他のプログラムはあなたが使用しているタブ幅を知ることができません。そのようなプログラムでは、恐らくタブの幅は 8 であると仮定されているので、テキストが崩れて表示されてしまいます。また、ほとんどのプリンタはタブ幅を 8 で固定しています。したがって、'@option{tabstop}' を変更するのはお勧めしません。(他のタブ幅設定で書かれたテキストを修正したい場合は |25.3| を参照してください。)
+プログラムをインデントする場合、8 桁単位でインデントするとすぐに画面が埋まってしまいます。しかしスペースが 1 つだけではインデントが目立ちません。多くのプログラマは (折衷して) 4 桁を好んで使います。
+<Tab> の幅は 8 桁で、インデントを 4 桁にしたいということは、<Tab> 文字を使ってインデントすることはできないということです。そのようなインデントには 1 つの方法があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1.  Use a mix of <Tab> and space characters.  Since a <Tab> takes the place of
+    eight spaces, you have fewer characters in your file.  Inserting a <Tab>
+    is quicker than eight spaces.  Backspacing works faster as well.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item <Tab> とスペースを混在させる。<Tab> は 1 つでスペース 8 個分の幅になるのでファイルサイズの節約になります。スペース 8 個より <Tab> の方が入力も削除も簡単です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+2.  Use spaces only.  This avoids the trouble with programs that use a
+    different tabstop value.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item スペースだけを使う。違うタブ幅を使う他のプログラムでもトラブルが起きません。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Fortunately, Vim supports both methods quite well.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はどちらの方法もサポートしています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SPACES AND TABS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec タブとスペースを混在させる
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are using a combination of tabs and spaces, you just edit normally.
+The Vim defaults do a fine job of handling things.
+   You can make life a little easier by setting the 'softtabstop' option.
+This option tells Vim to make the <Tab> key look and feel as if tabs were set
+at the value of 'softtabstop', but actually use a combination of tabs and
+spaces.
+   After you execute the following command, every time you press the <Tab> key
+the cursor moves to the next 4-column boundary: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+タブとスペースを混在させる場合は特別な設定は必要ありません。初期設定でうまくいきます。
+'@option{softtabstop}' オプションを設定すると編集が少し楽になります。このオプションが設定されると、タブ幅が '@option{softtabstop}' の値に設定されたかのように、@key{<Tab>} キーが動作します。しかし実際にはタブとスペースが混在して使われます。
+次のコマンドを実行すると、@key{<Tab>} キーでカーソルが 4 桁ごとに進むようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set softtabstop=4
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set softtabstop=4
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you start in the first column and press <Tab>, you get 4 spaces inserted
+in your text.  The second time, Vim takes out the 4 spaces and puts in a <Tab>
+(thus taking you to column 8).  Thus Vim uses as many <Tab>s as possible, and
+then fills up with spaces.
+   When backspacing it works the other way around.  A <BS> will always delete
+the amount specified with 'softtabstop'.  Then <Tab>s are used as many as
+possible and spaces to fill the gap.
+   The following shows what happens pressing <Tab> a few times, and then using
+<BS>.  A "." stands for a space and "------->" for a <Tab>.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+行頭で @key{<Tab>} を押すと、スペースが 4 個挿入されます。次に @key{<Tab>} を押すと、最初のスペース 4 個が削除されて <Tab> 文字が挿入されます (つまりカーソルは 8 列目)。このように、スペースは可能な限り <Tab> 文字で置き換えられます。
+バックスペースはその反対の動作になります。@key{<BS>} を押すと、'@option{softtabstop}' の幅だけ削除されます。可能な限り <Tab> が使われ、余りはスペースになります。
+次の図は、<Tab> をいくつか入力してから @key{<BS>} を使ったときの様子を示しています。"." はスペースで "------->" は <Tab> です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	type			  result ~
+	<Tab>			  ....
+	<Tab><Tab>		  ------->
+	<Tab><Tab><Tab>		  ------->....
+	<Tab><Tab><Tab><BS>	  ------->
+	<Tab><Tab><Tab><BS><BS>   ....
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+type                      result
+<Tab>                     ....
+<Tab><Tab>                ------->
+<Tab><Tab><Tab>           ------->....
+<Tab><Tab><Tab><BS>       ------->
+<Tab><Tab><Tab><BS><BS>   ....
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An alternative is to use the 'smarttab' option.  When it's set, Vim uses
+'shiftwidth' for a <Tab> typed in the indent of a line, and a real <Tab> when
+typed after the first non-blank character.  However, <BS> doesn't work like
+with 'softtabstop'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同様の動作は '@option{smarttab}' オプションを使っても実現できます。このオプションを設定した場合、インデントの入力のために @key{<Tab>} を押すと '@option{shiftwidth}' の幅が使われ、何かの文字より後ろでは実際の <Tab> 文字が使われます。ただし、@key{<BS>} の動作は '@option{softtabstop}' のときと同様にはなりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+JUST SPACES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec スペースだけを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want absolutely no tabs in your file, you can set the 'expandtab'
+option: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Tab 文字を一切使いたくない場合は '@option{expandtab}' オプションを設定してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set expandtab
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set expandtab
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When this option is set, the <Tab> key inserts a series of spaces.  Thus you
+get the same amount of white space as if a <Tab> character was inserted, but
+there isn't a real <Tab> character in your file.
+   The backspace key will delete each space by itself.  Thus after typing one
+<Tab> you have to press the <BS> key up to eight times to undo it.  If you are
+in the indent, pressing CTRL-D will be a lot quicker.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このオプションをオンにすると、@key{<Tab>} キーでスペースが入力されるようになります。つまり、<Tab> 文字と同じ量のスペースが挿入され、<Tab> 文字は使われません。
+バックスペースキーはスペースを 1 つずつ削除するので、@key{<Tab>} を押した後でそれを削除するには @key{<BS>} を 8 回押さなければなりません。インデントの削除は @kbd{CTRL-D} を使うと簡単です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CHANGING TABS IN SPACES (AND BACK)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec タブをスペースに変換する (あるいはその逆)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Setting 'expandtab' does not affect any existing tabs.  In other words, any
+tabs in the document remain tabs.  If you want to convert tabs to spaces, use
+the ":retab" command.  Use these commands: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{expandtab}' を設定しても、それ以前に入力されたタブ文字は影響を受けません。つまり、文章中のタブ文字はタブ文字のままです。タブ文字をスペースに変換したい場合は、"@command{:retab}" コマンドを使ってください。次のように使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set expandtab
+	:%retab
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set expandtab
+:%retab
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now Vim will have changed all indents to use spaces instead of tabs.  However,
+all tabs that come after a non-blank character are kept.  If you want these to
+be converted as well, add a !: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべてのインデントがスペースに変換されます。ただし、何かの文字より後ろにある(インデント以外の) タブ文字はそのままです。それらのタブ文字も変換したい場合はコマンドに ! を付けます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:%retab!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:%retab!
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is a little bit dangerous, because it can also change tabs inside a
+string.  To check if these exist, you could use this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは少し注意が必要です。なぜなら、文字列の中のタブ文字も変換されてしまうからです。文字列の中でタブ文字が使われているかどうかは、次の検索パターンで確認できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/"[^"\t]*\t[^"]*"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+/"[^"\t]*\t[^"]*"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It's recommended not to use hard tabs inside a string.  Replace them with
+"\t" to avoid trouble.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+文字列の中でタブ文字を使うのはお勧めしません。トラブルを避けるためにも "\t" を使ってください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The other way around works just as well: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同様に、スペースをタブ文字に変換できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set noexpandtab
+	:%retab!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set noexpandtab
+:%retab!
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*30.6*	Formatting comments
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{30.6}
+@node コメントの整形
+@section コメントの整形
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+One of the great things about Vim is that it understands comments.  You can
+ask Vim to format a comment and it will do the right thing.
+   Suppose, for example, that you have the following comment:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim のすばらしいところはコメントを解釈できるところです。コメントの整形を指示するだけで適切に処理してくれます。
+例えば、次のようなコメントがあるとします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/* ~
+	 * This is a test ~
+	 * of the text formatting. ~
+	 */ ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+/*
+* This is a test
+* of the text formatting.
+*/
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You then ask Vim to format it by positioning the cursor at the start of the
+comment and type: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初の行に移動して次のコマンドを実行すると、コメントを整形できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	gq]/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+gq]/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"gq" is the operator to format text.  "]/" is the motion that takes you to the
+end of a comment.  The result is:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"gq" はテキスト整形のためのオペレータです。"@command{]/}" はコメントの末尾に移動するコマンドです。次のような結果になります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/* ~
+	 * This is a test of the text formatting. ~
+	 */ ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+/*
+ * This is a test of the text formatting.
+ */
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Notice that Vim properly handled the beginning of each line.
+  An alternative is to select the text that is to be formatted in Visual mode
+and type "gq".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+各行の行頭が適切に処理されていますね。
+ビジュアルモードでテキストを選択してから "@command{gq}" を使う方法でも構いません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To add a new line to the comment, position the cursor on the middle line and
+press "o".  The result looks like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しい行を追加したい場合は、真ん中の行に移動して "@key{o}" を押します。次のような結果になります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/* ~
+	 * This is a test of the text formatting. ~
+	 * ~
+	 */ ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+/*
+ * This is a test of the text formatting.
+ *
+ */
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim has automatically inserted a star and a space for you.  Now you can type
+the comment text.  When it gets longer than 'textwidth', Vim will break the
+line.  Again, the star is inserted automatically:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+行頭のスペースと * は自動的に挿入されるので、そのままコメントを入力することができます。テキストが '@option{textwidth}' より長くなると自動的に改行されます。そのときも、行頭の * は自動的に挿入されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/* ~
+	 * This is a test of the text formatting. ~
+	 * Typing a lot of text here will make Vim ~
+	 * break ~
+	 */ ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+/*
+ * This is a test of the text formatting.
+ * Typing a lot of text here will make Vim
+ * break
+ */
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For this to work some flags must be present in 'formatoptions':
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この機能を使うには '@option{formatoptions}' の設定が必要です:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	r	insert the star when typing <Enter> in Insert mode
+	o	insert the star when using "o" or "O" in Normal mode
+	c	break comment text according to 'textwidth'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .1 .8
+@item @tab r @tab 挿入モードで <Enter> を押したときに * を挿入する
+@item @tab o @tab ノーマルモードで "o" または "O" を使ったときに * を挿入する
+@item @tab c @tab コメントを '@option{textwidth}' の幅で改行する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See |fo-table| for more flags.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+詳しくは |fo-table| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+DEFINING A COMMENT
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec コメントの定義
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'comments' option defines what a comment looks like.  Vim distinguishes
+between a single-line comment and a comment that has a different start, end
+and middle part.
+   Many single-line comments start with a specific character.  In C++ // is
+used, in Makefiles #, in Vim scripts ".  For example, to make Vim understand
+C++ comments: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コメントの書式は '@option{comments}' オプションで設定します。1 行コメントと三部コメント(開始、中間、終端からなるコメント) は分けて処理されます。
+ほとんどの 1 行コメントは特定の文字で始まります。C++ は //、メイクファイルは #、Vim は " です。例えば、C++ のコメントなら次のように設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set comments=://
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set comments=://
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The colon separates the flags of an item from the text by which the comment is
+recognized.  The general form of an item in 'comments' is:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コロンはフラグとコメント文字の区切りです。'@option{comments}' の設定は次のような形式で指定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	{flags}:{text}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+@{flags@}:@{text@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The {flags} part can be empty, as in this case.
+   Several of these items can be concatenated, separated by commas.  This
+allows recognizing different types of comments at the same time.  For example,
+let's edit an e-mail message.  When replying, the text that others wrote is
+preceded with ">" and "!" characters.  This command would work: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この例のように、@{flags@} は空でも構いません。
+複数のアイテムを指定するときはコンマで区切ります。アイテムを複数指定できるので、同じファイルの中でいろんな種類のコメントを使うことができます。例えばメールを返信するときに、相手のメッセージに ">" や "!" を付けて引用する場合は、次のように設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set comments=n:>,n:!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set comments=n:>,n:!
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are two items, one for comments starting with ">" and one for comments
+that start with "!".  Both use the flag "n".  This means that these comments
+nest.  Thus a line starting with ">" may have another comment after the ">".
+This allows formatting a message like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+2 つのアイテムが設定されました。1 つは ">" で開始するコメント、もう 1 つは "!" で開始するコメントです。"n" フラグが使われているので、コメントを入れ子にできます。つまり、">" で開始する行は、">" の後ろに他のコメントを含んでいても構いません。この設定により、次のようなメッセージを整形することができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	> ! Did you see that site? ~
+	> ! It looks really great. ~
+	> I don't like it.  The ~
+	> colors are terrible. ~
+	What is the URL of that ~
+	site? ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+> ! Did you see that site?
+> ! It looks really great.
+> I don't like it.  The
+> colors are terrible.
+What is the URL of that
+site?
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Try setting 'textwidth' to a different value, e.g., 80, and format the text by
+Visually selecting it and typing "gq".  The result is:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{textwidth}' の設定を変更して (例えば 80 にして)、テキストを整形してみましょう。ビジュアルモードでテキストを選択してから "gq" を押します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	> ! Did you see that site?  It looks really great. ~
+	> I don't like it.  The colors are terrible. ~
+	What is the URL of that site? ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+> ! Did you see that site?  It looks really great.
+> I don't like it.  The colors are terrible.
+What is the URL of that site?
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You will notice that Vim did not move text from one type of comment to
+another.  The "I" in the second line would have fit at the end of the first
+line, but since that line starts with "> !" and the second line with ">", Vim
+knows that this is a different kind of comment.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+違う種類のコメントテキストは混ざっていませんね。
+2 行目の "I" は 1 行目の末尾に入れることも可能ですが、しかし、1 行目は "> !" で始まり、2 行目は ">" で始まっているため、それらのコメントは別のものであると判断されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+A THREE PART COMMENT
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 三部コメント (A THREE PART COMMENT)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A C comment starts with "/*", has "*" in the middle and "*/" at the end.  The
+entry in 'comments' for this looks like this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+C のコメントは "/*" で始まり、中間には "*" が付き、"*/" で終わります。このようなコメントは次のように設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set comments=s1:/*,mb:*,ex:*/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set comments=s1:/*,mb:*,ex:*/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The start is defined with "s1:/*".  The "s" indicates the start of a
+three-piece comment.  The colon separates the flags from the text by which the
+comment is recognized: "/*".  There is one flag: "1".  This tells Vim that the
+middle part has an offset of one space.
+   The middle part "mb:*" starts with "m", which indicates it is a middle
+part.  The "b" flag means that a blank must follow the text.  Otherwise Vim
+would consider text like "*pointer" also to be the middle of a comment.
+   The end part "ex:*/" has the "e" for identification.  The "x" flag has a
+special meaning.  It means that after Vim automatically inserted a star,
+typing / will remove the extra space.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+開始部分は "s1:/*" です。"s" は三部コメントの開始を示します。フラグとコメント文字 "/*" をコロンで区切っています。フラグには "1" が指定されていますが、これにより中間部分がスペース一個分、字下げされます。
+中間部分は "mb:*" です。"m" は三部コメントの中間を示します。"b" フラグは、コメント文字の後ろに空白が必要であることを示します。これを指定しないと、"*pointer" などもコメントとして認識されてしまいます。
+終端部分は "ex:*/" です。"e" は三部コメントの終端を示します。"x" は特殊なフラグです。中間の * が自動的に挿入された直後に "/" を押すと、余計なスペースが削除されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For more details see |format-comments|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+詳細は |format-comments| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+Next chapter: |usr_31.txt|  Exploiting the GUI
+
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+@end ifset
