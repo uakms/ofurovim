@@ -1,0 +1,1797 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node 新しいコマンドを作る, Vim script 書法, undo ツリー, 目次
+@unnumbered 新しいコマンドを作る
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*usr_40.txt*	For Vim version 8.0.  Last change: 2013 Aug 05
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			      Make new commands
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{usr_40.txt}
+@cindex usr_40.txt
+@verbatim
+*usr_40.txt*	For Vim バージョン 8.0.  Last change: 2013 Aug 05
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			     新しいコマンドを作る
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Vim is an extensible editor.  You can take a sequence of commands you use
+often and turn it into a new command.  Or redefine an existing command.
+Autocommands make it possible to execute commands automatically.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は拡張可能なエディタです。よく使う操作を一つにまとめて新しいコマンドを作成したり、既存のコマンドを再定義したりできます。自動コマンドを使うと、コマンドを自動的に実行できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|40.1|	Key mapping
+|40.2|	Defining command-line commands
+|40.3|	Autocommands
+
+     Next chapter: |usr_41.txt|  Write a Vim script
+ Previous chapter: |usr_32.txt|  The undo tree
+Table of contents: |usr_toc.txt|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@menu
+* キーマッピング::                   40.1
+* コマンドラインコマンドを定義する:: 40.2
+* 自動コマンド::                     40.3
+@end menu
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*40.1*	Key mapping
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{40.1}
+@node キーマッピング
+@section キーマッピング
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A simple mapping was explained in section |05.3|.  The principle is that one
+sequence of key strokes is translated into another sequence of key strokes.
+This is a simple, yet powerful mechanism.
+   The simplest form is that one key is mapped to a sequence of keys.  Since
+the function keys, except <F1>, have no predefined meaning in Vim, these are
+good choices to map.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{05.3, , 05.3}| で簡単なマップを説明しました。マップの原理は、キー操作を他のキー操作に変換するというものです。単純ですが強力な仕組みです。
+典型的な使い方は、1 つのキーを複数のキーにマップする方法です。ファンクションキー (@key{<F1>} 以外) には機能が割り当てられていないので、それらのキーを使うとよいでしょう。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:map <F2> GoDate: <Esc>:read !date<CR>kJ
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:map <F2> GoDate: <Esc>:read !date<CR>kJ
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This shows how three modes are used.  After going to the last line with "G",
+the "o" command opens a new line and starts Insert mode.  The text "Date: " is
+inserted and <Esc> takes you out of insert mode.
+   Notice the use of special keys inside <>.  This is called angle bracket
+notation.  You type these as separate characters, not by pressing the key
+itself.  This makes the mappings better readable and you can copy and paste
+the text without problems.
+   The ":" character takes Vim to the command line.  The ":read !date" command
+reads the output from the "date" command and appends it below the current
+line.  The <CR> is required to execute the ":read" command.
+   At this point of execution the text looks like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このマップでは三つのモードが使われています。"G" で最後の行にジャンプし、"o" で新しい行を開いて挿入モードを開始、"Date: " というテキストを入力してから <Esc> で挿入モードを抜けます。
+特殊キーを @samp{<>} で囲んで表記していますが、これは括弧表記というものです。特殊キーを押すのではなく、見たまま文字どおり入力してください。この表記を使ったマップは読むのが簡単で、そのままコピー＆ペーストして使うことができます。
+さて、":" でコマンドラインモードに入ります。"@command{:read !date}" コマンドは、"@command{date}" コマンドの出力を読み込んで、現在行の下に追加します。<CR> は "@command{:read}" コマンドを実行するために必要です。
+この時点で、テキストは次のようになっています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Date:  ~
+	Fri Jun 15 12:54:34 CEST 2001 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Date:
+Fri Jun 15 12:54:34 CEST 2001
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now "kJ" moves the cursor up and joins the lines together.
+   To decide which key or keys you use for mapping, see |map-which-keys|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最後に、"kJ" で上に移動してから二つの行を一行につなげます。
+マップするキーを選ぶときは |map-which-keys| を参考にしてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MAPPING AND MODES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec マップとモード
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ":map" command defines remapping for keys in Normal mode.  You can also
+define mappings for other modes.  For example, ":imap" applies to Insert mode.
+You can use it to insert a date below the cursor: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:map}" コマンドはノーマルモードのキーマップを定義します。同様に、他のモードのマップを定義することもできます。例えば "@command{:imap}" で挿入モードのマップを定義できます。次のマップは、カーソルの下に日付を挿入します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:imap <F2> <CR>Date: <Esc>:read !date<CR>kJ
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:imap <F2> <CR>Date: <Esc>:read !date<CR>kJ
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It looks a lot like the mapping for <F2> in Normal mode, only the start is
+different.  The <F2> mapping for Normal mode is still there.  Thus you can map
+the same key differently for each mode.
+   Notice that, although this mapping starts in Insert mode, it ends in Normal
+mode.  If you want it to continue in Insert mode, append an "a" to the
+mapping.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+多少の違いはありますが、ノーマルモードで @key{<F2>} にマップしたものと同じです。このマップを定義してもノーマルモードの @key{<F2>} は消えません。このように、同じキーをモード別にマップすることができます。
+このマップは挿入モードの中で開始しますが、実行後はノーマルモードになってしまいます。挿入モードを継続したい場合はマップの最後に "a" を追加してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here is an overview of map commands and in which mode they work:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップコマンドはモード別に用意されています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:map		Normal, Visual and Operator-pending
+	:vmap		Visual
+	:nmap		Normal
+	:omap		Operator-pending
+	:map!		Insert and Command-line
+	:imap		Insert
+	:cmap		Command-line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .1 .8
+@item @tab :map @tab ノーマルモード、ビジュアルモード、オペレータ待機モード
+@item @tab :vmap @tab ビジュアルモード
+@item @tab :nmap @tab ノーマルモード
+@item @tab :omap @tab オペレータ待機モード
+@item @tab :map! @tab 挿入モード、コマンドライン
+@item @tab :imap @tab 挿入モード
+@item @tab :cmap @tab コマンドライン
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Operator-pending mode is when you typed an operator character, such as "d" or
+"y", and you are expected to type the motion command or a text object.  Thus
+when you type "dw", the "w" is entered in operator-pending mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オペレータ待機モードとは、"d" や "y" などのオペレータを入力した後、モーションコマンドやテキストオブジェクトの入力を待機している状態のことです。例えば "dw" の "w" はオペレータ待機モードでの入力です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Suppose that you want to define <F7> so that the command d<F7> deletes a C
+program block (text enclosed in curly braces, {}).  Similarly y<F7> would yank
+the program block into the unnamed register.  Therefore, what you need to do
+is to define <F7> to select the current program block.  You can do this with
+the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、d@key{<F7>} コマンドで C プログラムのブロック (@{@}で囲まれたテキスト) を削除できるように、あるいは、y@key{<F7>} でブロックをヤンクできるようにしたい場合は、@key{<F7>} をマップしてプログラムブロックを選択できるようにする必要があります。次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:omap <F7> a{
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:omap <F7> a@{
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This causes <F7> to perform a select block "a{" in operator-pending mode, just
+like you typed it.  This mapping is useful if typing a { on your keyboard is a
+bit difficult.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オペレータ待機モードで @key{<F7>} を押すと "a@{" によってブロックが選択されます。このマップは、@{ が押しにくい位置にあるキーボードでは便利です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+LISTING MAPPINGS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec マップの一覧を表示する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To see the currently defined mappings, use ":map" without arguments.  Or one
+of the variants that include the mode in which they work.  The output could
+look like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+定義されたマップの一覧を確認したい場合は、"@command{:map}" コマンドを引数なしで実行します。モード別のマップコマンドを使うこともできます。次のような一覧が表示されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	   _g		 :call MyGrep(1)<CR> ~
+	v  <F2>		 :s/^/> /<CR>:noh<CR>`` ~
+	n  <F2>		 :.,$s/^/> /<CR>:noh<CR>`` ~
+	   <xHome>	 <Home>
+	   <xEnd>	 <End>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+   _g             :call MyGrep(1)<CR>
+v  <F2>           :s/^/> /<CR>:noh<CR>``
+n  <F2>           :.,$s/^/> /<CR>:noh<CR>``
+   <xHome>        <Home>
+   <xEnd>         <End>
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The first column of the list shows in which mode the mapping is effective.
+This is "n" for Normal mode, "i" for Insert mode, etc.  A blank is used for a
+mapping defined with ":map", thus effective in both Normal and Visual mode.
+   One useful purpose of listing the mapping is to check if special keys in <>
+form have been recognized (this only works when color is supported).  For
+example, when <Esc> is displayed in color, it stands for the escape character.
+When it has the same color as the other text, it is five characters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初の列は、マップが機能するモードを示しています。"n" はノーマルモード、"i" は挿入モード、などなど。"@command{:map}" で定義されたマップには空白が使われます。空白の場合はノーマルモードとビジュアルモードで使えます。
+この一覧を見れば、<> 表記で書いた特殊キーが正しく認識されているかを確認できます (カラー表示がサポートされている場合に限る)。例えば、<Esc> が色付きで表示されていれば、それはエスケープ文字です。他のテキストと同じ色で表示されている場合は、それは "<Esc>" という 5 文字の文字列です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+REMAPPING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 再マップ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The result of a mapping is inspected for other mappings in it.  For example,
+the mappings for <F2> above could be shortened to: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップは他のマップを含むことができます。例えば、上述の @key{<F2>} のマップは次のように短くできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:map <F2> G<F3>
+	:imap <F2> <Esc><F3>
+	:map <F3>  oDate: <Esc>:read !date<CR>kJ
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:map <F2> G<F3>
+:imap <F2> <Esc><F3>
+:map <F3>  oDate: <Esc>:read !date<CR>kJ
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For Normal mode <F2> is mapped to go to the last line, and then behave like
+<F3> was pressed.  In Insert mode <F2> stops Insert mode with <Esc> and then
+also uses <F3>.  Then <F3> is mapped to do the actual work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ノーマルモードの @key{<F2>} は、最後の行に移動して @key{<F3>} を押すようにマップされています。挿入モードの @key{<F2>} は、@key{<Esc>} で挿入モードを停止して @key{<F3>} を押すようにマップされています。そして、@key{<F3>} には目的の機能がマップされています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Suppose you hardly ever use Ex mode, and want to use the "Q" command to format
+text (this was so in old versions of Vim).  This mapping will do it: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、Ex モードはほとんど使わないので "Q" をテキスト整形コマンドとして使えるようにしたい (昔の Vim はそういう動作でした) 場合は、次のようなマップを定義します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:map Q gq
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:map Q gq
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+But, in rare cases you need to use Ex mode anyway.  Let's map "gQ" to Q, so
+that you can still go to Ex mode: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+しかし、Ex モードが使いたくなることもあるかもしれません。"gQ" を Q にマップして、EX モードが使えるようにしましょう:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:map gQ Q
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:map gQ Q
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+What happens now is that when you type "gQ" it is mapped to "Q".  So far so
+good.  But then "Q" is mapped to "gq", thus typing "gQ" results in "gq", and
+you don't get to Ex mode at all.
+   To avoid keys to be mapped again, use the ":noremap" command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この状態で "gQ" を入力すると "Q" にマップされます。ここまではいいですね。ところが、さらに "Q" が "gq" にマップされてしまいます。つまり、"gQ" は "gq" に変換されるので Ex モードを使うことはできないのです。
+再マップされないようにするには、"@command{:noremap}" コマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:noremap gQ Q
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:noremap gQ Q
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now Vim knows that the "Q" is not to be inspected for mappings that apply to
+it.  There is a similar command for every mode:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これで、マップされた "Q" に対して他のマップが適用されなくなります。同じようなコマンドがモード別に用意されています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:noremap	Normal, Visual and Operator-pending
+	:vnoremap	Visual
+	:nnoremap	Normal
+	:onoremap	Operator-pending
+	:noremap!	Insert and Command-line
+	:inoremap	Insert
+	:cnoremap	Command-line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .2 .7
+@item @tab :noremap @tab ノーマルモード、ビジュアルモード、オペレータ待機モード
+@item @tab :vnoremap @tab ビジュアルモード
+@item @tab :nnoremap @tab ノーマルモード
+@item @tab :onoremap @tab オペレータ待機モード
+@item @tab :noremap! @tab 挿入モード、コマンドライン
+@item @tab :inoremap @tab 挿入モード
+@item @tab :cnoremap @tab コマンドライン
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+RECURSIVE MAPPING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 再帰マップ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When a mapping triggers itself, it will run forever.  This can be used to
+repeat an action an unlimited number of times.
+   For example, you have a list of files that contain a version number in the
+first line.  You edit these files with "vim *.txt".  You are now editing the
+first file.  Define this mapping: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップが自分自身を含んでいる場合、そのマップは永遠に動き続けます。これを利用すれば、コマンドを無限に繰り返すことができます。
+例えば、いくつかのファイルがあって、すべてのファイルは 1 行目にバージョン番号が書かれているとします。"@file{vim *.txt}" でそれらのファイルを開くと、1 つ目のファイルが開いた状態になります。次のマップを定義します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:map ,, :s/5.1/5.2/<CR>:wnext<CR>,,
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:map ,, :s/5.1/5.2/<CR>:wnext<CR>,,
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now you type ",,".  This triggers the mapping.  It replaces "5.1" with "5.2"
+in the first line.  Then it does a ":wnext" to write the file and edit the
+next one.  The mapping ends in ",,".  This triggers the same mapping again,
+thus doing the substitution, etc.
+   This continues until there is an error.  In this case it could be a file
+where the substitute command doesn't find a match for "5.1".  You can then
+make a change to insert "5.1" and continue by typing ",," again.  Or the
+":wnext" fails, because you are in the last file in the list.
+   When a mapping runs into an error halfway, the rest of the mapping is
+discarded.  CTRL-C interrupts the mapping (CTRL-Break on MS-Windows).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そして、",," を入力してマップを実行します。このマップは一行目の "5.1" を "5.2" に変更し、"@command{:wnext}" で上書き保存してから次のファイルを開きます。マップの最後は ",," になっているので同じマップが再び適用され、置換と保存が実行されます。
+このマップは、何かエラーが発生するまで止まりません。このマップの場合、置換コマンドの実行で "5.1" が見つからなかった場合にエラーが発生します。その場合は、"5.1" を挿入してから再びマップを実行します。最後のファイルに到達すると、"@command{:wnext}" が失敗してマップが停止します。
+マップの途中でエラーが発生した場合は、そのマップの残りの部分は無視されます。マップは @kbd{CTRL-C} で中断できます (MS-WindowsではCTRL-Break)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+DELETE A MAPPING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec マップを削除する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To remove a mapping use the ":unmap" command.  Again, the mode the unmapping
+applies to depends on the command used:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップを削除するには "@command{:unmap}" コマンドを使います。このコマンドにも、モード別のものが用意されています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:unmap		Normal, Visual and Operator-pending
+	:vunmap		Visual
+	:nunmap		Normal
+	:ounmap		Operator-pending
+	:unmap!		Insert and Command-line
+	:iunmap		Insert
+	:cunmap		Command-line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .2 .7
+@item @tab :unmap @tab ノーマルモード、ビジュアルモード、オペレータ待機モード
+@item @tab :vunmap @tab ビジュアルモード
+@item @tab :nunmap @tab ノーマルモード
+@item @tab :ounmap @tab オペレータ待機モード
+@item @tab :unmap! @tab 挿入モード、コマンドライン
+@item @tab :iunmap @tab 挿入モード
+@item @tab :cunmap @tab コマンドライン
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There is a trick to define a mapping that works in Normal and Operator-pending
+mode, but not in Visual mode.  First define it for all three modes, then
+delete it for Visual mode: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、ビジュアルモードを除き、ノーマルモードとオペレータ待機モードだけでマップを定義したいような場合は次のトリックが使えます。最初に 3 つのモードでマップを定義し、ビジュアルモードのマップだけを削除します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:map <C-A> /---><CR>
+	:vunmap <C-A>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:map <C-A> /---><CR>
+:vunmap <C-A>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Notice that the five characters "<C-A>" stand for the single key CTRL-A.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"<C-A>" は @kbd{CTRL-A} キーとして解釈されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To remove all mappings use the |:mapclear| command.  You can guess the
+variations for different modes by now.  Be careful with this command, it can't
+be undone.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべてのマップを削除するには |:mapclear| コマンドを使います。他のコマンドと同様に、これにもモード別のコマンドが用意されています。マップの削除はアンドゥできないので注意してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SPECIAL CHARACTERS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 特殊文字
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ":map" command can be followed by another command.  A | character
+separates the two commands.  This also means that a | character can't be used
+inside a map command.  To include one, use <Bar> (five characters).  Example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:map}" コマンドの後ろには他のコマンドを続けて書くことができます。その場合は @samp{|} 文字でコマンドを区切ります。そのため、マップの中では @samp{|} 文字が使えません。この文字を使いたい場合は <Bar> (5文字) を使ってください。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:map <F8> :write <Bar> !checkin %:S<CR>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:map <F8> :write <Bar> !checkin %:S<CR>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The same problem applies to the ":unmap" command, with the addition that you
+have to watch out for trailing white space.  These two commands are different:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同じ問題は "@command{:unmap}" コマンドにもあります。"@command{:unmap}" の場合はさらに末尾のスペースにも注意しなければなりません。以下の二つのコマンドは動作が違います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:unmap a | unmap b
+	:unmap a| unmap b
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:unmap a | unmap b
+:unmap a| unmap b
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first command tries to unmap "a ", with a trailing space.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+1 つ目のコマンドは "a " (スペース付き) のマップを削除します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When using a space inside a mapping, use <Space> (seven characters): >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップの中でスペースを使いたい場合は <Space> (7文字) を使ってください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:map <Space> W
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:map <Space> W
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This makes the spacebar move a blank-separated word forward.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このマップはスペースキーを押すと、次の単語 (空白区切り) に移動します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is not possible to put a comment directly after a mapping, because the "
+character is considered to be part of the mapping.  You can use |", this
+starts a new, empty command with a comment.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップコマンドの末尾にはコメントを付けられません。なぜなら、@samp{"} 文字はマップの一部として処理されてしまうからです。代わりに @samp{|"} を使ってください。これは、新しい空のコマンドを開始して、そのコマンドにコメントをつけます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:map <Space> W|     " Use spacebar to move forward a word
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:map <Space> W|     " 次の単語に移動するのにスペースバーを使う
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MAPPINGS AND ABBREVIATIONS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec マップと短縮入力
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Abbreviations are a lot like Insert mode mappings.  The arguments are handled
+in the same way.  The main difference is the way they are triggered.  An
+abbreviation is triggered by typing a non-word character after the word.  A
+mapping is triggered when typing the last character.
+   Another difference is that the characters you type for an abbreviation are
+inserted in the text while you type them.  When the abbreviation is triggered
+these characters are deleted and replaced by what the abbreviation produces.
+When typing the characters for a mapping, nothing is inserted until you type
+the last character that triggers it.  If the 'showcmd' option is set, the
+typed characters are displayed in the last line of the Vim window.
+   An exception is when a mapping is ambiguous.  Suppose you have done two
+mappings: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+挿入モードのマップは短縮入力とよく似ています。引数は同じ方法で処理されます。主な違いは実行されるタイミングです。短縮入力は単語の後で単語以外の文字を入力したときに実行されます。マップはマップ文字列の最後の文字を入力したときに実行されます。
+違いは他にもあります。短縮入力では入力した文字がすぐに挿入されます。短縮入力が実行されると元の文字が削除されて指定された文字列に置換されます。マップされた文字を入力したときは最後の文字を入力してマップが実行されるまで何も挿入されません。'@option{showcmd}' オプションがオンに設定されている場合は、入力途中の文字がウィンドウ下部に表示されます。
+マップがあいまいな場合は少し違う動作になります。例えば、次の二つのマップがあるとき:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:imap aa foo
+	:imap aaa bar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:imap aa foo
+:imap aaa bar
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now, when you type "aa", Vim doesn't know if it should apply the first or the
+second mapping.  It waits for another character to be typed.  If it is an "a",
+the second mapping is applied and results in "bar".  If it is a space, for
+example, the first mapping is applied, resulting in "foo", and then the space
+is inserted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"aa" と入力した時点では、1 つ目のマップを適用すべきか、それとも 2 つ目のマップを使うべきか、判断できません。その場合は、他の文字が入力されるまで待機状態になります。"a" を入力すると 2 つ目のマップが適用されて "bar" が挿入されます。他の文字、例えばスペース、を入力すると 1 つ目のマップが適用されて "foo" が挿入され、さらにスペースが挿入されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ADDITIONALLY...
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec さらに...
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The <script> keyword can be used to make a mapping local to a script.  See
+|:map-<script>|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+<script> キーワードを使うと、スクリプトローカルなマップを定義できます。|:map-<script>| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The <buffer> keyword can be used to make a mapping local to a specific buffer.
+See |:map-<buffer>|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+<buffer> キーワードを使うと、バッファローカルなマップを定義できます。|:map-<buffer>| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The <unique> keyword can be used to make defining a new mapping fail when it
+already exists.  Otherwise a new mapping simply overwrites the old one.  See
+|:map-<unique>|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+<unique> キーワードを使うと、定義しようとしたマップがすでに定義されていた場合にコマンドが失敗します。このキーワードを使わない場合は、古いマップが上書き定義されます。|:map-<unique>| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To make a key do nothing, map it to <Nop> (five characters).  This will make
+the <F7> key do nothing at all: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+何もしないキーを定義したい場合は <Nop> (5文字) を使います。次のコマンドは、@key{<F7>} キーが何もしないように設定しています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:map <F7> <Nop>| map! <F7> <Nop>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:map <F7> <Nop>| map! <F7> <Nop>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There must be no space after <Nop>.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+<Nop> の後に空白を入れないでください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*40.2*	Defining command-line commands
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{40.2}
+@node コマンドラインコマンドを定義する
+@section コマンドラインコマンドを定義する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Vim editor enables you to define your own commands.  You execute these
+commands just like any other Command-line mode command.
+   To define a command, use the ":command" command, as follows: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim では新しいコマンドを定義することができます。定義したコマンドはコマンドラインモードの他のコマンドと同じように使えます。
+コマンドを定義するには "@command{:command}" コマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:command DeleteFirst 1delete
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:command DeleteFirst 1delete
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now when you execute the command ":DeleteFirst" Vim executes ":1delete", which
+deletes the first line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:DeleteFirst}" コマンドを実行すると、"@command{:1delete}" が実行され、最初の行が削除されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	User-defined commands must start with a capital letter.  You cannot
+	use ":X", ":Next" and ":Print".  The underscore cannot be used!  You
+	can use digits, but this is discouraged.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ユーザー定義コマンドの名前は必ず大文字で開始する必要があります。":X"、":Next"、":Print" を使うことはできません。アンダースコア ("_") も使えません。数字は使えますがお勧めしません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To list the user-defined commands, execute the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザー定義コマンドの一覧を見るには、次のコマンドを実行します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:command
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:command
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Just like with the builtin commands, the user defined commands can be
+abbreviated.  You need to type just enough to distinguish the command from
+another.  Command line completion can be used to get the full name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+組み込みコマンドと同じように、ユーザー定義コマンドも省略できます。他のコマンドと区別するのに十分な長さの文字を入力するだけでコマンドを実行できます。コマンドライン補完を使って完全な名前を得ることもできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+NUMBER OF ARGUMENTS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 引数の数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+User-defined commands can take a series of arguments.  The number of arguments
+must be specified by the -nargs option.  For instance, the example
+:DeleteFirst command takes no arguments, so you could have defined it as
+follows: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザー定義コマンドは引数を取ることができます。引数の数は -nargs オプションで指定する必要があります。例えば、上述の @command{:DeleteFirst} コマンドは引数を取らないので、次のように定義できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:command -nargs=0 DeleteFirst 1delete
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:command -nargs=0 DeleteFirst 1delete
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+However, because zero arguments is the default, you do not need to add
+"-nargs=0".  The other values of -nargs are as follows:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+指定が無ければ 0 が使われるので、わざわざ "-nargs=0" を指定する必要はありません。-nargs には次の値を指定できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	-nargs=0	No arguments
+	-nargs=1	One argument
+	-nargs=*	Any number of arguments
+	-nargs=?	Zero or one argument
+	-nargs=+	One or more arguments
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .4 .5
+@item @tab -nargs=0 @tab 引数なし
+@item @tab -nargs=1 @tab 引数 1 個
+@item @tab -nargs=* @tab いくつでも
+@item @tab -nargs=? @tab 引数なし、もしくは 1 個
+@item @tab -nargs=+ @tab 引数 1 個以上
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING THE ARGUMENTS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 引数の使い方
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Inside the command definition, the arguments are represented by the
+<args> keyword.  For example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンド定義の中では、<args> キーワードを使って引数を表します。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:command -nargs=+ Say :echo "<args>"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:command -nargs=+ Say :echo "<args>"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now when you type >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のコマンドを実行すると:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:Say Hello World
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:Say Hello World
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim echoes "Hello World".  However, if you add a double quote, it won't work.
+For example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"Hello World" と表示されます。引数に引用符 (") が使われると、これはうまく動きません。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:Say he said "hello"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:Say he said "hello"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To get special characters turned into a string, properly escaped to use as an
+expression, use "<q-args>": >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特殊な文字が含まれているときにそれを適切にエスケープして文字列として使えるようにするには "<q-args>" を使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:command -nargs=+ Say :echo <q-args>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:command -nargs=+ Say :echo <q-args>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now the above ":Say" command will result in this to be executed: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上記の ":Say" コマンドを実行すると、次のコマンドが実行されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:echo "he said \"hello\""
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:echo "he said \"hello\""
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The <f-args> keyword contains the same information as the <args> keyword,
+except in a format suitable for use as function call arguments.  For example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+<f-args> キーワードを使うと、引数が関数呼び出しに適した形に展開されます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:command -nargs=* DoIt :call AFunction(<f-args>)
+	:DoIt a b c
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:command -nargs=* DoIt :call AFunction(<f-args>)
+:DoIt a b c
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Executes the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のコマンドが実行されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:call AFunction("a", "b", "c")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:call AFunction("a", "b", "c")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+LINE RANGE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 範囲指定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some commands take a range as their argument.  To tell Vim that you are
+defining such a command, you need to specify a -range option.  The values for
+this option are as follows:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+いくつかのコマンドは範囲指定を受け付けますが、そのようなコマンドを定義したい場合は -range オプションを使います。このオプションには次の値を指定できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	-range		Range is allowed; default is the current line.
+	-range=%	Range is allowed; default is the whole file.
+	-range={count}	Range is allowed; the last number in it is used as a
+			single number whose default is {count}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .3 .7
+@item @tab -range @tab 範囲指定を許可。省略時は現在行が選択される。
+@item @tab -range=% @tab 範囲指定を許可。省略時はファイル全体が選択される。
+@item @tab -range=@{count@} @tab 範囲指定を許可。範囲指定の最後の数値だけを使う。省略時は @{count@} が使われる。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When a range is specified, the keywords <line1> and <line2> get the values of
+the first and last line in the range.  For example, the following command
+defines the SaveIt command, which writes out the specified range to the file
+"save_file": >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+範囲指定を使う場合は、<line1> キーワードと <line2> キーワードを使って範囲の最初と最後の行を取得できます。例えば、次のコマンドは、指定された範囲のテキストを"save_file" に保存するコマンドを定義しています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:command -range=% SaveIt :<line1>,<line2>write! save_file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:command -range=% SaveIt :<line1>,<line2>write! save_file
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+OTHER OPTIONS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 他のオプション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some of the other options and keywords are as follows:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使用できるオプションやキーワードは他にもあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	-count={number}		The command can take a count whose default is
+				{number}.  The resulting count can be used
+				through the <count> keyword.
+	-bang			You can use a !.  If present, using <bang> will
+				result in a !.
+	-register		You can specify a register.  (The default is
+				the unnamed register.)
+				The register specification is available as
+				<reg> (a.k.a. <register>).
+	-complete={type}	Type of command-line completion used.  See
+				|:command-completion| for the list of possible
+				values.
+	-bar			The command can be followed by | and another
+				command, or " and a comment.
+	-buffer			The command is only available for the current
+				buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item -count=@{number@}
+カウント指定を受け付ける。省略時は @{number@}。カウント指定は <count> キーワードで取得できます。
+@item -bang
+! の指定を受け付ける。! が使われた場合は <bang> キーワードが ! に置き換わります。
+@item -register
+レジスタの指定を受け付ける。(省略時は無名レジスタ。) 指定されたレジスタは <reg> (または <register>)	で取得できます。
+@item -complete=@{type@}
+コマンドライン補完の種類を指定する。使用できる補完の種類は |:command-completion| を参照。
+@item -bar
+コマンドの後ろに | を使って他のコマンド (あるいはコメント) を続けて書くことを許可する。
+@item -buffer
+カレントバッファでのみ使用できるコマンドを定義する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Finally, you have the <lt> keyword.  It stands for the character <.  Use this
+to escape the special meaning of the <> items mentioned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最後に <lt> キーワードを説明します。これは文字 "<" を意味します。<> 表記をエスケープして、特殊な意味を消すために使います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+REDEFINING AND DELETING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 再定義と削除
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To redefine the same command use the ! argument: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同じ名前のコマンドを再定義したい場合は ! を使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:command -nargs=+ Say :echo "<args>"
+	:command! -nargs=+ Say :echo <q-args>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:command -nargs=+ Say :echo "<args>"
+:command! -nargs=+ Say :echo <q-args>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To delete a user command use ":delcommand".  It takes a single argument, which
+is the name of the command.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドを削除したい場合は "@command{:delcommand}" を使います。削除したいコマンドの名前を引数に指定してください。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:delcommand SaveIt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:delcommand SaveIt
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To delete all the user commands: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のコマンドですべてのユーザー定義コマンドを削除できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:comclear
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:comclear
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Careful, this can't be undone!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドの削除はアンドゥできないので注意してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+More details about all this in the reference manual: |user-commands|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザー定義コマンドについての詳細はリファレンスマニュアルを参照してください。|user-commands|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*40.3*	Autocommands
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{40.3}
+@node 自動コマンド
+@section 自動コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An autocommand is a command that is executed automatically in response to some
+event, such as a file being read or written or a buffer change.  Through the
+use of autocommands you can train Vim to edit compressed files, for example.
+That is used in the |gzip| plugin.
+   Autocommands are very powerful.  Use them with care and they will help you
+avoid typing many commands.  Use them carelessly and they will cause a lot of
+trouble.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動コマンドとは、さまざまなイベントに応じて自動的に実行されるコマンドのことです。ファイルを読み書きしたり、バッファを切り替えたりしたときに実行されます。例えば、|gzip| プラグインは、圧縮ファイルを開くために自動コマンドを使っています。自動コマンドは非常に強力です。適切に使えばいろんな手間を省くことができます。しかし、不適切な使い方をすればさまざまなトラブルの原因になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Suppose you want to replace a datestamp on the end of a file every time it is
+written.  First you define a function: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、ファイルを保存するときに、保存した日付をファイル末尾に書き込んでみましょう。まず、次の関数を定義します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:function DateInsert()
+	:  $delete
+	:  read !date
+	:endfunction
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:function DateInsert()
+:  $delete
+:  read !date
+:endfunction
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You want this function to be called each time, just before a buffer is written
+to a file.  This will make that happen: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファをファイルに保存する直前にこの関数を実行したいわけです。次のコマンドで設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd BufWritePre *  call DateInsert()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd BufWritePre *  call DateInsert()
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"BufWritePre" is the event for which this autocommand is triggered: Just
+before (pre) writing a buffer to a file.  The "*" is a pattern to match with
+the file name.  In this case it matches all files.
+   With this command enabled, when you do a ":write", Vim checks for any
+matching BufWritePre autocommands and executes them, and then it
+performs the ":write".
+   The general form of the :autocmd command is as follows: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"BufWritePre" は自動コマンドが実行されるイベントです。このイベントはバッファをファイルに保存する直前に発行されます。"*" の部分はファイル名にマッチするパターンです。"*" はすべてのファイルにマッチします。
+この自動コマンドが設定された状態で "@command{:write}" を実行すると、ファイル名にマッチしたすべての BufWritePre 自動コマンドが実行されてから、ファイルが保存されます。
+:autocmd の正式な書式は次のとおりです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd [group] {events} {file_pattern} [nested] {command}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd [group] @{events@} @{file_pattern@} [nested] @{command@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The [group] name is optional.  It is used in managing and calling the commands
+(more on this later).  The {events} parameter is a list of events (comma
+separated) that trigger the command.
+   {file_pattern} is a filename, usually with wildcards.  For example, using
+"*.txt" makes the autocommand be used for all files whose name end in ".txt".
+The optional [nested] flag allows for nesting of autocommands (see below), and
+finally, {command} is the command to be executed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[group] は省略可能です。コマンドを管理したり呼び出したりしたい場合に使います(後述)。@{events@} はコマンドを実行するイベントのリストです (コンマ区切り)。
+@{file_pattern@} はファイル名です。ワイルドカードが使えます。例えば、"*.txt" なら ".txt" で終わるファイルに対してコマンドが実行されます。[nested] は省略可能です。自動コマンドを再帰的に呼び出したい場合に指定します (下記参照)。そして、実行したいコマンドを @{command@} に指定します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+EVENTS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec イベント
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+One of the most useful events is BufReadPost.  It is triggered after a new
+file is being edited.  It is commonly used to set option values.  For example,
+you know that "*.gsm" files are GNU assembly language.  To get the syntax file
+right, define this autocommand: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+BufReadPost は最も便利なイベントの一つです。これは新しいファイルを開いたときに発行されます。普通はオプションを設定したりするのに使われます。例えば、"*.gsm" というファイルを GNU アセンブリ言語のファイルとして扱いたい場合は、次のように設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd BufReadPost *.gsm  set filetype=asm
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd BufReadPost *.gsm  set filetype=asm
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If Vim is able to detect the type of file, it will set the 'filetype' option
+for you.  This triggers the Filetype event.  Use this to do something when a
+certain type of file is edited.  For example, to load a list of abbreviations
+for text files: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルの種類が検出されて、'@option{filetype}' オプションが設定されると、Filetype イベントが発行されます。このイベントはファイルの種類に応じて何かを実行したい場合に使います。例えば、テキストファイルを開いたときに短縮入力の定義を読み込むには次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd Filetype text  source ~/.vim/abbrevs.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd Filetype text  source ~/.vim/abbrevs.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When starting to edit a new file, you could make Vim insert a skeleton: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しいファイルを作成したときにスケルトンを挿入することもできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd BufNewFile *.[ch]  0read ~/skeletons/skel.c
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd BufNewFile *.[ch]  0read ~/skeletons/skel.c
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See |autocmd-events| for a complete list of events.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+イベントの一覧は |autocmd-events| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+PATTERNS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec パターン
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The {file_pattern} argument can actually be a comma-separated list of file
+patterns.  For example: "*.c,*.h" matches files ending in ".c" and ".h".
+   The usual file wildcards can be used.  Here is a summary of the most often
+used ones:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{file_pattern@} 引数には複数のパターンをコンマ区切りで指定できます。例えば、"*.c,*.h" なら、末尾が ".c" と ".h" のファイルにマッチします。
+パターンには一般的なワイルドカードが使えます。次のようなものがよく使われます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	*		Match any character any number of times
+	?		Match any character once
+	[abc]		Match the character a, b or c
+	.		Matches a dot
+	a{b,c}		Matches "ab" and "ac"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .3 .7
+@item @tab * @tab 何かの文字が何文字でも
+@item @tab ? @tab 何かの文字が 1 つ
+@item @tab [abc] @tab a か b か c
+@item @tab . @tab ドット
+@item @tab a@{b,c@} @tab ab か ac
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the pattern includes a slash (/) Vim will compare directory names.
+Without the slash only the last part of a file name is used.  For example,
+"*.txt" matches "/home/biep/readme.txt".  The pattern "/home/biep/*" would
+also match it.  But "home/foo/*.txt" wouldn't.
+   When including a slash, Vim matches the pattern against both the full path
+of the file ("/home/biep/readme.txt") and the relative path (e.g.,
+"biep/readme.txt").
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パターンにスラッシュ (@samp{/}) が含まれている場合は、ディレクトリ名と比較されます。スラッシュが含まれていない場合は、ファイル名のみが使われます。例えば、"/home/biep/readme.txt" には "*.txt" がマッチします。"/home/biep/*" も同様にマッチします。しかし、"home/foo/*.txt" はマッチしません。
+スラッシュが含まれているときは、ファイルの絶対パス ("/home/biep/readme.txt") と相対パス (例えば "biep/readme.txt") の両方が比較されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	When working on a system that uses a backslash as file separator, such
+	as MS-Windows, you still use forward slashes in autocommands.  This
+	makes it easier to write the pattern, since a backslash has a special
+	meaning.  It also makes the autocommands portable.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+MS-Windows のように、ディレクトリの区切りにバックスラッシュを使うようなシステムでもスラッシュを使ってパターンを指定することができます。バックスラッシュはエスケープする必要があるので、スラッシュを使ったほうが簡単です。自動コマンドの移植性もあがります。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+DELETING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 自動コマンドを削除する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To delete an autocommand, use the same command as what it was defined with,
+but leave out the {command} at the end and use a !.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動コマンドの削除には、定義と同じコマンドを使います。ただし、削除するときは ! を使い、@{command@} は指定しません。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd! FileWritePre *
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd! FileWritePre *
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will delete all autocommands for the "FileWritePre" event that use the
+"*" pattern.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"FileWritePre" イベントの、"*" パターンを使っている自動コマンドがすべて削除されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+LISTING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 一覧表示する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To list all the currently defined autocommands, use this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+定義されている自動コマンドの一覧を見るには次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The list can be very long, especially when filetype detection is used.  To
+list only part of the commands, specify the group, event and/or pattern.  For
+example, to list all BufNewFile autocommands: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+とても長い出力が表示されます。ファイルタイプの認識が有効になっている場合は特に長くなります。一部のコマンドだけを表示したい場合は、グループ、イベント、パターンのどれかを指定してください。例えば、次のコマンドで BufNewFile に設定された自動コマンドを表示できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd BufNewFile
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd BufNewFile
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To list all autocommands for the pattern "*.c": >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"*.c" に対する自動コマンドを表示したい場合は次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd * *.c
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd * *.c
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Using "*" for the event will list all the events.  To list all autocommands
+for the cprograms group: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+イベントに "*" を指定すると、すべてのイベントが表示されます。cprograms グループの自動コマンドを表示したい場合は次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd cprograms
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd cprograms
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+GROUPS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec グループ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The {group} item, used when defining an autocommand, groups related autocommands
+together.  This can be used to delete all the autocommands in a certain group,
+for example.
+   When defining several autocommands for a certain group, use the ":augroup"
+command.  For example, let's define autocommands for C programs: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動コマンドを定義するとき、@{group@} を指定することで、関連した自動コマンドをグループ化できます。例えば、特定のグループの自動コマンドをまとめて削除したりできます。
+自動コマンドをグループ化するには、"@command{:augroup}" コマンドを使います。例えば、C 言語用の自動コマンドを定義してみましょう:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:augroup cprograms
+	:  autocmd BufReadPost *.c,*.h :set sw=4 sts=4
+	:  autocmd BufReadPost *.cpp   :set sw=3 sts=3
+	:augroup END
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:augroup cprograms
+:  autocmd BufReadPost *.c,*.h :set sw=4 sts=4
+:  autocmd BufReadPost *.cpp   :set sw=3 sts=3
+:augroup END
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will do the same as: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のように書くこともできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd cprograms BufReadPost *.c,*.h :set sw=4 sts=4
+	:autocmd cprograms BufReadPost *.cpp   :set sw=3 sts=3
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd cprograms BufReadPost *.c,*.h :set sw=4 sts=4
+:autocmd cprograms BufReadPost *.cpp   :set sw=3 sts=3
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To delete all autocommands in the "cprograms" group: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"cprograms" グループのすべての自動コマンドを削除するには、次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd! cprograms
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd! cprograms
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+NESTING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec ネスト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Generally, commands executed as the result of an autocommand event will not
+trigger any new events.  If you read a file in response to a FileChangedShell
+event, it will not trigger the autocommands that would set the syntax, for
+example.  To make the events triggered, add the "nested" argument: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+通常は、自動コマンドの中で実行されたコマンドによってイベントが発行されることはありません。例えば、FileChangedShell イベントの中でファイルを読み込んでも、シンタックスを設定するための自動コマンドは実行されません。イベントを発行させたい場合は "nested" 引数を指定してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd FileChangedShell * nested  edit
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd FileChangedShell * nested  edit
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+EXECUTING AUTOCOMMANDS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 自動コマンドを実行する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is possible to trigger an autocommand by pretending an event has occurred.
+This is useful to have one autocommand trigger another one.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+擬似的にイベントを発行して、自動コマンドを実行することができます。自動コマンド
+の中から他の自動コマンドを実行するような場合に便利です。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd BufReadPost *.new  execute "doautocmd BufReadPost " . expand("<afile>:r")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@iftex
+@example
+:autocmd BufReadPost *.new  execute "doautocmd BufReadPost "
+\        . expand("<afile>:r")
+@end example
+@end iftex
+@ifnottex
+@example
+:autocmd BufReadPost *.new  execute "doautocmd BufReadPost " . expand("<afile>:r")
+@end example
+@end ifnottex
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This defines an autocommand that is triggered when a new file has been edited.
+The file name must end in ".new".  The ":execute" command uses expression
+evaluation to form a new command and execute it.  When editing the file
+"tryout.c.new" the executed command will be: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しいファイルが開かれたときに実行される自動コマンドを定義しています。ファイル名の末尾が ".new" になっているものが対象です。"@command{:execute}" コマンドは、引数を評価した結果をコマンドとして実行します。例えば、"tryout.c.new" を開くと、次のコマンドが実行されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:doautocmd BufReadPost tryout.c
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:doautocmd BufReadPost tryout.c
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The expand() function takes the "<afile>" argument, which stands for the file
+name the autocommand was executed for, and takes the root of the file name
+with ":r".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+expand() 関数に指定された "<afile>" が自動コマンドで使われたファイル名に展開され、"@command{:r}" によって、そのルート部分 @{訳注: .newを除いた部分@} が使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+":doautocmd" executes on the current buffer.  The ":doautoall" command works
+like "doautocmd" except it executes on all the buffers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:doautocmd}" はカレントバッファの上で実行されます。"@command{:doautoall}" コマンドは、"@command{:doautocmd}" と同じ操作をすべてのバッファに対して実行します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING NORMAL MODE COMMANDS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec ノーマルモードコマンドを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The commands executed by an autocommand are Command-line commands.  If you
+want to use a Normal mode command, the ":normal" command can be used.
+Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動コマンドで使用できるのはコマンドラインコマンドです。ノーマルモードコマンドを使いたい場合は "@command{:normal}" コマンドを使ってください。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd BufReadPost *.log normal G
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd BufReadPost *.log normal G
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will make the cursor jump to the last line of *.log files when you start
+to edit it.
+   Using the ":normal" command is a bit tricky.  First of all, make sure its
+argument is a complete command, including all the arguments.  When you use "i"
+to go to Insert mode, there must also be a <Esc> to leave Insert mode again.
+If you use a "/" to start a search pattern, there must be a <CR> to execute
+it.
+   The ":normal" command uses all the text after it as commands.  Thus there
+can be no | and another command following.  To work around this, put the
+":normal" command inside an ":execute" command.  This also makes it possible
+to pass unprintable characters in a convenient way.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+*.log ファイルを開くと、ファイル末尾にカーソルがジャンプします。
+"@command{:normal}" コマンドは少し複雑です。指定するコマンドは完結していなければなりません。例えば、"i" で挿入モードに入ったら、<Esc> でモードを抜ける必要があります。"/" で検索する場合は、<CR> で検索を実行する必要があります。
+"@command{:normal}" コマンドはすべてのテキストを引数として解釈するので、@samp{|} を使って他のコマンドを続けて書くことはできません。それが必要な場合は "@command{:execute}" コマンドの中で "@command{:normal}" コマンドを実行してください。"@command{:execute}" を使うと、特殊文字を指定するのが簡単になります。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:autocmd BufReadPost *.chg execute "normal ONew entry:\<Esc>" |
+		\ 1read !date
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:autocmd BufReadPost *.chg execute "normal ONew entry:\<Esc>" |
+\ 1read !date
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This also shows the use of a backslash to break a long command into more
+lines.  This can be used in Vim scripts (not at the command line).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+長いコマンドを見やすくするために、バックスラッシュを使って複数行に分けています。この方法はスクリプトファイルの中だけで使えます (コマンドラインで入力するときは使えません)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you want the autocommand do something complicated, which involves jumping
+around in the file and then returning to the original position, you may want
+to restore the view on the file.  See |restore-position| for an example.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動コマンドの中で複雑なことを実行すると、必然的にカーソルの位置が変わってしまいます。それを元に戻す方法については |restore-position| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+IGNORING EVENTS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec イベントの無効化
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+At times, you will not want to trigger an autocommand.  The 'eventignore'
+option contains a list of events that will be totally ignored.  For example,
+the following causes events for entering and leaving a window to be ignored: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動コマンドを実行して欲しくないときは、'@option{eventignore}' オプションに無視したいイベントを設定してください。例えば、次のように設定すると、他のウィンドウに移動したときのイベントが無視されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set eventignore=WinEnter,WinLeave
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set eventignore=WinEnter,WinLeave
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To ignore all events, use the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべてのイベントを無視するには、次のように設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set eventignore=all
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set eventignore=all
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To set it back to the normal behavior, make 'eventignore' empty: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+通常の状態に戻すには、'@option{eventignore}' を空に設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set eventignore=
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set eventignore=
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+Next chapter: |usr_41.txt|  Write a Vim script
+
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+@end ifset

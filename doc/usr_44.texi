@@ -1,0 +1,1899 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node 構文ファイルを作成する, 言語を選択する, ファイルタイプを使う, 目次
+@unnumbered 構文ファイルを作成する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*usr_44.txt*	For Vim version 8.0.  Last change: 2008 Dec 28
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			 Your own syntax highlighted
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{usr_44.txt}
+@cindex usr_44.txt
+@verbatim
+*usr_44.txt*	For Vim バージョン 8.0.  Last change: 2008 Dec 28
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			    構文ファイルを作成する
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Vim comes with highlighting for a couple of hundred different file types.  If
+the file you are editing isn't included, read this chapter to find out how to
+get this type of file highlighted.  Also see |:syn-define| in the reference
+manual.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は 200 種類以上ものファイルを強調表示できます。強調表示されないファイルを見つけた場合は、本章を読んで、ファイルを強調表示する方法を調べてください。リファレンスマニュアルの |:syn-define| も参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|44.1|	Basic syntax commands
+|44.2|	Keywords
+|44.3|	Matches
+|44.4|	Regions
+|44.5|	Nested items
+|44.6|	Following groups
+|44.7|	Other arguments
+|44.8|	Clusters
+|44.9|	Including another syntax file
+|44.10|	Synchronizing
+|44.11|	Installing a syntax file
+|44.12|	Portable syntax file layout
+
+     Next chapter: |usr_45.txt|  Select your language
+ Previous chapter: |usr_43.txt|  Using filetypes
+Table of contents: |usr_toc.txt|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@menu
+* 基本的な syntax コマンド::           44.1
+* キーワード::                         44.2
+* マッチ::                             44.3
+* リージョン::                         44.4
+* 構文アイテムを入れ子にする::         44.5
+* グループの並び::                     44.6
+* その他の引数::                       44.7
+* クラスタ::                           44.8
+* 他の構文ファイルをインクルードする:: 44.9
+* シンクロナイズ::                     44.10
+* 構文ファイルをインストールする::     44.11
+* ポータブルな文法定義ファイル::       44.12
+@end menu
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*44.1*	Basic syntax commands
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{44.1}
+@node 基本的な syntax コマンド
+@section 基本的な syntax コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Using an existing syntax file to start with will save you a lot of time.  Try
+finding a syntax file in $VIMRUNTIME/syntax for a language that is similar.
+These files will also show you the normal layout of a syntax file.  To
+understand it, you need to read the following.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+既存の構文ファイルを土台にすることで多くの時間を節約できます。望みのものに近い言語の構文ファイルを $VIMRUNTIME/syntax から探してください。それらのファイルを見れば、構文ファイルの基本的な構造がわかると思います。内容を理解するには本章を読んでください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Let's start with the basic arguments.  Before we start defining any new
+syntax, we need to clear out any old definitions: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+基本的なことから説明します。構文定義を開始する前に、古い定義をクリアする必要があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax clear
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax clear
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This isn't required in the final syntax file, but very useful when
+experimenting.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最終的な構文ファイルではこのコマンドは必要ありませんが、いろいろと試したいときには便利です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are more simplifications in this chapter.  If you are writing a syntax
+file to be used by others, read all the way through the end to find out the
+details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+本章の説明はかなり簡略化されています。構文ファイルを書いて、それを他人に使ってもらう場合は、本章を最後まで読んで詳細を理解してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+LISTING DEFINED ITEMS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 定義された構文アイテムを一覧表示する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To check which syntax items are currently defined, use this command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在定義されている構文アイテムを表示するには、次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use this to check which items have actually been defined.  Quite
+useful when you are experimenting with a new syntax file.  It also shows the
+colors used for each item, which helps to find out what is what.
+   To list the items in a specific syntax group use: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実際に定義されている構文アイテムを確認することができます。新しい構文ファイルを作っていて、いろいろと試しているときに便利です。また、それぞれの構文アイテムは、実際の表示と同じ色で表示されるので、何がどうなっているかも確認できます。
+特定の構文グループのアイテムを一覧表示するには次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax list {group-name}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax list @{group-name@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This also can be used to list clusters (explained in |44.8|).  Just include
+the @ in the name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはクラスタ (|@ref{44.8, , 44.8}|参照) を一覧表示することもできます。その場合は名前に @@ を付けてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MATCHING CASE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 大文字と小文字の区別
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some languages are not case sensitive, such as Pascal.  Others, such as C, are
+case sensitive.  You need to tell which type you have with the following
+commands: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Pascal などの言語は大文字と小文字を区別しません。C などの言語は大文字と小文字を区別します。次のコマンドで区別するかしないかを指定できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:syntax case match
+	:syntax case ignore
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax case match
+:syntax case ignore
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "match" argument means that Vim will match the case of syntax elements.
+Therefore, "int" differs from "Int" and "INT".  If the "ignore" argument is
+used, the following are equivalent: "Procedure", "PROCEDURE" and "procedure".
+   The ":syntax case" commands can appear anywhere in a syntax file and affect
+the syntax definitions that follow.  In most cases, you have only one ":syntax
+case" command in your syntax file; if you work with an unusual language that
+contains both case-sensitive and non-case-sensitive elements, however, you can
+scatter the ":syntax case" command throughout the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"match" を指定すると大文字と小文字は区別されます。その場合、"int" と "Int" と"INT" はそれぞれ違うものになります。"ignore" を指定した場合は、"Procedure" と "PROCEDURE" と "procedure" は同じ扱いになります。
+":syntax case" コマンドは構文ファイルのどこにでも書くことができ、それ移行の構文定義に作用します。ほとんどの場合、":syntax case" コマンドは構文ファイルに 1 つだけ書きますが、大文字と小文字を区別する要素と区別しない要素を両方もつような特殊な言語の場合には、ファイルのいたるところで ":syntax case" コマンドを書くこともできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*44.2*	Keywords
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{44.2}
+@node キーワード
+@section キーワード
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The most basic syntax elements are keywords.  To define a keyword, use the
+following form: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最も基本的な構文要素はキーワードです。次のように定義します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax keyword {group} {keyword} ...
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax keyword @{group@} @{keyword@} ...
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The {group} is the name of a syntax group.  With the ":highlight" command you
+can assign colors to a {group}.  The {keyword} argument is an actual keyword.
+Here are a few examples: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{group@} は構文グループの名前です。"@command{:highlight}" コマンドを使うことで @{group@} に色を割り当てることができます。@{keyword@} は実際のキーワードです。いくつか例を示します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax keyword xType int long char
+	:syntax keyword xStatement if then else endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax keyword xType int long char
+:syntax keyword xStatement if then else endif
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This example uses the group names "xType" and "xStatement".  By convention,
+each group name is prefixed by the filetype for the language being defined.
+This example defines syntax for the x language (eXample language without an
+interesting name).  In a syntax file for "csh" scripts the name "cshType"
+would be used.  Thus the prefix is equal to the value of 'filetype'.
+   These commands cause the words "int", "long" and "char" to be highlighted
+one way and the words "if", "then", "else" and "endif" to be highlighted
+another way.  Now you need to connect the x group names to standard Vim
+names.  You do this with the following commands: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"xType" と "xStatement" がグループ名です。習慣的に、グループ名の先頭にはファイルタイプ名が付けられます。この例では x 言語 (そういう言語があるのではなく単にeXample の x) の構文を定義しています。例えば "csh" スクリプト用の構文ファイルなら "cshType" という名前になります。つまり、'filetype' の値と同じものを先頭に付けます。
+この例では "int" と "long" と "char" が同じ方法で強調表示され、"if" と "then" と "else" と "endif" が別の同じ方法で強調表示されます。次に、x グループ名と Vim の標準名を関連付ける必要があります。次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:highlight link xType Type
+	:highlight link xStatement Statement
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:highlight link xType Type
+:highlight link xStatement Statement
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This tells Vim to highlight "xType" like "Type" and "xStatement" like
+"Statement".  See |group-name| for the standard names.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"xType" を "Type" で強調表示し、"xStatement" を "Statement" で強調表示します。標準名については |group-name| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+UNUSUAL KEYWORDS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 特殊なキーワード
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The characters used in a keyword must be in the 'iskeyword' option.  If you
+use another character, the word will never match.  Vim doesn't give a warning
+message for this.
+   The x language uses the '-' character in keywords.  This is how it's done:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+キーワードとして使われる文字は '@option{iskeyword}' オプションに指定されていなければなりません。それ以外の文字を使った場合、その単語は決してマッチしません。Vim はそのことについて警告メッセージを出しません。
+例題の x 言語は '-' 文字をキーワードとして使えます。それは次のように設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:setlocal iskeyword+=-
+	:syntax keyword xStatement when-not
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:setlocal iskeyword+=-
+:syntax keyword xStatement when-not
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ":setlocal" command is used to change 'iskeyword' only for the current
+buffer.  Still it does change the behavior of commands like "w" and "*".  If
+that is not wanted, don't define a keyword but use a match (explained in the
+next section).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:setlocal}" コマンドを使って、カレントバッファだけ '@option{iskeyword}' を変更しています。この設定によって "w" や "*" などのコマンドの動作も変更されます。動作を変更したくない場合は、キーワードではなくマッチを使ってください (次節で説明します)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The x language allows for abbreviations.  For example, "next" can be
+abbreviated to "n", "ne" or "nex".  You can define them by using this command:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+x 言語では短縮形も使えます。例えば、"next" は "n"、"ne"、"nex" に短縮できます。次のコマンドでそれを定義できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:syntax keyword xStatement n[ext]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax keyword xStatement n[ext]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This doesn't match "nextone", keywords always match whole words only.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは "nextone" にはマッチしません。キーワードは常に単語全体にのみマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*44.3*	Matches
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{44.3}
+@node マッチ
+@section マッチ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Consider defining something a bit more complex.  You want to match ordinary
+identifiers.  To do this, you define a match syntax item.  This one matches
+any word consisting of only lowercase letters: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もう少し複雑なものを定義してみましょう。普通の識別子にマッチさせるため、マッチ構文アイテムを定義します。次の例は、すべての文字が小文字の単語にマッチします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax match xIdentifier /\<\l\+\>/
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax match xIdentifier /\<\l\+\>/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Note:
+	Keywords overrule any other syntax item.  Thus the keywords "if",
+	"then", etc., will be keywords, as defined with the ":syntax keyword"
+	commands above, even though they also match the pattern for
+	xIdentifier.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+キーワードは他の構文アイテムより優先されます。"if" や "then" などのキーワード (上述の ":syntax keyword" コマンドで定義したもの) は、xIdentifier にもマッチしますが、キーワードとして扱われます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The part at the end is a pattern, like it's used for searching.  The // is
+used to surround the pattern (like how it's done in a ":substitute" command).
+You can use any other character, like a plus or a quote.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最後の部分はパターンです。これは検索で使用するものと同じです。// を使ってパターンを囲みます ("@command{:substitute}" コマンドと同じ)。+ や " など、他の文字を使うこともできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now define a match for a comment.  In the x language it is anything from # to
+the end of a line: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次はコメント用のマッチを定義してみます。x 言語では "#" から行末までがコメントになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax match xComment /#.*/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax match xComment /#.*/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Since you can use any search pattern, you can highlight very complex things
+with a match item.  See |pattern| for help on search patterns.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべての検索パターンが使えるので、マッチを使うことで非常に複雑なものを強調表示できます。検索パターンについては |pattern| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*44.4*	Regions
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{44.4}
+@node リージョン
+@section リージョン
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the example x language, strings are enclosed in double quotation marks (").
+To highlight strings you define a region.  You need a region start (double
+quote) and a region end (double quote).  The definition is as follows: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例題の x 言語では、文字列をダブルクォートで囲みます。文字列を強調表示するためにリージョン (領域) を定義します。それにはリージョンの開始 (ダブルクォート) とリージョンの終了 (ダブルクォート) が必要です。定義は次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax region xString start=/"/ end=/"/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region xString start=/"/ end=/"/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "start" and "end" directives define the patterns used to find the start
+and end of the region.  But what about strings that look like this?
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"start" と "end" に指定したパターンは、リージョンの開始と終了を探すために使用されます。しかし次のような文字列があったらどうなるでしょうか？
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	"A string with a double quote (\") in it" ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+"A string with a double quote (\") in it" ~
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This creates a problem: The double quotation marks in the middle of the string
+will end the region.  You need to tell Vim to skip over any escaped double
+quotes in the string.  Do this with the skip keyword: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはうまくいきません。文字列の途中のダブルクォートによってリージョンが終了してしまいます。文字列中のエスケープされたダブルクォートをスキップするように指定する必要があります。それには "skip" キーワードを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax region xString start=/"/ skip=/\\"/ end=/"/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region xString start=/"/ skip=/\\"/ end=/"/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The double backslash matches a single backslash, since the backslash is a
+special character in search patterns.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+検索パターンの中ではバックスラッシュが特殊な文字として使われるので、連続した 2 つのバックスラッシュが 1 つのバックスラッシュにマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When to use a region instead of a match?  The main difference is that a match
+item is a single pattern, which must match as a whole.  A region starts as
+soon as the "start" pattern matches.  Whether the "end" pattern is found or
+not doesn't matter.  Thus when the item depends on the "end" pattern to match,
+you cannot use a region.  Otherwise, regions are often simpler to define.  And
+it is easier to use nested items, as is explained in the next section.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マッチではなくリージョンを使うのはどんな場面でしょうか？主な違いは、マッチは 1 つのパターンであり、そのパターン全体がマッチするということです。リージョンは "start" パターンがマッチするとすぐに開始されます。"end" パターンが見つかるかどうかは関係ありません。つまり、構文アイテムが "end" パターンにマッチすることに依存している場合はリージョンは使えません。それが大丈夫なら、リージョンを定義する方が簡単な場合が多々あります。また、次の節でも述べるように、構文アイテムを入れ子にする場合もリージョンが適しています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*44.5*	Nested items
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{44.5}
+@node 構文アイテムを入れ子にする
+@section 構文アイテムを入れ子にする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Take a look at this comment:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のようなコメントがあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	%Get input  TODO: Skip white space ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+%Get input  TODO: Skip white space ~
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You want to highlight TODO in big yellow letters, even though it is in a
+comment that is highlighted blue.  To let Vim know about this, you define the
+following syntax groups: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コメントを青色で強調表示し、その中の TODO を黄色の大きな字で強調表示してみましょう。それには、次のような構文グループを定義します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax keyword xTodo TODO contained
+	:syntax match xComment /%.*/ contains=xTodo
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax keyword xTodo TODO contained
+:syntax match xComment /%.*/ contains=xTodo
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the first line, the "contained" argument tells Vim that this keyword can
+exist only inside another syntax item.  The next line has "contains=xTodo".
+This indicates that the xTodo syntax element is inside it.  The result is that
+the comment line as a whole is matched with "xComment" and made blue.  The
+word TODO inside it is matched by xTodo and highlighted yellow (highlighting
+for xTodo was setup for this).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+1 行目の "contained" 引数は、そのキーワードが他の構文アイテムの中にのみ出現することを示しています。2 行目の "contains=xTodo" は、その構文アイテムの中に xTodo が出現することを示しています。結果、コメント全体は "xComment" にマッチして青色になり、その中の TODO は xTodo にマッチして黄色になります (xTodo に対する強調表示が設定してあるなら)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+RECURSIVE NESTING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 入れ子の再帰
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The x language defines code blocks in curly braces.  And a code block may
+contain other code blocks.  This can be defined this way: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+x 言語では波カッコでコードブロックを表現します。コードブロックの中にはさらに別のコードブロックを入れることができます。これは次のように定義できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax region xBlock start=/{/ end=/}/ contains=xBlock
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region xBlock start=/@{/ end=/@}/ contains=xBlock
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Suppose you have this text:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、次のようなテキストがあった場合:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	while i < b { ~
+		if a { ~
+			b = c; ~
+		} ~
+	} ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+while i < b {
+    if a {
+        b = c;
+    }
+}
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+First a xBlock starts at the { in the first line.  In the second line another
+{ is found.  Since we are inside a xBlock item, and it contains itself, a
+nested xBlock item will start here.  Thus the "b = c" line is inside the
+second level xBlock region.  Then a } is found in the next line, which matches
+with the end pattern of the region.  This ends the nested xBlock.  Because the
+} is included in the nested region, it is hidden from the first xBlock region.
+Then at the last } the first xBlock region ends.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+まず、1 行目の @{ で 1 つ目の xBlock が開始します。2 行目には別の @{ があります。そこは xBlock の中で、xBlock は自身を含むことができるので、2 つ目の xBlock が開始します。したがって、"b = c" の行は第二レベルの xBlock リージョンの中ということになります。次の行には @} があり、これはリージョンの末尾を示すパターンにマッチするので、これによって 2 つ目の xBlock が閉じます。この @} は 2 つ目の xBlock リージョンの中の文字なので、1 つ目の xBlock リージョンからは隠されます。そして、最後の @} によって 1 つ目の xBlock リージョンが閉じます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+KEEPING THE END
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 末尾をキープする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Consider the following two syntax items: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の 2 つの構文アイテムを見てみましょう:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax region xComment start=/%/ end=/$/ contained
+	:syntax region xPreProc start=/#/ end=/$/ contains=xComment
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region xComment start=/%/ end=/$/ contained
+:syntax region xPreProc start=/#/ end=/$/ contains=xComment
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You define a comment as anything from % to the end of the line.  A
+preprocessor directive is anything from # to the end of the line.  Because you
+can have a comment on a preprocessor line, the preprocessor definition
+includes a "contains=xComment" argument.  Now look what happens with this
+text:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+% から行末までをコメントとして定義し、# から行末までをプリプロセッサー指令として定義しています。プリプロセッサー行にはコメントを入れることができるので、プリプロセッサーの定義には "contains=xComment" 引数が指定されています。では、次のようなテキストで何が起こるか見てみましょう:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	#define X = Y  % Comment text ~
+	int foo = 1; ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+#define X = Y  % Comment text
+int foo = 1;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+What you see is that the second line is also highlighted as xPreProc.  The
+preprocessor directive should end at the end of the line.  That is why
+you have used "end=/$/".  So what is going wrong?
+   The problem is the contained comment.  The comment starts with % and ends
+at the end of the line.  After the comment ends, the preprocessor syntax
+continues.  This is after the end of the line has been seen, so the next
+line is included as well.
+   To avoid this problem and to avoid a contained syntax item eating a needed
+end of line, use the "keepend" argument.  This takes care of
+the double end-of-line matching: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このテキストは、2 行目も xPreProc として強調表示されます。プリプロセッサー指令は行末で終わるものであり、そのために "end=/$/" と指定しました。何が間違っていたのでしょうか？
+問題は内包されたコメントにあります。コメントは % で始まり、行末で終わります。コメントが終わるとプリプロセッサー構文に戻りますが、それは行末が処理された後なので、次の行も含まれてしまうのです。
+この問題を回避し、内包された構文が改行を消費しないようにするには、"keepend" 引数を使います。これで、行末への二重マッチに対応できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax region xComment start=/%/ end=/$/ contained
+	:syntax region xPreProc start=/#/ end=/$/ contains=xComment keepend
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region xComment start=/%/ end=/$/ contained
+:syntax region xPreProc start=/#/ end=/$/ contains=xComment keepend
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CONTAINING MANY ITEMS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 複数アイテムの内包
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use the contains argument to specify that everything can be contained.
+For example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"contains=" 引数には「すべての構文アイテム」を指定することができます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax region xList start=/\[/ end=/\]/ contains=ALL
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region xList start=/\[/ end=/\]/ contains=ALL
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All syntax items will be contained in this one.  It also contains itself, but
+not at the same position (that would cause an endless loop).
+   You can specify that some groups are not contained.  Thus contain all
+groups but the ones that are listed:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+xList にはすべての構文アイテムが内包されます。「すべて」は自分自身を含みますが、同じ位置のものは除外されます (無限ループを避けるため)。
+一部のグループだけを除外するような指定もできます。つまり、指定したグループ以外のグループを内包できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:syntax region xList start=/\[/ end=/\]/ contains=ALLBUT,xString
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region xList start=/\[/ end=/\]/ contains=ALLBUT,xString
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+With the "TOP" item you can include all items that don't have a "contained"
+argument.  "CONTAINED" is used to only include items with a "contained"
+argument.  See |:syn-contains| for the details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"TOP" を指定すると、"contained" 引数を持たないすべてのアイテムが対象になります。"CONTAINED" を指定すると、"contained" 引数を持つアイテムだけが対象になります。詳しくは |:syn-contains| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*44.6*	Following groups
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{44.6}
+@node グループの並び
+@section グループの並び
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The x language has statements in this form:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+x 言語には次のような形式のステートメントがあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if (condition) then ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if (condition) then
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You want to highlight the three items differently.  But "(condition)" and
+"then" might also appear in other places, where they get different
+highlighting.  This is how you can do this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この 3 つのアイテムを別々に強調表示します。ただし、"(condition)" と "then" は他の場所にも出現し、そこでは別の方法で強調表示されることもあります。次のように定義します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax match xIf /if/ nextgroup=xIfCondition skipwhite
+	:syntax match xIfCondition /([^)]*)/ contained nextgroup=xThen skipwhite
+	:syntax match xThen /then/ contained
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:syntax match xIf /if/ nextgroup=xIfCondition skipwhite
+:syntax match xIfCondition /([^)]*)/ contained nextgroup=xThen skipwhite
+:syntax match xThen /then/ contained
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "nextgroup" argument specifies which item can come next.  This is not
+required.  If none of the items that are specified are found, nothing happens.
+For example, in this text:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"nextgroup" 引数で、次に来るアイテムを指定します。これは (マッチするための) 必須条件にはなりません。指定されたアイテムが見つからなかった場合は何も起こりません。例えば、次のテキストの場合:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if not (condition) then ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if not (condition) then
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "if" is matched by xIf.  "not" doesn't match the specified nextgroup
+xIfCondition, thus only the "if" is highlighted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"if" は xIf にマッチします。"not" は nextgroup に指定された xIfCondition にマッチしません。したがって、"if" だけが強調表示されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "skipwhite" argument tells Vim that white space (spaces and tabs) may
+appear in between the items.  Similar arguments are "skipnl", which allows a
+line break in between the items, and "skipempty", which allows empty lines.
+Notice that "skipnl" doesn't skip an empty line, something must match after
+the line break.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"skipwhite" 引数を指定すると、次のアイテムとの間に空白 (スペースとタブ) をはさむことができます。同様に、"skipnl" を指定すれば、次のアイテムとの間に改行をはさむことができ、"skipempty" を指定すれば、空行をはさむことができます。ただし、"skipnl" は空行をスキップしないので注意してください。改行の後で何かにマッチする必要があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*44.7*	Other arguments
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{44.7}
+@node その他の引数
+@section その他の引数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+MATCHGROUP
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec MATCHGROUP
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you define a region, the entire region is highlighted according to the
+group name specified.  To highlight the text enclosed in parentheses () with
+the group xInside, for example, use the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+リージョンは、リージョン全体が同じグループで強調表示されます。例えば、() で囲まれたテキストを xInside グループで強調表示するため、次のように定義します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax region xInside start=/(/ end=/)/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region xInside start=/(/ end=/)/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Suppose, that you want to highlight the parentheses differently.  You can do
+this with a lot of convoluted region statements, or you can use the
+"matchgroup" argument.  This tells Vim to highlight the start and end of a
+region with a different highlight group (in this case, the xParen group): >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このときに、カッコだけを別の方法で強調表示することを考えます。複雑な方法を使って定義することもできますが、"matchgroup" 引数を使う方法もあります。
+"matchgroup" を指定すると、リージョンの start と end の部分を別の強調グループで表示できます (この例では xParen):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax region xInside matchgroup=xParen start=/(/ end=/)/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region xInside matchgroup=xParen start=/(/ end=/)/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "matchgroup" argument applies to the start or end match that comes after
+it.  In the previous example both start and end are highlighted with xParen.
+To highlight the end with xParenEnd: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"matchgroup" 引数は、その引数より後ろに指定された start と end に対して適用されます。上の例では start と end の両方が xParen で強調表示されます。end を xParenEnd で強調表示する場合は次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax region xInside matchgroup=xParen start=/(/
+		\ matchgroup=xParenEnd end=/)/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region xInside matchgroup=xParen start=/(/
+    \ matchgroup=xParenEnd end=/)/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A side effect of using "matchgroup" is that contained items will not match in
+the start or end of the region.  The example for "transparent" uses this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"matchgroup" を使うと、内包されたアイテムが start と end の部分にマッチしなくなります。次の "transparent" の例題ではそれを利用しています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+TRANSPARENT
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec TRANSPARENT (透過)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In a C language file you would like to highlight the () text after a "while"
+differently from the () text after a "for".  In both of these there can be
+nested () items, which should be highlighted in the same way.  You must make
+sure the () highlighting stops at the matching ).  This is one way to do this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば C 言語のファイルで、"while" の後の () と、"for" の後の () を別の方法で強調表示してみます。両方とも () を入れ子にできて、それが外側の () と同じ方法で強調表示されるようにします。() の強調表示は ) がマッチしたところでストップします。それには、例えば次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:syntax region cWhile matchgroup=cWhile start=/while\s*(/ end=/)/
+		\ contains=cCondNest
+	:syntax region cFor matchgroup=cFor start=/for\s*(/ end=/)/
+		\ contains=cCondNest
+	:syntax region cCondNest start=/(/ end=/)/ contained transparent
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region cWhile matchgroup=cWhile start=/while\s*(/ end=/)/
+    \ contains=cCondNest
+:syntax region cFor matchgroup=cFor start=/for\s*(/ end=/)/
+    \ contains=cCondNest
+:syntax region cCondNest start=/(/ end=/)/ contained transparent
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now you can give cWhile and cFor different highlighting.  The cCondNest item
+can appear in either of them, but take over the highlighting of the item it is
+contained in.  The "transparent" argument causes this.
+   Notice that the "matchgroup" argument has the same group as the item
+itself.  Why define it then?  Well, the side effect of using a matchgroup is
+that contained items are not found in the match with the start item then.
+This avoids that the cCondNest group matches the ( just after the "while" or
+"for".  If this would happen, it would span the whole text until the matching
+) and the region would continue after it.  Now cCondNest only matches after
+the match with the start pattern, thus after the first (.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+cWhile と cFor には別の強調表示が使われます。cCondNest は両方に出現し、自身を内包しているアイテムと同じ強調グループで強調表示されます。"transparent" 引数によってこのような動作になります。
+この例では、"matchgroup" 引数に自分自身のグループを指定しています。その理由は、matchgroup を使うことで、内包されたアイテムが start の部分にマッチしないという副作用が発生するからです。それを利用して cCondNest グループが "while" や "for" の直後の ( にマッチしないようにしています。もし直後の ( にマッチしてしまうと、cCondNest は ) までのすべてのテキストにマッチしてしまい、その後ろからリージョンが再開することになってしまいます。matchgroup を指定することで、cCondNest は start の後、つまり最初の ( より後でマッチするようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+OFFSETS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec オフセット
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Suppose you want to define a region for the text between ( and ) after an
+"if".  But you don't want to include the "if" or the ( and ).  You can do this
+by specifying offsets for the patterns.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"if" の後ろにある ( と ) の間のテキストをリージョンとして定義します。ただし、"if" と () 自体はリージョンに含めたくありません。そのような場合はオフセットを使います。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax region xCond start=/if\s*(/ms=e+1 end=/)/me=s-1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region xCond start=/if\s*(/ms=e+1 end=/)/me=s-1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The offset for the start pattern is "ms=e+1".  "ms" stands for Match Start.
+This defines an offset for the start of the match.  Normally the match starts
+where the pattern matches.  "e+1" means that the match now starts at the end
+of the pattern match, and then one character further.
+   The offset for the end pattern is "me=s-1".  "me" stands for Match End.
+"s-1" means the start of the pattern match and then one character back.  The
+result is that in this text:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+start パターンには "ms=e+1" というオフセットが指定されています。"ms" は Match Start という意味です。マッチの開始位置のオフセットを設定できます。通常は、パターンがマッチした場所がマッチの開始位置になります。"e+1" はパターンがマッチしたテキストの末尾からさらに 1 つ進んだ場所を示します。
+end パターンには "me=s-1" というオフセットが指定されています。"me" は Match End という意味です。"s-1" はパターンにマッチしたテキストの先頭から 1 つ戻った場所を示します。例えば、次のテキストでは:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if (foo == bar) ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if (foo == bar)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Only the text "foo == bar" will be highlighted as xCond.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"foo == bar" の部分だけが xCond で強調表示されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+More about offsets here: |:syn-pattern-offset|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オフセットの詳細については |:syn-pattern-offset| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ONELINE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec ONELINE
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "oneline" argument indicates that the region does not cross a line
+boundary.  For example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"oneline" 引数は、リージョンが複数行にまたがらないことを示します。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax region xIfThen start=/if/ end=/then/ oneline
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region xIfThen start=/if/ end=/then/ oneline
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This defines a region that starts at "if" and ends at "then".  But if there is
+no "then" after the "if", the region doesn't match.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは "if" で始まって "then" で終わるリージョンを定義しています。ただし、"if" と "then" が同じ行にない場合はマッチしません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note:
+	When using "oneline" the region doesn't start if the end pattern
+	doesn't match in the same line.  Without "oneline" Vim does _not_
+	check if there is a match for the end pattern.  The region starts even
+	when the end pattern doesn't match in the rest of the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"oneline" を使用した場合、end パターンが同じ行でマッチしない限り、リージョンは開始されません。"oneline" がない場合は、end パターンがマッチする場所があるかどうかはチェックされません。その場合、たとえ end パターンにマッチする場所がなくても、リージョンは開始されます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CONTINUATION LINES AND AVOIDING THEM
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 行の継続と継続の回避
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Things now become a little more complex.  Let's define a preprocessor line.
+This starts with a # in the first column and continues until the end of the
+line.  A line that ends with \ makes the next line a continuation line.  The
+way you handle this is to allow the syntax item to contain a continuation
+pattern: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さて、少し複雑になってきました。次はプリプロセッサー行を定義してみます。プリプロセッサー行は行頭の # で始まり、行末まで続きます。行末が \ で終っていた場合は、次の行まで継続します。それには、継続パターンにマッチする構文アイテムを内包するように指定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax region xPreProc start=/^#/ end=/$/ contains=xLineContinue
+	:syntax match xLineContinue "\\$" contained
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region xPreProc start=/^#/ end=/$/ contains=xLineContinue
+:syntax match xLineContinue "\\$" contained
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In this case, although xPreProc normally matches a single line, the group
+contained in it (namely xLineContinue) lets it go on for more than one line.
+For example, it would match both of these lines:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+通常は xPreProc は単一行にマッチしますが、内包された xLineContinue によって次の行まで継続するようになります。例えば、次のテキストは 2 行ともマッチします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	#define SPAM  spam spam spam \ ~
+			bacon and spam ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+#define SPAM  spam spam spam \
+                bacon and spam
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In this case, this is what you want.  If it is not what you want, you can call
+for the region to be on a single line by adding "excludenl" to the contained
+pattern.  For example, you want to highlight "end" in xPreProc, but only at
+the end of the line.  To avoid making the xPreProc continue on the next line,
+like xLineContinue does, use "excludenl" like this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは期待した動作ですね。あるいは、内包されたパターンに "excludenl" を指定することによって、リージョンを単一行に収めることもできます。例えば、xPreProc の中で、行末に "end" があったときに、それを強調表示したいような場合に使います。xPreProc が (xLineContinueのときのように) 次の行に継続しないようにするには、次のように "excludenl" を使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax region xPreProc start=/^#/ end=/$/
+		\ contains=xLineContinue,xPreProcEnd
+	:syntax match xPreProcEnd excludenl /end$/ contained
+	:syntax match xLineContinue "\\$" contained
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax region xPreProc start=/^#/ end=/$/
+        \ contains=xLineContinue,xPreProcEnd
+:syntax match xPreProcEnd excludenl /end$/ contained
+:syntax match xLineContinue "\\$" contained
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"excludenl" must be placed before the pattern.  Since "xLineContinue" doesn't
+have "excludenl", a match with it will extend xPreProc to the next line as
+before.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"excludenl" はパターン指定の前に置いてください。"xLineContinue" には "excludenl" が指定されていないので、最初の例と同様、マッチすることによって xPreProc リージョンが拡張されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*44.8*	Clusters
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{44.8}
+@node クラスタ
+@section クラスタ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+One of the things you will notice as you start to write a syntax file is that
+you wind up generating a lot of syntax groups.  Vim enables you to define a
+collection of syntax groups called a cluster.
+   Suppose you have a language that contains for loops, if statements, while
+loops, and functions.  Each of them contains the same syntax elements: numbers
+and identifiers.  You define them like this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+構文ファイルを書いてみると、実にたくさんの構文グループを作成するということに気づくと思います。必要なら、クラスタと呼ばれるものを定義して複数の構文グループをひとまとめにすることができます。
+例えば、for ループ、if 文、while ループ、関数、などを持った言語があります。それぞれは数値や識別子など、同じ構文要素を含むことができます。それを次のように定義してみます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax match xFor /^for.*/ contains=xNumber,xIdent
+	:syntax match xIf /^if.*/ contains=xNumber,xIdent
+	:syntax match xWhile /^while.*/ contains=xNumber,xIdent
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax match xFor /^for.*/ contains=xNumber,xIdent
+:syntax match xIf /^if.*/ contains=xNumber,xIdent
+:syntax match xWhile /^while.*/ contains=xNumber,xIdent
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You have to repeat the same "contains=" every time.  If you want to add
+another contained item, you have to add it three times.  Syntax clusters
+simplify these definitions by enabling you to have one cluster stand for
+several syntax groups.
+   To define a cluster for the two items that the three groups contain, use
+the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同じ "contains=" を何度も書かなければなりません。内包されるアイテムを追加するときは、その変更を 3 回繰り返すことになります。クラスタを使って複数の構文グループをひとまとめにすることで、このような指定が簡単になります。
+上の 3 つのグループが内包している 2 つのアイテムをクラスタとして定義するには、次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax cluster xState contains=xNumber,xIdent
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax cluster xState contains=xNumber,xIdent
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Clusters are used inside other syntax items just like any syntax group.
+Their names start with @.  Thus, you can define the three groups like this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+クラスタは他の構文アイテムの中で使われます。使い方は普通の構文アイテムと同じです。名前の先頭に @ を付けてください。例の三つの構文アイテムは次のように定義できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax match xFor /^for.*/ contains=@xState
+	:syntax match xIf /^if.*/ contains=@xState
+	:syntax match xWhile /^while.*/ contains=@xState
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax match xFor /^for.*/ contains=@@xState
+:syntax match xIf /^if.*/ contains=@@xState
+:syntax match xWhile /^while.*/ contains=@@xState
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can add new group names to this cluster with the "add" argument: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+クラスタに構文グループを追加するには "add" 引数を使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax cluster xState add=xString
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax cluster xState add=xString
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can remove syntax groups from this list as well: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+クラスタから構文グループを取り除くこともできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax cluster xState remove=xNumber
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax cluster xState remove=xNumber
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*44.9*	Including another syntax file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{44.9}
+@node 他の構文ファイルをインクルードする
+@section 他の構文ファイルをインクルードする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The C++ language syntax is a superset of the C language.  Because you do not
+want to write two syntax files, you can have the C++ syntax file read in the
+one for C by using the following command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+C++ 言語の構文は C 言語のスーパーセットです。構文ファイルを 2 つも書くのは避けたいので、次のコマンドを使って、C++ 構文ファイルの中で C 構文ファイルを読み込みます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:runtime! syntax/c.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:runtime! syntax/c.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ":runtime!" command searches 'runtimepath' for all "syntax/c.vim" files.
+This makes the C parts of the C++ syntax be defined like for C files.  If you
+have replaced the c.vim syntax file, or added items with an extra file, these
+will be loaded as well.
+   After loading the C syntax items the specific C++ items can be defined.
+For example, add keywords that are not used in C: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:runtime!}" コマンドは '@option{runtimepath}' の中からすべての "syntax/c.vim" を探します。そして、C ファイルを開いたときと同様に、C++ における C の部分の構文が定義されます。c.vim 構文ファイルを入れ替えていたり、拡張ファイルで構文アイテムを追加していたりする場合は、それらも読み込まれます。
+C の構文アイテムをロードしたら、C++ 特有の構文アイテムを定義します。例えば、C にはないキーワードを定義します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax keyword cppStatement	new delete this friend using
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax keyword cppStatement    new delete this friend using
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This works just like in any other syntax file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドの動作は普通の構文ファイルのときと同じです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now consider the Perl language.  A Perl script consists of two distinct parts:
+a documentation section in POD format, and a program written in Perl itself.
+The POD section starts with "=head" and ends with "=cut".
+   You want to define the POD syntax in one file, and use it from the Perl
+syntax file.  The ":syntax include" command reads in a syntax file and stores
+the elements it defined in a syntax cluster.  For Perl, the statements are as
+follows: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次に、Perl 言語を考えてみましょう。Perl スクリプトは 2 つの異なる部分で構成されます。一つは POD 形式のドキュメントセクション、もう 1 つは Perl で書かれたプログラムです。POD セクションは "=head" で始まり "=cut" で終わります。
+POD 構文の定義を 1 つのファイルに書き、Perl 構文ファイルの中からそれを使います。":syntax include" コマンドで構文ファイルを読み込むと、その中で定義されている要素がクラスタに格納されます。Perl の場合、次のようなコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax include @Pod <sfile>:p:h/pod.vim
+	:syntax region perlPOD start=/^=head/ end=/^=cut/ contains=@Pod
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax include @@Pod <sfile>:p:h/pod.vim
+:syntax region perlPOD start=/^=head/ end=/^=cut/ contains=@@Pod
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When "=head" is found in a Perl file, the perlPOD region starts.  In this
+region the @Pod cluster is contained.  All the items defined as top-level
+items in the pod.vim syntax files will match here.  When "=cut" is found, the
+region ends and we go back to the items defined in the Perl file.
+   The ":syntax include" command is clever enough to ignore a ":syntax clear"
+command in the included file.  And an argument such as "contains=ALL" will
+only contain items defined in the included file, not in the file that includes
+it.
+   The "<sfile>:p:h/" part uses the name of the current file (<sfile>),
+expands it to a full path (:p) and then takes the head (:h).  This results in
+the directory name of the file.  This causes the pod.vim file in the same
+directory to be included.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Perl ファイルの中で "=head" が見つかると perlPOD リージョンが開始します。perlPOD リージョンは @@Pod クラスタを内包しています。リージョンの中では、@file{pod.vim} 構文ファイルで定義されたトップレベルの構文アイテムがマッチします。"=cut" が見つかるとリージョンは終了し、Perl ファイルの構文アイテムに戻ります。
+"@command{:syntax include}" コマンドで読み込まれたファイル内の "@command{:syntax clear}" コマンドは適切に無視されます。さらに、"contains=ALL" のような引数は同じファイルの構文アイテムだけが対象になります。呼び出し元の構文アイテムは対象になりません。
+"<sfile>:p:h/" の部分は、カレントファイル名 (<sfile>) をフルパス (:p) に展開し、その head (先端) (:h) を取り出しています。展開結果はファイルのディレクトリ名になります。つまり、同じディレクトリの @file{pod.vim} がインクルードされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*44.10*	Synchronizing
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{44.10}
+@node シンクロナイズ
+@section シンクロナイズ (構文解析の同期)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Compilers have it easy.  They start at the beginning of a file and parse it
+straight through.  Vim does not have it so easy.  It must start in the middle,
+where the editing is being done.  So how does it tell where it is?
+   The secret is the ":syntax sync" command.  This tells Vim how to figure out
+where it is.  For example, the following command tells Vim to scan backward
+for the beginning or end of a C-style comment and begin syntax coloring from
+there: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えばコンパイラなら話は簡単です。ファイルの先頭から開始して、順番に構文解析していくだけです。しかし Vim では、ユーザーが編集している場所、つまりファイルの途中から構文解析が開始されます。どのようにして適切な開始位置を決めているのでしょうか。
+秘密は "@command{:syntax sync}" コマンドにあります。このコマンドを使って、構文解析の開始位置を指定します。例えば、次のコマンドを使うと、C スタイルコメントの開始位置、あるいは終了位置が後方検索され、その場所から構文ハイライトが開始されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax sync ccomment
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax sync ccomment
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can tune this processing with some arguments.  The "minlines" argument
+tells Vim the minimum number of lines to look backward, and "maxlines" tells
+the editor the maximum number of lines to scan.
+   For example, the following command tells Vim to look at least 10 lines
+before the top of the screen: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数を指定して動作を調整できます。"minlines" 引数には、後方検索で戻る最小の行数を指定します。"maxlines" 引数には、検索される行数の上限を指定します。
+例えば、画面の一番上に表示されている行から、最低でも 10 行前まで調べるようにするには、次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax sync ccomment minlines=10 maxlines=500
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax sync ccomment minlines=10 maxlines=500
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If it cannot figure out where it is in that space, it starts looking farther
+and farther back until it figures out what to do.  But it looks no farther
+back than 500 lines.  (A large "maxlines" slows down processing.  A small one
+might cause synchronization to fail.)
+   To make synchronizing go a bit faster, tell Vim which syntax items can be
+skipped.  Every match and region that only needs to be used when actually
+displaying text can be given the "display" argument.
+   By default, the comment to be found will be colored as part of the Comment
+syntax group.  If you want to color things another way, you can specify a
+different syntax group: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最小の範囲内で見つからなかった場合は、適切な場所が見つかるまで、さらに戻って調べます。ただし、500 行以上は戻りません。 ("maxlines" を大きくすると処理速度が遅くなります。小さ過ぎるとシンクロナイズに失敗してしまいます。)
+シンクロナイズは、スキップ可能な構文アイテムを指定することで、少し高速になります。テキストを実際に表示するときだけ必要な構文アイテムを定義するときに"display" 引数を指定してください。
+デフォルトでは、検索されたコメントは Comment 構文グループで強調表示されます。他の方法で強調表示したい場合は、使用したい構文グループを指定してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax sync ccomment xAltComment
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax sync ccomment xAltComment
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If your programming language does not have C-style comments in it, you can try
+another method of synchronization.  The simplest way is to tell Vim to space
+back a number of lines and try to figure out things from there.  The following
+command tells Vim to go back 150 lines and start parsing from there: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プログラミング言語が C スタイルコメントを持っていない場合は、他の方法でシンクロナイズします。最も簡単なのは、戻る行数を指定して、その場所から構文解析を試す方法です。例えば、150 行前に戻って、そこから構文解析を開始するには、次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax sync minlines=150
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax sync minlines=150
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A large "minlines" value can make Vim slower, especially when scrolling
+backwards in the file.
+   Finally, you can specify a syntax group to look for by using this command:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"minlines" に大きな値を指定すると Vim の動作が遅くなります (特に上方にスクロールする場合など)。
+検索対象になる構文グループを指定することもできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:syntax sync match {sync-group-name}
+		\ grouphere {group-name} {pattern}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax sync match @{sync-group-name@}
+        \ grouphere @{group-name@} @{pattern@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This tells Vim that when it sees {pattern} the syntax group named {group-name}
+begins just after the pattern given.  The {sync-group-name} is used to give a
+name to this synchronization specification.  For example, the sh scripting
+language begins an if statement with "if" and ends it with "fi":
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{group-name@} という構文グループが @{pattern@} にマッチした場所のすぐ後から開始するということを定義します。@{sync-group-name@} はシンクロナイズ定義の名前です。例えば、sh スクリプトでは if 文を "if" で開始し、"fi" で閉じます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if [ --f file.txt ] ; then ~
+		echo "File exists" ~
+	fi ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if [ --f file.txt ] ; then
+    echo "File exists"
+fi
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To define a "grouphere" directive for this syntax, you use the following
+command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この構文に対して "grouphere" を定義すると、次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax sync match shIfSync grouphere shIf "\<if\>"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax sync match shIfSync grouphere shIf "\<if\>"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "groupthere" argument tells Vim that the pattern ends a group.  For
+example, the end of the if/fi group is as follows: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"groupthere" 引数を使ってグループの終端を示すパターンを指定します。例えば、if/fi グループの終端は次のように定義できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax sync match shIfSync groupthere NONE "\<fi\>"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax sync match shIfSync groupthere NONE "\<fi\>"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In this example, the NONE tells Vim that you are not in any special syntax
+region.  In particular, you are not inside an if block.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この例では、NONE を指定して、パターンにマッチした場所が特定のリージョンの中ではないこと、つまりは if ブロックの中ではないことを指定しています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You also can define matches and regions that are with no "grouphere" or
+"groupthere" arguments.  These groups are for syntax groups skipped during
+synchronization.  For example, the following skips over anything inside {},
+even if it would normally match another synchronization method: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"grouphere" 引数と "groupthere" 引数を指定しないで、マッチやリージョンを定義することもできます。そのようなグループはシンクロナイズのときにスキップされます。例えば、次のように定義すると、@{@} で囲まれた範囲がスキップされます (他のシンクロナイズメソッドにマッチする場合でも):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:syntax sync match xSpecial /{.*}/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax sync match xSpecial /@{.*@}/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+More about synchronizing in the reference manual: |:syn-sync|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+シンクロナイズの詳細はリファレンスマニュアルの |:syn-sync| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*44.11*	Installing a syntax file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{44.11}
+@node 構文ファイルをインストールする
+@section 構文ファイルをインストールする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When your new syntax file is ready to be used, drop it in a "syntax" directory
+in 'runtimepath'.  For Unix that would be "~/.vim/syntax".
+  The name of the syntax file must be equal to the file type, with ".vim"
+added.  Thus for the x language, the full path of the file would be:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しい構文ファイルを使用する準備ができたら、それを '@option{runtimepath}' の "syntax" ディレクトリにコピーしてください。Unix なら "~/.vim/syntax" です。
+構文ファイルの名前はファイルタイプ名に ".vim" を付けた名前にします。したがって、x 言語ならファイルのフルパスは次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	~/.vim/syntax/x.vim ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+~/.vim/syntax/x.vim
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You must also make the file type be recognized.  See |43.2|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さらに、ファイルタイプが認識されるように設定する必要があります。|@ref{43.2, , 43.2}| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If your file works well, you might want to make it available to other Vim
+users.  First read the next section to make sure your file works well for
+others.  Then e-mail it to the Vim maintainer: <maintainer@vim.org>.  Also
+explain how the filetype can be detected.  With a bit of luck your file will
+be included in the next Vim version!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+構文ファイルがうまく動作したら、それを他の Vim ユーザーが利用できるようにしてあげるといいでしょう。まず次のセクションを読んで、構文ファイルが他の環境でも動作するようにしてください。そして、Vim のメンテナー <@email{maintainer@@vim.org}> にメールを送ってください。ファイルタイプの認識方法の説明もお願いします。よほどのことがない限り、Vim のバージョンアップに合わせて取り込まれます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ADDING TO AN EXISTING SYNTAX FILE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 既存の構文ファイルを拡張する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+We were assuming you were adding a completely new syntax file.  When an existing
+syntax file works, but is missing some items, you can add items in a separate
+file.  That avoids changing the distributed syntax file, which will be lost
+when installing a new version of Vim.
+   Write syntax commands in your file, possibly using group names from the
+existing syntax.  For example, to add new variable types to the C syntax file:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上記は、完全に新しい構文ファイルを作成する場合の説明です。既存の構文ファイルを使っていて、それに足りない構文アイテムがあるような場合には、それとは別のファイルを使って構文アイテムを追加することができます。ファイルを別にすることで、Vim をバージョンアップしたときに変更が失われてしまうのを防止します。
+syntax コマンドを自分のファイルに書きます。できる限り既存の構文グループの名前を使ってください。例えば、C 構文ファイルに新しい変数タイプを追加するには、次のように書きます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:syntax keyword cType off_t uint
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:syntax keyword cType off_t uint
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Write the file with the same name as the original syntax file.  In this case
+"c.vim".  Place it in a directory near the end of 'runtimepath'.  This makes
+it loaded after the original syntax file.  For Unix this would be:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これを、元の構文ファイルと同じ名前で保存します。この場合なら "c.vim" です。そのファイルを '@option{runtimepath}' の最後の方にあるディレクトリに置きます。そうすることで、元の構文ファイルよりも後に読み込ませます。Unix なら次の場所に保存します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	~/.vim/after/syntax/c.vim ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+~/.vim/after/syntax/c.vim
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*44.12*	Portable syntax file layout
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{44.12}
+@node ポータブルな文法定義ファイル
+@section ポータブルな構文ファイル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Wouldn't it be nice if all Vim users exchange syntax files?  To make this
+possible, the syntax file must follow a few guidelines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべての Vim ユーザーが構文ファイルを共有できれば素晴らしいと思いませんか？そのためには、構文ファイルはいくつかのガイドラインに従っている必要があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Start with a header that explains what the syntax file is for, who maintains
+it and when it was last updated.  Don't include too much information about
+changes history, not many people will read it.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルの先頭にヘッダーを書いてください。構文ファイルの用途、メンテナー、最終更新日を書きます。詳細な変更履歴は必要ありません(ほとんどの人はそれを読みません)。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	" Vim syntax file
+	" Language:	C
+	" Maintainer:	Bram Moolenaar <Bram@vim.org>
+	" Last Change:	2001 Jun 18
+	" Remark:	Included by the C++ syntax.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+" Vim syntax file
+" Language:     C
+" Maintainer:   Bram Moolenaar <Bram@vim.org>
+" Last Change:  2001 Jun 18
+" Remark:       Included by the C++ syntax.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use the same layout as the other syntax files.  Using an existing syntax file
+as an example will save you a lot of time.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他の構文ファイルと同じレイアウトを使ってください。既存の構文ファイルを参考にすると時間を節約できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Choose a good, descriptive name for your syntax file.  Use lowercase letters
+and digits.  Don't make it too long, it is used in many places: The name of
+the syntax file "name.vim", 'filetype', b:current_syntax and the start of each
+syntax group (nameType, nameStatement, nameString, etc).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+構文ファイルには分かりやすい名前を付けます。小文字と数字だけを使ってください。名前は多くの場所で使うので長くなり過ぎないようにします (構文ファイルの名前 ("@file{name.vim}")、'@option{filetype}'、@var{b:current_syntax}、構文グループの接頭辞 (nameType、nameStatement、nameString、etc) などで使います)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Start with a check for "b:current_syntax".  If it is defined, some other
+syntax file, earlier in 'runtimepath' was already loaded: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初に "@var{b:current_syntax}" をチェックします。これが定義済みなら、他の構文ファイルが '@option{runtimepath}' の前の方でロードされたということです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if exists("b:current_syntax")
+	  finish
+	endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if exists("b:current_syntax")
+  finish
+endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To be compatible with Vim 5.8 use: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim 5.8 との互換性が必要なら次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if version < 600
+	  syntax clear
+	elseif exists("b:current_syntax")
+	  finish
+	endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if version < 600
+  syntax clear
+elseif exists("b:current_syntax")
+  finish
+endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Set "b:current_syntax" to the name of the syntax at the end.  Don't forget
+that included files do this too, you might have to reset "b:current_syntax" if
+you include two files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルの最後で "@var{b:current_syntax}" に構文の名前を設定します。ファイルをインクルードしている場合、そのファイルの中でも "@var{b:current_syntax}" が設定されるので注意してください。複数のファイルをインクルードする場合には、"@var{b:current_syntax}" をリセットする必要があるかもしれません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want your syntax file to work with Vim 5.x, add a check for v:version.
+See yacc.vim for an example.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+構文ファイルが Vim 5.x でも動作するようにするには、v:version をチェックする必要があります。実例は yacc.vim を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Do not include anything that is a user preference.  Don't set 'tabstop',
+'expandtab', etc.  These belong in a filetype plugin.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザー設定を変更しないでください。'@option{tabstop}' や '@option{expandtab}' などの設定を変更してはいけません。そのような設定はファイルタイププラグインの仕事です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Do not include mappings or abbreviations.  Only include setting 'iskeyword' if
+it is really necessary for recognizing keywords.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップや短縮入力を定義しないでください。'@option{iskeyword}' だけは、キーワードの識別にどうしても必要なら、設定しても構いません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To allow users select their own preferred colors, make a different group name
+for every kind of highlighted item.  Then link each of them to one of the
+standard highlight groups.  That will make it work with every color scheme.
+If you select specific colors it will look bad with some color schemes.  And
+don't forget that some people use a different background color, or have only
+eight colors available.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザーが好みの色を選択できるように、強調表示されるグループの名前に標準とは違う名前を付けます。そして、それらを標準の強調グループにリンクします。そうすればどのカラースキームでも適切に強調表示できます。標準以外の強調グループを使ってしまうと、カラースキームによっては正しく強調表示されません。また、ユーザーの環境によって背景色が違ったり、色数が 8 色しかない場合もあるので覚えておいてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For the linking use "hi def link", so that the user can select different
+highlighting before your syntax file is loaded.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+強調グループをリンクするには "hi def link" を使います。そうすることで、ユーザーはあなたの構文ファイルがロードされる前の段階で他の強調グループを選択できます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	  hi def link nameString	String
+	  hi def link nameNumber	Number
+	  hi def link nameCommand	Statement
+	  ... etc ...
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+hi def link nameString        String
+hi def link nameNumber        Number
+hi def link nameCommand       Statement
+... etc ...
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Add the "display" argument to items that are not used when syncing, to speed
+up scrolling backwards and CTRL-L.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+シンクロナイズで使用しない構文アイテムには "display" 引数を付けてください。上方向へのスクロールや @kbd{CTRL-L} の動作が早くなります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+Next chapter: |usr_45.txt|  Select your language
+
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+@end ifset

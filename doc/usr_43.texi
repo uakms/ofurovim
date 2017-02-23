@@ -1,0 +1,465 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node ファイルタイプを使う, 構文ファイルを作成する, 新しいメニューを追加する, 目次
+@unnumbered ファイルタイプを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*usr_43.txt*	For Vim version 8.0.  Last change: 2015 Oct 23
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			       Using filetypes
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{usr_43.txt}
+@cindex usr_43.txt
+@verbatim
+*usr_43.txt*	For Vim バージョン 8.0.  Last change: 2015 Oct 23
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			     ファイルタイプを使う
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+When you are editing a file of a certain type, for example a C program or a
+shell script, you often use the same option settings and mappings.  You
+quickly get tired of manually setting these each time.  This chapter explains
+how to do it automatically.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+C プログラムやシェルスクリプトなどの特定の種類のファイルを編集するときに、よく使うオプション設定やマップがあると思います。それを毎回手作業で設定するのは面倒ですよね。この章ではそれを自動化する方法を説明します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|43.1|	Plugins for a filetype
+|43.2|	Adding a filetype
+
+     Next chapter: |usr_44.txt|  Your own syntax highlighted
+ Previous chapter: |usr_42.txt|  Add new menus
+Table of contents: |usr_toc.txt|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@menu
+* ファイルタイププラグイン:: 43.1
+* ファイルタイプを追加する:: 43.2
+@end menu
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*43.1*	Plugins for a filetype				*filetype-plugin*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{43.1}
+@anchor{filetype-plugin}
+@cindex filetype-plugin
+@node ファイルタイププラグイン
+@section ファイルタイププラグイン
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+How to start using filetype plugins has already been discussed here:
+|add-filetype-plugin|.  But you probably are not satisfied with the default
+settings, because they have been kept minimal.  Suppose that for C files you
+want to set the 'softtabstop' option to 4 and define a mapping to insert a
+three-line comment.  You do this with only two steps:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルタイププラグインの使用方法については既に |add-filetype-plugin| で説明しました。しかし、標準では最小限の設定しかされないので、それだけでは物足りないと思います。例えば C ファイルを開いたときに、'@option{softtabstop}' オプションを 4 に設定したり、3 行コメントを挿入するためのマップを定義したりすると便利かもしれません。2 ステップで設定できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*your-runtime-dir*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{your-runtime-dir}
+@cindex your-runtime-dir
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. Create your own runtime directory.  On Unix this usually is "~/.vim".  In
+   this directory create the "ftplugin" directory: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item
+自分のランタイムディレクトリを作成する。Unix なら普通は "~/.vim" です。そのディレクトリの中に "ftplugin" ディレクトリを作成します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	mkdir ~/.vim
+	mkdir ~/.vim/ftplugin
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+mkdir ~/.vim
+mkdir ~/.vim/ftplugin
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   When you are not on Unix, check the value of the 'runtimepath' option to
+   see where Vim will look for the "ftplugin" directory: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unix 以外のシステムでは、'@option{runtimepath}' オプションを見て、"ftplugin" ディレクトリが検索される場所を確認してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	set runtimepath
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+set runtimepath
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<  You would normally use the first directory name (before the first comma).
+   You might want to prepend a directory name to the 'runtimepath' option in
+   your |vimrc| file if you don't like the default value.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+普通は最初のディレクトリ (最初のコンマの前) を使います。初期設定以外のディレクトリを使いたい場合は、|vimrc| ファイルの中で '@option{runtimepath}' オプションを設定してディレクトリを追加してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+2. Create the file "~/.vim/ftplugin/c.vim", with the contents: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+"~/.vim/ftplugin/c.vim" を作成して設定を書きます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	setlocal softtabstop=4
+	noremap <buffer> <LocalLeader>c o/**************<CR><CR>/<Esc>
+	let b:undo_ftplugin = "setl softtabstop< | unmap <buffer> <LocalLeader>c"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@ifnottex
+@example
+setlocal softtabstop=4
+noremap <buffer> <LocalLeader>c o/**************<CR><CR>/<Esc>
+let b:undo_ftplugin = "setl softtabstop< | unmap <buffer> <LocalLeader>c"
+@end example
+@end ifnottex
+@iftex
+@example
+setlocal softtabstop=4
+noremap <buffer> <LocalLeader>c o/**************<CR><CR>/<Esc>
+let b:undo_ftplugin = "setl softtabstop< |
+\ unmap <buffer> <LocalLeader>c"
+@end example
+@end iftex
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Try editing a C file.  You should notice that the 'softtabstop' option is set
+to 4.  But when you edit another file it's reset to the default zero.  That is
+because the ":setlocal" command was used.  This sets the 'softtabstop' option
+only locally to the buffer.  As soon as you edit another buffer, it will be
+set to the value set for that buffer.  For a new buffer it will get the
+default value or the value from the last ":set" command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そして、C ファイルを開いてみてください。'@option{softtabstop}' オプションが 4 に設定されていますね。しかし、他のファイルを開くと初期設定の 0 にリセットされます。それは "@command{:setlocal}" コマンドが使われているからです。このコマンドはバッファの '@option{softtabstop}' オプションだけを設定します。他のバッファを開くと、開いたバッファ用の設定が使用されます。新しいバッファの設定には、初期設定、または最後に "@command{:set}" コマンドで設定された値が使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Likewise, the mapping for "\c" will disappear when editing another buffer.
+The ":map <buffer>" command creates a mapping that is local to the current
+buffer.  This works with any mapping command: ":map!", ":vmap", etc.  The
+|<LocalLeader>| in the mapping is replaced with the value of the
+"maplocalleader" variable.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同様に、"\c" マップも他のバッファを開くと見えなくなります。"@command{:map <buffer>}" コマンドを使うと、カレントバッファの中だけで使えるマップを作成できます。これは "@command{:map!}" や "@command{:vmap}" などの他のマップコマンドでも同様です。マップの中の |<LocalLeader>| は "@var{maplocalleader}" 変数の値で置き換えられます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The line to set b:undo_ftplugin is for when the filetype is set to another
+value.  In that case you will want to undo your preferences.  The
+b:undo_ftplugin variable is executed as a command. Watch out for characters
+with a special meaning inside a string, such as a backslash.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@var{b:undo_ftplugin} を設定する行はファイルタイプを別の値に設定されていたときのために用います。このケースではあなたが望む方法で undo したいでしょう。
+@var{b:undo_ftplugin} 変数はコマンドとして実行されます。そのため中の文字は、バックスラッシュのように特別な意味を持つものがあるので、気をつけてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can find examples for filetype plugins in this directory: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルタイププラグインの例はこのディレクトリで探すことができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	$VIMRUNTIME/ftplugin/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+$VIMRUNTIME/ftplugin/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+More details about writing a filetype plugin can be found here:
+|write-plugin|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルタイププラグインの作成方法の詳細は |write-plugin| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+*43.2*	Adding a filetype
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{43.2}
+@node ファイルタイプを追加する
+@section ファイルタイプを追加する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are using a type of file that is not recognized by Vim, this is how to
+get it recognized.  You need a runtime directory of your own.  See
+|your-runtime-dir| above.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim がファイルタイプを認識しない場合は、設定を追加してください。まず自分用のランタイムディレクトリを用意する必要があります。上述の |your-runtime-dir| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Create a file "filetype.vim" which contains an autocommand for your filetype.
+(Autocommands were explained in section |40.3|.)  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"filetype.vim" というファイルを作成してファイルタイプ用の自動コマンドを設定します。(自動コマンドは |@ref{40.3, , 40.3}| で説明されています。) 例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	augroup filetypedetect
+	au BufNewFile,BufRead *.xyz	setf xyz
+	augroup END
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+augroup filetypedetect
+au BufNewFile,BufRead *.xyz     setf xyz
+augroup END
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will recognize all files that end in ".xyz" as the "xyz" filetype.  The
+":augroup" commands put this autocommand in the "filetypedetect" group.  This
+allows removing all autocommands for filetype detection when doing ":filetype
+off".  The "setf" command will set the 'filetype' option to its argument,
+unless it was set already.  This will make sure that 'filetype' isn't set
+twice.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル名が ".xyz" で終わるすべてのファイルが "xyz" ファイルタイプとして認識されるようになります。"@command{:augroup}" コマンドを使って自動コマンドを "filetypedetect" グループに置いています。こうすることで、ファイルタイプを認識するための自動コマンドを "@command{:filetype off}" で削除できるようになります。"setf" コマンドは '@option{filetype}' を指定されたタイプに設定します。ただし、設定済みの場合は変更しません。これによってファイルタイプが二重に設定されないようになっています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use many different patterns to match the name of your file.  Directory
+names can also be included.  See |autocmd-patterns|.  For example, the files
+under "/usr/share/scripts/" are all "ruby" files, but don't have the expected
+file name extension.  Adding this to the example above: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル名にマッチするパターンはいろいろなものが使えます。ディレクトリ名を含めることもできます。|autocmd-patterns| 参照。例えば、"/usr/share/scripts" にあるファイルが拡張子に関係なくすべて "ruby" ファイルであるなら、次のような設定を追加します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	augroup filetypedetect
+	au BufNewFile,BufRead *.xyz			setf xyz
+	au BufNewFile,BufRead /usr/share/scripts/*	setf ruby
+	augroup END
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+augroup filetypedetect
+au BufNewFile,BufRead *.xyz                     setf xyz
+au BufNewFile,BufRead /usr/share/scripts/*      setf ruby
+augroup END
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+However, if you now edit a file /usr/share/scripts/README.txt, this is not a
+ruby file.  The danger of a pattern ending in "*" is that it quickly matches
+too many files.  To avoid trouble with this, put the filetype.vim file in
+another directory, one that is at the end of 'runtimepath'.  For Unix for
+example, you could use "~/.vim/after/filetype.vim".
+   You now put the detection of text files in ~/.vim/filetype.vim: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+しかし、/usr/share/scripts/README.txt を開いたとき、それは ruby ファイルではありえませんよね。"*" で終わるパターンの問題は、多くのファイルにマッチしすぎてしまうことです。この問題を避けるには、'@option{runtimepath}' の最後に指定されたディレクトリに "filetype.vim" を置きます。例えば Unix なら "~/.vim/after/filetype.vim" などです。
+では、~/.vim/filetype.vim にテキストファイルの検出を設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	augroup filetypedetect
+	au BufNewFile,BufRead *.txt			setf text
+	augroup END
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+augroup filetypedetect
+au BufNewFile,BufRead *.txt         setf text
+augroup END
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+That file is found in 'runtimepath' first.  Then use this in
+~/.vim/after/filetype.vim, which is found last: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このファイルは '@option{runtimepath}' の最初に見つかります。そして、最後に見つかるファイル "~/.vim/after/filetype.vim" の中で次の設定をします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	augroup filetypedetect
+	au BufNewFile,BufRead /usr/share/scripts/*	setf ruby
+	augroup END
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+augroup filetypedetect
+au BufNewFile,BufRead /usr/share/scripts/*      setf ruby
+augroup END
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+What will happen now is that Vim searches for "filetype.vim" files in each
+directory in 'runtimepath'.  First ~/.vim/filetype.vim is found.  The
+autocommand to catch *.txt files is defined there.  Then Vim finds the
+filetype.vim file in $VIMRUNTIME, which is halfway 'runtimepath'.  Finally
+~/.vim/after/filetype.vim is found and the autocommand for detecting ruby
+files in /usr/share/scripts is added.
+   When you now edit /usr/share/scripts/README.txt, the autocommands are
+checked in the order in which they were defined.  The *.txt pattern matches,
+thus "setf text" is executed to set the filetype to "text".  The pattern for
+ruby matches too, and the "setf ruby" is executed.  But since 'filetype' was
+already set to "text", nothing happens here.
+   When you edit the file /usr/share/scripts/foobar the same autocommands are
+checked.  Only the one for ruby matches and "setf ruby" sets 'filetype' to
+ruby.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+処理の流れは次のようになります。Vim は '@option{runtimepath}' の各ディレクトリから "filetype.vim" を探します。最初に "~/.vim/filetype.vim" が見つかります。*.txt を処理する自動コマンドがここで定義されます。次に Vim は $VIMRUNTIME にある filetype.vim を見つけます ($VIMRUNTIME は '@option{runtimepath}' の中程にあります)。最後に ~/.vim/after/filetype.vim が見つかり、/usr/share/scripts の ruby ファイルを認識するための自動コマンドが追加されます。
+/usr/share/scripts/README.txt を開くと、定義された順番で自動コマンドがチェックされます。*.txt というパターンがマッチするので、"setf text" が実行され、ファイルタイプが "text" に設定されます。ruby 用のパターンもマッチするので、"setf ruby" が実行されます。しかし、'@option{filetype}' は既に設定されているので何も起こりません。
+/usr/share/scripts/foobar を開くと、同様に自動コマンドがチェックされます。ruby のパターンだけがマッチするので、"setf ruby" が実行され、'@option{filetype}' が ruby に設定されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+RECOGNIZING BY CONTENTS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 内容を見て判断する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If your file cannot be recognized by its file name, you might be able to
+recognize it by its contents.  For example, many script files start with a
+line like:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル名からはファイル種別を判断できなくても、内容で判断できる場合があります。例えば、多くのスクリプトファイルは次のような行で始まります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	#!/bin/xyz ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+#!/bin/xyz
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To recognize this script create a file "scripts.vim" in your runtime directory
+(same place where filetype.vim goes).  It might look like this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このスクリプトを認識するには、"scripts.vim" というファイルをランタイムディレクトリに作ります (filetype.vim と同じ場所です)。中身は次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if did_filetype()
+	  finish
+	endif
+	if getline(1) =~ '^#!.*[/\\]xyz\>'
+	  setf xyz
+	endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if did_filetype()
+  finish
+endif
+if getline(1) =~ '^#!.*[/\\]xyz\>'
+  setf xyz
+endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first check with did_filetype() is to avoid that you will check the
+contents of files for which the filetype was already detected by the file
+name.  That avoids wasting time on checking the file when the "setf" command
+won't do anything.
+   The scripts.vim file is sourced by an autocommand in the default
+filetype.vim file.  Therefore, the order of checks is:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初に did_filetype() を使って、既にファイル名からファイルタイプが認識されているかどうかを確認し、不要ならファイル内容のチェックを実行しないようにします。これは、"setf" コマンドが意味をなさないときに、ファイルのチェックによって時間を無駄に消費しないためです。
+scripts.vim は標準ファイルの filetype.vim で定義された自動コマンドによって読み込まれます。そのため、次の順番でチェックが実行されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	1. filetype.vim files before $VIMRUNTIME in 'runtimepath'
+	2. first part of $VIMRUNTIME/filetype.vim
+	3. all scripts.vim files in 'runtimepath'
+	4. remainder of $VIMRUNTIME/filetype.vim
+	5. filetype.vim files after $VIMRUNTIME in 'runtimepath'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item
+'@option{runtimepath}' の @env{$VIMRUNTIME} の前にある @file{filetype.vim}
+@item
+@env{$VIMRUNTIME}/@file{filetype.vim} の前半部分
+@item
+'@option{runtimepath}' のすべての @file{scripts.vim}
+@item
+@env{$VIMRUNTIME}/@file{filetype.vim} の後半部分
+@item
+'@option{runtimepath}' の @env{$VIMRUNTIME} の後にある @file{filetype.vim}
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If this is not sufficient for you, add an autocommand that matches all files
+and sources a script or executes a function to check the contents of the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もっと複雑なことがしたい場合は、すべてのファイルにマッチする自動コマンドを追加して、スクリプトを読み込むなり関数を実行するなりしてファイルの内容をチェックしてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+Next chapter: |usr_44.txt|  Your own syntax highlighted
+
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:
+@end ifset
