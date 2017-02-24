@@ -29,22 +29,22 @@ refpdf: pdfs/refrman.pdf ;
 kyukana: htmls/tk-ok-usrman.html ;
 
 htmls/usrman.html: $(USRMANUALS)
-	@${PRG} ${HTML_OPT} -o $@ $<
+	${PRG} ${HTML_OPT} -o $@ $<
 
 htmls/refman.html: $(REFMANUALS)
-	@${PRG} ${HTML_OPT} -o $@ $<
+	${PRG} ${HTML_OPT} -o $@ $<
 
 pdfs/userman.pdf: $(USRMANUALS)
-	@ PDFTEX=luatex texi2pdf -c -o $@ $<
+	PDFTEX=luatex texi2pdf -c -o $@ $<
 
 pdfs/refrman.pdf: $(REFMANUALS)
-	@ PDFTEX=luatex texi2pdf -c -o $@ $<
+	PDFTEX=luatex texi2pdf -c -o $@ $<
 
 htmls/tk-usrman.html: htmls/usrman.html
-	@python3 $(PRG_KANA) tradkana $< > $@
+	python3 $(PRG_KANA) tradkana $< > $@
 
 htmls/tk-ok-usrman.html: htmls/tk-usrman.html
-	@python3 $(PRG_KANA) oldkanji $< > $@
+	python3 $(PRG_KANA) oldkanji $< > $@
 
 diffja:
 	@cp $(ORIG)/doc/usr_24.txt $(ORIG)/doc/org_usr_24.txt
@@ -53,7 +53,7 @@ diffja:
 	@mv $(ORIG)/doc/org_usr_24.txt $(ORIG)/doc/usr_24.txt
 
 nvcheck:
-	@nvcheck doc/*.texi
+	nvcheck doc/*.texi
 
 clean:
 	@rm -r htmls/*
