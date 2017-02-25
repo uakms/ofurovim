@@ -9,7 +9,9 @@ REFMANUALS = \
 	doc/quickref.texi \
 	doc/uganda.texi \
 	doc/sponsor.texi \
-	doc/intro.texi
+	doc/intro.texi \
+	doc/helphelp.texi \
+	doc/index.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
@@ -30,8 +32,10 @@ kyukana: htmls/tk-ok-usrman.html ;
 
 htmls/usrman.html: $(USRMANUALS)
 	${PRG} ${HTML_OPT} -o $@ $<
+	@sed -e 's/<\/title>/<\/title>\n<meta name="viewport" content="width=device-width, initial-scale=1.0" \/>/' $@ > $@.m
+	@mv $@.m $@
 
-htmls/refman.html: $(REFMANUALS)
+htmls/refman.html: $(REFMANUALS) $(USRMANUALS)
 	${PRG} ${HTML_OPT} -o $@ $<
 
 pdfs/userman.pdf: $(USRMANUALS)
