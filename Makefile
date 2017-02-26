@@ -11,7 +11,10 @@ REFMANUALS = \
 	doc/sponsor.texi \
 	doc/intro.texi \
 	doc/helphelp.texi \
-	doc/index.texi
+	doc/index.texi \
+	doc/howto.texi \
+	doc/tips.texi \
+	doc/message.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
