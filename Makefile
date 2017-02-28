@@ -1,6 +1,6 @@
 PRG = /usr/local/bin/texi2any
 PRG_KANA=$(HOME)/project/mto/src/mto.py
-HTML_OPT = --html --no-split --css-include=style.css
+HTML_OPT = --html --css-include=style.css
 ORIG = $(HOME)/dev/vim/runtime
 TRAN = ./
 
@@ -14,7 +14,11 @@ REFMANUALS = \
 	doc/index.texi \
 	doc/howto.texi \
 	doc/tips.texi \
-	doc/message.texi
+	doc/message.texi \
+	doc/quotes.texi \
+	doc/debug.texi \
+	doc/develop.texi \
+	doc/starting.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
@@ -28,17 +32,20 @@ USRMANUALS = \
 	doc/usr_43.texi doc/usr_44.texi doc/usr_45.texi doc/usr_90.texi
 
 usrhtml: htmls/usrman.html ;
-refhtml: htmls/refman.html ;
+refonehtml: htmls/refman.html ;
+refhtml: htmls/refman ;
 usrpdf: pdfs/userman.pdf ;
 refpdf: pdfs/refrman.pdf ;
 kyukana: htmls/tk-ok-usrman.html ;
 
 htmls/usrman.html: $(USRMANUALS)
-	${PRG} ${HTML_OPT} -o $@ $<
-	@sed -e 's/<\/title>/<\/title>\n<meta name="viewport" content="width=device-width, initial-scale=1.0" \/>/' $@ > $@.m
-	@mv $@.m $@
+	${PRG} ${HTML_OPT} --no-split -o $@ $<
+	sh utils/trick_for_mobile.sh $@
 
 htmls/refman.html: $(REFMANUALS) $(USRMANUALS)
+	${PRG} ${HTML_OPT} --no-split -o $@ $<
+
+htmls/refman: $(REFMANUALS) $(USRMANUALS)
 	${PRG} ${HTML_OPT} -o $@ $<
 
 pdfs/userman.pdf: $(USRMANUALS)
@@ -56,8 +63,11 @@ htmls/tk-ok-usrman.html: htmls/tk-usrman.html
 diffja:
 	@cp $(ORIG)/doc/usr_24.txt $(ORIG)/doc/org_usr_24.txt
 	@iconv -f LATIN1 -t UTF8 $(ORIG)/doc/org_usr_24.txt > $(ORIG)/doc/usr_24.txt
-	@ ORIG_DOC=$(ORIG) ruby utils/diff_trans.rb $(USRMANUALS) $(REFMANUALS)
+	@cp $(ORIG)/doc/quotes.txt $(ORIG)/doc/org_quotes.txt
+	@iconv -f LATIN1 -t UTF8 $(ORIG)/doc/org_quotes.txt > $(ORIG)/doc/quotes.txt
+	@ORIG_DOC=$(ORIG) ruby utils/diff_trans.rb $(USRMANUALS) $(REFMANUALS)
 	@mv $(ORIG)/doc/org_usr_24.txt $(ORIG)/doc/usr_24.txt
+	@mv $(ORIG)/doc/org_quotes.txt $(ORIG)/doc/quotes.txt
 
 nvcheck:
 	nvcheck doc/*.texi

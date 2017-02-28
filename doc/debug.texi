@@ -1,0 +1,485 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node debug.txt, , , 目次
+@unnumbered Vim のデバッグについて
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*debug.txt*     For Vim version 8.0.  Last change: 2012 Feb 11
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*debug.txt*     For Vim バージョン 8.0.  Last change: 2012 Feb 11
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Debugging Vim						*debug-vim*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debug-vim}
+@cindex debug-vim
+Vim のデバッグ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is for debugging Vim itself, when it doesn't work properly.
+For debugging Vim scripts, functions, etc. see |debug-scripts|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim のデバッグ方法についての説明です。Vim script や関数などのデバッグについては、|debug-scripts| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Location of a crash, using gcc and gdb	|debug-gcc|
+2. Locating memory leaks			|debug-leaks|
+3. Windows Bug Reporting			|debug-win32|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .05 .6 .35
+@item 1. @tab gcc と gdb を使ってクラッシュの場所を特定する @tab |@ref{debug-gcc, , debug-gcc}|
+@item 2. @tab メモリリークの検出 @tab |@ref{debug-leaks, , debug-leaks}|
+@item 3. @tab Windows でのバグレポート @tab |@ref{debug-win32, , debug-win32}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+1. Location of a crash, using gcc and gdb		*debug-gcc* *gdb*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debug-gcc}
+@anchor{gdb}
+@cindex debug-gcc
+@cindex gdb
+@section 1. gcc と gdb を使ってクラッシュの場所を特定する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When Vim crashes in one of the test files, and you are using gcc for
+compilation, here is what you can do to find out exactly where Vim crashes.
+This also applies when using the MingW tools.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テストファイルで Vim がクラッシュした場合、gcc を使っているなら、以下の方法で場所を特定できます。MinGW でも同じようにできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Compile Vim with the "-g" option (there is a line in the src/Makefile for
+   this, which you can uncomment).  Also make sure "strip" is disabled (do not
+   install it, or use the line "STRIP = /bin/true").
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item
+"-g" オプション付きで Vim をコンパイル (src/Makefile にそのための行があるので、それをコメントアウトしてください)。さらに "strip" を無効化 (strip をインストールしないか、"STRIP = /bin/true" の行を使う)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+2. Execute these commands (replace "11" with the test that fails): >
+	cd testdir
+	gdb ../vim
+	run -u unix.vim -U NONE -s dotest.in test11.in
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+次のコマンドを実行 ("11" の所を失敗したテストの番号に変えてください):
+@example
+cd testdir
+gdb ../vim
+run -u unix.vim -U NONE -s dotest.in test11.in
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+3. Check where Vim crashes, gdb should give a message for this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+Vim のクラッシュを確認。gdb がメッセージを表示します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+4. Get a stack trace from gdb with this command: >
+	where
+<  You can check out different places in the stack trace with: >
+	frame 3
+<  Replace "3" with one of the numbers in the stack trace.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+次のコマンドでスタックトレースを表示できます:
+@example
+where
+@end example
+次のコマンドで別の場所のスタックトレースを表示できます:
+@example
+frame 3
+@end example
+"3" のところにスタックトレースの番号を指定してください。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+2. Locating memory leaks			*debug-leaks* *valgrind*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debug-leaks}
+@anchor{valgrind}
+@cindex debug-leaks
+@cindex valgrind
+@section 2. メモリリークの検出
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you suspect Vim is leaking memory and you are using Linux, the valgrind
+tool is very useful to pinpoint memory leaks.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もし Vim がメモリリークを起こしているような感じがして、そしてあなたが Linux を使っているなら、valgrind ツールを使うことでメモリリークをピンポイントで検出することができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+First of all, build Vim with EXITFREE defined.  Search for this in MAKEFILE
+and uncomment the line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+まず、Vim を EXITFREE の定義付きでビルドします。MAKEFILE を検索して該当行のコメントを外してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use this command to start Vim:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のコマンドで Vim を起動してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	valgrind --log-file=valgrind.log --leak-check=full ./vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+valgrind --log-file=valgrind.log --leak-check=full ./vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: Vim will run much slower.  If your .vimrc is big or you have several
+plugins you need to be patient for startup, or run with the "-u NONE"
+argument.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Vim の実行はとても遅くなります。@file{.vimrc} が大きかったり多くのプラグインを入れていたりすると起動にとても時間がかかるので、その場合は "-u NONE" 引数を指定して起動してみてください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are often a few leaks from libraries, such as getpwuid() and
+XtVaAppCreateShell().  Those are unavoidable.  The number of bytes should be
+very small a Kbyte or less.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ライブラリがメモリリークを起こしている場合もあります。例えば getpwuid() や XtVaAppCreateShell() などです。それらを避けることはできません。リークしているバイト数は数キロバイト以下のはずです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+3. Windows Bug Reporting				*debug-win32*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debug-win32}
+@cindex debug-win32
+@section 3. Windows でのバグレポート
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the Windows version of Vim crashes in a reproducible manner, you can take
+some steps to provide a useful bug report.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Windows版の Vim が再現可能な手段でクラッシュした場合、次の方法で有用なバグレポートを作成できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+3.1 GENERIC ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 3.1 一般事項
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You must obtain the debugger symbols (PDB) file for your executable: gvim.pdb
+for gvim.exe, or vim.pdb for vim.exe. The PDB should be available from the
+same place that you obtained the executable. Be sure to use the PDB that
+matches the EXE (same date).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実行ファイルに対応したデバッグシンボルファイル (PDB) を用意してください。gvim.exe には gvim.pdb、vim.exe には vim.pdb が必要です。あなたが実行ファイルを入手したのと同じ場所に用意されているはずです。EXE に対応した (同じ日付の) PDB でなければいけません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you built the executable yourself with the Microsoft Visual C++ compiler,
+then the PDB was built with the EXE.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Microsoft Visual C++ コンパイラを使って自分で実行ファイルを作成した場合は、PDB は EXE といっしょに作成されています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Alternatively, if you have the source files, you can import Make_ivc.mak into
+Visual Studio as a workspace.  Then select a debug configuration, build and
+you can do all kinds of debugging (set breakpoints, watch variables, etc.).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他の方法もあります。ソースファイルを入手し、Visual Studio のワークスペースに Make_ivc.mak を取り込んでください。そして、デバッグの設定を選択し、ビルドしてください。ブレークポイントの設定や変数の監視など、すべてのデバッグ機能が使えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you have Visual Studio, use that instead of the VC Toolkit and WinDbg.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Visual Studio を持っている場合はそれを使ってください。VC Toolkit と WinDbg は必要ありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For other compilers, you should always use the corresponding debugger: TD for
+a Vim executable compiled with the Borland compiler; gdb (see above
+|debug-gcc|) for the Cygwin and MinGW compilers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他のコンパイラを使っている場合は、それぞれ適切なデバッガを使ってください。Borland コンパイラで作成した Vim 実行ファイルなら TD を使ってください。Cygwin または MinGW のコンパイラなら gdb を使ってください (上記参照 |@ref{debug-gcc, , debug-gcc}|)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+								*debug-vs2005*
+3.2 Debugging Vim crashes with Visual Studio 2005/Visual C++ 2005 Express ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debug-vs2005}
+@cindex debug-vs2005
+@unnumberedsubsec 3.2 Visual Studio 2005/Visual C++ 2005 Express で Vim をデバッグする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+First launch vim.exe or gvim.exe and then launch Visual Studio.  (If you don't
+have Visual Studio, follow the instructions at |get-ms-debuggers| to obtain a
+free copy of Visual C++ 2005 Express Edition.)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+vim.exe か gvim.exe を起動し、Visual Studio を起動してください。(Visual Studio を持っていない場合は、|@ref{get-ms-debuggers, , get-ms-debuggers}| の説明に従って、無料の Visual C++ 2005 Express Edition を入手してください。)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On the Tools menu, click Attach to Process.  Choose the Vim process.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メニューから「ツール/プロセスにアタッチ」を選択し、Vim のプロセスを選択します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In Vim, reproduce the crash.  A dialog will appear in Visual Studio, telling
+you about the unhandled exception in the Vim process.  Click Break to break
+into the process.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そして、Vim を操作してクラッシュを再現します。「ハンドルされていない例外が発生しました」という Visual Studio のダイアログが表示されるので、中断ボタンをクリックしてプロセスを中断してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Visual Studio will pop up another dialog, telling you that no symbols are
+loaded and that the source code cannot be displayed.  Click OK.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+シンボルが読み込めず、ソースコードを表示できなかったときは、もう 1 つダイアログが表示されます。OK をクリックしてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Several windows will open.  Right-click in the Call Stack window.  Choose Load
+Symbols.  The Find Symbols dialog will open, looking for (g)vim.pdb.  Navigate
+to the directory where you have the PDB file and click Open.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウがいくつか開きます。呼び出し履歴ウィンドウの右クリックメニューから「シンボルの読み込み」を選択してください。シンボル検索ダイアログが開くので、(g)vim.pdb のあるディレクトリを選択してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+At this point, you should have a full call stack with vim function names and
+line numbers.  Double-click one of the lines and the Find Source dialog will
+appear.  Navigate to the directory where the Vim source is (if you have it.)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このとき、呼び出し履歴ウィンドウには Vim の関数名や行番号が表示されているはずです。どれかをダブルクリックするとソースの検索ダイアログが表示されます。Vim のソースがあるディレクトリを選択してください (もしソースがあるなら)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you don't know how to debug this any further, follow the instructions
+at ":help bug-reports".  Paste the call stack into the bug report.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さらに詳しくデバッグする方法が分からないときは、"@command{:help bug-reports}" の説明に従ってください。バグレポートに呼び出し履歴を貼り付けてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you have a non-free version of Visual Studio, you can save a minidump via
+the Debug menu and send it with the bug report.  A minidump is a small file
+(<100KB), which contains information about the state of your process.
+Visual C++ 2005 Express Edition cannot save minidumps and it cannot be
+installed as a just-in-time debugger. Use WinDbg, |debug-windbg|, if you
+need to save minidumps or you want a just-in-time (postmortem) debugger.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+有料版の Visual Studio を使っている場合は、デバッグメニューから minidump を保存できるので、それをバグレポートに添付してください。minidump は 100KB 以下の小さなファイルで、Vim のプロセスに関する情報が入っています。
+
+Visual C++ 2005 Express Edition では minidump を保存できません。just-in-time デバッガ (クラッシュを検出して自動的に起動されるデバッガ) もインストールされません。それらが必要なときは WinDbg (|@ref{debug-windbg, , debug-windbg}|) を使ってください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								*debug-windbg*
+3.3 Debugging Vim crashes with WinDbg ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debug-windbg}
+@cindex debug-windbg
+@unnumberedsubsec 3.3 WinDbg を使って Vim をデバッグする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See |get-ms-debuggers| to obtain a copy of WinDbg.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+WinDbg の入手方法は |@ref{get-ms-debuggers, , get-ms-debuggers}| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+As with the Visual Studio IDE, you can attach WinDbg to a running Vim process.
+You can also have your system automatically invoke WinDbg as a postmortem
+debugger. To set WinDbg as your postmortem debugger, run "windbg -I".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Visual Studio IDE を使うのと同じように、WinDbg から Vim のプロセスにアタッチできます。プログラムがクラッシュしたときに、事後分析デバッガ (postmortem debugger) として、WinDebug を自動的に起動することができます。事後分析デバッガとして WinDeb を設定するには "windbg -I" を実行してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To attach WinDbg to a running Vim process, launch WinDbg. On the File menu,
+choose Attach to a Process. Select the Vim process and click OK.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+WinDbg から、実行中の Vim のプロセスにアタッチするには、WinDeb を起動し、File メニューから「プロセスにアタッチ」を選択し、Vim のプロセスを選択して OK をクリックします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+At this point, choose Symbol File Path on the File menu, and add the folder
+containing your Vim PDB to the sympath. If you have Vim source available,
+use Source File Path on the File menu. You can now open source files in WinDbg
+and set breakpoints, if you like. Reproduce your crash. WinDbg should open the
+source file at the point of the crash. Using the View menu, you can examine
+the call stack, local variables, watch windows, and so on.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メニューから「File->Symbol File Path」を選択し、Vim PDB の入っているフォルダを symbolpath に追加してください。Vim のソースファイルもある場合は、File メニューの Source File Path を使ってください。WinDbg でソースファイルを開いたり、ブレークポイントを設定したりできます。Vim をクラッシュさせると、クラッシュした場所のソースファイルが WinDbg で開かれます。View メニューを使って、コールスタック、ローカル変数、ウォッチウィンドウなどを見ることができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If WinDbg is your postmortem debugger, you do not need to attach WinDbg to
+your Vim process. Simply reproduce the crash and WinDbg will launch
+automatically. As above, set the Symbol File Path and the Source File Path.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+事後分析デバッガとして WinDbg を使っている場合、WinDbg から Vim のプロセスにアタッチする必要はありません。Vim をクラッシュさせるだけで WinDbg が自動的に起動します。上述のように、シンボルファイルパスとソースファイルパスを設定してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To save a minidump, type the following at the WinDbg command line: >
+        .dump vim.dmp
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+minidump を保存するには、WinDbg コマンドラインで次のコマンドを入力します:
+@example
+.dump vim.dmp
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*debug-minidump*
+3.4 Opening a Minidump ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debug-minidump}
+@cindex debug-minidump
+@unnumberedsubsec 3.4 Minidump を開く
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you have a minidump file, you can open it in Visual Studio or in WinDbg.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Visual Studio か WinDbg を使って minidump を開くことができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In Visual Studio 2005: on the File menu, choose Open, then Project/Solution.
+Navigate to the .dmp file and open it. Now press F5 to invoke the debugger.
+Follow the instructions in |debug-vs2005| to set the Symbol File Path.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Visual Studio 2005 の場合: メニューから「ファイル->開く->プロジェクト/ソリューション」選択し、.dmp ファイルを開いてください。F5 キーを押してデバッガを起動します。Symbol File Path の設定について |@ref{debug-vs2005, , debug-vs2005}| の説明も参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In WinDbg: choose Open Crash Dump on the File menu. Follow the instructions in
+|debug-windbg| to set the Symbol File Path.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+WinDbg の場合: メニューから「File->Open Crash Dump」を選択します。Symbol File Pathの設定について |@ref{debug-windbg, , debug-windbg}| の説明も参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*get-ms-debuggers*
+3.5 Obtaining Microsoft Debugging Tools ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{get-ms-debuggers}
+@cindex get-ms-debuggers
+@unnumberedsubsec 3.5 Microsoft デバッグツールの入手方法
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Debugging Tools for Windows (including WinDbg) can be downloaded from
+    http://www.microsoft.com/whdc/devtools/debugging/default.mspx
+This includes the WinDbg debugger.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Windows 用のデバッグツールは次の場所からダウンロードできます
+
+@url{http://www.microsoft.com/whdc/devtools/debugging/default.mspx}
+
+これには WinDbg デバッガが含まれています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Visual C++ 2005 Express Edition can be downloaded for free from:
+    http://msdn.microsoft.com/vstudio/express/visualC/default.aspx
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Visual C++ 2005 Express Edition は次の場所からダウンロードできます。無料です。
+
+@url{http://msdn.microsoft.com/vstudio/express/visualC/default.aspx}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+=========================================================================
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset

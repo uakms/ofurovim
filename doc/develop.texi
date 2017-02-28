@@ -1,0 +1,1538 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node develop.txt, , , 目次
+@unnumbered Vim の開発に関して
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*develop.txt*   For Vim version 8.0.  Last change: 2017 Jan 05
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*develop.txt*   For Vim バージョン 8.0.  Last change: 2017 Jan 05
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Development of Vim.					*development*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{development}
+@cindex development
+@section 1. Vimの開発
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This text is important for those who want to be involved in further developing
+Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この文書は、Vim の更なる開発に参加しようという人にとって重要である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Design goals		|design-goals|
+2. Coding style		|coding-style|
+3. Design decisions	|design-decisions|
+4. Assumptions		|design-assumptions|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .05 .50 .45
+@item 1. @tab 設計上の目標 @tab |design-goals|
+@item 2. @tab コーディングスタイル @tab |coding-style|
+@item 3. @tab 決定事項 @tab |design-decisions|
+@item 4. @tab 想定していること @tab |design-assumptions|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See the file README.txt in the "src" directory for an overview of the source
+code.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ソースコードの概要については "src" ディレクトリの @file{README.txt} を見てください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim is open source software.  Everybody is encouraged to contribute to help
+improving Vim.  For sending patches a context diff "diff -c" is preferred.
+Also see http://vim.wikia.com/wiki/How_to_make_and_submit_a_patch.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はオープンソースソフトウェアです。誰でも Vim の開発に協力できます。パッチを送る時はなるべく "context diff" 形式 ("diff -c" で作る) でお願いします。@url{http://vim.wikia.com/wiki/How_to_make_and_submit_a_patch} も見てください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Design goals						*design-goals*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{design-goals}
+@cindex design-goals
+@unnumberedsubsec 1. 設計上の目標
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Most important things come first (roughly).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+重要度の順に従って書かれている(大雑把であるが)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that quite a few items are contradicting.  This is intentional.  A
+balance must be found between them.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+かなりの項目が矛盾していることを注意しておく。これは故意である。それらの間で、バランスを取っていかねばならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+VIM IS... VI COMPATIBLE					*design-compatible*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{design-compatible}
+@cindex design-compatible
+@unnumberedsubsubsec VIM IS... VI COMPATIBLE
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+First of all, it should be possible to use Vim as a drop-in replacement for
+Vi.  When the user wants to, he can use Vim in compatible mode and hardly
+notice any difference with the original Vi.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+何より、Vim は Vi の気軽な置き換えとして使うことができるべきである。ユーザーが望むなら、Vim を、オリジナルの Vi との区別がほとんど付かない互換モードで使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Exceptions:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例外:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- We don't reproduce obvious Vi bugs in Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 明白な Vi のバグを Vim に再現しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- There are different versions of Vi.  I am using Version 3.7 (6/7/85) as a
+  reference.  But support for other versions is also included when possible.
+  The Vi part of POSIX is not considered a definitive source.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item Vi には異なるバージョンが存在する。私はバージョン 3.7(6/7/85) を参考として使っている。しかし、他のバージョンのサポートも可能な限り取り込まれる。POSIX における Vi のパートは、決定的な資料とは考えない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Vim adds new commands, you cannot rely on some command to fail because it
+  didn't exist in Vi.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item Vim は新しいコマンドを持つため、Vi にないコマンドを入力しても機能してしまう場合がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Vim will have a lot of features that Vi doesn't have.  Going back from Vim
+  to Vi will be a problem, this cannot be avoided.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item Vim は Vi の持っていない多くの特徴を持つ。Vim から Vi へ戻ることは問題を引き起こすが、これは避けられないことである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Some things are hardly ever used (open mode, sending an e-mail when
+  crashing, etc.).  Those will only be included when someone has a good reason
+  why it should be included and it's not too much work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item いくつかの事柄はめったに使われた例がない (オープンモード、クラッシュ時の e-mailの送信、など)。これらは、誰かが何らかの理由でそれを入れるべきだと考え、さらにその機能が働き過ぎない場合に限って取り入れられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- For some items it is debatable whether Vi compatibility should be
+  maintained.  There will be an option flag for these.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item いくつかの項目に関しては、Vi 互換を保つべきかどうか、議論の余地がある。これらに関しては、オプションフラグが作られるだろう。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+VIM IS... IMPROVED					*design-improved*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{design-improved}
+@cindex design-improved
+@unnumberedsubsubsec VIM IS... IMPROVED
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The IMproved bits of Vim should make it a better Vi, without becoming a
+completely different editor.  Extensions are done with a "Vi spirit".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の改良点は、それをよりよい Vi にすべきであって、まったく違ったエディタにしてしまってはならない。拡張は "Vi の精神" に従って行われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Use the keyboard as much as feasible.  The mouse requires a third hand,
+  which we don't have.  Many terminals don't have a mouse.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item
+可能な限りキーボードを使う。マウスは私たちの持たぬ第 3 の手を必要とする。 多くの端末はマウスを備えていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- When the mouse is used anyway, avoid the need to switch back to the
+  keyboard.  Avoid mixing mouse and keyboard handling.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+それでもマウスを使うようであれば、キーボードに切り替える必要をなくす。マウスとキーボードの操作の混在を避けよ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Add commands and options in a consistent way.  Otherwise people will have a
+  hard time finding and remembering them.  Keep in mind that more commands and
+  options will be added later.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+コマンドとオプションを矛盾なく追加せよ。でなければ、それらを見つけ出し、思い出すのに、人々は苦労を強いられるだろう。後々、さらにコマンドやオプションが追加されることを忘れてはならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- A feature that people do not know about is a useless feature.  Don't add
+  obscure features, or at least add hints in documentation that they exist.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+特性は、人々が知らなければ役に立たない。目立たない特性は追加しない、あるいは、少なくともその特性が存在するというヒントをドキュメントに追加すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Minimize using CTRL and other modifiers, they are more difficult to type.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+CTRLや他の修飾子の使用は最小限に留めよ、これらはタイプしにくい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- There are many first-time and inexperienced Vim users.  Make it easy for
+  them to start using Vim and learn more over time.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+多くの初心者、不慣れな Vim ユーザーがいる。Vim を使いはじめること、そしてより多くを学んでいくことが、簡単にできるようにせよ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- There is no limit to the features that can be added.  Selecting new features
+  is one based on (1) what users ask for, (2) how much effort it takes to
+  implement and (3) someone actually implementing it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+特性は限りなく追加できる。新しく追加される特性は、(1) ユーザーが求めていること、(2) 実装にどれほどの労力が必要か、そして (3) 誰かが実際に実装している、といったことに基づいて選択される。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+VIM IS... MULTI PLATFORM				*design-multi-platform*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{design-multi-platform}
+@cindex design-multi-platform
+@unnumberedsubsubsec VIM IS... MULTI PLATFORM
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim tries to help as many users on as many platforms as possible.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は、可能な限り、多くのプラットフォーム上の多くのユーザーの助けでありたい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Support many kinds of terminals.  The minimal demands are cursor positioning
+  and clear-screen.  Commands should only use key strokes that most keyboards
+  have.  Support all the keys on the keyboard for mapping.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item
+多くの種類の端末をサポートする。最低限の要求は、カーソルの配置機能と画面のクリアである。コマンドはたいていのキーボードが持つキーのみを使う。マッピングには、キーボード上の全てのキーを使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Support many platforms.  A condition is that there is someone willing to do
+  Vim development on that platform, and it doesn't mean messing up the code.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+多くのプラットフォームをサポートする。必要条件は、誰かがそのプラットフォーム上で Vim の開発をしたいと考えること、それによってコードに混乱をきたさないこと、である。
+
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Support many compilers and libraries.  Not everybody is able or allowed to
+  install another compiler or GUI library.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+多くのコンパイラとライブラリをサポートする。全ての人が、他のコンパイラや GUI ライブラリをインストールできるわけではないからである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- People switch from one platform to another, and from GUI to terminal
+  version.  Features should be present in all versions, or at least in as many
+  as possible with a reasonable effort.  Try to avoid that users must switch
+  between platforms to accomplish their work efficiently.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+人々は、あるプラットフォームから別のプラットフォームへ、そして GUI から端末バージョンへ移行する。特性は全てのバージョン、あるいは、少なくとも理に叶った労力でできる限りのバージョンで、提供されるべきである。ユーザーが能率的に仕事を仕上げるために、プラットフォームを切り替えねばならないような事態は避けたい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- That a feature is not possible on some platforms, or only possible on one
+  platform, does not mean it cannot be implemented.  [This intentionally
+  contradicts the previous item, these two must be balanced.]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+いくつかのプラットフォームでは実現できない、または、ただひとつのプラットフォームでしか実現できないような特性も、実装できないというわけではない。[これは前項と故意に矛盾するものであり、両者の間でバランスが取られる。]
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+VIM IS... WELL DOCUMENTED				*design-documented*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{design-documented}
+@cindex design-documented
+@unnumberedsubsubsec VIM IS... WELL DOCUMENTED
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- A feature that isn't documented is a useless feature.  A patch for a new
+  feature must include the documentation.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item
+文書化されていない特性は、役に立たない。新しい特性を含んだパッチには、必ずドキュメントが含まれているべきである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Documentation should be comprehensive and understandable.  Using examples is
+  recommended.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+ドキュメントは、わかりやすく、理解できるものであるべきだ。例を使うことが推奨される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Don't make the text unnecessarily long.  Less documentation means that an
+  item is easier to find.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+文章を不必要に長くしてはならない。短い文章は、その項目を見つけやすくする。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+VIM IS... HIGH SPEED AND SMALL IN SIZE			*design-speed-size*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec VIM IS... HIGH SPEED AND SMALL IN SIZE
+@anchor{design-speed-size}
+@cindex design-speed-size
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Using Vim must not be a big attack on system resources.  Keep it small and
+fast.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim を使うことで、システムリソースに大打撃を与えてはならない。Vim を小さく、速く保つこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Computers are becoming faster and bigger each year.  Vim can grow too, but
+  no faster than computers are growing.  Keep Vim usable on older systems.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item
+コンピュータは年毎により速く、大容量になっている。Vim も成長しうるが、コンピュータの成長速度より速くなってはならない。Vim を古いシステム上でも使えるよう保つ必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Many users start Vim from a shell very often.  Startup time must be short.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+多くのユーザーは、Vim を頻繁にシェルから立ち上げる。起動は短時間でなくてはならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Commands must work efficiently.  The time they consume must be as small as
+  possible.  Useful commands may take longer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+コマンドは能率的に働く必要がある。コマンドが消費する時間は、可能な限り短くあるべきだ。役に立つコマンドなら、多少時間がかかってもよい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Don't forget that some people use Vim over a slow connection.  Minimize the
+  communication overhead.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+Vim を、遅い接続を通して使う人がいることを忘れてはならない。通信にかかるオーバーヘッドは最小にすること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Items that add considerably to the size and are not used by many people
+  should be a feature that can be disabled.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+サイズがかなり大きく、多くの人によって使われるわけではない項目は、無効化できる特性とすべきである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Vim is a component among other components.  Don't turn it into a massive
+  application, but have it work well together with other programs.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+Vim は、他のいろいろな構成要素の中にある、ひとつのコンポーネントである。巨大なアプリケーションに変えてはならない、むしろ他のプログラムとよく協調するようにせよ。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+VIM IS... MAINTAINABLE					*design-maintain*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{design-maintain}
+@cindex design-maintain
+@unnumberedsubsubsec VIM IS... MAINTAINABLE
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- The source code should not become a mess.  It should be reliable code.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item
+ソースコードは乱雑になってはならない。そして、信頼できるものでなくてはならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Use the same layout in all files to make it easy to read |coding-style|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+読みやすくするため、すべてのファイルで同じレイアウトを取ること |coding-style|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Use comments in a useful way!  Quoting the function name and argument names
+  is NOT useful.  Do explain what they are for.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+役に立つコメントをいれること！関数名と引数名を引用しても役に立たない。それが何のためにあるのか説明すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Porting to another platform should be made easy, without having to change
+  too much platform-independent code.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+プラットフォーム独立のコードに多くの変更を加える必要をなくし、他のプラットフォームへの移植を簡単にできるようにすること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Use the object-oriented spirit: Put data and code together.  Minimize the
+  knowledge spread to other parts of the code.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+オブジェクト指向の精神を使う: データとコードを同じ場所に。コードの他の部分に関する知識は最小で済むように。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+VIM IS... FLEXIBLE					*design-flexible*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec VIM IS... FLEXIBLE
+@anchor{design-flexible}
+@cindex design-flexible
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim should make it easy for users to work in their preferred styles rather
+than coercing its users into particular patterns of work.  This can be for
+items with a large impact (e.g., the 'compatible' option) or for details.  The
+defaults are carefully chosen such that most users will enjoy using Vim as it
+is.  Commands and options can be used to adjust Vim to the desire of the user
+and its environment.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は、そのユーザーに特定の作業パターンを強いるよりは、ユーザーの好むスタイルでの作業を支援すべきである。これは大きなインパクトをもつ項目(例えば、'@option{compatible}' オプション)や、その他の詳細によって実現される。デフォルトは、多くのユーザーがそのままの Vim を楽しんで使えるように、慎重に選ばれている。コマンドとオプションは、Vim をユーザーの希望と環境に調整するために使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+VIM IS... NOT						*design-not*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{design-not}
+@cindex design-not
+@unnumberedsubsubsec VIM IS... NOT
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Vim is not a shell or an Operating System.  You will not be able to run a
+  shell inside Vim or use it to control a debugger.  This should work the
+  other way around: Use Vim as a component from a shell or in an IDE.
+  A satirical way to say this: "Unlike Emacs, Vim does not attempt to include
+  everything but the kitchen sink, but some people say that you can clean one
+  with it.  ;-)"
+  To use Vim with gdb see: http://www.agide.org and http://clewn.sf.net.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item
+Vim はシェルでもオペレーティングシステムでもない。Vim の中でシェルを走らせたりデバッガを制御したりできるようにはならない。これらは他の方法で成されるべきである: Vim をシェルや IDE のコンポーネントとして使おう。
+
+風刺を込めて曰く: "Vim は Emacs のように流し台以外ならなんでもかんでも取り込んでしまうようなことはしないが、Vim で流し台を洗うことはできるぞ。 ;-)"
+
+Vim と gdb を連携させる方法については次を参照: @url{http://www.agide.org} と @url{http://clewn.sf.net}.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Vim is not a fancy GUI editor that tries to look nice at the cost of
+  being less consistent over all platforms.  But functional GUI features are
+  welcomed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+Vim は、全てのプラットフォームに渡って調和を欠くという代償を払って、見栄えをよくしようとする装飾的な GUI エディタではない。しかし、機能的な GUI 特性は歓迎される。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Coding style						*coding-style*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{coding-style}
+@cindex coding-style
+@section 2. コーディングスタイル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These are the rules to use when making changes to the Vim source code.  Please
+stick to these rules, to keep the sources readable and maintainable.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim のソースコードに変更を加える際、守るべきルールがある。ソースを読めるもの、保守できるものとして保つため、これらのルールに従って欲しい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This list is not complete.  Look in the source code for more examples.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このリストは完全ではない。より多くの例は、ソースコードを見て欲しい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MAKING CHANGES						*style-changes*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{style-changes}
+@cindex style-changes
+@unnumberedsubsec MAKING CHANGES
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The basic steps to make changes to the code:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コードに変更を加える基本的なステップは:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. Get the code from github.  That makes it easier to keep your changed
+   version in sync with the main code base (it may be a while before your
+   changes will be included).  You do need to spend some time learning git,
+   it's not the most user friendly tool.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item
+GitHub からコードを取得する。これによりあなたが変更したコードをメインのコードベースに同期するのがより簡単になる (あなたの変更がメインのコードベースに含まれるようになるまで少しかかるかもしれない) 。いくらか時間を費やして git について学ぶ必要がある。git はあまりユーザーフレンドリーなツールではない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+2. Adjust the documentation.  Doing this first gives you an impression of how
+   your changes affect the user.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+ドキュメントを調整する。最初にこれをやることで、あなたの行う変更がユーザーに与える影響について、おおまかな印象をもつことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+3. Make the source code changes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+ソースコードに変更を加える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+4. Check ../doc/todo.txt if the change affects any listed item.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+変更がリストされた項目に影響を与えていないか、@file{../doc/todo.txt} をチェックする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+5. Make a patch with "git diff".  You can also create a pull request on
+   github, but it's the diff that matters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+"git diff" でパッチを作成する。GitHub でプルリクエストを作成しても良いが、重要なのはその diff である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+6. Make a note about what changed, preferably mentioning the problem and the
+   solution.  Send an email to the |vim-dev| maillist with an explanation and
+   include the diff. Or create a pull request on github.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+何が変更されたかのノートを作成する。問題点とその解決策について書かれているのが望ましい。|vim-dev| のメーリングリストに説明と diff を含めたメールを送るか GitHub でプルリクエストを作成する。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+C COMPILER						*style-compiler*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{style-compiler}
+@cindex style-compiler
+@unnumberedsubsubsec C COMPILER
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The minimal C compiler version supported is C89, also known as ANSI C.
+Later standards don't add much and C89 is the widest supported.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+サポートされている最小の C コンパイラのバージョンは C89 (ANSI C とも呼ばれている) である。C89 以降の標準規格にはあまり多くの機能追加が無く C89 はもっとも普及している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+One restriction that this implies: no // comments, only /* comments */.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この項目が暗に示している制限の 1 つとして、 // コメントではなく /* コメント */ を使わなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USE OF COMMON FUNCTIONS					*style-functions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{style-functions}
+@cindex style-functions
+@unnumberedsubsubsec USE OF COMMON FUNCTIONS
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some functions that are common to use, have a special Vim version.  Always
+consider using the Vim version, because they were introduced with a reason.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+よく使われる関数のうち、特別な Vim バージョンを持つものがある。これらは理由あって導入されたものなので、常に Vim バージョンを使うように意識すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NORMAL NAME	VIM NAME	DIFFERENCE OF VIM VERSION
+free()		vim_free()	Checks for freeing NULL
+malloc()	alloc()		Checks for out of memory situation
+malloc()	lalloc()	Like alloc(), but has long argument
+strcpy()	STRCPY()	Includes cast to (char *), for char_u * args
+strchr()	vim_strchr()	Accepts special characters
+strrchr()	vim_strrchr()	Accepts special characters
+isspace()	vim_isspace()	Can handle characters > 128
+iswhite()	vim_iswhite()	Only TRUE for tab and space
+memcpy()	mch_memmove()	Handles overlapped copies
+bcopy()		mch_memmove()	Handles overlapped copies
+memset()	vim_memset()	Uniform for all systems
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .2 .4
+@item NORMAL NAME @tab VIM NAME @tab DIFFERENCE OF VIM VERSION
+@item free() @tab vim_free() @tab NULL の解放をチェックする
+@item malloc() @tab alloc() @tab アウトオブメモリの状況をチェックする
+@item malloc() @tab lalloc() @tab alloc() に似ているが、long 型の引数を持つ
+@item strcpy() @tab STRCPY() @tab char_u *引数を、(char *) へキャストする
+@item strchr() @tab vim_strchr() @tab スペシャルキャラクタを受け入れる
+@item strrchr() @tab vim_strrchr() @tab スペシャルキャラクタを受け入れる
+@item isspace() @tab vim_isspace() @tab 128 以上のキャラクタを扱うことができる
+@item iswhite() @tab vim_iswhite() @tab Tab とスペースに対してのみ TRUE
+@item memcpy() @tab mch_memmove() @tab オーバーラップしたコピーを扱う
+@item bcopy() @tab mch_memmove() @tab オーバーラップしたコピーを扱う
+@item memset() @tab vim_memset() @tab 全てのシステムで一定である
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+NAMES							*style-names*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{style-names}
+@cindex style-names
+@unnumberedsubsubsec NAMES
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Function names can not be more than 31 characters long (because of VMS).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+関数の名前に 31 文字より長い名前は使えない。(VMSのために)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Don't use "delete" or "this" as a variable name, C++ doesn't like it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"delete" や "this" という名前の変数を使わないこと。C++ で問題となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Because of the requirement that Vim runs on as many systems as possible, we
+need to avoid using names that are already defined by the system.  This is a
+list of names that are known to cause trouble.  The name is given as a regexp
+pattern.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim ができる限り多くのシステム上で走るという必要上、システムによってすでに定義されている名前を使うことは避けねばならない。これは、問題となることが知られている名前のリストである。名前は regexp パターンとして与えられている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+is.*()		POSIX, ctype.h
+to.*()		POSIX, ctype.h
+
+d_.*		POSIX, dirent.h
+l_.*		POSIX, fcntl.h
+gr_.*		POSIX, grp.h
+pw_.*		POSIX, pwd.h
+sa_.*		POSIX, signal.h
+mem.*		POSIX, string.h
+str.*		POSIX, string.h
+wcs.*		POSIX, string.h
+st_.*		POSIX, stat.h
+tms_.*		POSIX, times.h
+tm_.*		POSIX, time.h
+c_.*		POSIX, termios.h
+MAX.*		POSIX, limits.h
+__.*		POSIX, system
+_[A-Z].*	POSIX, system
+E[A-Z0-9]*	POSIX, errno.h
+
+.*_t		POSIX, for typedefs.  Use .*_T instead.
+
+wait		don't use as argument to a function, conflicts with types.h
+index		shadows global declaration
+time		shadows global declaration
+new		C++ reserved keyword
+try		Borland C++ doesn't like it to be used as a variable.
+
+clear		Mac curses.h
+echo		Mac curses.h
+instr		Mac curses.h
+meta		Mac curses.h
+newwin		Mac curses.h
+nl		Mac curses.h
+overwrite	Mac curses.h
+refresh		Mac curses.h
+scroll		Mac curses.h
+typeahead	Mac curses.h
+
+basename()	GNU string function
+dirname()	GNU string function
+get_env_value()	Linux system function
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item is.*() @tab POSIX, ctype.h
+@item to.*() @tab POSIX, ctype.h
+@item
+@item d_.* @tab POSIX, dirent.h
+@item l_.* @tab POSIX, fcntl.h
+@item gr_.* @tab POSIX, grp.h
+@item pw_.* @tab POSIX, pwd.h
+@item sa_.* @tab POSIX, signal.h
+@item mem.* @tab POSIX, string.h
+@item str.* @tab POSIX, string.h
+@item wcs.* @tab POSIX, string.h
+@item st_.* @tab POSIX, stat.h
+@item tms_.* @tab POSIX, times.h
+@item tm_.* @tab POSIX, time.h
+@item c_.* @tab POSIX, termios.h
+@item MAX.* @tab POSIX, limits.h
+@item __.* @tab POSIX, system
+@item _[A-Z].* @tab POSIX, system
+@item E[A-Z0-9]* @tab POSIX, errno.h
+@item
+@item .*_t @tab POSIX, for typedefs, *_T を使うこと。
+@item
+@item wait @tab types.hとコンフリクトするため、関数の引数として使わない
+@item index @tab グローバル宣言を覆い隠す
+@item time @tab グローバル宣言を覆い隠す
+@item new @tab C++ の予約語
+@item try @tab Borland C++ は、これを変数として使うことを好まない
+@item
+@item clear @tab Mac curses.h
+@item echo @tab Mac curses.h
+@item instr @tab Mac curses.h
+@item meta @tab Mac curses.h
+@item newwin @tab Mac curses.h
+@item nl @tab Mac curses.h
+@item overwrite @tab Mac curses.h
+@item refresh @tab Mac curses.h
+@item scroll @tab Mac curses.h
+@item typeahead @tab Mac curses.h
+@item
+@item basename() @tab GNU 文字列関数(GNU string function)
+@item dirname() @tab GNU 文字列関数(GNU string function)
+@item get_env_value() @tab Linux システム関数
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+VARIOUS							*style-various*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{style-various}
+@cindex style-various
+@unnumberedsubsubsec VARIOUS
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Typedef'ed names should end in "_T": >
+    typedef int some_T;
+Define'ed names should be uppercase: >
+    #define SOME_THING
+Features always start with "FEAT_": >
+    #define FEAT_FOO
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+型の定義に使う名前は最後を "_T" にする:
+@verbatim
+typedef int some_T;
+@end verbatim
+マクロ定義はすべて大文字にする:
+@verbatim
+#define SOME_THING
+@end verbatim
+機能に関する定義は "FEAT_" で始める:
+@verbatim
+#define FEAT_FOO
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Don't use '\"', some compilers can't handle it.  '"' works fine.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'\"' を使わない、あるコンパイラはこれを扱えない。'"' はうまく機能する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Don't use:
+    #if HAVE_SOME
+Some compilers can't handle that and complain that "HAVE_SOME" is not defined.
+Use
+    #ifdef HAVE_SOME
+or
+    #if defined(HAVE_SOME)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次を使ってはならない:
+@verbatim
+#if HAVE_SOME
+@end verbatim
+あるコンパイラはこれを扱えず、"HAVE_SOME" が定義されていないと訴える。
+次を使う
+@verbatim
+#ifdef HAVE_SOME
+@end verbatim
+または
+@verbatim
+#if defined(HAVE_SOME)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+STYLE							*style-examples*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{style-examples}
+@cindex style-examples
+@unnumberedsubsubsec STYLE
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+General rule: One statement per line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一般的なルール: 1 行に 1 つのステートメント。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Wrong:	    if (cond) a = 1;
+
+OK:	    if (cond)
+		a = 1;
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+間違い:    if (cond) a = 1;
+
+OK:        if (cond)
+               a = 1;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Wrong:	    while (cond);
+
+OK:	    while (cond)
+		;
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+間違い:    while (cond);
+
+OK:        while (cond)
+              ;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Wrong:	    do a = 1; while (cond);
+
+OK:	    do
+		a = 1;
+	    while (cond);
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+間違い:    do a = 1; while (cond);
+
+OK:        do
+               a = 1;
+           while (cond);
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Wrong:	    if (cond) {
+               cmd;
+               cmd;
+	    } else {
+               cmd;
+               cmd;
+	    }
+
+OK:	    if (cond)
+            {
+               cmd;
+               cmd;
+	    }
+	    else
+	    {
+               cmd;
+               cmd;
+	    }
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+間違い:    if (cond) {
+              cmd;
+              cmd;
+           } else {
+              cmd;
+              cmd;
+           }
+
+OK:        if (cond)
+           {
+              cmd;
+              cmd;
+           }
+           else
+           {
+              cmd;
+              cmd;
+           }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use ANSI (new style) function declarations with the return type on a separate
+indented line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+関数宣言には ANSI スタイルを使い、戻り値の型は独立した行にインデントをつけて書くこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Wrong:	int function_name(int arg1, int arg2)
+
+OK:	/*
+	 * Explanation of what this function is used for.
+	 *
+	 * Return value explanation.
+	 */
+	    int
+	function_name(
+	    int		arg1,		/* short comment about arg1 */
+	    int		arg2)		/* short comment about arg2 */
+	{
+	    int		local;		/* comment about local */
+
+	    local = arg1 * arg2;
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+間違い: int function_name(int arg1, int arg2)
+
+OK:     /*
+         * Explanation of what this function is used for.
+         * この関数が何に使われるかの説明。
+         *
+         * Return value explanation.
+         * 戻り値の説明。
+         */
+            int
+        function_name(
+            int     arg1,           /* short comment about arg1 */
+            int     arg2)           /* short comment about arg2 */
+        {
+            int     local;          /* comment about local */
+
+            local = arg1 * arg2;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+
+@ifset EN
+SPACES AND PUNCTUATION					*style-spaces*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{style-spaces}
+@cindex style-spaces
+@unnumberedsubsubsec SPACES AND PUNCTUATION
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+No space between a function name and the bracket:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+関数名とブラケットの間にスペースを入れないこと:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Wrong:  func (arg);
+OK:	func(arg);
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+間違い:	func (arg);
+OK:     func(arg);
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Do use a space after if, while, switch, etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+if、while、switch などの後には、スペースを入れること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Wrong:	if(arg)		for(;;)
+OK:	if (arg)	for (;;)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+間違い: if(arg)         for(;;)
+OK:     if (arg)        for (;;)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use a space after a comma and semicolon:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コンマ、セミコロンの後にはスペースを入れること:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Wrong:  func(arg1,arg2);	for (i = 0;i < 2;++i)
+OK:	func(arg1, arg2);	for (i = 0; i < 2; ++i)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+間違い: func(arg1,arg2);        for (i = 0;i < 2;++i)
+OK:     func(arg1, arg2);       for (i = 0; i < 2; ++i)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use a space before and after '=', '+', '/', etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'='、'+'、'/' などの前と後には、スペースを入れること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Wrong:	var=a*5;
+OK:	var = a * 5;
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+間違い: var=a*5;
+OK:     var = a * 5;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In general: Use empty lines to group lines of code together.  Put a comment
+just above the group of lines.  This makes it easier to quickly see what is
+being done.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一般的なこと: コードの行をグループ分けするために、空行を使う。行グループのすぐ上にコメントを入れる。こうすることによって、何が行われるのかをより簡単に知ることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+OK:	/* Prepare for building the table. */
+	get_first_item();
+	table_idx = 0;
+
+	/* Build the table */
+	while (has_item())
+	    table[table_idx++] = next_item();
+
+	/* Finish up. */
+	cleanup_items();
+	generate_hash(table);
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+OK:     /* Prepare for building the table. */
+        /* テーブルの作成の準備 */
+        get_first_item();
+        table_idx = 0;
+
+        /* Build the table */
+        /* テーブルの作成 */
+        while (has_item())
+            table[table_idx++] = next_item();
+
+        /* Finish up. */
+        /* 仕上げ */
+        cleanup_items();
+        generate_hash(table);
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Design decisions					*design-decisions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{design-decisions}
+@cindex design-decisions
+@section 3. 決定事項
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Folding
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 折畳(folding)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Several forms of folding should be possible for the same buffer.  For example,
+have one window that shows the text with function bodies folded, another
+window that shows a function body.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同じバッファにいくつもの折畳状態を設定可能にする。例えば、あるウィンドウに関数を折畳んだ状態で表示し、他のウィンドウで関数の中身を表示するなど。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Folding is a way to display the text.  It should not change the text itself.
+Therefore the folding has been implemented as a filter between the text stored
+in a buffer (buffer lines) and the text displayed in a window (logical lines).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳はテキストを表示する方法である。テキストを変更すべきではない。したがってバッファ内のテキストをウィンドウに表示する際のフィルタとして実行される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Naming the window
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec ウィンドウの名前
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The word "window" is commonly used for several things: A window on the screen,
+the xterm window, a window inside Vim to view a buffer.
+To avoid confusion, other items that are sometimes called window have been
+given another name.  Here is an overview of the related items:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"ウィンドウ" という単語は一般にいくつかの意味で使われている。スクリーン上のウィンドウ、xterm のウィンドウ、Vim のバッファを表示するウィンドウなど。
+
+混乱を避けるため、時にウィンドウと呼ばれる他の物には別の名前が付けられている。ここに関連する物の概観を示す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+screen		The whole display.  For the GUI it's something like 1024x768
+		pixels.  The Vim shell can use the whole screen or part of it.
+shell		The Vim application.  This can cover the whole screen (e.g.,
+		when running in a console) or part of it (xterm or GUI).
+window		View on a buffer.  There can be several windows in Vim,
+		together with the command line, menubar, toolbar, etc. they
+		fit in the shell.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item スクリーン (screen)
+ディスプレイ全体。GUI では例えば 1024x768 ピクセルの画面。Vim シェルはスクリーン全体を使うことも一部を使うこともできる。
+
+@item シェル (shell)
+Vim アプリケーション。スクリーン全体 (例えばコンソールで実行した時)、あるいはその一部 (xterm や GUI)。
+
+@item ウィンドウ (window)
+バッファの表示画面。Vim は複数のウィンドウを持つことができる。ウィンドウはコマンドラインやメニューバー、ツールバーなどといっしょに表示される。これらはシェルに納まる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Spell checking						*develop-spell*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{develop-spell}
+@cindex develop-spell
+@unnumberedsubsec スペルチェック
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When spell checking was going to be added to Vim a survey was done over the
+available spell checking libraries and programs.  Unfortunately, the result
+was that none of them provided sufficient capabilities to be used as the spell
+checking engine in Vim, for various reasons:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim にスペルチェックを追加することになったとき、利用可能なスペルチェックのライブラリやプログラムについて調査が行われた。その結果は残念なことに、Vim 内でスペルチェックエンジンとして使えるものはないとわかった。これには様々な理由がある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Missing support for multi-byte encodings.  At least UTF-8 must be supported,
+  so that more than one language can be used in the same file.
+  Doing on-the-fly conversion is not always possible (would require iconv
+  support).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item
+マルチバイトエンコーディングをサポートしていない。1 つのファイル内で複数の言語を使えるようにするために、少なくとも UTF-8 はサポートしていなければならない。
+
+オンザフライな変換は常に可能とは限らない(iconv に対応している必要がある)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- For the programs and libraries: Using them as-is would require installing
+  them separately from Vim.  That's mostly not impossible, but a drawback.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+プログラムとライブラリに対して: それらをそのまま (as-is) 使うには、Vim と別個にインストールしなければならない。これはたいてい不可能ではないが、難点である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Performance: A few tests showed that it's possible to check spelling on the
+  fly (while redrawing), just like syntax highlighting.  But the mechanisms
+  used by other code are much slower.  Myspell uses a hashtable, for example.
+  The affix compression that most spell checkers use makes it slower too.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+パフォーマンス: いくつかのテストによると、スペルチェックを構文強調のようにオンザフライで(再描画中に)行うことは可能であった。しかし他のコードで使われたメカニズムはもっと遅かった。例えば、Myspell はハッシュテーブルを使用する。ほとんどのスペルチェッカが使用している接辞圧縮を使うと遅くなった。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- For using an external program like aspell a communication mechanism would
+  have to be setup.  That's complicated to do in a portable way (Unix-only
+  would be relatively simple, but that's not good enough).  And performance
+  will become a problem (lots of process switching involved).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+aspell のような外部プログラムを使うには、通信メカニズムを用意しなければならない。これをポータブルな方法で行うのは複雑過ぎる(Unix だけなら比較的簡単だが、それでは十分ではない)。そしてパフォーマンスが問題になる(何回ものプロセス切替が行われる)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Missing support for words with non-word characters, such as "Etten-Leur" and
+  "et al.", would require marking the pieces of them OK, lowering the
+  reliability.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+"Etten-Leur" や "et al." など、単語でない単語のサポートを欠いている。そのためこれらの部分を OK とマークしなければならないが、そうすると信頼性が低下する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Missing support for regions or dialects.  Makes it difficult to accept
+  all English words and highlight non-Canadian words differently.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+地域や方言のサポートを欠いている。英語の単語をすべて受け付け、カナダ語でない単語を別に扱うことが難しくなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Missing support for rare words.  Many words are correct but hardly ever used
+  and could be a misspelled often-used word.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+頻度が低い単語のサポートを欠いている。正しいがめったに使われないたくさんの単語が、よく使われる単語のスペルミスとみなされてしまう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- For making suggestions the speed is less important and requiring to install
+  another program or library would be acceptable.  But the word lists probably
+  differ, the suggestions may be wrong words.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+スペル候補を作成するには速度はそれほど重要ではなく、他のプログラムやライブラリをインストールすることは許容できる。しかし、単語リストが異なるとスペル候補が誤単語になってしまう。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Spelling suggestions				*develop-spell-suggestions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{develop-spell-suggestions}
+@cindex develop-spell-suggestions
+@unnumberedsubsec スペル候補
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For making suggestions there are two basic mechanisms:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+候補の作成には2つの基本的なメカニズムがある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. Try changing the bad word a little bit and check for a match with a good
+   word.  Or go through the list of good words, change them a little bit and
+   check for a match with the bad word.  The changes are deleting a character,
+   inserting a character, swapping two characters, etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item
+誤った単語を少し変更して正しい単語とマッチするかチェックする。あるいは、正しい単語全てに対し、それを少し変更して誤った単語とマッチするかチェックする。変更とは、文字の削除・文字の挿入・2 つの文字の交換などである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+2. Perform soundfolding on both the bad word and the good words and then find
+   matches, possibly with a few changes like with the first mechanism.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+誤った単語と正しい単語のリストの両方に soundfolding (発音が近い単語を同じグループとみなすこと) を行って、そこでマッチを見つける。1 番目のメカニズムと同様にいくつか変更をしてもよい。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first is good for finding typing mistakes.  After experimenting with
+hashtables and looking at solutions from other spell checkers the conclusion
+was that a trie (a kind of tree structure) is ideal for this.  Both for
+reducing memory use and being able to try sensible changes.  For example, when
+inserting a character only characters that lead to good words need to be
+tried.  Other mechanisms (with hashtables) need to try all possible letters at
+every position in the word.  Also, a hashtable has the requirement that word
+boundaries are identified separately, while a trie does not require this.
+That makes the mechanism a lot simpler.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初のメカニズムはタイプミスを見つけるのにはよい。ハッシュテーブルの実験と、他のスペルチェッカのソリューションを見ると、これにはtrie(ツリー構造の一種)が最適であるとの結論になった。メモリ使用量の削減と、賢い変更を試みるということの両方の面でである。例えば、文字を挿入するときは正しい単語につながる文字だけを試せばよい。他の(ハッシュテーブルを使った)メカニズムは、単語のすべての位置で、ありうるすべての文字を試さねばならない、また、ハッシュテーブルを使うには、単語の境界が個別に認識されなければならないのに対し、trie はそれを要求しない。そのためメカニズムがより単純になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Soundfolding is useful when someone knows how the words sounds but doesn't
+know how it is spelled.  For example, the word "dictionary" might be written
+as "daktonerie".  The number of changes that the first method would need to
+try is very big, it's hard to find the good word that way.  After soundfolding
+the words become "tktnr" and "tkxnry", these differ by only two letters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ある単語の発音は知っているがスペルを知らないという場合に soundfolding は有用である。例えば、"dictionary" という単語を "daktonerie" と書いてしまうかもしれない。これを最初の方法で訂正しようとすると変更回数が非常に多くなってしまい、正しいスペルを見つけるのは困難である。それに対し、これらの単語に soundfolding を行うと "tktnr" と "tkxnry" になり、2 文字しか違わない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To find words by their soundfolded equivalent (soundalike word) we need a list
+of all soundfolded words.  A few experiments have been done to find out what
+the best method is.  Alternatives:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+soundfold の同値(音が似ている単語)により単語を見つけるには全ての soundfolded words のリストが必要である。どれが最良の方法かを探すための実験が行われた。案:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. Do the sound folding on the fly when looking for suggestions.  This means
+   walking through the trie of good words, soundfolding each word and
+   checking how different it is from the bad word.  This is very efficient for
+   memory use, but takes a long time.  On a fast PC it takes a couple of
+   seconds for English, which can be acceptable for interactive use.  But for
+   some languages it takes more than ten seconds (e.g., German, Catalan),
+   which is unacceptable slow.  For batch processing (automatic corrections)
+   it's too slow for all languages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item
+修正候補を探すときに、その場で sound folding を行う。つまり、正しい単語の trie をたどりながら、各単語をsoundfoldingし、それがスペルミスしている単語からどれだけ異なるかをチェックする。これはメモリ効率の面でとても優れているが、時間は長くかかる。英語の場合、高速な PC で 2 秒ほどかかる。これは対話的な利用として受け入れられる。しかしいくつかの言語(ドイツ語、カタルニャ語など)に対しては 10 秒以上かかり、受け入れがたい。バッチ処理(自動訂正)に使うには全ての言語で遅すぎる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+2. Use a trie for the soundfolded words, so that searching can be done just
+   like how it works without soundfolding.  This requires remembering a list
+   of good words for each soundfolded word.  This makes finding matches very
+   fast but requires quite a lot of memory, in the order of 1 to 10 Mbyte.
+   For some languages more than the original word list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+soundfold された単語に対して trie を使い、soundfolding なしのときとまったく同じように検索できるようにする。そのためには、soundfold された各単語に対し、正しい単語のリストを記憶しておく必要がある。そうすると照合がとても高速になるが、1MB 〜 10MB のオーダーの大量のメモリを必要とする。ある言語の場合は元の単語のリストよりも多くなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+3. Like the second alternative, but reduce the amount of memory by using affix
+   compression and store only the soundfolded basic word.  This is what Aspell
+   does.  Disadvantage is that affixes need to be stripped from the bad word
+   before soundfolding it, which means that mistakes at the start and/or end
+   of the word will cause the mechanism to fail.  Also, this becomes slow when
+   the bad word is quite different from the good word.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+2 番目の案と同様だが、接辞圧縮を使い、soundfold した基本単語だけを保存することによりメモリ消費量を減らす。これは Aspell が採用している方法である。不利点は、誤った単語を soundfold する前に接辞を取り除いておかねばならないことである。そのため、単語の先頭・末尾における誤りに対しては対応できない。また、誤った単語が正しい単語から大きく異なるときは遅くなる。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The choice made is to use the second mechanism and use a separate file.  This
+way a user with sufficient memory can get very good suggestions while a user
+who is short of memory or just wants the spell checking and no suggestions
+doesn't use so much memory.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+我々が採用したのは、2 番目のメカニズムを使い、別ファイルを使う方法である。こうすることによって、十分なメモリを持っているユーザーはとてもよい候補を得ることができるし、メモリが不足しているユーザーやスペルチェックだけで候補は出さなくてよいというユーザーはそれほどメモリを使わなくてすむ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Word frequency
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 単語の頻度
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For sorting suggestions it helps to know which words are common.  In theory we
+could store a word frequency with the word in the dictionary.  However, this
+requires storing a count per word.  That degrades word tree compression a lot.
+And maintaining the word frequency for all languages will be a heavy task.
+Also, it would be nice to prefer words that are already in the text.  This way
+the words that appear in the specific text are preferred for suggestions.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+候補をソートするにはどの単語が共通であるかを知ると役に立つ。理論的には単語の頻度は単語とともに辞書の中に保持することができる。しかしそうすると単語につき回数を保持しなければならない。これは単語ツリー圧縮を大いに劣化させる。また、全ての言語に対して単語の頻度を保守するのは大変な作業である。また、テキストに既に出てきている単語を優先するとよいだろう。このようにして特定のテキスト内に表れる単語は候補の中で優先度が高くなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+What has been implemented is to count words that have been seen during
+displaying.  A hashtable is used to quickly find the word count.  The count is
+initialized from words listed in COMMON items in the affix file, so that it
+also works when starting a new file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実装されたのは、表示中に単語を数えることである。ハッシュテーブルを使ってその単語の回数を高速に検索する。回数は接辞ファイルで COMMON アイテムにリストされている単語から初期化される。そのため新規ファイルの編集を始めたときも機能する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This isn't ideal, because the longer Vim is running the higher the counts
+become.  But in practice it is a noticeable improvement over not using the word
+count.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは理想的ではない。Vim が長時間稼動しているほど回数は大きくなるためである。しかし実用的には単語の回数を使わない場合に比べて注目に値するほどの改善である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Assumptions						*design-assumptions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{design-assumptions}
+@cindex design-assumptions
+@section 4. 想定していること
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Size of variables:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+変数のサイズ:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+char	    8 bit signed
+char_u	    8 bit unsigned
+int	    32 or 64 bit signed (16 might be possible with limited features)
+unsigned    32 or 64 bit unsigned (16 as with ints)
+long	    32 or 64 bit signed, can hold a pointer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item char @tab 8 bit signed
+@item char_u @tab 8 bit unsigned
+@item int @tab 32 or 64 bit signed (限定された機能については 16 ビットもありうる)
+@item unsigned @tab 32 or 64 bit unsigned (16 ビットについては int と同様)
+@item long @tab 32 or 64 bit signed, can hold a pointer
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that some compilers cannot handle long lines or strings.  The C89
+standard specifies a limit of 509 characters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+いくつかのコンパイラは長すぎる行は文字列をうまく扱えない。C89 の標準規格では 509 文字までに制限されている。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
