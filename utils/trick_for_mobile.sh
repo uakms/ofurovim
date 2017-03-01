@@ -1,6 +1,6 @@
 # Author: nakinor
 # Created: 2017-02-26
-# Revised: 2017-02-27
+# Revised: 2017-03-01
 
 TAG_A='<meta name="viewport" content="width=device-width, initial-scale=1.0" />'
 TAG_B='</pre>'
@@ -20,3 +20,4 @@ sed -i -e "1,600s|$STR_B|$TAG_B$STR_B$TAG_C|" $1
 sed -i -e "1,600s|$STR_C|$TAG_B$STR_C$TAG_C|" $1
 sed -i -e "1,600s|$STR_D|$TAG_B$STR_D$TAG_C|" $1
 sed -i -e "1,8000s|$STR_E|$STR_F|" $1
+sed -i -e "1,900s|&bull; ||" $1
