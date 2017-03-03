@@ -18,7 +18,8 @@ REFMANUALS = \
 	doc/quotes.texi \
 	doc/debug.texi \
 	doc/develop.texi \
-	doc/starting.texi
+	doc/starting.texi \
+	doc/editing.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \

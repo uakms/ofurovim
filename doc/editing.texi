@@ -1,0 +1,4595 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node editing.txt, , , 目次
+@unnumbered ファイルの編集と保存
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*editing.txt*   For Vim version 8.0.  Last change: 2016 Nov 24
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*editing.txt*   For Vim バージョン 8.0.  Last change: 2016 Nov 24
+
+
+		VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Editing files						*edit-files*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{edit-files}
+@cindex edit-files
+@section ファイルの編集
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1.  Introduction		|edit-intro|
+2.  Editing a file		|edit-a-file|
+3.  The argument list		|argument-list|
+4.  Writing			|writing|
+5.  Writing and quitting	|write-quit|
+6.  Dialogs			|edit-dialogs|
+7.  The current directory	|current-directory|
+8.  Editing binary files	|edit-binary|
+9.  Encryption			|encryption|
+10. Timestamps			|timestamps|
+11. File Searching		|file-searching|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .05 .50 .45
+@item 1. @tab はじめに @tab |@ref{edit-intro, , edit-intro}|
+@item 2. @tab ファイルの編集 @tab |@ref{edit-a-file, , edit-a-file}|
+@item 3. @tab 引数リスト @tab |@ref{argument-list, , edit-a-file}|
+@item 4. @tab 書き込み @tab |@ref{writing, , writing}|
+@item 5. @tab 書き込みと終了 @tab |@ref{write-quit, , write-quit}|
+@item 6. @tab ダイアログ @tab |@ref{edit-dialogs, , edit-dialogs}|
+@item 7. @tab カレントディレクトリ @tab |@ref{current-directory, , current-directory}|
+@item 8. @tab バイナリファイルの編集 @tab |@ref{edit-binary, , edit-binary}|
+@item 9. @tab 暗号化 @tab |@ref{encryption, , encryption}|
+@item 10. @tab タイムスタンプ @tab |@ref{timestamps, , timestamps}|
+@item 11. @tab ファイル検索 @tab |@ref{file-searching, , file-searching}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Introduction						*edit-intro*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{edit-intro}
+@cindex edit-intro
+@unnumberedsubsec 1. はじめに
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Editing a file with Vim means:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+「Vim でファイルを編集する」とは、以下のことを表す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. reading the file into a buffer
+2. changing the buffer with editor commands
+3. writing the buffer into a file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item バッファへファイルを読み込む
+@item 編集コマンドによりバッファの内容を変更する
+@item バッファをファイルへ書き込む
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*current-file*
+As long as you don't write the buffer, the original file remains unchanged.
+If you start editing a file (read a file into the buffer), the file name is
+remembered as the "current file name".  This is also known as the name of the
+current buffer.  It can be used with "%" on the command line |:_%|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{current-file}
+@cindex current-file
+バッファを書き込まない限り、元のファイルは変更を受けないままで残っている。ファイルの編集を始めると (バッファにファイルを読み込むと)、そのファイルの名前は「カレントファイル名」として記憶される。これをカレントバッファの名前とも呼ぶ。コマンドラインでは "%" で表せる。|:_%|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*alternate-file*
+If there already was a current file name, then that one becomes the alternate
+file name.  It can be used with "#" on the command line |:_#| and you can use
+the |CTRL-^| command to toggle between the current and the alternate file.
+However, the alternate file name is not changed when |:keepalt| is used.
+An alternate file name is remembered for each window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{alternate-file}
+@cindex alternate-file
+カレントファイル名が既に存在したときは、前の方は「代替ファイル名」になる。これはコマンドラインでは "#" で表され |:_#|、|CTRL-^| を使うとカレントファイルと代替ファイルを切り替えることができる。ただし |:keepalt| を使ったときは代替ファイル名は変わらない。代替ファイル名はウィンドウごとに記憶される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:keepalt* *:keepa*
+:keepalt {cmd}		Execute {cmd} while keeping the current alternate file
+			name.  Note that commands invoked indirectly (e.g.,
+			with a function) may still set the alternate file
+			name.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:keepalt}
+@anchor{:keepa}
+@cindex :keepalt
+@cindex :keepa
+@table @asis
+@item :keepalt @{cmd@}
+現在の代替ファイル名を変えずに @{cmd@} を実行する。
+@quotation
+@strong{Note:} @*
+間接的に呼び出されるコマンド (例えば関数によって) は代替ファイル名を変えてしまう。
+
+@{Vi にはない@}
+@end quotation
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All file names are remembered in the buffer list.  When you enter a file name,
+for editing (e.g., with ":e filename") or writing (e.g., with ":w filename"),
+the file name is added to the list.  You can use the buffer list to remember
+which files you edited and to quickly switch from one file to another (e.g.,
+to copy text) with the |CTRL-^| command.  First type the number of the file
+and then hit CTRL-^.  {Vi: only one alternate file name is remembered}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+全てのファイル名はバッファリストに記憶される。編集 (例えば ":e filename") や保存 (例えば ":w filename") のためにファイル名を入力すると、そのファイル名がリストに追加される。このリストを使えば、どのファイルを編集したかを覚えておいたり、コマンド @kbd{CTRL-^} によってあるファイルから別のファイルへ素早く移行できる (例えばテキストをコピーするとき)。まずファイルの番号を、次に @kbd{CTRL-^} を打ち込む。
+
+@{Vi: 代替ファイル名は 1 個だけ使える@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CTRL-G		or				*CTRL-G* *:f* *:fi* *:file*
+:f[ile]			Prints the current file name (as typed, unless ":cd"
+			was used), the cursor position (unless the 'ruler'
+			option is set), and the file status (readonly,
+			modified, read errors, new file).  See the 'shortmess'
+			option about how to make this message shorter.
+			{Vi does not include column number}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-G}
+@anchor{:f}
+@anchor{:fi}
+@anchor{:file}
+@cindex CTRL-G
+@cindex :f
+@cindex :fi
+@cindex :file
+@table @asis
+@item CTRL-G or :f[ile]
+カレントファイル名 (これは "@command{:cd}" が使われたとき以外は打ち込まれた通り @{訳注: 普通、カレントディレクトリのファイルを編集するときはパスを省いて打ち込むと思うが、そうするとパスなしのファイル名になる@})、カーソル位置 (これはオプション '@option{ruler}' がオフのとき) とファイルの状態 (読込専用、変更あり、読込エラー、新規ファイル) を表示する。このメッセージを短くする方法については、オプション '@option{shortmess}' を参照。
+
+@{Vi では列番号が表示されない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:f[ile]!		like |:file|, but don't truncate the name even when
+			'shortmess' indicates this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :f[ile]!
+|:file| と同様だが、'@option{shortmess}' が設定されているときでも名前を切り詰めない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{count}CTRL-G		Like CTRL-G, but prints the current file name with
+			full path.  If the count is higher than 1 the current
+			buffer number is also given.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @{count@}CTRL-G
+CTRL-G と同様だが、カレントファイル名をフルパスで表示する。@{count@} が 2 以上なら、カレントバッファの番号も表示する。
+
+@{Vi にはない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*g_CTRL-G* *word-count* *byte-count*
+g CTRL-G		Prints the current position of the cursor in five
+			ways: Column, Line, Word, Character and Byte.  If the
+			number of Characters and Bytes is the same then the
+			Character position is omitted.
+			If there are characters in the line that take more
+			than one position on the screen (<Tab> or special
+			character), both the "real" column and the screen
+			column are shown, separated with a dash.
+			Also see the 'ruler' option and the |wordcount()|
+			function.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g_CTRL-G}
+@anchor{word-count}
+@anchor{byte-count}
+@cindex g_CTRL-G
+@cindex word-count
+@cindex byte-count
+@table @asis
+@item g CTRL-G
+カーソルの現在の位置を、列、行、単語、文字、バイト、の 5 種類の単位で表示する。文字数とバイト数が同じのときは文字位置が省略される。
+
+行の中に画面上で 1 文字分以上の幅を占める文字 (<Tab> または特殊文字) があるときは、「実際」の列番号と画面上の列番号の両方が、ダッシュで区切られて表示される @{訳注: 例えば、タブ幅 '@option{tabstop}' が 8 のとき、行頭の <Tab> の次では「実際」の列番号は 2、画面上の列番号は 9 となり、"1-8" と表示される@}。オプション '@option{ruler}' と |wordcount()| 関数も参照。
+
+@{Vi にはない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_g_CTRL-G*
+{Visual}g CTRL-G	Similar to "g CTRL-G", but Word, Character, Line, and
+			Byte counts for the visually selected region are
+			displayed.
+			In Blockwise mode, Column count is also shown.  (For
+			{Visual} see |Visual-mode|.)
+			{not in VI}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_g_CTRL-G}
+@cindex v_g_CTRL-G
+@table @asis
+@item @{Visual@}g CTRL-G
+"g CTRL-G" と似ているが、単語、文字、行、バイトの項目はビジュアル選択領域内で数えられて表示される。矩形ビジュアルモードでは、何列目かも表示される。
+
+矩形ビジュアルモードでは桁数も表示される (@{Visual@} については |Visual-mode| を参照。)
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:file_f*
+:f[ile][!] {name}	Sets the current file name to {name}.  The optional !
+			avoids truncating the message, as with |:file|.
+			If the buffer did have a name, that name becomes the
+			|alternate-file| name.  An unlisted buffer is created
+			to hold the old name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:file_f}
+@cindex :file_f
+@item :f[ile][!] @{name@}
+カレントファイル名を @{name@} に設定する。! をつけると |:file| のようにメッセージを切り詰めなくなる。
+
+バッファが名前を持つならその名前が代替ファイル名 |alternate-file| になる。元の名前を保持するためにリストされない (unlisted) バッファが作成される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:0file*
+:0f[ile][!]		Remove the name of the current buffer.  The optional !
+			avoids truncating the message, as with |:file|.  {not
+			in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:0file}
+@cindex :0file
+@item :0f[ile][!]
+カレントバッファの名前を削除する。! をつけると |:file| のようにメッセージを切り詰めなくなる。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:buffers
+:files
+:ls			List all the currently known file names.  See
+			'windows.txt' |:files| |:buffers| |:ls|.  {not in
+			Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :buffers :files :ls
+現在認識しているファイル名を全て一覧表示する。|windows.txt| |:files| |:buffers| |:ls| を参照。
+
+@{Vi にはない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will remember the full path name of a file name that you enter.  In most
+cases when the file name is displayed only the name you typed is shown, but
+the full path name is being used if you used the ":cd" command |:cd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は入力したファイル名のフルパス名を記憶している。ファイル名が表示されるとき、大抵は打ち込んだ名前だけが表示されるが、コマンド |:cd| でディレクトリを移動した後では、フルパス名が使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*home-replace*
+If the environment variable $HOME is set, and the file name starts with that
+string, it is often displayed with HOME replaced with "~".  This was done to
+keep file names short.  When reading or writing files the full name is still
+used, the "~" is only used when displaying file names.  When replacing the
+file name would result in just "~", "~/" is used instead (to avoid confusion
+between options set to $HOME with 'backupext' set to "~").
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{home-replace}
+@cindex home-replace
+環境変数 @env{$HOME} が設定されていて、ファイル名がその文字列で始まっているならば、ファイル名のその部分は "~" に置き換えられて表示される。これはファイル名を短くするためである。ファイルを読み書きするときはフルパス名が使われ、"~" はファイル名を表示するときだけ使われる。ファイル名の置き換えを行ったところ "~" だけになってしまうときは、代わりに "~/" が使われる (オプション '@option{backupext}' が "~" に設定されたときに混乱を防ぐため)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When writing the buffer, the default is to use the current file name.  Thus
+when you give the "ZZ" or ":wq" command, the original file will be
+overwritten.  If you do not want this, the buffer can be written into another
+file by giving a file name argument to the ":write" command.  For example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファを書き出すとき、既定ではカレントファイル名を用いる。そのため、コマンド "ZZ" や ":wq" を使うと、元のファイルは上書きされてしまうことになる。これを望まないならば、コマンド ":write" の引数にファイル名を与えることで、バッファを別のファイルに書き出せる。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim testfile
+	[change the buffer with editor commands]
+	:w newfile
+	:q
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+vim テスト用 @{訳注: これはシェルに対して@}
+[コマンドでバッファを編集する]
+:w 新ファイル
+:q
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will create a file "newfile", that is a modified copy of "testfile".
+The file "testfile" will remain unchanged.  Anyway, if the 'backup' option is
+set, Vim renames or copies the original file before it will be overwritten.
+You can use this file if you discover that you need the original file.  See
+also the 'patchmode' option.  The name of the backup file is normally the same
+as the original file with 'backupext' appended.  The default "~" is a bit
+strange to avoid accidentally overwriting existing files.  If you prefer ".bak"
+change the 'backupext' option.  Extra dots are replaced with '_' on MS-DOS
+machines, when Vim has detected that an MS-DOS-like filesystem is being used
+(e.g., messydos or crossdos) or when the 'shortname' option is on.  The
+backup file can be placed in another directory by setting 'backupdir'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+こうすると "新ファイル" が生成されるが、これは "テスト用" を編集してコピーしたものである。ファイル "テスト用" は変更されないまま残る。しかしどちらにしろ、オプション '@option{backup}' がオンのときは、Vim は元のファイルを上書きする前に、元のファイルの名前を変更するかコピーする。元のファイルが必要なことに気づいたときは、このファイルを使える。'@option{patchmode}' も参照。普通、バックアップファイルの名前は元のファイル名に '@option{backupext}' を追加したものである。既定値は "~" という妙なものだが、これはたまたま存在しているファイルに上書きするのを避けるためである。".bak" の方がよければ、'@option{backupext}' を変更すること。MS-DOS 機等で、MS-DOS 系のファイルシステム (例えば、messydos や crossdos ) が使われていることが検出されたときや、'@option{shortname}' がオンのときには、余分なドットは '_' に置き換えられる。'@option{backupdir}' を設定することで、バックアップファイルを他のディレクトリに置くことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*auto-shortname*
+Technical: On the Amiga you can use 30 characters for a file name.  But on an
+	   MS-DOS-compatible filesystem only 8 plus 3 characters are
+	   available.  Vim tries to detect the type of filesystem when it is
+	   creating the .swp file.  If an MS-DOS-like filesystem is suspected,
+	   a flag is set that has the same effect as setting the 'shortname'
+	   option.  This flag will be reset as soon as you start editing a
+	   new file.  The flag will be used when making the file name for the
+	   ".swp" and ".~" files for the current file.  But when you are
+	   editing a file in a normal filesystem and write to an MS-DOS-like
+	   filesystem the flag will not have been set.  In that case the
+	   creation of the ".~" file may fail and you will get an error
+	   message.  Use the 'shortname' option in this case.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{auto-shortname}
+@cindex auto-shortname
+@quotation
+@strong{技術的情報:} @*
+Amiga ではファイル名に 30 文字まで使える。しかし MS-DOS 互換のファイルシステムで有効なのは 8 文字＋ 3 文字に過ぎない。Vim は ".swp" ファイルを生成するときにファイルシステムの判別を試みる。MS-DOS 系のファイルシステムと思われるときは、'@option{shortname}' をオンにするのと同じ効果を持つフラグがオンになる。このフラグは新ファイルの編集を開始するとすぐにオフにされる。このフラグはカレントファイルのための ".swp" ファイルと ".~" ファイルの名前を作るときに使われる。しかし、ユーザーが普通のファイルシステムで編集作業を行い、MS-DOS 系のファイルシステムに保存するときには、フラグはオンにならない。そのときは、".~" ファイルの生成が失敗してエラーメッセージが表示される。そのときはオプション '@option{shortname}' を使うこと。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you started editing without giving a file name, "No File" is displayed in
+messages.  If the ":write" command is used with a file name argument, the file
+name for the current file is set to that file name.  This only happens when
+the 'F' flag is included in 'cpoptions' (by default it is included) |cpo-F|.
+This is useful when entering text in an empty buffer and then writing it to a
+file.  If 'cpoptions' contains the 'f' flag (by default it is NOT included)
+|cpo-f| the file name is set for the ":read file" command.  This is useful
+when starting Vim without an argument and then doing ":read file" to start
+editing a file.
+When the file name was set and 'filetype' is empty the filetype detection
+autocommands will be triggered.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル名を指定せずに編集を始めたときは、メッセージ欄に "[無題]" と表示される。コマンド "@command{:write}" がファイル名引数付きで使われたときは、そのファイル名がカレントファイルのファイル名に設定される。こうなるのはフラグ '@var{F}' |cpo-F| がオプション '@option{cpoptions}' に含まれているときだけである (既定では含まれている)。これは空のバッファにテキストを入力してから、それをファイルに保存するときに便利である。'@option{cpoptions}' が '@var{f}' |cpo-f| を含んでいるときは (既定では含まれて「いない」)、"@command{:read file}" でファイル名が設定される。これは引数なしで Vim を起動してから、"@command{:read file}" でファイルの編集を開始するときに便利である。
+
+ファイル名が設定されていて '@option{filetype}' が空のとき、ファイルタイプ判別オートコマンドが発生する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*not-edited*
+Because the file name was set without really starting to edit that file, you
+are protected from overwriting that file.  This is done by setting the
+"notedited" flag.  You can see if this flag is set with the CTRL-G or ":file"
+command.  It will include "[Not edited]" when the "notedited" flag is set.
+When writing the buffer to the current file name (with ":w!"), the "notedited"
+flag is reset.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{not-edited}
+@cindex not-edited
+ファイル名が設定されるのはその名前のファイルの編集を本当に始めるより前なので、そのファイルを誤って上書きしないようになっている。これはフラグ "notedited" を設定することで可能になる。このフラグの状態はコマンド @kbd{CTRL-G} か "@command{:file}" で確認できる。フラグ "notedited" がオンのときは "[Not edited]" と表示される。カレントファイルの名前でバッファ内容を書き出すとき ("@command{:w!}" で)、フラグ "notedited" はオフに設定される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*abandon*
+Vim remembers whether you have changed the buffer.  You are protected from
+losing the changes you made.  If you try to quit without writing, or want to
+start editing another file, Vim will refuse this.  In order to overrule this
+protection, add a '!' to the command.  The changes will then be lost.  For
+example: ":q" will not work if the buffer was changed, but ":q!" will.  To see
+whether the buffer was changed use the "CTRL-G" command.  The message includes
+the string "[Modified]" if the buffer has been changed, or "+" if the 'm' flag
+is in 'shortmess'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{abandon}
+@cindex abandon
+Vim はバッファが変更されたかどうかを記憶していて、変更点が誤って失われないようになっている。保存せずに終了しようとしたり、別のファイルの編集を開始しようとすると、Vim は拒否する。この保護を無効にするためには、コマンドに '!' を追加すること。その場合、変更は失われる。例えばバッファの内容が変更されているとき、"@command{:q}" は使えないが "@command{:q!}" は使える。バッファの内容が変更されたかどうかを見るためにはコマンド @kbd{CTRL-G} を使うこと。バッファが変更されていたときは、メッセージに文字列 "[変更あり]"、'm' フラグが 'shortmess' のときは "+" が含まれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to automatically save the changes without asking, switch on the
+'autowriteall' option.  'autowrite' is the associated Vi-compatible option
+that does not work for all commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+確認なしで変更を保存してほしいなら、オプション '@option{autowriteall}' をオンにすること。関連するオプションには '@option{autowrite}' があるが、これは Vi 互換で、全てのコマンドに対して動作するわけではない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to keep the changed buffer without saving it, switch on the
+'hidden' option.  See |hidden-buffer|.  Some commands work like this even when
+'hidden' is not set, check the help for the command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+変更されたバッファを保存せずにそのままにしておきたいなら、オプション '@option{hidden}' をオンにすること。|hidden-buffer| を参照。いくつかのコマンドは '@option{hidden}' がオンになっていなくてもこのように振る舞うので、コマンドについてはヘルプを参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Editing a file					*edit-a-file*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{edit-a-file}
+@cindex edit-a-file
+@unnumberedsubsec 2. ファイルの編集
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:e* *:edit* *reload*
+:e[dit] [++opt] [+cmd]	Edit the current file.  This is useful to re-edit the
+			current file, when it has been changed outside of Vim.
+			This fails when changes have been made to the current
+			buffer and 'autowriteall' isn't set or the file can't
+			be written.
+			Also see |++opt| and |+cmd|.
+			{Vi: no ++opt}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:e}
+@anchor{:edit}
+@anchor{reload}
+@cindex :e
+@cindex :edit
+@cindex reload
+@table @asis
+@item :e[dit] [++opt] [+cmd]
+カレントファイルを開く。これは Vim 外部でカレントファイルに変更が加えられたとき、開き直すのに便利である。カレントバッファに変更が加えられているのに、オプション '@option{autowriteall}' がオフであるか、ファイルが書き込み可能でないときは、実行に失敗する。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi: ++opt は使えない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:edit!* *discard*
+:e[dit]! [++opt] [+cmd]
+			Edit the current file always.  Discard any changes to
+			the current buffer.  This is useful if you want to
+			start all over again.
+			Also see |++opt| and |+cmd|.
+			{Vi: no ++opt}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:edit!}
+@anchor{discard}
+@cindex :edit!
+@cindex discard
+@item :e[dit]! [++opt] [+cmd]
+どのような場合でもカレントファイルを開く。カレントバッファに対する変更は全て失われる。これは編集作業をもう一度最初からやり直したいときに便利である。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi: ++opt は使えない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:edit_f*
+:e[dit] [++opt] [+cmd] {file}
+			Edit {file}.
+			This fails when changes have been made to the current
+			buffer, unless 'hidden' is set or 'autowriteall' is
+			set and the file can be written.
+			Also see |++opt| and |+cmd|.
+			{Vi: no ++opt}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:edit_f}
+@cindex :edit_f
+@item :e[dit] [++opt] [+cmd] @{file@}
+@{file@} を開く。
+
+カレントバッファに変更が加えられていると実行に失敗する。ただしオプション '@option{hidden}' がオンであるときと、'@option{autowriteall}' がオンであり、かつファイルが書き込み可能なときには実行できる。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi: ++opt は使えない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:edit!_f*
+:e[dit]! [++opt] [+cmd] {file}
+			Edit {file} always.  Discard any changes to the
+			current buffer.
+			Also see |++opt| and |+cmd|.
+			{Vi: no ++opt}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:edit!_f}
+@cindex :edit!_f
+@item :e[dit]! [++opt] [+cmd] @{file@}
+どのような場合でも @{file@} を開く。カレントバッファに対する変更は全て失われる。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi: ++opt は使えない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:e[dit] [++opt] [+cmd] #[count]
+			Edit the [count]th buffer (as shown by |:files|).
+			This command does the same as [count] CTRL-^.  But ":e
+			#" doesn't work if the alternate buffer doesn't have a
+			file name, while CTRL-^ still works then.
+			Also see |++opt| and |+cmd|.
+			{Vi: no ++opt}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :e[dit] [++opt] [+cmd] #[count]
+[count] 番目のバッファ (コマンド |:files| で表示されるもの) を開く。このコマンドは [count] @kbd{CTRL-^} と同じである。しかし代替バッファがファイル名を持たないと "@command{:e #}" は機能しないが、@kbd{CTRL-^} はそのときも機能する。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi: ++opt は使えない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:ene* *:enew*
+:ene[w]			Edit a new, unnamed buffer.  This fails when changes
+			have been made to the current buffer, unless 'hidden'
+			is set or 'autowriteall' is set and the file can be
+			written.
+			If 'fileformats' is not empty, the first format given
+			will be used for the new buffer.  If 'fileformats' is
+			empty, the 'fileformat' of the current buffer is used.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ene}
+@anchor{:enew}
+@cindex :ene
+@cindex :enew
+@item :ene[w]
+無名のバッファの編集を新規に開始する。カレントバッファに変更が加えられていると実行に失敗する。ただしオプション '@option{hidden}' がオンであるときと、'@option{autowriteall}' がオンであり、かつファイルが書き込み可能なときには実行できる。
+
+'@option{fileformats}' の値が空でないとき、その先頭の形式が新バッファに適用される。'@option{fileformats}' の値が空のときは、カレントバッファの '@option{fileformat}' の値が使われる。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:ene!* *:enew!*
+:ene[w]!		Edit a new, unnamed buffer.  Discard any changes to
+			the current buffer.
+			Set 'fileformat' like |:enew|.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ene!}
+@anchor{:enew!}
+@cindex :ene!
+@cindex :enew!
+@item :ene[w]!
+無名のバッファの編集を新規に開始する。カレントバッファに対する変更は全て失われる。
+
+オプション '@option{fileformat}' の値はコマンド |:enew| と同様に設定される。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:fin* *:find*
+:fin[d][!] [++opt] [+cmd] {file}
+			Find {file} in 'path' and then |:edit| it.
+			{not in Vi} {not available when the |+file_in_path|
+			feature was disabled at compile time}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:fin}
+@anchor{:find}
+@cindex :fin
+@cindex :find
+@item :fin[d][!] [++opt] [+cmd] @{file@}
+オプション '@option{path}' 内のディレクトリから @{file@} を探し、それを |:edit| する。
+
+@{Vi にはない@}
+@{Vimが |+file_in_path| 機能付きでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:{count}fin[d][!] [++opt] [+cmd] {file}
+			Just like ":find", but use the {count} match in
+			'path'.  Thus ":2find file" will find the second
+			"file" found in 'path'.  When there are fewer matches
+			for the file in 'path' than asked for, you get an
+			error message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :@{count@}fin[d][!] [++opt] [+cmd] @{file@}
+コマンド "@command{:find}" と同様だが、オプション '@option{path}' 内のディレクトリで @{count@} にマッチしたファイルを編集する。つまり "@command{:2find file}" とすると '@option{path}' 内で 2 番目に見つかった "file" を編集する。'@option{path}' 内で見つかったマッチが @{count@} より少ないと、エラーメッセージが表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:ex*
+:ex [++opt] [+cmd] [file]
+			Same as |:edit|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ex}
+@cindex :ex
+@item :ex [++opt] [+cmd] [file]
+|:edit| と同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:vi* *:visual*
+:vi[sual][!] [++opt] [+cmd] [file]
+			When used in Ex mode: Leave |Ex-mode|, go back to
+			Normal mode.  Otherwise same as |:edit|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:vi}
+@anchor{:visual}
+@cindex :vi
+@cindex :visual
+@item :vi[sual][!] [++opt] [+cmd] [file]
+Ex モード内では: Ex モード (|Ex-mode|) からノーマルモードに戻る。それ以外はコマンド |:edit| と同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:vie* *:view*
+:vie[w][!] [++opt] [+cmd] file
+			When used in Ex mode: Leave |Ex mode|, go back to
+			Normal mode.  Otherwise same as |:edit|, but set
+			'readonly' option for this buffer.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:vie}
+@anchor{:view}
+@cindex :vie
+@cindex :view
+@item :vie[w][!] [++opt] [+cmd] file
+Ex モード内では: Ex モード (|Ex-mode|) からノーマルモードに戻る。それ以外はコマンド |:edit| と同じだが、そのバッファに対してオプション '@option{readonly}' をオンにする。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*CTRL-^* *CTRL-6*
+CTRL-^			Edit the alternate file.  Mostly the alternate file is
+			the previously edited file.  This is a quick way to
+			toggle between two files.  It is equivalent to ":e #",
+			except that it also works when there is no file name.
+
+			If the 'autowrite' or 'autowriteall' option is on and
+			the buffer was changed, write it.
+			Mostly the ^ character is positioned on the 6 key,
+			pressing CTRL and 6 then gets you what we call CTRL-^.
+			But on some non-US keyboards CTRL-^ is produced in
+			another way.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-^}
+@anchor{CTRL-6}
+@cindex CTRL-^
+@cindex CTRL-6
+@item CTRL-^
+代替ファイルを編集する。たいていの場合、代替ファイルは前に編集したファイルである。これを使うと 2 つのファイル間を素早く切り替えることができる。これは "@command{:e #}" と同じだが、対象のファイル名が無い場合も機能する。
+
+オプション '@option{autowrite}' か '@option{autowriteall}' がオンならば、バッファを移動するときに書き込みをする。
+
+たいていは "^" と "6" は同じキーである。@key{CTRL} を押しながら @key{6} のキーを押せば @kbd{CTRL-^} を押したのと同じ効果を得られる。しかし英語配列でないキーボードでは他のキーが割り当てられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{count}CTRL-^		Edit [count]th file in the buffer list (equivalent to
+			":e #[count]").  This is a quick way to switch between
+			files.
+			See |CTRL-^| above for further details.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @{count@}CTRL-^
+[count] 番目の代替ファイルを編集する (コマンド "@command{:e #[count]}" と同じ)。[count] が指定されないと、前に編集したファイルを編集する。これを使うと 2 つ (かそれ以上) のファイル間を素早く行き来できる。
+
+さらに詳しくは上の|CTRL-^|を参照。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+[count]]f						*]f* *[f*
+[count][f		Same as "gf".  Deprecated.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{]f}
+@anchor{[f}
+@cindex ]f
+@cindex [f
+@item [count]]f [count][f
+コマンド "gf" と同じ。推奨されない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*gf* *E446* *E447*
+[count]gf		Edit the file whose name is under or after the cursor.
+			Mnemonic: "goto file".
+			Uses the 'isfname' option to find out which characters
+			are supposed to be in a file name.  Trailing
+			punctuation characters ".,:;!" are ignored. Escaped
+			spaces "\ " are reduced to a single space.
+			Uses the 'path' option as a list of directory names to
+			look for the file.  See the 'path' option for details
+			about relative directories and wildcards.
+			Uses the 'suffixesadd' option to check for file names
+			with a suffix added.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gf}
+@anchor{E446}
+@anchor{E447}
+@cindex gf
+@cindex E446
+@cindex E447
+@item [count]gf
+カーソルの下か後ろの名前のファイルを編集する。覚え方: "goto file"。
+
+オプション '@option{isfname}' により、どの文字がファイル名に使われるはずなのかを調べる。ファイル名に続く句読点の ".,:;!" は無視される。エスケープされた複数のスペース "\ " は 1 つのスペースに減らされる。
+
+'@option{path}' により、ファイルを探すディレクトリ名のリストを調べる。カレントファイルに対して相対的なファイルも探される。
+
+'@option{suffixesadd}' により、拡張子を補ったファイル名を調べる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			If the file can't be found, 'includeexpr' is used to
+			modify the name and another attempt is done.
+			If a [count] is given, the count'th file that is found
+			in the 'path' is edited.
+			This command fails if Vim refuses to |abandon| the
+			current file.
+			If you want to edit the file in a new window use
+			|CTRL-W_CTRL-F|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルが見つからないと、'@option{includeexpr}' によってファイル名を修正し、再びファイルを探す。
+
+[count] が指定されると、'path' 内で見つかった [count] 番目のファイルを編集する。
+
+Vim がカレントファイルの破棄 |abandon| を拒否したときは、このコマンドの実行は失敗する。
+
+このファイルを新しいウィンドウで編集したいときは |CTRL-W_CTRL-F| を使うこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			If you do want to edit a new file, use: >
+				:e <cfile>
+<			To make gf always work like that: >
+				:map gf :e <cfile><CR>
+<			If the name is a hypertext link, that looks like
+			"type://machine/path", you need the |netrw| plugin.
+			For Unix the '~' character is expanded, like in
+			"~user/file".  Environment variables are expanded too
+			|expand-env|.
+			{not in Vi}
+			{not available when the |+file_in_path| feature was
+			disabled at compile time}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しいファイルを編集したいならば、次のようにする。
+@example
+:e <cfile>
+@end example
+どのような場合でもコマンド gf を機能させるには、次のようにする。
+@example
+:map gf :e <cfile><CR>
+@end example
+カーソル下のファイル名が "type://machine/path" のようなハイパーテキストリンクであるならば、プラグイン |netrw| が必要になる。
+
+Unix では、文字 '~' は "~user/file" のように展開される。環境変数も展開される |expand-env|。
+
+@{Vi にはない@}
+
+@{Vimが |+file_in_path| 機能付きでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_gf*
+{Visual}[count]gf	Same as "gf", but the highlighted text is used as the
+			name of the file to edit.  'isfname' is ignored.
+			Leading blanks are skipped, otherwise all blanks and
+			special characters are included in the file name.
+			(For {Visual} see |Visual-mode|.)
+			{not in VI}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_gf}
+@cindex v_gf
+@item @{Visual@}[count]gf
+コマンド "gf" と同様だが、編集するファイルの名前にはビジュアル選択されたテキストが使われる。オプション '@option{isfname}' の値は無視される。先頭の空白は無視されるが、それ以外の空白や特殊文字はファイル名に含まれる。(@{Visual@} については |Visual-mode| を参照。)
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*gF*
+[count]gF		Same as "gf", except if a number follows the file
+			name, then the cursor is positioned on that line in
+			the file. The file name and the number must be
+			separated by a non-filename (see 'isfname') and
+			non-numeric character. White space between the
+			filename, the separator and the number are ignored.
+			Examples:
+				eval.c:10 ~
+				eval.c @ 20 ~
+				eval.c (30) ~
+				eval.c 40 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gF}
+@cindex gF
+@item [count]gF
+"gf" と同じだが、ファイル名の後に番号があるとき、その行へカーソルが移動する点が異なる。ファイル名と行番号はファイル名でない文字('isfname' を参照)かつ数字でない文字で区切られてなければならない。ファイル名、区切り文字、番号の間の空白文字は無視される。
+
+例:
+@verbatim
+eval.c:10
+eval.c @ 20
+eval.c (30)
+eval.c 40
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_gF*
+{Visual}[count]gF	Same as "v_gf".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_gF}
+@cindex v_gF
+@item @{Visual@}[count]gF
+"v_gf" と同じ。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These commands are used to start editing a single file.  This means that the
+file is read into the buffer and the current file name is set.  The file that
+is opened depends on the current directory, see |:cd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以上のコマンドは 1 つのファイルの編集を開始するために使用される。これはファイルがバッファに読み込まれ、カレントファイル名が設定されることを意味する。開かれるファイルはカレントディレクトリに依存する。コマンド |:cd| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See |read-messages| for an explanation of the message that is given after the
+file has been read.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルが読み込まれた後に表示されるメッセージの説明については、|read-messages| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use the ":e!" command if you messed up the buffer and want to start
+all over again.  The ":e" command is only useful if you have changed the
+current file name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファ内がめちゃめちゃになって最初からもう 1 度やり直したいときには、コマンド "@command{:e!}" が使える。コマンド "@command{:e}" が便利なのは、カレントファイル名を変更したときだけである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:filename* *{file}*
+Besides the things mentioned here, more special items for where a filename is
+expected are mentioned at |cmdline-special|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:filename}
+@anchor{@{file@}}
+@cindex :filename
+@cindex @{file@}
+ファイル名を指定する場所で使える特殊なアイテムについては、この節に書かれていることの他に |cmdline-special| に書かれている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note for systems other than Unix: When using a command that accepts a single
+file name (like ":edit file") spaces in the file name are allowed, but
+trailing spaces are ignored.  This is useful on systems that regularly embed
+spaces in file names (like MS-Windows and the Amiga).  Example: The command
+":e   Long File Name " will edit the file "Long File Name".  When using a
+command that accepts more than one file name (like ":next file1 file2")
+embedded spaces must be escaped with a backslash.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Unix と MS-DOS 以外に対する注意: 1 つのファイル名を受け付けるコマンド ("@command{:edit file}" 等) では、ファイル名に空白が入っていても構わないが、ファイル名末尾の空白は無視される。これは、空白を含むファイル名が普通にあるシステム (MS-Windows, Amiga 等) では便利である。例: ":e   Long File Name " を実行すると、ファイル "Long File Name" を開く。2 つ以上のファイル名を受け付けるコマンド ("@command{:next file1 file2}" 等) では、ファイル名内の空白は '\' でエスケープしなければならない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*wildcard* *wildcards*
+Wildcards in {file} are expanded, but as with file completion, 'wildignore'
+and 'suffixes' apply.  Which wildcards are supported depends on the system.
+These are the common ones:
+	?	matches one character
+	*	matches anything, including nothing
+	**	matches anything, including nothing, recurses into directories
+	[abc]	match 'a', 'b' or 'c'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{wildcard}
+@anchor{wildcards}
+@cindex wildcard
+@cindex wildcards
+@{file@} 内のワイルドカードは展開される。ただし、ファイル名補完と同様に '@option{wildignore}' と '@option{suffixes}' が適用される。使用できるワイルドカードの種類はシステムによって異なる。以下は標準的なものである。
+@multitable @columnfractions .05 .15 .8
+@item @tab ? @tab あらゆる 1 文字にマッチ
+@item @tab * @tab 何もないのも含め、全てにマッチ
+@item @tab ** @tab 何もないのも含め、全てにマッチ。ディレクトリを再帰的にたどる。
+@item @tab [abc] @tab 'a', 'b' または 'c' にマッチ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To avoid the special meaning of the wildcards prepend a backslash.  However,
+on MS-Windows the backslash is a path separator and "path\[abc]" is still seen
+as a wildcard when "[" is in the 'isfname' option.  A simple way to avoid this
+is to use "path\[[]abc]", this matches the file "path\[abc]".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ワイルドカードとしての特別な意味を無効にするには、前に '\' を置くこと。しかし MS-Windows では '\' がパスの区切り文字なので、オプション '@option{isfname}' の値に "[" が含まれていると、"path\[abc]" はワイルドカード扱いになってしまう。これを避ける単純な方法は、"path\[[]abc]" とすることである。すると文字通りのファイル "path[abc]" を編集できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*starstar-wildcard*
+Expanding "**" is possible on Unix, Win32, Mac OS/X and a few other systems.
+This allows searching a directory tree.  This goes up to 100 directories deep.
+Note there are some commands where this works slightly differently, see
+|file-searching|.
+Example: >
+	:n **/*.txt
+Finds files:
+	aaa.txt ~
+	subdir/bbb.txt ~
+	a/b/c/d/ccc.txt ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{starstar-wildcard}
+@cindex starstar-wildcard
+"**" の展開は、Unix, Win32, Mac OS/X、その他数種類のシステムでのみ使用できる。"**" はディレクトリツリーを再帰的に検索する。深さの上限は 100 ディレクトリである。
+@quotation
+@strong{Note:} @*
+いくつかのコマンドでは、この挙動が少し異なる。|file-searching| を参照。
+@end quotation
+例:
+@example
+:n **/*.txt
+@end example
+これは次のファイルにマッチする:
+@verbatim
+aaa.txt
+subdir/bbb.txt
+a/b/c/d/ccc.txt
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When non-wildcard characters are used right before or after "**" these are
+only matched in the top directory.  They are not used for directories further
+down in the tree. For example: >
+	:n /usr/inc**/types.h
+Finds files:
+	/usr/include/types.h ~
+	/usr/include/sys/types.h ~
+	/usr/inc/old/types.h ~
+Note that the path with "/sys" is included because it does not need to match
+"/inc".  Thus it's like matching "/usr/inc*/*/*...", not
+"/usr/inc*/inc*/inc*".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"**" の直前または直後にワイルドカード以外の文字が使用されている場合、これらはトップディレクトリでのみマッチする。これらは、ツリーのさらに下のディレクトリには使用されない。例:
+@example
+:n /usr/inc**/types.h
+@end example
+これは次のファイルにマッチする:
+@verbatim
+/usr/include/types.h
+/usr/include/sys/types.h
+/usr/inc/old/types.h
+@end verbatim
+@quotation
+@strong{Note:} @*
+"/inc" とマッチする必要がないため、"/sys" を含むパスが含まれている。したがって、"/usr/inc*/inc*/inc*" ではなく、"/usr/inc*/*/*..." にマッチするようなものである。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*backtick-expansion* *`-expansion*
+On Unix and a few other systems you can also use backticks for the file name
+argument, for example: >
+	:next `find . -name ver\\*.c -print`
+	:view `ls -t *.patch  \| head -n1`
+The backslashes before the star are required to prevent the shell from
+expanding "ver*.c" prior to execution of the find program.  The backslash
+before the shell pipe symbol "|" prevents Vim from parsing it as command
+termination.
+This also works for most other systems, with the restriction that the
+backticks must be around the whole item.  It is not possible to have text
+directly before the first or just after the last backtick.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{backtick-expansion}
+@anchor{`-expansion}
+@cindex backtick-expansion
+@cindex `-expansion
+Unix などではファイル名の引数にバッククォート '`' も使える。例:
+@example
+:next `find . -name ver\\*.c -print`
+:view `ls -t *.patch  \| head -n1`
+@end example
+アスタリスク '*' の前の '\' は、シェルが find を実行する前に "ver*.c" を展開してしまうのを防ぐために必要となる。シェルのパイプ記号 "|" の前のバックスラッシュは Vim がコマンドの終わりとしてパースするのを防ぐ。
+
+これは、必ず項目全体がバッククォートで括られているという制限付きで、他の多くのシステムでも機能する。最初のバッククォートの直前や最後のバッククォートの直後に文字列を書くことはできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*`=*
+You can have the backticks expanded as a Vim expression, instead of as an
+external command, by putting an equal sign right after the first backtick,
+e.g.: >
+	:e `=tempname()`
+The expression can contain just about anything, thus this can also be used to
+avoid the special meaning of '"', '|', '%' and '#'.  However, 'wildignore'
+does apply like to other wildcards.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{`=}
+@cindex `=
+バッククォート内を、外部コマンドとしてではなく Vim の式として展開させることもできる。そのためには初めのバッククォートのすぐ後に等号を置けばよい。例:
+@example
+:e `=tempname()`
+@end example
+この式はほとんど何を含んでもよい。そのため、これを使って '"', '|', '%', '#' の特別な意味を打ち消すこともできる。ただし、他のワイルドカードと同様に '@option{wildignore}' は適用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Environment variables in the expression are expanded when evaluating the
+expression, thus this works: >
+	:e `=$HOME . '/.vimrc'`
+This does not work, $HOME is inside a string and used literally: >
+	:e `='$HOME' . '/.vimrc'`
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この式の中の環境変数は式が評価される時に展開される。したがってこれは機能する:
+@example
+:e `=$HOME . '/.vimrc'`
+@end example
+これは機能しない。@env{$HOME} は文字列内にあり、文字通りに用いられる:
+@example
+:e `='$HOME' . '/.vimrc'`
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the expression returns a string then names are to be separated with line
+breaks.  When the result is a |List| then each item is used as a name.  Line
+breaks also separate names.
+Note that such expressions are only supported in places where a filename is
+expected as an argument to an Ex-command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+式が文字列を返したときは名前は改行で区切られる。式の結果がリスト (|List|) のときは各要素が名前として扱われる。改行によっても名前は区切られる。
+@quotation
+@strong{Note:} @*
+そのような式はファイル名が Ex コマンドの引数として期待される場所でのみサポートされる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*++opt* *[++opt]*
+The [++opt] argument can be used to force the value of 'fileformat',
+'fileencoding' or 'binary' to a value for one command, and to specify the
+behavior for bad characters.  The form is: >
+	++{optname}
+Or: >
+	++{optname}={value}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{++opt}
+@anchor{[++opt]}
+@cindex ++opt
+@cindex [++opt]
+引数のうち [++opt] はオプション '@option{fileformat}', '@option{fileencoding}' または '@option{binary}' の値を、そのコマンドに限ってある値に指定し、不正な文字への対応を指定するために使われる。指定の形式は次の通り。
+@verbatim
+++{optname}
+@end verbatim
+または
+@verbatim
+++{optname}={value}
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Where {optname} is one of:	    *++ff* *++enc* *++bin* *++nobin* *++edit*
+    ff     or  fileformat   overrides 'fileformat'
+    enc    or  encoding	    overrides 'fileencoding'
+    bin    or  binary	    sets 'binary'
+    nobin  or  nobinary	    resets 'binary'
+    bad			    specifies behavior for bad characters
+    edit		    for |:read| only: keep option values as if editing
+			    a file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{++ff}
+@anchor{++enc}
+@anchor{++bin}
+@anchor{++nobin}
+@anchor{++edit}
+@cindex ++ff
+@cindex ++enc
+@cindex ++bin
+@cindex ++nobin
+@cindex ++edit
+@{optname@} は次のうちのどれか:
+@multitable @columnfractions .05 .40 .55
+@item @tab ff または fileformat @tab '@option{fileformat}' を指定
+@item @tab enc または encoding @tab '@option{fileencoding}' を指定
+@item @tab bin または binary @tab '@option{binary}' を指定
+@item @tab nobin または nobinary @tab '@option{binary}' を無効にする
+@item @tab bad @tab 不正な文字への対応を指定する
+@item @tab edit @tab |:read| 用。ファイルを編集するときと同じようにオプションの値を保つ。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{value} cannot contain white space.  It can be any valid value for these
+options.  Examples: >
+	:e ++ff=unix
+This edits the same file again with 'fileformat' set to "unix". >
+
+	:w ++enc=latin1 newfile
+This writes the current buffer to "newfile" in latin1 format.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{value@} に空白を含めてはいけない。値は、そのオプションに対して適切なものなら何でもよい。例:
+@example
+:e ++ff=unix
+@end example
+こうすると '@option{fileformat}' を "@var{unix}" に設定して同じファイルを編集し直す。
+@example
+:w ++enc=latin1 newfile
+@end example
+こうするとカレントバッファの内容を latin1 の文字コードで "newfile" に書き出す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There may be several ++opt arguments, separated by white space.  They must all
+appear before any |+cmd| argument.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数 [++opt] は空白で区切って複数指定してもよい。それらはみな引数 |+cmd| より前に指定しなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								*++bad*
+The argument of "++bad=" specifies what happens with characters that can't be
+converted and illegal bytes.  It can be one of three things:
+    ++bad=X      A single-byte character that replaces each bad character.
+    ++bad=keep   Keep bad characters without conversion.  Note that this may
+		 result in illegal bytes in your text!
+    ++bad=drop   Remove the bad characters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{++bad}
+@cindex ++bad
+"++bad=" の引数は、変換できない文字と不正なバイトをどうするかを指定する。とりうる値は次の3つのうちどれかである:
+@multitable @columnfractions .05 .15 .80
+@item @tab ++bad=X @tab 不正な文字をこの 1 バイト文字で置き換える。
+@item @tab ++bad=keep @tab 不正な文字を変換せずにそのままにしておく。
+@strong{Note:} これを使うとテキスト中に不正なバイトが現れることになる。
+@item @tab ++bad=drop @tab 不正な文字を削除する。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The default is like "++bad=?": Replace each bad character with a question
+mark.  In some places an inverted question mark is used (0xBF).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+既定値は "++bad=?" となっている。つまり、不正な文字をそれぞれクエスチョンマークで置き換える。逆クエスチョンマーク (latin-1 の 0xBF) が使われる場所もある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that not all commands use the ++bad argument, even though they do not
+give an error when you add it.  E.g. |:write|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+++bad をつけてエラーにならなかったとしても、すべてのコマンドが ++bad に対応しているわけではない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that when reading, the 'fileformat' and 'fileencoding' options will be
+set to the used format.  When writing this doesn't happen, thus a next write
+will use the old value of the option.  Same for the 'binary' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+読み込み時に上の方法で '@option{fileformat}' と '@option{fileencoding}' を指定すると、それらは以後その値に設定されることに注意。書き込み時に設定してもそうはならず、次に書き込むときには以前の値が使われる。'@option{binary}' オプションも同様。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+							*+cmd* *[+cmd]*
+The [+cmd] argument can be used to position the cursor in the newly opened
+file, or execute any other command:
+	+		Start at the last line.
+	+{num}		Start at line {num}.
+	+/{pat}		Start at first line containing {pat}.
+	+{command}	Execute {command} after opening the new file.
+			{command} is any Ex command.
+To include a white space in the {pat} or {command}, precede it with a
+backslash.  Double the number of backslashes. >
+	:edit  +/The\ book	     file
+	:edit  +/dir\ dirname\\      file
+	:edit  +set\ dir=c:\\\\temp  file
+Note that in the last example the number of backslashes is halved twice: Once
+for the "+cmd" argument and once for the ":set" command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{+cmd}
+@anchor{[+cmd]}
+@cindex +cmd
+@cindex [+cmd]
+引数 [+cmd] は、新しく開いたファイルでカーソルの位置を指定したり、他のあらゆるコマンドを実行するために使われる:
+@multitable @columnfractions .05 .20 .75
+@item @tab + @tab 最後の行で編集を開始する。
+@item @tab +@{num@} @tab @{num@} 行目で編集を開始する。
+@item @tab +/@{pat@} @tab @{pat@} を含んだ最初の行で編集を開始する。
+@item @tab +@{command@} @tab 新しいファイルを開いた後に @{command@} を実行する。@{command@} には任意の Ex コマンドが使える。
+@end multitable
+@{pat@} や @{command@} に空白を含めるためには、その前に '\' を付ける。'\' そのものを使うには、2 回ずつ繰り返すこと。
+@example
+:edit  +/The\ book           ファイル
+:edit  +/dir\ dirname\\      ファイル
+:edit  +set\ dir=c:\\\\temp  ファイル
+@end example
+@quotation
+@strong{Note:} @*
+最後の例では '\' の繰り返しが 2 回行われていることに注意。"+cmd" の引数なので 1 回、コマンド ":set" のためにもう 1 回だ。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*file-formats*
+The 'fileformat' option sets the <EOL> style for a file:
+'fileformat'    characters	   name				~
+  "dos"		<CR><NL> or <NL>   DOS format		*DOS-format*
+  "unix"	<NL>		   Unix format		*Unix-format*
+  "mac"		<CR>		   Mac format		*Mac-format*
+Previously 'textmode' was used.  It is obsolete now.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{file-formats}
+@cindex file-formats
+オプション '@option{fileformat}' はファイルに対して <EOL> の形式を設定する。
+@multitable @columnfractions .05 .25 .45 .25
+@item @tab '@option{fileformat}' @tab <EOL>の文字 @tab 形式の名称
+@anchor{DOS-format}
+@cindex DOS-format
+@item @tab "dos" @tab <CR><NL> または <NL> @tab DOS形式
+@anchor{Unix-format}
+@cindex Unix-format
+@item @tab "unix" @tab <NL> @tab Unix形式
+@anchor{Mac-format}
+@cindex Mac-format
+@item @tab "mac" @tab <CR> @tab Mac形式
+@end multitable
+以前はオプション '@option{textmode}' が使われていた。現在ではそれは時代遅れである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When reading a file, the mentioned characters are interpreted as the <EOL>.
+In DOS format (default for MS-DOS, OS/2 and Win32), <CR><NL> and <NL> are both
+interpreted as the <EOL>.  Note that when writing the file in DOS format,
+<CR> characters will be added for each single <NL>.  Also see |file-read|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルを読み込むときに、上で述べた文字は <EOL> として解釈される。DOS 形式 (MS-DOS、OS/2 と Win32 での既定値) では、<CR><NL> と <NL> の両方が <EOL> と解釈される。
+@quotation
+@strong{Note:} @*
+DOS 形式でファイルを保存するときには、<NL> 1 個ごとに対して <CR> が追加されることに注意。|file-read| も参照。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When writing a file, the mentioned characters are used for <EOL>.  For DOS
+format <CR><NL> is used.  Also see |DOS-format-write|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルを書き込むときには、上で述べた文字が <EOL> として使われる。DOS 形式では <CR><NL> が使われる。|DOS-format-write| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can read a file in DOS format and write it in Unix format.  This will
+replace all <CR><NL> pairs by <NL> (assuming 'fileformats' includes "dos"): >
+	:e file
+	:set fileformat=unix
+	:w
+If you read a file in Unix format and write with DOS format, all <NL>
+characters will be replaced with <CR><NL> (assuming 'fileformats' includes
+"unix"): >
+	:e file
+	:set fileformat=dos
+	:w
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+DOS 形式でファイルを読み込んで、Unix 形式でそれを保存することも可能である。('@option{fileformats}' が "dos" を含んでいると仮定すると) 以下の操作は全ての <CR><NL> を <NL> で置き換えることになる。
+@example
+:e ファイル
+:set fileformat=unix
+:w
+@end example
+('@option{fileformats}' の値に "unix" が含まれているとき) Unix 形式でファイルを読み込んで、DOS 形式で保存すると、<NL> は全て <CR><NL> で置き換えられる。
+@example
+:e ファイル
+:set fileformat=dos
+:w
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you start editing a new file and the 'fileformats' option is not empty
+(which is the default), Vim will try to detect whether the lines in the file
+are separated by the specified formats.  When set to "unix,dos", Vim will
+check for lines with a single <NL> (as used on Unix and Amiga) or by a <CR>
+<NL> pair (MS-DOS).  Only when ALL lines end in <CR><NL>, 'fileformat' is set
+to "dos", otherwise it is set to "unix".  When 'fileformats' includes "mac",
+and no <NL> characters are found in the file, 'fileformat' is set to "mac".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しいファイルの編集を開始したときオプション '@option{fileformats}' の値が空でないならば (それがデフォルト)、Vim はファイルが指定された形式で改行されているかどうか検出を試みる。値が "@var{unix},@var{dos}" であるときは、Vim は 1 個の <NL> (Unix と Amiga 形式) か <CR><NL> の組 (MS-DOS 形式) が使われるものとして行を調べる。全ての行が <CR><NL> で終わっているときだけ、'@option{fileformat}' の値は "@var{dos}" に設定され、そうでなければ "@var{unix}" に設定される。'@option{fileformats}' の値が "@var{mac}" を含んでいて、ファイルに <NL> が 1 個も見つからないときは、'@option{fileformat}' の値は "@var{mac}" に設定される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the 'fileformat' option is set to "dos" on non-MS-DOS systems the message
+"[dos format]" is shown to remind you that something unusual is happening.  On
+MS-DOS systems you get the message "[unix format]" if 'fileformat' is set to
+"unix".  On all systems but the Macintosh you get the message "[mac format]"
+if 'fileformat' is set to "mac".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{fileformat}' の値が MS-DOS 以外のシステム上で "@var{dos}" に設定されると、普通でないことが起きていることを気づかせるために、メッセージ "[dosフォーマット]" が表示される。'@option{fileformat}' の値が "@var{unix}" であると、MS-DOSシステムでは "[unixフォーマット]" のメッセージが表示される。'@option{fileformat}' の値が "@var{mac}" であると、Macintosh 以外の全てのシステムでは、メッセージ "[macフォーマット]" が表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the 'fileformats' option is empty and DOS format is used, but while reading
+a file some lines did not end in <CR><NL>, "[CR missing]" will be included in
+the file message.
+If the 'fileformats' option is empty and Mac format is used, but while reading
+a file a <NL> was found, "[NL missing]" will be included in the file message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{fileformats}' の値が空で、DOS 形式が使用されているが、ファイルを読み込んでいるときにいくつかの行が <CR><NL> で終わっていなかったならば、ファイルのメッセージ内に "[CR無]" が含まれる。
+
+'@option{fileformats}' の値が空で、Mac 形式が使用されているが、ファイルを読み込んでいるときに <NL> が見つかったならば、ファイルのメッセージ内に "[NL無]" が含まれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the new file does not exist, the 'fileformat' of the current buffer is used
+when 'fileformats' is empty.  Otherwise the first format from 'fileformats' is
+used for the new file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しいファイルが存在しないと、'@option{fileformats}' の値が空のときにはカレントバッファの '@option{fileformat}' の値が使われる。そうでなければ、'@option{fileformats}' 内の 1 番目の形式が新しいファイルに対して用いられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Before editing binary, executable or Vim script files you should set the
+'binary' option.  A simple way to do this is by starting Vim with the "-b"
+option.  This will avoid the use of 'fileformat'.  Without this you risk that
+single <NL> characters are unexpectedly replaced with <CR><NL>.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実行可能ファイルやバイナリファイル、Vim script ファイルを編集する前には、オプション '@option{binary}' をオンに設定するべきだ。これにはオプション "-b" を付けて Vim を起動するのが簡単である。こうすると '@option{fileformat}' が使われなくなる。こうしないと 1 個の <NL> が不意に <CR><NL> で置き換えられてしまうことを覚悟しなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can encrypt files that are written by setting the 'key' option.  This
+provides some security against others reading your files. |encryption|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{key}' をオンに設定することで、保存されるファイルを暗号化できる。これは他人がユーザーのファイルを読むことに対して、ある程度の安全を保証する。|encryption|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+3. The argument list				*argument-list* *arglist*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{argument-list}
+@anchor{arglist}
+@cindex argument-list
+@cindex arglist
+@unnumberedsubsec 3. 引数リスト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you give more than one file name when starting Vim, this list is remembered
+as the argument list.  You can jump to each file in this list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の開始時に複数のファイル名を与えると、それらは引数リストとして記憶される。リスト内のファイルにはどれでも移動できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Do not confuse this with the buffer list, which you can see with the
+|:buffers| command.  The argument list was already present in Vi, the buffer
+list is new in Vim.  Every file name in the argument list will also be present
+in the buffer list (unless it was deleted with |:bdel| or |:bwipe|).  But it's
+common that names in the buffer list are not in the argument list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これをコマンド |:buffers| で表示されるバッファリストと混同してはいけない。引数リストは Vi から既にあったが、バッファリストは Vim で新たに導入された。引数リスト内のファイルはバッファリストにも含まれる (コマンド |:bdel| や |:bwipe| で消去されない限り)。逆にバッファリスト内のファイルが引数リストに含まれないことは普通にある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This subject is introduced in section |07.2| of the user manual.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この話題はユーザーマニュアルの第 |@ref{07.2, , 07.2}| 章で紹介されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There is one global argument list, which is used for all windows by default.
+It is possible to create a new argument list local to a window, see
+|:arglocal|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+グローバルな引数リストが 1 個あり、これは既定では全てのウィンドウに使われる。ウィンドウについてローカルな引数リストを新たに創ることもできる。|:arglocal| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use the argument list with the following commands, and with the
+expression functions |argc()| and |argv()|.  These all work on the argument
+list of the current window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数リストは以下のコマンド及び expression 用関数 |argc()| と |argv()| で利用できる。これらはみなカレントウィンドウの引数リストに対して働く。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:ar* *:args*
+:ar[gs]			Print the argument list, with the current file in
+			square brackets.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ar}
+@anchor{:args}
+@cindex :ar
+@cindex :args
+@table @asis
+@item :ar[gs]
+引数リストを表示する。カレントファイルは '[' ']' で挟まれて表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:ar[gs] [++opt] [+cmd] {arglist}			*:args_f*
+			Define {arglist} as the new argument list and edit
+			the first one.  This fails when changes have been made
+			and Vim does not want to |abandon| the current buffer.
+			Also see |++opt| and |+cmd|.
+			{Vi: no ++opt}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:args_f}
+@cindex :args_f
+@item :ar[gs] [++opt] [+cmd] @{arglist@}
+@{arglist@} を新たな引数リストとして定義し、そのうち最初のファイルの編集を始める。変更点があり、Vim がカレントバッファを放棄 |abandon| したくないときには失敗する。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi: ++opt はない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:ar[gs]! [++opt] [+cmd] {arglist}			*:args_f!*
+			Define {arglist} as the new argument list and edit
+			the first one.  Discard any changes to the current
+			buffer.
+			Also see |++opt| and |+cmd|.
+			{Vi: no ++opt}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:args_f!}
+@cindex :args_f!
+@item :ar[gs]! [++opt] [+cmd] @{arglist@}
+@{arglist@} を新たな引数リストとして定義し、そのうち最初のファイルの編集を始める。カレントバッファに対する変更点は全て失われる。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi: ++opt はない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]arge[dit][!] [++opt] [+cmd] {name}		*:arge* *:argedit*
+			Add {name} to the argument list and edit it.
+			When {name} already exists in the argument list, this
+			entry is edited.
+			This is like using |:argadd| and then |:edit|.
+			Note that only one file name is allowed, and spaces
+			inside the file name are allowed, like with |:edit|.
+			[count] is used like with |:argadd|.
+			[!] is required if the current file cannot be
+			|abandon|ed.
+			Also see |++opt| and |+cmd|.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:arge}
+@anchor{:argedit}
+@cindex :arge
+@cindex :argedit
+@item :[count]arge[dit][!] [++opt] [+cmd] @{name@}
+引数リストに @{name@} を追加し、その編集を始める。@{name@} が既に引数リスト内にあるときは、その編集を始める。これはコマンド |:argadd| を使い、次に |:edit| を使うのと同じである。
+@quotation
+@strong{Note:} @*
+指定できるファイルは 1 個であり、|:edit| と同様ファイル名の中に空白が使えることに注意。[count] は |:argadd| と同様に使われる。
+@end quotation
+カレントファイルが放棄 |abandon| できないときは '!' が必要になる。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]arga[dd] {name} ..			*:arga* *:argadd* *E479*
+:[count]arga[dd]
+			Add the {name}s to the argument list.  When {name} is
+			omitted add the current buffer name to the argument
+			list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:arga}
+@anchor{:argadd}
+@anchor{E479}
+@cindex :arga
+@cindex :argadd
+@cindex E479
+@item :[count]arga[dd] @{name@} .. or :[count]arga[dd]
+引数リストに @{name@} を追加する。@{name@} が省略された時は引数リストに現在のバッファ名を追加する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			If [count] is omitted, the {name}s are added just
+			after the current entry in the argument list.
+			Otherwise they are added after the [count]'th file.
+			If the argument list is "a b c", and "b" is the
+			current argument, then these commands result in:
+				command		new argument list ~
+				:argadd x	a b x c
+				:0argadd x	x a b c
+				:1argadd x	a x b c
+				:$argadd x	a b c x
+			And after the last one:
+				:+2argadd y	a b c x y
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[count] が省かれると @{name@} は引数リストの現在の項目の次に挿入される。指定されると [count] 番目の項目の次に挿入される。引数リストが "a b c" で "b" が現在の引数の場合のコマンドの結果一覧:
+@multitable @columnfractions .05 .45 .50
+@item @tab コマンド @tab 新たな引数リスト
+@item @tab :argadd x @tab a b x c
+@item @tab :0argadd x @tab x a b c
+@item @tab :1argadd x @tab a x b c
+@item @tab :$argadd x @tab a b c x
+@end multitable
+最後の1つの後に:
+@multitable @columnfractions .05 .6 .45
+@item @tab :+2argadd y @tab a b c x y
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			There is no check for duplicates, it is possible to
+			add a file to the argument list twice.
+			The currently edited file is not changed.
+			{not in Vi} {not available when compiled without the
+			|+listcmds| feature}
+			Note: you can also use this method: >
+				:args ## x
+<			This will add the "x" item and sort the new list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+重複検査はないので、1 個のファイルを引数リストに 2 回加えることもできる。現在編集中のファイルは変更されない。
+@{Vi にはない@}
+@{Vimが |+listcmds| 機能付きでコンパイルされたときのみ有効@}
+@quotation
+@strong{Note:} @*
+次の方法が使えることに注意。
+@example
+:args ## x
+@end example
+これは項目 "x" を追加し、新たなリストを並び替える。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:argd[elete] {pattern} ..			*:argd* *:argdelete* *E480*
+			Delete files from the argument list that match the
+			{pattern}s.  {pattern} is used like a file pattern,
+			see |file-pattern|.  "%" can be used to delete the
+			current entry.
+			This command keeps the currently edited file, also
+			when it's deleted from the argument list.
+			Example: >
+				:argdel *.obj
+<			{not in Vi} {not available when compiled without the
+			|+listcmds| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:argd}
+@anchor{:argdelete}
+@anchor{E480}
+@cindex :argd
+@cindex :argdelete
+@cindex E480
+@item :argd[elete] @{pattern@} ..
+@{pattern@} にマッチするファイルを引数リストから削除する。@{pattern@} の意味はファイルパターンと同様なので、|file-pattern| を参照。現在の項目を削除するには "%" が使える。
+
+このコマンドは現在編集中のファイルが引数リストから削除されたときでも、それをそのままに保つ。
+
+例:
+@example
+:argdel *.obj
+@end example
+
+@{Vi にはない@}
+
+@{Vimが |+listcmds| 機能付きでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[range]argd[elete]	Delete the {range} files from the argument list.
+			Example: >
+				:10,$argdel
+<			Deletes arguments 10 and further, keeping 1-9. >
+				:$argd
+<			Deletes just the last one. >
+				:argd
+				:.argd
+<			Deletes the current argument. >
+				:%argd
+<			Removes all the files from the arglist.
+			When the last number in the range is too high, up to
+			the last argument is deleted.
+			{not in Vi} {not available when compiled without the
+			|+listcmds| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[range]argd[elete]
+引数リストから @{range@} の範囲のファイルを削除する。
+
+例:
+@example
+:10,$argdel
+@end example
+10 以降が削除され、1 から 9 は残る。
+@example
+:$argd
+@end example
+最後の引数を削除する。
+@example
+:argd
+:.argd
+@end example
+現在の引数を削除する。
+@example
+:%argd
+@end example
+引数リストから全てのファイルを削除する。範囲の上限が大きすぎるときは、最後の引数までが削除される。
+
+@{Vi にはない@}
+@{Vim が |+listcmds| 機能付きでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:argu* *:argument*
+:[count]argu[ment] [count] [++opt] [+cmd]
+			Edit file [count] in the argument list.  When [count]
+			is omitted the current entry is used.  This fails
+			when changes have been made and Vim does not want to
+			|abandon| the current buffer.
+			Also see |++opt| and |+cmd|.
+			{not in Vi} {not available when compiled without the
+			|+listcmds| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:argu}
+@anchor{:argument}
+@cindex :argu
+@cindex :argument
+@item :[count]argu[ment] [count] [++opt] [+cmd]
+引数リスト内で [count] 番目のファイルを編集する。[count] が省かれると現在の項目を編集する。変更点があり、Vim がカレントバッファを放棄 |abandon| したくないときには失敗する。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi にはない@}
+
+@{Vim が |+listcmds| 機能付きでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]argu[ment]! [count] [++opt] [+cmd]
+			Edit file [count] in the argument list, discard any
+			changes to the current buffer.  When [count] is
+			omitted the current entry is used.
+			Also see |++opt| and |+cmd|.
+			{not in Vi} {not available when compiled without the
+			|+listcmds| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[count]argu[ment]! [count] [++opt] [+cmd]
+引数リスト内で [count] 番目のファイルを編集する。カレントバッファに対するいかなる変更も失われる。[count] が省かれると現在の項目を編集する。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi にはない@}
+
+@{Vim が |+listcmds| 機能付きでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]n[ext] [++opt] [+cmd]			*:n* *:ne* *:next* *E165* *E163*
+			Edit [count] next file.  This fails when changes have
+			been made and Vim does not want to |abandon| the
+			current buffer.  Also see |++opt| and |+cmd|.  {Vi: no
+			count or ++opt}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:n}
+@anchor{:ne}
+@anchor{:next}
+@anchor{E165}
+@anchor{E163}
+@cindex :n
+@cindex :ne
+@cindex :next
+@cindex E165
+@cindex E163
+@item :[count]n[ext] [++opt] [+cmd]
+引数リストの中で [count] 個次のファイルを編集する。変更点があり、Vim がカレントバッファを放棄 |abandon| したくないときには失敗する。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi: count や ++opt はない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]n[ext]! [++opt] [+cmd]
+			Edit [count] next file, discard any changes to the
+			buffer.  Also see |++opt| and |+cmd|.  {Vi: no count
+			or ++opt}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[count]n[ext]! [++opt] [+cmd]
+引数リストの中で [count] 個次のファイルを編集する。カレントバッファに対するいかなる変更も失われる。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi: count や ++opt はない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:n[ext] [++opt] [+cmd] {arglist}			*:next_f*
+			Same as |:args_f|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:next_f}
+@cindex :next_f
+@item :n[ext] [++opt] [+cmd] @{arglist@}
+コマンド |:args_f| と同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:n[ext]! [++opt] [+cmd] {arglist}
+			Same as |:args_f!|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :n[ext]! [++opt] [+cmd] @{arglist@}
+コマンド |:args_f!| と同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]N[ext] [count] [++opt] [+cmd]			*:Next* *:N* *E164*
+			Edit [count] previous file in argument list.  This
+			fails when changes have been made and Vim does not
+			want to |abandon| the current buffer.
+			Also see |++opt| and |+cmd|.  {Vi: no count or ++opt}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:Next}
+@anchor{:N}
+@anchor{E164}
+@cindex :Next
+@cindex :N
+@cindex E164
+@item :[count]N[ext] [count] [++opt] [+cmd]
+引数リストの中で [count] 個前のファイルを編集する。変更点があり、Vimがカレントバッファを破棄 |abandon| したくないときには失敗する。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi: count や ++opt はない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]N[ext]! [count] [++opt] [+cmd]
+			Edit [count] previous file in argument list.  Discard
+			any changes to the buffer.  Also see |++opt| and
+			|+cmd|.  {Vi: no count or ++opt}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[count]N[ext]! [count] [++opt] [+cmd]
+引数リスト内で [count] 個前のファイルを編集する。カレントバッファに対するいかなる変更も失われる。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi: count や ++opt はない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]prev[ious] [count] [++opt] [+cmd]		*:prev* *:previous*
+			Same as :Next.  Also see |++opt| and |+cmd|.  {Vi:
+			only in some versions}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:prev}
+@anchor{:previous}
+@item :[count]prev[ious] [count] [++opt] [+cmd]
+コマンド |:Next| と同じ。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi: 幾つかのバージョンにのみ存在@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:rew* *:rewind*
+:rew[ind] [++opt] [+cmd]
+			Start editing the first file in the argument list.
+			This fails when changes have been made and Vim does
+			not want to |abandon| the current buffer.
+			Also see |++opt| and |+cmd|. {Vi: no ++opt}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:rew}
+@anchor{:rewind}
+@item :rew[ind] [++opt] [+cmd]
+引数リスト内で最初のファイルの編集を始める。変更点があり、Vim がカレントバッファを放棄 |abandon| したくないときには失敗する。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi: ++opt はない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:rew[ind]! [++opt] [+cmd]
+			Start editing the first file in the argument list.
+			Discard any changes to the buffer.  Also see |++opt|
+			and |+cmd|. {Vi: no ++opt}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :rew[ind]! [++opt] [+cmd]
+引数リスト内で最初のファイルを編集する。カレントバッファに対するいかなる変更も失われる。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi: ++opt はない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:fir* *:first*
+:fir[st][!] [++opt] [+cmd]
+			Other name for ":rewind". {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:fir}
+@anchor{:first}
+@cindex :fir
+@cindex :first
+@item :fir[st][!] [++opt] [+cmd]
+コマンド |:rewind| の別名。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:la* *:last*
+:la[st] [++opt] [+cmd]
+			Start editing the last file in the argument list.
+			This fails when changes have been made and Vim does
+			not want to |abandon| the current buffer.
+			Also see |++opt| and |+cmd|.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:la}
+@anchor{:last}
+@cindex :la
+@cindex :last
+@item :la[st] [++opt] [+cmd]
+引数リスト内で最後のファイルの編集を始める。変更点があり、Vim がカレントバッファを放棄 |abandon| したくないときには失敗する。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:la[st]! [++opt] [+cmd]
+			Start editing the last file in the argument list.
+			Discard any changes to the buffer.  Also see |++opt|
+			and |+cmd|.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :la[st]! [++opt] [+cmd]
+引数リスト内で最初のファイルを編集する。カレントバッファに対するいかなる変更も失われる。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:wn* *:wnext*
+:[count]wn[ext] [++opt]
+			Write current file and start editing the [count]
+			next file.  Also see |++opt| and |+cmd|.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:wn}
+@anchor{:wnext}
+@cindex :wn
+@cindex :wnext
+@item :[count]wn[ext] [++opt]
+カレントファイルを書き込み、引数リスト内で [count] 個次のファイルの編集を始める。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]wn[ext] [++opt] {file}
+			Write current file to {file} and start editing the
+			[count] next file, unless {file} already exists and
+			the 'writeany' option is off.  Also see |++opt| and
+			|+cmd|.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[count]wn[ext] [++opt] @{file@}
+カレントファイルを @{file@} に書き込み、引数リスト内で [count] 個次のファイルの編集を始める。ただし @{file@} が既に存在し、オプション '@option{writeany}' がオフのときは失敗する。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]wn[ext]! [++opt] {file}
+			Write current file to {file} and start editing the
+			[count] next file.  Also see |++opt| and |+cmd|.  {not
+			in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[count]wn[ext]! [++opt] @{file@}
+カレントファイルを @{file@} に書き込み、引数リスト内で [count] 個次のファイルの編集を始める。
+
+|++opt| と |+cmd| も参照。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]wN[ext][!] [++opt] [file]		*:wN* *:wNext*
+:[count]wp[revious][!] [++opt] [file]		*:wp* *:wprevious*
+			Same as :wnext, but go to previous file instead of
+			next.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:wN}
+@anchor{:wNext}
+@anchor{:wp}
+@anchor{:wprevious}
+@cindex :wN
+@cindex :wNext
+@cindex :wp
+@cindex :wprevious
+@item :[count]wN[ext][!] [++opt] [file] or :[count]wp[revious][!] [++opt] [file]
+コマンド |:wnext| と同じだが、次でなく前のファイルに移る。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The [count] in the commands above defaults to one.  For some commands it is
+possible to use two counts.  The last one (rightmost one) is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上のコマンドの [count] の既定値は 1 である。[count] を 2 回使えるコマンドもある。最後 (最も右) のものが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If no [+cmd] argument is present, the cursor is positioned at the last known
+cursor position for the file.  If 'startofline' is set, the cursor will be
+positioned at the first non-blank in the line, otherwise the last know column
+is used.  If there is no last known cursor position the cursor will be in the
+first line (the last line in Ex mode).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数 [+cmd] が存在しないならば、カーソルはそのファイルに対して最後に認識された位置に置かれる。オプション '@option{startofline}' がオンのときは、カーソルは行の最初の非空白文字に置かれ、オフのときは最後に認識された列が使われる。最後に認識されたカーソル位置がないときは、カーソルは最初の行 (Ex モードでは最後の行) に置かれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*{arglist}*
+The wildcards in the argument list are expanded and the file names are sorted.
+Thus you can use the command "vim *.c" to edit all the C files.  From within
+Vim the command ":n *.c" does the same.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{@{arglist@}}
+@cindex @{arglist@}
+引数リスト内のワイルドカードは展開され、ファイル名は並び替えられる。だから C のソースファイルを全て編集するには、コマンド "vim *.c" が使える。Vim の中でコマンド ":n *.c" としても同じである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+White space is used to separate file names.  Put a backslash before a space or
+tab to include it in a file name.  E.g., to edit the single file "foo bar": >
+	:next foo\ bar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル名は空白文字によって区切られる。ファイル名にスペースまたはタブを含めるには、その前にバックスラッシュを書くこと。例えば、"foo bar" という 1 つのファイルを開くにはこうする:
+@example
+:next foo\ bar
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On Unix and a few other systems you can also use backticks, for example: >
+	:next `find . -name \\*.c -print`
+The backslashes before the star are required to prevent "*.c" to be expanded
+by the shell before executing the find program.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unix およびその他いくつかのシステムではバッククォートも使える。例:
+@example
+:n `find . -name \\*.c -print`
+@end example
+アスタリスクの前の '\' は、"*.c" がプログラム find を実行する前にシェルで展開されるのを防ぐために必要となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*arglist-position*
+When there is an argument list you can see which file you are editing in the
+title of the window (if there is one and 'title' is on) and with the file
+message you get with the "CTRL-G" command.  You will see something like
+	(file 4 of 11)
+If 'shortmess' contains 'f' it will be
+	(4 of 11)
+If you are not really editing the file at the current position in the argument
+list it will be
+	(file (4) of 11)
+This means that you are position 4 in the argument list, but not editing the
+fourth file in the argument list.  This happens when you do ":e file".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{arglist-position}
+@cindex arglist-position
+引数リストがあるときは、ウィンドウのタイトル (それがあって、オプション '@option{title}' オンならば) やコマンド @kbd{CTRL-G} で出るファイルメッセージで編集しているファイルを知ることができる。次のようなものが表示されるだろう。
+@verbatim
+(file 4 of 11)
+@end verbatim
+オプション '@option{shortmess}' の値が '@var{f}' を含んでいるときは以下のようになる。
+@verbatim
+(4 of 11)
+@end verbatim
+実際は引数リスト内の現在の位置でないファイルを編集しているならば、以下のようになる。
+@verbatim
+(file (4) of 11)
+@end verbatim
+これは、引数リストの中の 4 番目にいるが、編集中のファイルは引数リストの中の 4 番目でないことを意味する。これは "@command{:e file}" をするときに起こる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+LOCAL ARGUMENT LIST
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec ローカルな引数リスト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{not in Vi}
+{not available when compiled without the |+windows| or |+listcmds| features}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはない@}
+
+@{Vim が |+windows| 機能と |+listcmds| 機能付きでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:arglocal*
+:argl[ocal]		Make a local copy of the global argument list.
+			Doesn't start editing another file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:arglocal}
+@cindex :arglocal
+@table @asis
+@item :argl[ocal]
+グローバルな引数リストのローカルなコピーを作る。別のファイルの編集は始めない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:argl[ocal][!] [++opt] [+cmd] {arglist}
+			Define a new argument list, which is local to the
+			current window.  Works like |:args_f| otherwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :argl[ocal][!] [++opt] [+cmd] @{arglist@}
+カレントウィンドウについてローカルな、新たな引数リストを定義する。ウィンドウが 1 個のときは |:args_f| と同じである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:argglobal*
+:argg[lobal]		Use the global argument list for the current window.
+			Doesn't start editing another file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:argglobal}
+@cindex :argglobal
+@item :argg[lobal]
+カレントウィンドウにグローバルな引数リストを使う。別のファイルの編集は始めない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:argg[lobal][!] [++opt] [+cmd] {arglist}
+			Use the global argument list for the current window.
+			Define a new global argument list like |:args_f|.
+			All windows using the global argument list will see
+			this new list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :argg[lobal][!] [++opt] [+cmd] @{arglist@}
+カレントウィンドウにグローバルな引数リストを使う。コマンド |:args_f| と同様、グローバルな引数リストを新たに定義する。グローバルな引数リストを使っているウィンドウは全てこの新しいリストを参照するようになる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There can be several argument lists.  They can be shared between windows.
+When they are shared, changing the argument list in one window will also
+change it in the other window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+複数の引数リストが存在可能であり、それらはウィンドウ同士で共有できる。共有されているときは、あるウィンドウ内で引数リストに変更を加えると、別のウィンドウの引数リストも影響を受ける。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When a window is split the new window inherits the argument list from the
+current window.  The two windows then share this list, until one of them uses
+|:arglocal| or |:argglobal| to use another argument list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウが分割されると、新しいウィンドウはカレントウィンドウから引数リストを受け継ぐ。すると2個のウィンドウは、片方でコマンド |:arglocal| か |:argglobal| を使って別の引数リストを使うようになるまで、そのリストを共有することになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING THE ARGUMENT LIST
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec 引数リストを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:argdo*
+:[range]argdo[!] {cmd}	Execute {cmd} for each file in the argument list or
+			if [range] is specified only for arguments in that
+			range.  It works like doing this: >
+				:rewind
+				:{cmd}
+				:next
+				:{cmd}
+				etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:argdo}
+@cindex :argdo
+@table @asis
+@item :[range]argdo[!] @{cmd@}
+引数リスト内の全てのファイルで @{cmd@} を実行する。または [range] が指定された場合、その範囲内の引数のみで実行する。以下と同様の動作になる。
+@example
+:rewind
+:@{cmd@}
+:next
+:@{cmd@}
+etc.
+@end example
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<			When the current file can't be |abandon|ed and the [!]
+			is not present, the command fails.
+			When an error is detected on one file, further files
+			in the argument list will not be visited.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カレントファイルを放棄 |abandon| できず、'!' も付けられていないときは、実行は失敗する。どれかのファイル内でエラーが検出されると、引数リスト内の以降のファイルには進まない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			The last file in the argument list (or where an error
+			occurred) becomes the current file.
+			{cmd} can contain '|' to concatenate several commands.
+			{cmd} must not change the argument list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数リスト末尾のファイル (またはエラーの起きたファイル) がカレントファイルになる。@{cmd@} の中では '|' で複数のコマンドを連結できる。@{cmd@} は引数リストに変更を加えてはならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Note: While this command is executing, the Syntax
+			autocommand event is disabled by adding it to
+			'eventignore'.  This considerably speeds up editing
+			each file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+このコマンドの実行中、オプション '@option{eventignore}' でオートコマンドのイベント Syntax を指定することでそれを無効化できる。こうすると各ファイルの処理がかなり高速になる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			{not in Vi} {not available when compiled without the
+			|+listcmds| feature}
+			Also see |:windo|, |:tabdo|, |:bufdo|, |:cdo|, |:ldo|,
+			|:cfdo| and |:lfdo|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはない@}
+
+@{Vim が |+listcmds| 機能付きでコンパイルされたときのみ有効@}
+
+|:windo|, |:tabdo|, |:bufdo|, |:cdo|, |:ldo|, |:cfdo|, |:lfdo| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example: >
+	:args *.c
+	:argdo set ff=unix | update
+This sets the 'fileformat' option to "unix" and writes the file if it is now
+changed.  This is done for all *.c files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:args *.c
+:argdo set ff=unix | update
+@end example
+こうするとオプション '@option{fileformat}' の値を "unix" に設定し、変更があったファイルを保存する。それが全ての *.c ファイルについて行われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example: >
+	:args *.[ch]
+	:argdo %s/\<my_foo\>/My_Foo/ge | update
+This changes the word "my_foo" to "My_Foo" in all *.c and *.h files.  The "e"
+flag is used for the ":substitute" command to avoid an error for files where
+"my_foo" isn't used.  ":update" writes the file only if changes were made.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:args *.[ch]
+:argdo %s/\<my_foo\>/My_Foo/ge | update
+@end example
+こうすると全ての *.c ファイルと *.h ファイルで単語 "my_foo" を "My_Foo" に変える。コマンド "@command{:substitute}" でフラグ "e" を使って "my_foo" という単語の使われていないファイルでエラーが起きるのを防いでいる。コマンド "@command{:update}" は変更のあったファイルのみを保存する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Writing					*writing* *save-file*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{writing}
+@anchor{save-file}
+@cindex writing
+@cindex save-file
+@unnumberedsubsec 4. 書き込み
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: When the 'write' option is off, you are not able to write any file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:}@*
+オプション '@option{write}' がオフのときは、どのファイルも書き込めないことに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:w* *:write*
+						*E502* *E503* *E504* *E505*
+						*E512* *E514* *E667* *E796*
+:w[rite] [++opt]	Write the whole buffer to the current file.  This is
+			the normal way to save changes to a file.  It fails
+			when the 'readonly' option is set or when there is
+			another reason why the file can't be written.
+			For ++opt see |++opt|, but only ++bin, ++nobin, ++ff
+			and ++enc are effective.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:w}
+@anchor{:write}
+@anchor{E502}
+@anchor{E503}
+@anchor{E504}
+@anchor{E505}
+@anchor{E512}
+@anchor{E514}
+@anchor{E667}
+@anchor{E796}
+@cindex :w
+@cindex :write
+@cindex E502
+@cindex E503
+@cindex E504
+@cindex E505
+@cindex E512
+@cindex E514
+@cindex E667
+@cindex E796
+@table @asis
+@item :w[rite] [++opt]
+バッファ全体をカレントファイルに書き込む。これはファイルに対する変更点を保存するときの普通の方法である。オプション '@option{readonly}' がオンであるかファイルに書き込めない理由が何かあるときには実行に失敗する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:w[rite]! [++opt]	Like ":write", but forcefully write when 'readonly' is
+			set or there is another reason why writing was
+			refused.
+			Note: This may change the permission and ownership of
+			the file and break (symbolic) links.  Add the 'W' flag
+			to 'cpoptions' to avoid this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :w[rite]! [++opt]
+"@command{:write}" と似ているが、'@option{readonly}' がオンであったり書き込みが拒否される理由があっても無理矢理書き込みを行う。
+@quotation
+@strong{Note:} @*
+これはファイルの権限や所属を変更したり、(シンボリック) リンクを途切れさせるかもしれないので注意。それを避けるには '@option{cpoptions}' にフラグ '@var{W}' を追加すること。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[range]w[rite][!] [++opt]
+			Write the specified lines to the current file.  This
+			is unusual, because the file will not contain all
+			lines in the buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[range]w[rite][!] [++opt]
+指定された範囲の行をカレントファイルに書き出す。これは普通の操作ではない。ファイルがバッファ内の全ての行を含むようにならないからだ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:w_f* *:write_f*
+:[range]w[rite] [++opt]	{file}
+			Write the specified lines to {file}, unless it
+			already exists and the 'writeany' option is off.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:w_f}
+@anchor{:write_f}
+@cindex :w_f
+@cindex :write_f
+@item :[range]w[rite] [++opt] @{file@}
+指定された範囲の行をファイル @{file@} に書き出す。ただしそれが既に存在し、かつオプション '@option{writeany}' がオフのときは失敗する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:w!*
+:[range]w[rite]! [++opt] {file}
+			Write the specified lines to {file}.  Overwrite an
+			existing file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:w!}
+@cindex :w!
+@item :[range]w[rite]! [++opt] @{file@}
+指定された範囲の行をファイル @{file@} に書き出す。既存のファイルは上書きされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:w_a* *:write_a* *E494*
+:[range]w[rite][!] [++opt] >>
+			Append the specified lines to the current file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:w_a}
+@anchor{:write_a}
+@anchor{E494}
+@cindex :w_a
+@cindex :write_a
+@cindex E494
+@item :[range]w[rite][!] [++opt] >>
+指定された範囲の行をカレントファイルに追加する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[range]w[rite][!] [++opt] >> {file}
+			Append the specified lines to {file}.  '!' forces the
+			write even if file does not exist.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[range]w[rite][!] [++opt] >> @{file@}
+指定された範囲の行をファイル @{file@} に追加する。'!' を付けるとそのファイルがまだ存在しなくても書き込みを行う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:w_c* *:write_c*
+:[range]w[rite] [++opt] !{cmd}
+			Execute {cmd} with [range] lines as standard input
+			(note the space in front of the '!').  {cmd} is
+			executed like with ":!{cmd}", any '!' is replaced with
+			the previous command |:!|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:w_c}
+@anchor{:write_c}
+@cindex :w_c
+@cindex :write_c
+@item :[range]w[rite] [++opt] !@{cmd@}
+[range] の行を標準入力として @{cmd@} を実行する ('!' の前の空白に注意)。@{cmd@} は ":!@{cmd@}" のように実行され、全ての '!' は前回のコマンドに置き換えられる |:!|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The default [range] for the ":w" command is the whole buffer (1,$).  If you
+write the whole buffer, it is no longer considered changed.  When you
+write it to a different file with ":w somefile" it depends on the "+" flag in
+'cpoptions'.  When included, the write command will reset the 'modified' flag,
+even though the buffer itself may still be different from its file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンド "@command{:w}" での [range] の既定値はバッファ全体 (1,$) である。バッファ全体を書き込むと、そのバッファは変更されていないとみなされるようになる。
+
+"@command{:w somefile}" によって別のファイルに書き出した場合は、'@option{cpoptions}' の "+" フラグに依存する。"+" が含まれている場合は、バッファがまだ元のファイルと異なっていたとしても、書き込みコマンドによって '@option{modified}' フラグがオフになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If a file name is given with ":w" it becomes the alternate file.  This can be
+used, for example, when the write fails and you want to try again later with
+":w #".  This can be switched off by removing the 'A' flag from the
+'cpoptions' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:w}" にファイル名が与えられるとそれが代替ファイルになる。これは例えば書き込みに失敗した後に "@command{:w #}" でもう一度試したいときに使える。オプション '@option{cpoptions}' からフラグ '@var{A}' を取り除くとこれを無効化できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:sav* *:saveas*
+:sav[eas][!] [++opt] {file}
+			Save the current buffer under the name {file} and set
+			the filename of the current buffer to {file}.  The
+			previous name is used for the alternate file name.
+			The [!] is needed to overwrite an existing file.
+			When 'filetype' is empty filetype detection is done
+			with the new name, before the file is written.
+			When the write was successful 'readonly' is reset.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sav}
+@anchor{:saveas}
+@cindex :sav
+@cindex :saveas
+@item :sav[eas][!] [++opt] @{file@}
+カレントファイルをファイル名 @{file@} として保存し、カレントバッファのファイル名を @{file@} に変える。それまでのカレントファイルの名前は代替ファイルの名前になる。既存のファイルを上書きするには [!] が必要になる。
+
+'@option{filetype}' が空の場合、保存の前に新しいファイル名に対してファイルタイプ検出が行われる。保存が成功すると '@option{readonly}' がオフになる。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:up* *:update*
+:[range]up[date][!] [++opt] [>>] [file]
+			Like ":write", but only write when the buffer has been
+			modified.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:up}
+@anchor{:update}
+@cindex :up
+@cindex :update
+@item :[range]up[date][!] [++opt] [>>] [file]
+"@command{:write}" と似ているが、バッファに変更点があるときのみ書き込みを行う。
+
+@{Vi にはない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+WRITING WITH MULTIPLE BUFFERS				*buffer-write*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{buffer-write}
+@cindex buffer-write
+@unnumberedsubsubsec 複数バッファでの書き込み
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:wa* *:wall*
+:wa[ll]			Write all changed buffers.  Buffers without a file
+			name cause an error message.  Buffers which are
+			readonly are not written. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:wa}
+@anchor{:wall}
+@cindex :wa
+@cindex :wall
+@table @asis
+@item :wa[ll]
+変更点のあるバッファを全て書き込む。ファイル名を持たないバッファに対してはエラーメッセージが表示される。読み込み専用のバッファは書き込まれない。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:wa[ll]!		Write all changed buffers, even the ones that are
+			readonly.  Buffers without a file name are not
+			written and cause an error message. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :wa[ll]!
+変更点のあるバッファを、読み込み専用であっても全て書き込む。ファイル名を持たないバッファは書き込まれず、エラーメッセージが表示される。
+
+@{Vi にはない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Vim will warn you if you try to overwrite a file that has been changed
+elsewhere.  See |timestamp|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は別の場所で変更を受けたファイルを上書きしようとしたときには警告する。|timestamp| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			    *backup* *E207* *E506* *E507* *E508* *E509* *E510*
+If you write to an existing file (but do not append) while the 'backup',
+'writebackup' or 'patchmode' option is on, a backup of the original file is
+made.  The file is either copied or renamed (see 'backupcopy').  After the
+file has been successfully written and when the 'writebackup' option is on and
+the 'backup' option is off, the backup file is deleted.  When the 'patchmode'
+option is on the backup file may be renamed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{backup}
+@anchor{E207}
+@anchor{E506}
+@anchor{E507}
+@anchor{E508}
+@anchor{E509}
+@anchor{E510}
+@cindex backup
+@cindex E207
+@cindex E506
+@cindex E507
+@cindex E508
+@cindex E509
+@cindex E510
+オプション '@option{backup}', '@option{writebackup}' または '@option{patchmode}' がオンのときに既存のファイルに (追加でなく) 書き込もうとすると、元のファイルのバックアップが作られる。ファイルは元のコピーかリネームしたものである ('@option{backupcopy}' を参照)。ファイルの書き込みに成功したとき '@option{writebackup}' がオンで '@option{backup}' がオフだと、バックアップファイルは削除される。'@option{patchmode}' がオンのときはバックアップファイルはリネームされるかも知れない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*backup-table*
+'backup' 'writebackup'	action	~
+   off	     off	no backup made
+   off	     on		backup current file, deleted afterwards (default)
+   on	     off	delete old backup, backup current file
+   on	     on		delete old backup, backup current file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{backup-table}
+@cindex backup-table
+@multitable @columnfractions .05 .20 .25 .50
+@item @tab 'backup' @tab 'writebackup' @tab 動作
+@item @tab off @tab off @tab バックアップは作られない
+@item @tab off @tab on @tab カレントファイルをバックアップし、後で消去する (既定)
+@item @tab on @tab off @tab 古いバックアップを消去し、カレントファイルをバックアップする
+@item @tab on @tab on @tab 古いバックアップを消去し、カレントファイルをバックアップする
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the 'backupskip' pattern matches with the name of the file which is
+written, no backup file is made.  The values of 'backup' and 'writebackup' are
+ignored then.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{backupskip}' に指定したパターンが書き込まれるファイルの名前にマッチしたときは、バックアップファイルは作られない。その場合 '@option{backup}' と '@option{writebackup}' の値は無視される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the 'backup' option is on, an old backup file (with the same name as the
+new backup file) will be deleted.  If 'backup' is not set, but 'writebackup'
+is set, an existing backup file will not be deleted.  The backup file that is
+made while the file is being written will have a different name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{backup}' がオンのときは、古いバックアップファイル (新しいバックアップファイルと同名) は削除される。'@option{backup}' がオフだが '@option{writebackup}' がオンのときは、既存のバックアップファイルは削除されない。ファイルの書き込み中に作られたバックアップファイルは別の名前になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On some filesystems it's possible that in a crash you lose both the backup and
+the newly written file (it might be there but contain bogus data).  In that
+case try recovery, because the swap file is synced to disk and might still be
+there. |:recover|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルシステムによってはクラッシュで新しいファイルとバックアップを両方失うこともあり得る (新しいファイルは存在はしても中身が滅茶苦茶になっていたり)。その場合は復帰機能を試すこと。スワップファイルがまだディスクに残っているかもしれないからだ。|:recover|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The directories given with the 'backupdir' option are used to put the backup
+file in.  (default: same directory as the written file).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{backupdir}' で指定されたディレクトリはバックアップファイルをしまうのに使われる。(既定値: 書き込まれたファイルと同じディレクトリ)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Whether the backup is a new file, which is a copy of the original file, or the
+original file renamed depends on the 'backupcopy' option.  See there for an
+explanation of when the copy is made and when the file is renamed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バックアップが、元のファイルのコピーである新規のファイルになるか、元のファイルがリネームされたものになるかは、オプション '@option{backupcopy}' で決まる。コピーが作られるのがいつでファイルがリネームされるのがいつかについてはその箇所を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the creation of a backup file fails, the write is not done.  If you want
+to write anyway add a '!' to the command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バックアップファイルの生成に失敗すると、書き込みは行われない。それでも書き込みたいときにはコマンドに '!' を追加すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*write-permissions*
+When writing a new file the permissions are read-write.  For unix the mask is
+0666 with additionally umask applied.  When writing a file that was read Vim
+will preserve the permissions, but clear the s-bit.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{write-permissions}
+@cindex write-permissions
+新しいファイルを書き込むときは読み書きの権限が付く。unix ではマスクの値は 0666 に umask を適用させたものになる。Vim で開いたファイルに書き込むときは権限は維持されるが、s ビットはクリアされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*write-readonly*
+When the 'cpoptions' option contains 'W', Vim will refuse to overwrite a
+readonly file.  When 'W' is not present, ":w!" will overwrite a readonly file,
+if the system allows it (the directory must be writable).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{write-readonly}
+@cindex write-readonly
+オプション '@option{cpoptions}' の値にフラグ '@var{W}' が含まれるときは、Vim は読み込み専用ファイルの上書きを拒否する。'@var{W}' が含まれないと、システムが許可すれば (ディレクトリは書き込み可能でなければならない) "@command{:w!}" は読込専用ファイルを上書きする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*write-fail*
+If the writing of the new file fails, you have to be careful not to lose
+your changes AND the original file.  If there is no backup file and writing
+the new file failed, you have already lost the original file!  DON'T EXIT VIM
+UNTIL YOU WRITE OUT THE FILE!  If a backup was made, it is put back in place
+of the original file (if possible).  If you exit Vim, and lose the changes
+you made, the original file will mostly still be there.  If putting back the
+original file fails, there will be an error message telling you that you
+lost the original file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{write-fail}
+@cindex write-fail
+新ファイルの書き込みに失敗したときは、変更点と元のファイルを同時に失わないよう注意しなければならない。バックアップファイルがないときに書き込みに失敗すると、その時点で元のファイルはなくなっているのだ！ファイルを書き出すまで VIM を終了してはいけない！バックアップが作られていたら、それが元のファイルの所に戻される (可能ならば)。Vim を終了して変更点が失われても、大抵は元のファイルはそこに残っている。Vim が元のファイルを戻すのに失敗すると、元のファイルが失われた旨のエラーメッセージが出る。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*DOS-format-write*
+If the 'fileformat' is "dos", <CR> <NL> is used for <EOL>.  This is default
+for MS-DOS, Win32 and OS/2.  On other systems the message "[dos format]" is
+shown to remind you that an unusual <EOL> was used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{DOS-format-write}
+@cindex DOS-format-write
+オプション '@option{fileformat}' の値が "@var{dos}" のときは、<EOL> には <CR> <NL> が使われる。これは MS-DOS, Win32 と OS/2 での既定値である。その他のシステムでは "[dos format]" というメッセージが表示され、普通でない <EOL> が使われていることを知らせてくれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*Unix-format-write*
+If the 'fileformat' is "unix", <NL> is used for <EOL>.  On MS-DOS, Win32 and
+OS/2 the message "[unix format]" is shown.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{Unix-format-write}
+@cindex Unix-format-write
+'@option{fileformat}' の値が "@var{unix}" のときは、<EOL> には <NL> が使われる。MS-DOS, Win32 と OS/2 では "[unix format]" というメッセージが表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*Mac-format-write*
+If the 'fileformat' is "mac", <CR> is used for <EOL>.  On non-Mac systems the
+message "[mac format]" is shown.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{Mac-format-write}
+@cindex Mac-format-write
+'@option{fileformat}' の値が "@var{mac}" のときは、<EOL> には <CR> が使われる。Mac 以外のシステムでは "[mac format]" というメッセージが表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See also |file-formats| and the 'fileformat' and 'fileformats' options.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|file-formats| やオプション '@option{fileformat}' 及び '@option{fileformats}' も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*ACL*
+ACL stands for Access Control List.  It is an advanced way to control access
+rights for a file.  It is used on new MS-Windows and Unix systems, but only
+when the filesystem supports it.
+   Vim attempts to preserve the ACL info when writing a file.  The backup file
+will get the ACL info of the original file.
+   The ACL info is also used to check if a file is read-only (when opening the
+file).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ACL}
+@cindex ACL
+ACL は Access Control List を表す。これはファイルのアクセス権を制御するための先進的な手段である。新しい MS-Windows と Unix システムで使われるが、ファイルシステムがそれをサポートするときのみである。
+
+Vim はファイルを書き込むときに ACL 情報を保とうとする。バックアップファイルは元のファイルの ACL 情報を受け継ぐ。
+
+ACL 情報は (ファイルを開くときに) ファイルが読込専用かどうか調べるのにも使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*read-only-share*
+When MS-Windows shares a drive on the network it can be marked as read-only.
+This means that even if the file read-only attribute is absent, and the ACL
+settings on NT network shared drives allow writing to the file, you can still
+not write to the file.  Vim on Win32 platforms will detect read-only network
+drives and will mark the file as read-only.  You will not be able to override
+it with |:write|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{read-only-share}
+@cindex read-only-share
+MS-Windows がネットワーク上でドライブを共有するとき、そこは読込専用にすることができる。つまりファイルに読込専用の属性がなく、NC ネットワーク共有ドライブ上の ACL 設定が書き込みを許可していても、そのファイルには書き込みができない。Win32 プラットフォーム上の Vim は読込専用のネットワークドライブを判別し、ファイルを読込専用とマークする。そのファイルは |:write| で上書きできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*write-device*
+When the file name is actually a device name, Vim will not make a backup (that
+would be impossible).  You need to use "!", since the device already exists.
+Example for Unix: >
+	:w! /dev/lpt0
+and for MS-DOS or MS-Windows: >
+	:w! lpt0
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{write-device}
+@cindex write-device
+ファイル名が実際はデバイス名のとき、Vim はバックアップを作ろうとはしない (無理な話だ)。デバイスは既に存在するので、保存にはフラグ "!" が必要である。
+
+Unixでの例:
+@example
+:w! /dev/lpt0
+@end example
+MS-DOS や MS-Windows での例:
+@example
+:w! lpt0
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+For Unix a device is detected when the name doesn't refer to a normal file or
+a directory.  A fifo or named pipe also looks like a device to Vim.
+For MS-DOS and MS-Windows the device is detected by its name:
+	AUX
+	CON
+	CLOCK$
+	NUL
+	PRN
+	COMn	n=1,2,3... etc
+	LPTn	n=1,2,3... etc
+The names can be in upper- or lowercase.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unix では、ファイル名が通常ファイルやディレクトリを指していないときにデバイスと判断される。Vim は Fifo 及び名前付きパイプもデバイスと判断する。
+
+MS-DOS と MS-Windows では、デバイスは名前から判断される:
+@verbatim
+AUX
+CON
+CLOCK$
+NUL
+PRN
+COMn	n=1,2,3... 等
+LPTn	n=1,2,3... 等
+@end verbatim
+ファイル名は大文字でも小文字でもよい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Writing and quitting					*write-quit*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{write-quit}
+@cindex write-quit
+@unnumberedsubsec 5. 書き込みと終了
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:q* *:quit*
+:q[uit]			Quit the current window.  Quit Vim if this is the last
+			window.  This fails when changes have been made and
+			Vim refuses to |abandon| the current buffer, and when
+			the last file in the argument list has not been
+			edited.
+			If there are other tab pages and quitting the last
+			window in the current tab page the current tab page is
+			closed |tab-page|.
+			Triggers the |QuitPre| autocommand event.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:q}
+@anchor{:quit}
+@cindex :q
+@cindex :quit
+@table @asis
+@item :q[uit]
+カレントウィンドウを閉じる。最後のウィンドウで使うと Vim を終了させる。変更点があってVimがカレントバッファを放棄 |abandon| しようとしないときや、引数リストの最後のファイルが編集されていないときは失敗する。
+
+他のタブページが存在するとき、カレントタブページ内の最後のウィンドウを閉じるとカレントタブページが閉じられる。|tab-page|
+
+|QuitPre| オートコマンドイベントが発行される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:conf[irm] q[uit]	Quit, but give prompt when changes have been made, or
+			the last file in the argument list has not been
+			edited.  See |:confirm| and 'confirm'.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :conf[irm] q[uit]
+終了だが、変更点があるときや、引数リスト内で末尾にないファイルを編集しているときにはプロンプトを表示する。コマンド |:confirm| やオプション '@option{confirm}' を参照。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:q[uit]!		Quit without writing, also when the current buffer has
+			changes.  The buffer is unloaded, also when it has
+			'hidden' set.
+			If this is the last window and there is a modified
+			hidden buffer, the current buffer is abandoned and the
+			first changed hidden buffer becomes the current
+			buffer.
+			Use ":qall!" to exit always.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :q[uit]!
+現在のバッファに変更点があっても、書き込まずに Vim を終了する。バッファは、'hidden' が設定されているときにも読み込まれない。
+
+そのウィンドウが最後の 1 つで、変更点のある隠しバッファがある場合には、終了せずにカレントバッファを破棄したあとで、最初の変更点がある隠しバッファを新たな現在のバッファとする。
+
+必ず終了するにはコマンド "@command{:qall!}" を使うこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:cq[uit]		Quit always, without writing, and return an error
+			code.  See |:cq|.  Used for Manx's QuickFix mode (see
+			|quickfix|).  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :cq[uit]
+書き込みをせずに必ず終了し、エラーコードを返す。コマンド |:cq| を参照。Manx の QuickFix モードで使われる (|quickfix| を参照)。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:wq*
+:wq [++opt]		Write the current file and quit.  Writing fails when
+			the file is read-only or the buffer does not have a
+			name.  Quitting fails when the last file in the
+			argument list has not been edited.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:wq}
+@cindex :wq
+@item :wq [++opt]
+カレントファイルを書き込んで Vim を終了する。ファイルが読込専用であるときや、バッファに名前が付いていないときには書き込みに失敗する。引数リスト内の末尾のファイルがまだ編集されていないときには終了に失敗する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:wq! [++opt]		Write the current file and quit.  Writing fails when
+			the current buffer does not have a name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :wq! [++opt]
+カレントファイルを書き込んで Vim を終了する。バッファに名前が付いていないときには書き込みに失敗する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:wq [++opt] {file}	Write to {file} and quit.  Quitting fails when the
+			last file in the argument list has not been edited.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :wq [++opt] @{file@}
+@{file@} に書き込んで Vim を終了する。引数リスト内の末尾のファイルがまだ編集されていないときには終了に失敗する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:wq! [++opt] {file}	Write to {file} and quit.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :wq! [++opt] @{file@}
+@{file@} に書き込んで Vim を終了する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[range]wq[!] [++opt] [file]
+			Same as above, but only write the lines in [range].
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[range]wq[!] [++opt] [file]
+上と同様だが、[range] の範囲内の行のみを書き込む。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:x* *:xit*
+:[range]x[it][!] [++opt] [file]
+			Like ":wq", but write only when changes have been
+			made.
+			When 'hidden' is set and there are more windows, the
+			current buffer becomes hidden, after writing the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:x}
+@anchor{:xit}
+@cindex :x
+@cindex :xit
+@item :[range]x[it][!] [++opt] [file]
+|:wq| と似ているが、変更点があるときのみ書き込む。オプション '@option{hidden}' がオンで複数のウィンドウが存在するとき、ファイルを書き込んだ後はカレントバッファは隠れバッファになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:exi* *:exit*
+:[range]exi[t][!] [++opt] [file]
+			Same as :xit.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:exi}
+@anchor{:exit}
+@cindex :exi
+@cindex :exit
+@item :[range]exi[t][!] [++opt] [file]
+|:xit| と同様。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*ZZ*
+ZZ			Write current file, if modified, and quit (same as
+			":x").  (Note: If there are several windows for the
+			current file, the file is written if it was modified
+			and the window is closed).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ZZ}
+@cindex ZZ
+@item ZZ
+変更点があればカレントファイルを書き込み、Vim を終了する (コマンド |:x| と同様)。
+
+@quotation
+@strong{Note:} @*
+カレントファイルを複数のウィンドウで開いているときは、ファイルに変更点があれば書き込まれ、そしてウィンドウが閉じられることに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*ZQ*
+ZQ			Quit without checking for changes (same as ":q!").
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ZQ}
+@cindex ZQ
+@item ZQ
+変更点を確かめずに終了する (コマンド "@command{:q!}" と同様)。
+
+@{Vi にはない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+MULTIPLE WINDOWS AND BUFFERS				*window-exit*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{window-exit}
+@cindex window-exit
+@unnumberedsubsubsec 複数のウィンドウとバッファ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:qa* *:qall*
+:qa[ll]		Exit Vim, unless there are some buffers which have been
+		changed.  (Use ":bmod" to go to the next modified buffer).
+		When 'autowriteall' is set all changed buffers will be
+		written, like |:wqall|. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:qa}
+@anchor{:qall}
+@cindex :qa
+@cindex :qall
+@table @asis
+@item :qa[ll]
+変更点のあるバッファがない限り、Vim を終了する (変更点のある次のバッファに移動するにはコマンド "@command{:bmod}" を使うこと)。オプション '@option{autowriteall}' がオンのときは、|:wqall| と同様に変更点のあるバッファが全て書き込まれる。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:conf[irm] qa[ll]
+		Exit Vim.  Bring up a prompt when some buffers have been
+		changed.  See |:confirm|. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :conf[irm] qa[ll]
+Vim を終了する。変更点のあるバッファがあるときはプロンプトを表示する。コマンド |:confirm| を参照すること。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:qa[ll]!	Exit Vim.  Any changes to buffers are lost. {not in Vi}
+		Also see |:cquit|, it does the same but exits with a non-zero
+		value.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :qa[ll]!
+Vim を終了する。バッファの変更点は全て失われる。
+
+@{Vi にはない@}
+
+終了コードを非ゼロにしたい場合は |:cquit| を使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:quita* *:quitall*
+:quita[ll][!]	Same as ":qall". {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:quita}
+@anchor{:quitall}
+@cindex :quita
+@cindex :quitall
+@item :quita[ll][!]
+コマンド |:qall| と同様。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:wqa[ll] [++opt]				*:wqa* *:wqall* *:xa* *:xall*
+:xa[ll]		Write all changed buffers and exit Vim.  If there are buffers
+		without a file name, which are readonly or which cannot be
+		written for another reason, Vim will not quit. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:wqa}
+@anchor{:wqall}
+@anchor{:xa}
+@anchor{:xall}
+@cindex :wqa
+@cindex :wqall
+@cindex :xa
+@cindex :xall
+@item :wqa[ll] [++opt] or :xa[ll]
+変更点のあるバッファを全て書き込み、Vim を終了する。ファイル名のないバッファや読込専用または何らかの理由で書き込めないバッファがあるときは、Vim を終了しない。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:conf[irm] wqa[ll] [++opt]
+:conf[irm] xa[ll]
+		Write all changed buffers and exit Vim.  Bring up a prompt
+		when some buffers are readonly or cannot be written for
+		another reason.  See |:confirm|. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :conf[irm] wqa[ll] [++opt] or :conf[irm] xa[ll]
+変更点のあるバッファを全て書き込み、Vim を終了する。読込専用または何らかの理由で書き込めないバッファがあるときは、プロンプトを表示する。コマンド |:confirm| を参照。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:wqa[ll]! [++opt]
+:xa[ll]!	Write all changed buffers, even the ones that are readonly,
+		and exit Vim.  If there are buffers without a file name or
+		which cannot be written for another reason, Vim will not quit.
+		{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :wqa[ll]! [++opt] or :xa[ll]!
+変更点のあるバッファを、読込専用であっても全て書き込み、Vim を終了する。ファイル名のないバッファや何らかの理由で書き込めないバッファがあるときは、Vim を終了しない。
+
+@{Vi にはない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Dialogs						*edit-dialogs*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{edit-dialogs}
+@cindex edit-dialogs
+@unnumberedsubsec 6. ダイアログ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:confirm* *:conf*
+:conf[irm] {command}	Execute {command}, and use a dialog when an
+			operation has to be confirmed.  Can be used on the
+			|:q|, |:qa| and |:w| commands (the latter to override
+			a read-only setting), and any other command that can
+			fail in such a way, such as |:only|, |:buffer|,
+			|:bdelete|, etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:confirm}
+@anchor{:conf}
+@cindex :confirm
+@cindex :conf
+@table @asis
+@item :conf[irm] @{command@}
+@{command@} を実行する際、確認が必要ならばダイアログを表示する。コマンド |:q|, |:qa| や |:w| あるいは、|:only|, |:buffer|, |:bdelete| など、同様に失敗しうるコマンドと共に使える(|:w| では読み取り専用属性を無視するかどうかを尋ねる)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples: >
+  :confirm w foo
+<	Will ask for confirmation when "foo" already exists. >
+  :confirm q
+<	Will ask for confirmation when there are changes. >
+  :confirm qa
+<	If any modified, unsaved buffers exist, you will be prompted to save
+	or abandon each one.  There are also choices to "save all" or "abandon
+	all".
+
+If you want to always use ":confirm", set the 'confirm' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:confirm w foo
+@end example
+ファイル "foo" が既に存在するときに確認を取る。
+@example
+:confirm q
+@end example
+バッファに修正個所があるときに確認を取る。
+@example
+:confirm qa
+@end example
+修正個所があり、保存されていないバッファがあるとき、各バッファについて保存するか破棄するか尋ねる。「全て保存」や「全て破棄」という選択肢もある。
+
+常に "@command{:confirm}" を使いたいなら、代わりにオプション '@option{confirm}' をオンにすること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			*:browse* *:bro* *E338* *E614* *E615* *E616*
+:bro[wse] {command}	Open a file selection dialog for an argument to
+			{command}.  At present this works for |:e|, |:w|,
+			|:wall|, |:wq|, |:wqall|, |:x|, |:xall|, |:exit|,
+			|:view|, |:sview|, |:r|, |:saveas|, |:sp|, |:mkexrc|,
+			|:mkvimrc|, |:mksession|, |:mkview|, |:split|,
+			|:vsplit|, |:tabe|, |:tabnew|, |:cfile|, |:cgetfile|,
+			|:caddfile|, |:lfile|, |:lgetfile|, |:laddfile|,
+			|:diffsplit|, |:diffpatch|, |:open|, |:pedit|,
+			|:redir|, |:source|, |:update|, |:visual|, |:vsplit|,
+			and |:qall| if 'confirm' is set.
+			{only in Win32, Athena, Motif, GTK and Mac GUI}
+			When ":browse" is not possible you get an error
+			message.  If the |+browse| feature is missing or the
+			{command} doesn't support browsing, the {command} is
+			executed without a dialog.
+			":browse set" works like |:options|.
+			See also |:oldfiles| for ":browse oldfiles".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:browse}
+@anchor{:bro}
+@anchor{E338}
+@anchor{E614}
+@anchor{E615}
+@anchor{E616}
+@cindex :browse
+@cindex :bro
+@cindex E338
+@cindex E614
+@cindex E615
+@cindex E616
+@item :bro[wse] @{command@}
+@{command@} の引数のためにファイル選択ダイアログを開く。現在の所、これらのコマンドと共に使える |:e|, |:w|, |:wall|, |:wq|, |:wqall|, |:x|, |:xall|, |:exit|, |:view|, |:sview|, |:r|, |:saveas|, |:sp|, |:mkexrc|, |:mkvimrc|, |:mksession|, |:mkview|, |:split|, |:vsplit|, |:tabe|, |:tabnew|, |:cfile|, |:cgetfile|, |:caddfile|, |:lfile|, |:lgetfile|, |:laddfile|, |:diffsplit|, |:diffpatch|, |:open|, |:pedit|, |:redir|, |:source|, |:update|, |:visual|, |:vsplit|, '@option{confirm}' がオンのときは |:qall| も。
+
+@{Vim の Win32 版、Motif、Athena、GTK や Mac の GUI 版でのみ利用可能。@}
+
+|:browse| が使えない時はエラーが表示される。|+browse| の機能がなかったり、@{command@} が :browse に対応していない場合、@{command@} はダイアログなしで実行される。":browse oldfiles" については |:oldfiles| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The syntax is best shown via some examples: >
+	:browse e $vim/foo
+<		Open the browser in the $vim/foo directory, and edit the
+		file chosen. >
+	:browse e
+<		Open the browser in the directory specified with 'browsedir',
+		and edit the file chosen. >
+	:browse w
+<		Open the browser in the directory of the current buffer,
+		with the current buffer filename as default, and save the
+		buffer under the filename chosen. >
+	:browse w C:/bar
+<		Open the browser in the C:/bar directory, with the current
+		buffer filename as default, and save the buffer under the
+		filename chosen.
+Also see the |'browsedir'| option.
+For versions of Vim where browsing is not supported, the command is executed
+unmodified.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使用法については、例をいくつか見るのが一番分かりやすい。
+@example
+:browse e $vim/foo
+@end example
+ファイル選択ダイアログをディレクトリ $vim/foo 内で開き、選択されたファイルを編集する。
+@example
+:browse e
+@end example
+ファイル選択ダイアログを '@option{browsedir}' で指定されたディレクトリ内で開き、選択されたファイルを編集する。
+@example
+:browse w
+@end example        
+ファイル選択ダイアログをカレントファイルのディレクトリ内で、カレントファイルの名前を既定値として開き、選択されたファイル名を使ってバッファを保存する。
+@example
+:browse w C:/bar
+@end example
+ファイル選択ダイアログをディレクトリ C:/bar 内で、カレントファイルの名前を既定値として開き、選択されたファイル名を使ってバッファを保存する。
+
+オプション '@option{browsedir}' も参照すること。
+
+Vim のファイル選択ダイアログをサポートしないバージョンでは、コマンドはそのまま実行される。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*browsefilter*
+For MS Windows and GTK, you can modify the filters that are used in the browse
+dialog.  By setting the g:browsefilter or b:browsefilter variables, you can
+change the filters globally or locally to the buffer.  The variable is set to
+a string in the format "{filter label}\t{pattern};{pattern}\n" where {filter
+label} is the text that appears in the "Files of Type" comboBox, and {pattern}
+is the pattern which filters the filenames.  Several patterns can be given,
+separated by ';'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{browsefilter}
+@cindex browsefilter
+MS-Windows と GTK では、ファイル選択ダイアログで使われるフィルタを指定できる。グローバル変数 g:browsefilter かローカル変数 b:browsefilter を設定すると、フィルタをグローバルにまたはバッファについてローカルに変更できる。この変数を指定する際の書式は "@{filter label@}\t@{pattern@};@{pattern@}\n" で、@{filter label@} はコンボボックス「ファイルの種類」に使われるテキスト、@{pattern@} はファイル名を選別するフィルタである。';' で区切れば複数のパターンを指定できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For Motif the same format is used, but only the very first pattern is actually
+used (Motif only offers one pattern, but you can edit it).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Motif 上の Vim では同じ書式が使えるが、実際には 1 番目のパターンだけが使われる (Motif ではパターンは 1 種類しか使えないが、それをユーザーが編集できる)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, to have only Vim files in the dialog, you could use the following
+command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えばダイアログで Vim 関連ファイルだけを表示するには、以下のコマンドを使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+     let g:browsefilter = "Vim Scripts\t*.vim\nVim Startup Files\t*vimrc\n"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+let g:browsefilter = "Vim Scripts\t*.vim\nVim Startup Files\t*vimrc\n"
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can override the filter setting on a per-buffer basis by setting the
+b:browsefilter variable.  You would most likely set b:browsefilter in a
+filetype plugin, so that the browse dialog would contain entries related to
+the type of file you are currently editing.  Disadvantage: This makes it
+difficult to start editing a file of a different type.  To overcome this, you
+may want to add "All Files\t*.*\n" as the final filter, so that the user can
+still access any desired file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+フィルタは、変数 b:browsefilter を設定することでバッファ毎に設定できる。b:browsefilter はファイルタイププラグインで設定することが一番多いだろう。するとファイルブラウザーダイアログには現在編集中のファイルのタイプに関連した候補が表示される。弊害: 別の種類のファイルの編集が始め辛くなる。対策は、フィルタの最後の項目に "All Files\t*.*\n" を加え、ユーザーが望みのファイルにアクセスできる道を残すことだ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To avoid setting browsefilter when Vim does not actually support it, you can
+use has("browsefilter"): >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が browsefilter をサポートしていないときにそれを設定しないようにするには、has("browsefilter") が使える:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if has("browsefilter")
+	   let g:browsefilter = "whatever"
+	endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if has("browsefilter")
+let g:browsefilter = "whatever"
+endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. The current directory				*current-directory*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{current-directory}
+@cindex current-directory
+@unnumberedsubsec 7. カレントディレクトリ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You may use the |:cd| and |:lcd| commands to change to another directory, so
+you will not have to type that directory name in front of the file names.  It
+also makes a difference for executing external commands, e.g. ":!ls".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンド |:cd| や |:lcd| を使って別のディレクトリに移ることができる。すると @{訳注: そのディレクトリ内のファイルを編集するとき@} そのディレクトリ名をファイル名の前に付けなくても良くなる。また違いは ":!ls" 等の外部コマンドの実行の際にも現れる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Changing directory fails when the current buffer is modified, the '.' flag is
+present in 'cpoptions' and "!" is not used in the command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{cpoptions}' にフラグ '.' が含まれている場合、カレントバッファが変更されていると、"!" をつけない限りディレクトリ変更は失敗する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cd* *E747* *E472*
+:cd[!]			On non-Unix systems: Print the current directory
+			name.  On Unix systems: Change the current directory
+			to the home directory.  Use |:pwd| to print the
+			current directory on all systems.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cd}
+@anchor{E747}
+@anchor{E472}
+@cindex :cd
+@cindex E747
+@cindex E472
+@table @asis
+@item :cd[!]
+Unix 以外のシステムでは: カレントディレクトリ名を表示する。Unix システムでは: カレントディレクトリをホームディレクトリに変更する。全てのシステムで、カレントディレクトリの表示にはコマンド |:pwd| が使える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:cd[!] {path}		Change the current directory to {path}.
+			If {path} is relative, it is searched for in the
+			directories listed in |'cdpath'|.
+			Does not change the meaning of an already opened file,
+			because its full path name is remembered.  Files from
+			the |arglist| may change though!
+			On MS-DOS this also changes the active drive.
+			To change to the directory of the current file: >
+				:cd %:h
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :cd[!] @{path@}
+カレントディレクトリを @{path@} に変更する。@{path@} が相対的な指定なら、オプション '@option{cdpath}' 内に列挙されたディレクトリを基準に判断される。
+
+既に開かれたファイルについては、フルパスが把握されているので変化はない。しかし引数リスト |arglist| 内のファイルの意味は変わるかもしれない！
+
+MS-DOS ではアクティブなドライブも変更する。カレントファイルのディレクトリに移るにはこうする。
+@example
+:cd %:h
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:cd-* *E186*
+:cd[!] -		Change to the previous current directory (before the
+			previous ":cd {path}" command). {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cd-}
+@anchor{E186}
+@cindex :cd-
+@cindex E186
+@item :cd[!] -
+前のカレントディレクトリ (前にコマンド "@command{:cd @{path@}}" で移った所) に移る。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:chd* *:chdir*
+:chd[ir][!] [path]	Same as |:cd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:chd}
+@anchor{:chdir}
+@cindex :chd
+@cindex :chdir
+@item :chd[ir][!] [path]
+コマンド |:cd| と同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lc* *:lcd*
+:lc[d][!] {path}	Like |:cd|, but only set the current directory for the
+			current window.  The current directory for other
+			windows is not changed. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lc}
+@anchor{:lcd}
+@cindex :lc
+@cindex :lcd
+@item :lc[d][!] @{path@}
+コマンド |:cd| と似ているが、カレントウィンドウのカレントディレクトリのみを変更する。別のウィンドウのカレントディレクトリに変化はない。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lch* *:lchdir*
+:lch[dir][!]		Same as |:lcd|. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lch}
+@anchor{:lchdir}
+@cindex :lch
+@cindex :lchdir
+@item :lch[dir][!]
+|:lcd| と同じ。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:pw* *:pwd* *E187*
+:pw[d]			Print the current directory name.  {Vi: no pwd}
+			Also see |getcwd()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:pw}
+@anchor{:pwd}
+@anchor{E187}
+@cindex :pw
+@cindex :pwd
+@cindex E187
+@item :pw[d]
+カレントディレクトリ名を表示する。
+
+@{Vi: pwdはない@}
+
+|getcwd()| も参照。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+So long as no |:lcd| command has been used, all windows share the same current
+directory.  Using a command to jump to another window doesn't change anything
+for the current directory.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンド |:lcd| が使われない限り、全てのウィンドウは同じカレントディレクトリを共有する。別のウィンドウに移るコマンドを使ってもカレントディレクトリについての変化は何もない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When a |:lcd| command has been used for a window, the specified directory
+becomes the current directory for that window.  Windows where the |:lcd|
+command has not been used stick to the global current directory.  When jumping
+to another window the current directory will become the last specified local
+current directory.  If none was specified, the global current directory is
+used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンド |:lcd| があるウィンドウ内で使われると、指定されたディレクトリがそのウィンドウに対してのカレントディレクトリになる。コマンド |:lcd| が使われたことのないウィンドウはグローバルなカレントディレクトリを使い続ける。別のウィンドウに移ったときは、カレントディレクトリは @{訳注: 移動先に対して@} 最後に指定されたローカルなカレントディレクトリになる。何も指定されていなかったら、グローバルなカレントディレクトリが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When a |:cd| command is used, the current window will lose his local current
+directory and will use the global current directory from now on.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンド |:cd| が使われると、カレントウィンドウは固有のローカルなカレントディレクトリを失い、グローバルなカレントディレクトリを使うようになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+After using |:cd| the full path name will be used for reading and writing
+files.  On some networked file systems this may cause problems.  The result of
+using the full path name is that the file names currently in use will remain
+referring to the same file.  Example: If you have a file a:test and a
+directory a:vim the commands ":e test" ":cd vim" ":w" will overwrite the file
+a:test and not write a:vim/test.  But if you do ":w test" the file a:vim/test
+will be written, because you gave a new file name and did not refer to a
+filename before the ":cd".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:cd| を使った後は、ファイルの読み書きにはフルパス名が使われる。ネットワーク接続されたファイルシステムではこれが問題を起こすことがある。フルパス名を使った結果、現在使用中のファイル名は同じファイルを指し続けることになる。例: ファイル a:test とディレクトリ a:vim があるとき、":e test" ":cd vim" ":w" とするとファイル a:test を上書きし、a:vim/test には書き込まない。しかし ":w test" とするとファイル a:vim/test が書き込まれる。それは新しいファイル名が指定され、":cd" 以前のファイル名には言及してないからだ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+8. Editing binary files					*edit-binary*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{edit-binary}
+@cindex edit-binary
+@unnumberedsubsec 8. バイナリファイルの編集
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Although Vim was made to edit text files, it is possible to edit binary
+files.  The |-b| Vim argument (b for binary) makes Vim do file I/O in binary
+mode, and sets some options for editing binary files ('binary' on, 'textwidth'
+to 0, 'modeline' off, 'expandtab' off).  Setting the 'binary' option has the
+same effect.  Don't forget to do this before reading the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はテキストファイルの編集のために作られたが、バイナリファイルを編集することもできる。Vimの引数 |-b| (バイナリ "binary" の 'b') は Vim にファイル入出力をバイナリモードで行わせ、バイナリファイルの編集のためにいくつかのオプションを設定する ('@option{binary}' をオン、'@option{textwidth}' を 0、'@option{modeline}' をオフ、'@option{expandtab}' をオフにする)。オプション '@option{binary}' をオンにすることも同じ効果を持つ。これはファイルの読み込み前にするということを忘れてはならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are a few things to remember when editing binary files:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バイナリファイルを編集するときに忘れてはならないことがいくつかある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- When editing executable files the number of characters must not change.
+  Use only the "R" or "r" command to change text.  Do not delete characters
+  with "x" or by backspacing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item
+実行可能ファイルを編集するときには、文字数が変わってはならない。テキストを変更するには "R" か "r" だけを使用すること。"x" やバックスペースで文字を削除してはならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Set the 'textwidth' option to 0.  Otherwise lines will unexpectedly be
+  split in two.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+オプション '@option{textwidth}' の値を 0 に設定する。そうしないと行が不意に2つに分割されてしまう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- When there are not many <EOL>s, the lines will become very long.  If you
+  want to edit a line that does not fit on the screen reset the 'wrap' option.
+  Horizontal scrolling is used then.  If a line becomes too long (more than
+  about 32767 characters on the Amiga, much more on 32-bit systems, see
+  |limits|) you cannot edit that line.  The line will be split when reading
+  the file.  It is also possible that you get an "out of memory" error when
+  reading the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+<EOL> の数があまり多くないときは、1 行は非常に長くなる。スクリーンに収まりきらない行を編集したいならば、オプション '@option{wrap}' をオフにすること。その時には水平スクロールが使われる。行が余りにも長いならば (Amiga では約 32767 文字以上、32bit システムではそれ以上、|limits| を参照)、その行は編集できない。ファイルを読み込むときに、その行は分割される。ファイルを読み込むときに "out of memory" エラーが出る可能性もある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Make sure the 'binary' option is set BEFORE loading the
+  file.  Otherwise both <CR> <NL> and <NL> are considered to end a line
+  and when the file is written the <NL> will be replaced with <CR> <NL>.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+ファイルを読み込む前にオプション '@option{binary}' がオンになっていることを確かめること。さもないと <CR> <NL> と <NL> の両方が行末とみなされ、ファイルが保存されるときに <NL> が <CR> <NL> で置き換えられてしまう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- <Nul> characters are shown on the screen as ^@.  You can enter them with
+  "CTRL-V CTRL-@" or "CTRL-V 000" {Vi cannot handle <Nul> characters in the
+  file}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+<Nul> 文字はスクリーンでは ^@ として表示される。それは "CTRL-V CTRL-@@" か "CTRL-V 000" で入力できる。
+
+@{Vi ファイル内で <Nul> 文字を扱えない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- To insert a <NL> character in the file split a line.  When writing the
+  buffer to a file a <NL> will be written for the <EOL>.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+<NL> 文字を挿入すると、行が分割される。バッファをファイルに保存するときには、<NL> が <EOL> として保存される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Vim normally appends an <EOL> at the end of the file if there is none.
+  Setting the 'binary' option prevents this.  If you want to add the final
+  <EOL>, set the 'endofline' option.  You can also read the value of this
+  option to see if there was an <EOL> for the last line (you cannot see this
+  in the text).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+ファイルの終わりに <EOL> が一つもないとき、通常 Vim はそれを追加する。これを防ぐにはオプション '@option{binary}' をオンにすること。最後の <EOL> を追加したいならば、オプション '@option{endofline}' をオンにする。最後の行に <EOL> があったかどうかを知るためにこのオプションの値を見てもよい (テキストからは判断できない)。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+9. Encryption						*encryption*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{encryption}
+@cindex encryption
+@unnumberedsubsec 9. 暗号化
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim is able to write files encrypted, and read them back.  The encrypted text
+cannot be read without the right key.
+{only available when compiled with the |+cryptv| feature}  *E833*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はファイルを暗号化して保存し、再び読み取ることができる。暗号化されたテキストは正しい鍵がないと読むことができない。
+@anchor{E833}
+@cindex E833
+@{Vim が |+cryptv| 機能付きでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The text in the swap file and the undo file is also encrypted.  *E843*
+However, this is done block-by-block and may reduce the time needed to crack a
+password.  You can disable the swap file, but then a crash will cause you to
+lose your work.  The undo file can be disabled without much disadvantage. >
+	:set noundofile
+	:noswapfile edit secrets
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E843}
+@cindex E843
+スワップファイルやアンドゥファイル内のテキストも暗号化される。
+
+しかしながら、これはブロック単位で実行されるので、より少ない時間でパスワードがクラックされる可能性がある。スワップファイルを無効化することもできるが、クラッシュ時には作業内容が失われることになる。アンドゥファイルは無効化してもそれほどの不利益はない。
+@example
+:set noundofile
+:noswapfile edit secrets
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: The text in memory is not encrypted.  A system administrator may be able
+to see your text while you are editing it.  When filtering text with
+":!filter" or using ":w !command" the text is also not encrypted, this may
+reveal it to others.  The 'viminfo' file is not encrypted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+メモリ内のテキストは暗号化されない。ユーザーがテキストを編集している間、システム管理者はそれを見ることができる。"@command{:!filter}" や "@command{:w !command}" によってフィルタに通しているときもテキストは暗号化されておらず、他人に見られる可能性がある。'@option{viminfo}' ファイルは暗号化されない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You could do this to edit very secret text: >
+	:set noundofile viminfo=
+	:noswapfile edit secrets.txt
+Keep in mind that without a swap file you risk losing your work in the event
+of a crash or a power failure.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+機密テキストを編集するときは次のように設定するという手もある:
+@example
+:set noundofile viminfo=
+:noswapfile edit secrets.txt
+@end example
+スワップファイルを無効化するとクラッシュまたは停電の時に編集内容が失われてしまうので注意。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+WARNING: If you make a typo when entering the key and then write the file and
+exit, the text will be lost!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{警告:} @*
+鍵の入力時にタイプミスをしてファイルを保存し、Vim を終了すると、テキストは失われてしまう！
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The normal way to work with encryption, is to use the ":X" command, which will
+ask you to enter a key.  A following write command will use that key to
+encrypt the file.  If you later edit the same file, Vim will ask you to enter
+a key.  If you type the same key as that was used for writing, the text will
+be readable again.  If you use a wrong key, it will be a mess.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+暗号化を利用する通常の方法は、コマンド |:X| を使うことだ。これは鍵を入力するよう求める。次の保存コマンドでファイルを暗号化するためにその鍵が使われる。後で同じファイルを編集するときは、Vim は鍵の入力を求める。保存に使われたものと同じ鍵を打ち込むと、再びテキストを読み込むことができる。間違ったキーを使うと、テキストはめちゃめちゃになって表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:X*
+:X	Prompt for an encryption key.  The typing is done without showing the
+	actual text, so that someone looking at the display won't see it.
+	The typed key is stored in the 'key' option, which is used to encrypt
+	the file when it is written.  The file will remain unchanged until you
+	write it.  See also |-x|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:X}
+@cindex :X
+@table @asis
+@item :X
+暗号化キーを入力するよう求める。ディスプレイを見ている誰かが鍵を見ないように、打ち込むときには実際のテキストは表示されない。
+
+打ち込まれた鍵はオプション '@option{key}' に保存される。これはファイルを書き込むときの暗号化に使われる。Vim の引数 |-x| も参照。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The value of the 'key' options is used when text is written.  When the option
+is not empty, the written file will be encrypted, using the value as the
+encryption key.  A magic number is prepended, so that Vim can recognize that
+the file is encrypted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{key}' の値はテキストが書き込まれるときに使われる。値が空でないとき、書き込まれたファイルは、その値を鍵として暗号化されている。Vim がファイルが暗号化されていることを認識できるよう、ファイル先頭に特殊な数が付加される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To disable the encryption, reset the 'key' option to an empty value: >
+	:set key=
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+暗号化を無効にするには、オプション '@option{key}' に空の値を入れてリセットする。
+@example
+:set key=
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use the 'cryptmethod' option to select the type of encryption, use one
+of these: >
+	:setlocal cm=zip        " weak method, backwards compatible
+	:setlocal cm=blowfish   " method with flaws
+	:setlocal cm=blowfish2  " medium strong method
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{cryptmethod}' オプションを設定することで暗号化メソッドを選択できる。次の中から選択できる:
+@example
+:setlocal cm=zip        " 弱いメソッド。後方互換。
+:setlocal cm=blowfish   " 脆弱性ありのメソッド
+:setlocal cm=blowfish2  " 中強度のメソッド
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Do this before writing the file.  When reading an encrypted file it will be
+set automatically to the method used when that file was written.  You can
+change 'cryptmethod' before writing that file to change the method.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルを保存する前に設定する。暗号化されたファイルを読み込んだとき、このオプションは自動的にファイル保存時に使われたメソッドに設定される。ファイルを保存する前に '@option{cryptmethod}' を変更することで使用するメソッドを変更できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To set the default method, used for new files, use this in your |vimrc| 
+file: >
+	set cm=blowfish2
+Using "blowfish2" is highly recommended.  Only use another method if you
+must use an older Vim version that does not support it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しいファイルに使われるデフォルトのメソッドを設定したい場合は |vimrc| ファイルで次を設定すること:
+@example
+set cm=blowfish2
+@end example
+"blowfish2" の使用が強く推奨される。"blowfish2" をサポートしていない古いバージョンの Vim を使わなければならない場合のみ、他のメソッドを使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The message given for reading and writing a file will show "[crypted]" when
+using zip, "[blowfish]" when using blowfish, etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルを読み込んだり書き込んだりしたとき、zip なら "[crypted]"、blowfish なら "[blowfish]" とメッセージが表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When writing an undo file, the same key and method will be used for the text
+in the undo file. |persistent-undo|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+アンドゥファイルが保存されるとき、同じキーとメソッドがアンドゥファイル内のテキストに適用される。|persistent-undo|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To test for blowfish support you can use these conditions: >
+	has('crypt-blowfish')
+	has('crypt-blowfish2')
+This works since Vim 7.4.1099 while blowfish support was added earlier.
+Thus the condition failing doesn't mean blowfish is not supported. You can
+test for blowfish with: >
+	v:version >= 703
+And for blowfish2 with: >
+	v:version > 704 || (v:version == 704 && has('patch401'))
+If you are sure Vim includes patch 7.4.237 a simpler check is: >
+	has('patch-7.4.401')
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"blowfish" をサポートしているかどうかテストするには下記の条件を使う:
+@example
+has('crypt-blowfish')
+has('crypt-blowfish2')
+@end example
+上記の条件が利用できるのは Vim 7.4.1099 からであるが、"blowfish" のサポート自体はより古くからある。
+
+よって上記の条件が偽になったとしても "blowfish" をサポートしていることがある。"blowfish" を使えるかどうかは次の条件でテストできる:
+@example
+v:version >= 703
+@end example
+また "blowfish2" については次の条件でテストできる:
+@example
+v:version > 704 || (v:version == 704 && has('patch401'))
+@end example
+Vim にパッチ 7.4.237 が含まれていることが分かっているなら、次の条件で簡単にチェックできる:
+@example
+has('patch-7.4.401')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*E817* *E818* *E819* *E820*
+When encryption does not work properly, you would be able to write your text
+to a file and never be able to read it back.  Therefore a test is performed to
+check if the encryption works as expected.  If you get one of these errors
+don't write the file encrypted!  You need to rebuild the Vim binary to fix
+this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E817}
+@anchor{E818}
+@anchor{E819}
+@anchor{E820}
+@cindex E817
+@cindex E818
+@cindex E819
+@cindex E820
+暗号化が正しく機能しないと、保存したファイルが後で読めなくなってしまう。そのため、暗号化が期待したとおりに機能しているかどうかを確認するための検査が実行される。これらのエラーが表示されたときはファイルを暗号化して保存しないこと。これを直すためには Vim を再ビルドする必要があるだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+*E831* This is an internal error, "cannot happen".  If you can reproduce it,
+please report to the developers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+*E831* これは内部エラーで普通は発生しない。このエラーの再現手順を見つけた方は開発者へ連絡していただきたい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When reading a file that has been encrypted and the 'key' option is not empty,
+it will be used for decryption.  If the value is empty, you will be prompted
+to enter the key.  If you don't enter a key, or you enter the wrong key, the
+file is edited without being decrypted.  There is no warning about using the
+wrong key (this makes brute force methods to find the key more difficult).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+暗号化されたファイルを読み込んだとき、'@option{key}' オプションの値が空でなければその値が復号に使われる。空のときは入力プロンプトが表示される。キーを入力しないか間違ったキーを入力するとファイルは復号されずに開かれる。キーが間違っていても警告は表示されない (総当たり攻撃を難しくするため)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If want to start reading a file that uses a different key, set the 'key'
+option to an empty string, so that Vim will prompt for a new one.  Don't use
+the ":set" command to enter the value, other people can read the command over
+your shoulder.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+異なる鍵で暗号化したファイルの読み込みを始めたいときは、オプション '@option{key}' の値に空文字列を設定すること。すると Vim が新しい値の入力を求める。値の入力にコマンド "@command{:set}" を使ってはならない。他の人が肩越しにコマンドの入力を読むことができるからだ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Since the value of the 'key' option is supposed to be a secret, its value can
+never be viewed.  You should not set this option in a vimrc file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{key}' の値は秘密であることになっているので、その値は決して見られてはならない。vimrcファイル内でこのオプションを設定してはいけない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An encrypted file can be recognized by the "file" command, if you add these
+lines to "/etc/magic", "/usr/share/misc/magic" or wherever your system has the
+"magic" file: >
+     0	string	VimCrypt~	Vim encrypted file
+     >9	string	01	- "zip" cryptmethod
+     >9	string	02	- "blowfish" cryptmethod
+     >9	string	03	- "blowfish2" cryptmethod
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"/etc/magic", "/usr/share/misc/magic" 等、システムの持っている "magic" ファイルならどれでもよいが、下の行を追加すると、暗号化されたファイルが "file" コマンドに認識されるようになる:
+@verbatim
+0   string  VimCrypt~       Vim encrypted file
+>9  string  01      - "zip" cryptmethod
+>9  string  02      - "blowfish" cryptmethod
+>9  string  03      - "blowfish2" cryptmethod
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Notes:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Notes:}
+@itemize @minus
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Encryption is not possible when doing conversion with 'charconvert'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+オプション '@option{charconvert}' でコード変換をしているときには暗号化はできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Text you copy or delete goes to the numbered registers.  The registers can
+  be saved in the .viminfo file, where they could be read.  Change your
+  'viminfo' option to be safe.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+コピーや削除したテキストは番号付きレジスタに格納される。レジスタの内容は @file{.viminfo} ファイル内に保存できるが、ここからは読み出せるかもしれない。安全のためオプション '@option{viminfo}' を変更すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Someone can type commands in Vim when you walk away for a moment, he should
+  not be able to get the key.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+コンピュータからしばらく離れているときには誰かが Vim にコマンドを入力できるが、鍵を入手できるようになっていてはいけない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- If you make a typing mistake when entering the key, you might not be able to
+  get your text back!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+キーを入力しているときにタイプミスをすると、テキストを復元できなくなってしまうだろう！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- If you type the key with a ":set key=value" command, it can be kept in the
+  history, showing the 'key' value in a viminfo file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+コマンド "@command{:set key=value}" で鍵を入力すると、それは履歴の中に保存され、viminfo ファイル内に '@option{key}' の値を晒すことになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- There is never 100% safety.  The encryption in Vim has not been tested for
+  robustness.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+100 パーセント安全ということは決してない。Vim の暗号化は強度についてはテストされていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- The algorithm used for 'cryptmethod' "zip" is breakable.  A 4 character key
+  in about one hour, a 6 character key in one day (on a Pentium 133 PC).  This
+  requires that you know some text that must appear in the file.  An expert
+  can break it for any key.  When the text has been decrypted, this also means
+  that the key can be revealed, and other files encrypted with the same key
+  can be decrypted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+'@option{cryptmethod}' が "zip" のときに使用されるアルゴリズムは簡単に破れる。4 文字の鍵なら約1時間以内、6 文字の鍵なら1日以内で破れる (Pentium 133 PC で)。これにはファイル内に必ず現れるはずのテキストをいくつか知っている必要がある。暗号破りの熟練者はどのような鍵であっても破ることができる。テキストが復号化されたということは鍵も明らかになったということであり、同じ鍵で暗号化された他のテキストも復号化できてしまう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Pkzip uses the same encryption as 'cryptmethod' "zip", and US Govt has no
+  objection to its export.  Pkzip's public file APPNOTE.TXT describes this
+  algorithm in detail.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+Pkzip は '@option{cryptmethod}' の "zip" と同じ暗号化を用いており、合衆国政府はその輸出に対して異議を唱えていない。Pkzip の公開ファイル @file{APPNOTE.TXT} にはこのアルゴリズムが詳細に記述されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- The implementation of 'cryptmethod' "blowfish" has a flaw.  It is possible
+  to crack the first 64 bytes of a file and in some circumstances more of the
+  file. Use of it is not recommended, but it's still the strongest method
+  supported by Vim 7.3 and 7.4.  The "zip" method is even weaker.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+'@option{cryptmethod}' の "blowfish" の実装には脆弱性がある。ファイルの最初の 64 バイト (条件によってはもっと) はクラック可能である。これの使用は推奨されないが、Vim 7.3 と 7.4 でサポートされている中ではそれが一番強度のあるメソッドである。"zip" メソッドはさらに弱い。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Vim originates from the Netherlands.  That is where the sources come from.
+  Thus the encryption code is not exported from the USA.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+Vim はオランダに起源を持つ。そこがソースの出処である。従って、暗号化コードはアメリカ合衆国から輸出されてはいない。
+@end itemize
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+10. Timestamps					*timestamp* *timestamps*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{timestamp}
+@anchor{timestamps}
+@cindex timestamp
+@cindex timestamps
+@unnumberedsubsec 10. タイムスタンプ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim remembers the modification timestamp, mode and size of a file when you
+begin editing it.  This is used to avoid that you have two different versions
+of the same file (without you knowing this).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は編集を始めたときのファイルの修正タイムスタンプとモードとサイズを覚えている。これは同じファイルの別のバージョンを (知らずに) 作ってしまうのを防ぐためである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+After a shell command is run (|:!cmd| |suspend| |:read!| |K|) timestamps,
+file modes and file sizes are compared for all buffers in a window.   Vim will
+run any associated |FileChangedShell| autocommands or display a warning for
+any files that have changed.  In the GUI this happens when Vim regains input
+focus.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+シェルコマンド (|:!cmd| |suspend| |:read!| |K|) の実行後、ウィンドウ内の全てのバッファでタイムスタンプとファイルモードとファイルサイズが比較される。Vim は変更を受けたファイルに関して、イベント |FileChangedShell| に関連付けられた任意の自動コマンドを実行するか、警告を表示する。GUI を使っているときは、それらは Vim に入力フォーカスが戻ってきたときに行われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E321* *E462*
+If you want to automatically reload a file when it has been changed outside of
+Vim, set the 'autoread' option.  This doesn't work at the moment you write the
+file though, only when the file wasn't changed inside of Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E321}
+@anchor{E462}
+@cindex E321
+@cindex E462
+ファイルが Vim の外部で変更を受けたときに自動的に読み直して欲しいなら、オプション '@option{autoread}' をオンにすること。しかしこれはファイルを書き込んだ時点では機能しない。ファイルが Vim 内部で変更されていないときだけだ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that if a FileChangedShell autocommand is defined you will not get a
+warning message or prompt.  The autocommand is expected to handle this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+イベント |FileChangedShell| に自動コマンドが定義されていると、警告メッセージやプロンプトは表示されない。その自動コマンドが対処するものとされている。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There is no warning for a directory (e.g., with |netrw-browse|).  But you do
+get warned if you started editing a new file and it was created as a directory
+later.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ディレクトリに関する警告はない (例えば |netrw-browse| で)。しかし新しいファイルの編集を始めた後、同名のディレクトリが作られたときには警告される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When Vim notices the timestamp of a file has changed, and the file is being
+edited in a buffer but has not changed, Vim checks if the contents of the file
+is equal.  This is done by reading the file again (into a hidden buffer, which
+is immediately deleted again) and comparing the text.  If the text is equal,
+you will get no warning.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルのタイムスタンプが変更されたことに Vim が気づいたとき、そのファイルがバッファ内で編集されているがまだ変更されていないならば、Vim はファイルの中身が同じかどうかを調べる。このためにはファイルを読み直し、テキストを比較する (隠れバッファに読み込むが、これはすぐに削除される)。内容が同じならば警告は出ない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you don't get warned often enough you can use the following command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動警告では足りないと思ったならば、以下のコマンドが使える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:checkt* *:checktime*
+:checkt[ime]		Check if any buffers were changed outside of Vim.
+			This checks and warns you if you would end up with two
+			versions of a file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:checkt}
+@anchor{:checktime}
+@cindex :checkt
+@cindex :checktime
+@table @asis
+@item :checkt[ime]
+Vim の外部で変更を受けたバッファがないかどうか調べる。これはファイルのバージョンが2個になってしまわないかどうかを調べ、警告する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			If this is called from an autocommand, a ":global"
+			command or is not typed the actual check is postponed
+			until a moment the side effects (reloading the file)
+			would be harmless.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これがオートコマンドや "@command{:global}" コマンドから呼ばれたときや、直に打ち込まれたのではないときは、実際に調べるのは副作用 (ファイルの再読み込み) が無害となる時点まで延期される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Each loaded buffer is checked for its associated file
+			being changed.  If the file was changed Vim will take
+			action.  If there are no changes in the buffer and
+			'autoread' is set, the buffer is reloaded.  Otherwise,
+			you are offered the choice of reloading the file.  If
+			the file was deleted you get an error message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+読み込まれているバッファそれぞれについて関連付けられたファイルが変更を受けていないか調べる。変更を受けていたら、Vim は対処動作を行う。すなわちバッファに変更点が無く、かつオプション '@option{autoread}' がオンのときは、バッファは読み直される。そうでなければ、ファイルを読み直すかどうかの選択肢が与えられる。ファイルが削除されていたら、エラーメッセージが表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			If the file previously didn't exist you get a warning
+			if it exists now.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以前には存在しなかったファイルが存在していたら、エラーメッセージが表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Once a file has been checked the timestamp is reset,
+			you will not be warned again.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一度ファイルが調べられるとタイムスタンプ情報が更新され、再び警告されることは無い。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]checkt[ime] {filename}
+:[N]checkt[ime] [N]
+			Check the timestamp of a specific buffer.  The buffer
+			may be specified by name, number or with a pattern.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[N]checkt[ime] @{filename@} or :[N]checkt[ime] [N]
+特定のバッファのタイムスタンプを調べる。バッファの指定は名前、番号またはパターンでもよい。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+							*E813* *E814*
+Vim will reload the buffer if you chose to.  If a window is visible that
+contains this buffer, the reloading will happen in the context of this window.
+Otherwise a special window is used, so that most autocommands will work.  You
+can't close this window.  A few other restrictions apply.  Best is to make
+sure nothing happens outside of the current buffer.  E.g., setting
+window-local options may end up in the wrong window.  Splitting the window,
+doing something there and closing it should be OK (if there are no side
+effects from other autocommands).  Closing unrelated windows and buffers will
+get you into trouble.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E813}
+@anchor{E814}
+@cindex E813
+@cindex E814
+ここでユーザーがバッファを再読み込みすることを選ぶと、再読み込みされる。そのバッファを含むウィンドウが表示されている場合、再読み込みはそのウィンドウの中で行われる。そのようなウィンドウがなければ、オートコマンドが正常に動作するよう、特殊なウィンドウが使われる。このウィンドウを閉じることはできない。他にもいくつかの制限が適用される。カレントバッファの外では何も起こらないようにするのがベストである。例えば、ウィンドウローカルなオプションをセットすると、間違ったウィンドウの中でセットされてしまう。ウィンドウを分割し、そこで何かをして、閉じることは大丈夫である(他のオートコマンドによる副作用が何もなければ)。無関係なウィンドウやバッファを閉じると問題を引き起こすだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Before writing a file the timestamp is checked.  If it has changed, Vim will
+ask if you really want to overwrite the file:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+書き込み前にはタイムスタンプが調べられる。もし変更されていたら、Vim はそのファイルを本当に上書きするかどうかを尋ねる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	WARNING: The file has been changed since reading it!!!
+	Do you really want to write to it (y/n)?
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{警告:} @*
+読込んだ後にファイルに変更がありました！！！本当に上書きしますか (y/n)？
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you hit 'y' Vim will continue writing the file.  If you hit 'n' the write is
+aborted.  If you used ":wq" or "ZZ" Vim will not exit, you will get another
+chance to write the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'y' を打ち込むと、Vim は続けて書き込みを行う。'n' を打ち込むと、書き込みは中止される。コマンド ":wq" や "ZZ" を使った場合には Vim は終了せず、書き込む機会が再び得られる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The message would normally mean that somebody has written to the file after
+the edit session started.  This could be another person, in which case you
+probably want to check if your changes to the file and the changes from the
+other person should be merged.  Write the file under another name and check for
+differences (the "diff" program can be used for this).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+普通、メッセージは編集セッションが始まった後に誰かがファイルに書き込んだことを示している。それは別の人物かもしれない。この場合、あなたの行った変更とその人物が行った変更が合併されるべきか調べたいことだろう。ファイルを別の名前で書き込み、差分を調べること (これにはプログラム "diff" が使える)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is also possible that you modified the file yourself, from another edit
+session or with another command (e.g., a filter command).  Then you will know
+which version of the file you want to keep.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+別の編集セッションや別のコマンドで (例えばフィルタコマンド) そのファイルに自分自身で変更を加えたということもあり得る。その場合、どちらのバージョンを保管したいかは自分でお分かりだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There is one situation where you get the message while there is nothing wrong:
+On a Win32 system on the day daylight saving time starts.  There is something
+in the Win32 libraries that confuses Vim about the hour time difference.  The
+problem goes away the next day.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+何も間違ったことはしていないのにこのメッセージが現れる場合が 1 つある: Win32 でサマータイムが始まる日である。Win32 ライブラリにより、Vim が時間の差を混乱してしまう。この問題は次の日には直る。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+11. File Searching					*file-searching*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{file-searching}
+@cindex file-searching
+@unnumberedsubsec 11. ファイル検索
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{not available when compiled without the |+path_extra| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vim が |+path_extra| 機能付きでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The file searching is currently used for the 'path', 'cdpath' and 'tags'
+options, for |finddir()| and |findfile()|.  Other commands use |wildcards|
+which is slightly different.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在の所、オプション '@option{path}', '@option{cdpath}', '@option{tags}' と |finddir()|, |findfile()| で、本節で説明する「ファイル検索」にしたがってワイルドカードの展開が行われる。それ以外のコマンドでは |wildcards| という少し異なるルールにしたがう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are three different types of searching:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル検索には以下の 3 種類がある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1) Downward search:					*starstar*
+   Downward search uses the wildcards '*', '**' and possibly others
+   supported by your operating system.  '*' and '**' are handled inside Vim,
+   so they work on all operating systems.  Note that "**" only acts as a
+   special wildcard when it is at the start of a name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{starstar}
+@cindex starstar
+@table @asis
+@item 1) 下向き検索:
+下向き検索にはワイルドカード '*' と '**' 及びユーザーの OS がサポートするその他のものが使える。'*' と '**' は Vim 内部で処理されるので、全ての OS で機能する。
+@quotation
+@strong{Note:}@*
+"**" はパス名の先頭で使われた場合のみ特別なワイルドカードとなる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   The usage of '*' is quite simple: It matches 0 or more characters.  In a
+   search pattern this would be ".*".  Note that the "." is not used for file
+   searching.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'*' の使用法はきわめて単純: 0 個以上の文字にマッチする。正規表現パターンでいうと ".*" と同じである。正規表現と異なり "." は必要ないことに注意。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   '**' is more sophisticated:
+      - It ONLY matches directories.
+      - It matches up to 30 directories deep by default, so you can use it to
+	search an entire directory tree
+      - The maximum number of levels matched can be given by appending a number
+	to '**'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'**' はもっとすばらしい。
+@itemize @minus
+@item これはディレクトリのみにマッチする。
+@item これはデフォルトで 30 段階までの深さのディレクトリにマッチするので、ディレクトリツリー全体の検索に使える。
+@item マッチする深さの最大値は '**' の後に数字を付け加えて指定できる。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Thus '/usr/**2' can match: >
+		/usr
+		/usr/include
+		/usr/include/sys
+		/usr/include/g++
+		/usr/lib
+		/usr/lib/X11
+		....
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+だから '/usr/**2' は下のようにマッチする。
+@verbatim
+/usr
+/usr/include
+/usr/include/sys
+/usr/include/g++
+/usr/lib
+/usr/lib/X11
+....
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	It does NOT match '/usr/include/g++/std' as this would be three
+	levels.
+	The allowed number range is 0 ('**0' is removed) to 100
+	If the given number is smaller than 0 it defaults to 30, if it's
+	bigger than 100 then 100 is used.  The system also has a limit on the
+	path length, usually 256 or 1024 bytes.
+      - '**' can only be at the end of the path or be followed by a path
+	separator or by a number and a path separator.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'/usr/include/g++/std' には、深さが3なのでマッチしない。
+
+指定可能な範囲は 0 ('**0' は無視される) から 100 である。負数を指定すると 30 を、100 より大きい数を指定すると 100 を指定したものとされる。システムにもパスの長さの限界が存在する場合がある。通常は 256 または 1024 バイトである。
+@itemize @minus
+@item '**' はパスの末尾にのみ使える。後ろにパス区切り文字か、数字とパス区切り文字の組み合わせを付けてもよい。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   You can combine '*' and '**' in any order: >
+	/usr/**/sys/*
+	/usr/*tory/sys/**
+	/usr/**2/sys/*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'*' と '**' を組み合わせる順番は自由である。
+@verbatim
+/usr/**/sys/*
+/usr/*tory/sys/**
+/usr/**2/sys/*
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+2) Upward search:
+   Here you can give a directory and then search the directory tree upward for
+   a file.  You could give stop-directories to limit the upward search.  The
+   stop-directories are appended to the path (for the 'path' option) or to
+   the filename (for the 'tags' option) with a ';'.  If you want several
+   stop-directories separate them with ';'.  If you want no stop-directory
+   ("search upward till the root directory) just use ';'. >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 2) 上向き検索:
+この方法ではディレクトリを指定すると、そのディレクトリから上に遡ってファイルを探す。上向き探索の上限となるディレクトリが指定できる。それはパス (オプション '@option{path}') かファイル名 (オプション '@option{tags}') の末尾に ';' で区切って指定する。複数のディレクトリを指定したいときはそれらを ';' で区切る。上限ディレクトリを指定したくないときは (ルートディレクトリまで上向き検索したいとき) ';' だけを付ける。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	/usr/include/sys;/usr
+<   will search in: >
+	   /usr/include/sys
+	   /usr/include
+	   /usr
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+/usr/include/sys;/usr
+@end verbatim
+で検索されるディレクトリは:
+@verbatim
+/usr/include/sys
+/usr/include
+/usr
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   If you use a relative path the upward search is started in Vim's current
+   directory or in the directory of the current file (if the relative path
+   starts with './' and 'd' is not included in 'cpoptions').
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+相対パスを使うと上向き検索は Vim のカレントディレクトリから始まる。相対パスの指定が './' で始まり、'@option{cpoptions}' にフラグ '@var{d}' が含まれていないときはカレントファイルのディレクトリから始まる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   If Vim's current path is /u/user_x/work/release and you do >
+	:set path=include;/u/user_x
+<  and then search for a file with |gf| the file is searched in: >
+	/u/user_x/work/release/include
+	/u/user_x/work/include
+	/u/user_x/include
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim のカレントパスが /u/user_x/work/release のときに
+@example
+:set path=include;/u/user_x
+@end example
+とすると、コマンド |gf| でファイルを探す範囲は:
+@verbatim
+/u/user_x/work/release/include
+/u/user_x/work/include
+/u/user_x/include
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+3) Combined up/downward search:
+   If Vim's current path is /u/user_x/work/release and you do >
+	set path=**;/u/user_x
+<  and then search for a file with |gf| the file is searched in: >
+	/u/user_x/work/release/**
+	/u/user_x/work/**
+	/u/user_x/**
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 3) 複合検索:
+Vim のカレントパスが /u/user_x/work/release のときに
+@example
+set path=**;/u/user_x
+@end example
+とすると、コマンド |gf| でファイルを探す範囲は:
+@verbatim
+/u/user_x/work/release/**
+/u/user_x/work/**
+/u/user_x/**
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   BE CAREFUL!  This might consume a lot of time, as the search of
+   '/u/user_x/**' includes '/u/user_x/work/**' and
+   '/u/user_x/work/release/**'.  So '/u/user_x/work/release/**' is searched
+   three times and '/u/user_x/work/**' is searched twice.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{注意！} @*
+これはかなりの時間を食うかもしれない。'/u/user_x/**' は '/u/user_x/work/**' や '/u/user_x/work/release/**' を含むからだ。つまり '/u/user_x/work/release/**' は 3 回、'/u/user_x/work/**' は 2 回繰り返して検索される。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   In the above example you might want to set path to: >
+	:set path=**,/u/user_x/**
+<  This searches:
+	/u/user_x/work/release/** ~
+	/u/user_x/** ~
+   This searches the same directories, but in a different order.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上の例では次のように設定したほうがいいかもしれない:
+@example
+:set path=**,/u/user_x/**
+@end example
+これに含まれる範囲は
+@verbatim
+/u/user_x/work/release/**
+/u/user_x/**
+@end verbatim
+となり、同じディレクトリだが順番が違う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   Note that completion for ":find", ":sfind", and ":tabfind" commands do not
+   currently work with 'path' items that contain a url or use the double star
+   with depth limiter (/usr/**2) or upward search (;) notations.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+現在 ":find"、":sfind"、":tabfind" コマンドは、'@option{path}' アイテムに url や深さ制限付きのダブルスター (/usr/**2) や 上方検索 (;) などが含まれていると機能しない。
+@end quotation
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
