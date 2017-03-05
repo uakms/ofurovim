@@ -1,0 +1,3768 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node motion.txt, , , 目次
+@unnumbered 移動コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*motion.txt*    For Vim version 8.0.  Last change: 2016 Nov 24
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*motion.txt*    For Vim バージョン 8.0.  Last change: 2016 Nov 24
+
+
+		  VIMリファレンスマニュアル	  by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Cursor motions					*cursor-motions* *navigation*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cursor-motions}
+@anchor{navigation}
+@cindex cursor-motions
+@cindex navigation
+@section カーソルの移動
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These commands move the cursor position.  If the new position is off of the
+screen, the screen is scrolled to show the cursor (see also 'scrolljump' and
+'scrolloff' options).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのコマンドはカーソルの位置を変えます。移動先の位置がスクリーンの外側であればカーソルを表示するためにスクリーンをスクロールさせます ('@option{scrolljump}' と '@option{scrolloff}' オプションも参照してください)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Motions and operators	|operator|
+2. Left-right motions		|left-right-motions|
+3. Up-down motions		|up-down-motions|
+4. Word motions			|word-motions|
+5. Text object motions		|object-motions|
+6. Text object selection	|object-select|
+7. Marks			|mark-motions|
+8. Jumps			|jump-motions|
+9. Various motions		|various-motions|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .05 .60 .35
+@item 1. @tab 移動とオペレータ @tab |@ref{operator, , operator}|
+@item 2. @tab 左右の移動 @tab |@ref{left-right-motions, , left-right-motions}|
+@item 3. @tab 上下の移動 @tab |@ref{up-down-motions, , up-down-motions}|
+@item 4. @tab 単語単位の移動 @tab |@ref{word-motions, , word-motions}|
+@item 5. @tab オブジェクト単位で移動 @tab |@ref{object-motions, , object-motions}|
+@item 6. @tab オブジェクト単位で選択 @tab |@ref{object-select, , object-select}|
+@item 7. @tab マーク @tab |@ref{mark-motions, , mark-motions}|
+@item 8. @tab ジャンプ @tab |@ref{jump-motions, , jump-motions}|
+@item 9. @tab 様々な移動 @tab |@ref{various-motions, , various-motions}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+General remarks:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一般的な注意:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to know where you are in the file use the "CTRL-G" command
+|CTRL-G| or the "g CTRL-G" command |g_CTRL-G|.  If you set the 'ruler' option,
+the cursor position is continuously shown in the status line (which slows down
+Vim a little).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルのどの場所にいるかを知るには "CTRL-G" コマンド |CTRL-G| か "g CTRL-G" コマンド |g_CTRL-G| を使ってください。'@option{ruler}' オプションをセットしていればステータス行にカーソルの位置が表示し続けられます (ちょっとだけ Vim を遅くします)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Experienced users prefer the hjkl keys because they are always right under
+their fingers.  Beginners often prefer the arrow keys, because they do not
+know what the hjkl keys do.  The mnemonic value of hjkl is clear from looking
+at the keyboard.  Think of j as an arrow pointing downwards.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+経験を積んだユーザーは @key{h}@key{j}@key{k}@key{l} キーを使うのをそれらが常に指の下にあるという理由で好みます。初心者はしばしば @key{h}@key{j}@key{k}@key{l} キーの動作を知らないので矢印キーを使うのを好みます。@key{h}@key{j}@key{k}@key{l} がどんな動きをするのか覚えるのはキーボードを見ればすぐわかります。@key{j} を下矢印と見立ててみてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'virtualedit' option can be set to make it possible to move the cursor to
+positions where there is no character or halfway a character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{virtualedit}' オプションをセットすると、文字がない位置や文字の真ん中にもカーソルを移動できるようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Motions and operators				*operator*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{operator}
+@cindex operator
+@unnumberedsubsec 1. 移動とオペレータ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The motion commands can be used after an operator command, to have the command
+operate on the text that was moved over.  That is the text between the cursor
+position before and after the motion.  Operators are generally used to delete
+or change text.  The following operators are available:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+移動コマンドはオペレータコマンドの後に続けることができ、カーソルが移動する間のテキストにそのオペレータコマンドを施すことができます。つまりは移動前と移動後のカーソル位置の間のテキストです。オペレータコマンドは一般的にテキストを削除したり変更したりするのに使われます。下記のオペレータコマンドを使うことができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	|c|	c	change
+	|d|	d	delete
+	|y|	y	yank into register (does not change the text)
+	|~|	~	swap case (only if 'tildeop' is set)
+	|g~|	g~	swap case
+	|gu|	gu	make lowercase
+	|gU|	gU	make uppercase
+	|!|	!	filter through an external program
+	|=|	=	filter through 'equalprg' or C-indenting if empty
+	|gq|	gq	text formatting
+	|g?|	g?	ROT13 encoding
+	|>|	>	shift right
+	|<|	<	shift left
+	|zf|	zf	define a fold
+	|g@|	g@	call function set with the 'operatorfunc' option
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .05 .1 .1 .75
+@item @tab |c| @tab c @tab 変更
+@item @tab |d| @tab d @tab 削除
+@item @tab |y| @tab y @tab レジスタにヤンクする (テキストは変更しません)
+@item @tab |~| @tab ~ @tab 大文字/小文字を入れ換える ('@option{tildeop}' がセットされていれば)
+@item @tab |g~| @tab g~ @tab 大文字/小文字を入れ換える
+@item @tab |gu| @tab gu @tab 小文字にする
+@item @tab |gU| @tab gU @tab 大文字にする
+@item @tab |!| @tab ! @tab 外部コマンドを使ってフィルターに通す
+@item @tab |=| @tab = @tab '@option{equalprg}' を使ってフィルターに通すか、値が空であれば C のインデントを行う
+@item @tab |gq| @tab gq @tab テキストを整形する
+@item @tab |g?| @tab g? @tab ROT13 エンコーディング
+@item @tab |>| @tab > @tab 右にシフトする
+@item @tab |<| @tab < @tab 左にシフトする
+@item @tab |zf| @tab zf @tab 折り畳みを作成する
+@item @tab |g@@| @tab g@@ @tab オプション '@option{operatorfunc}' に設定された関数を呼ぶ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the motion includes a count and the operator also had a count before it,
+the two counts are multiplied.  For example: "2d3w" deletes six words.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+移動コマンドにカウントが前置されていてかつオペレータコマンドにカウントが前置されていれば 2 つのカウントが掛け合わされます。例: "2d3w" は 6 つの単語を削除します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+After applying the operator the cursor is mostly left at the start of the text
+that was operated upon.  For example, "yfe" doesn't move the cursor, but "yFe"
+moves the cursor leftwards to the "e" where the yank started.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オペレータが終了すると、カーソルはだいたいオペレータを受けたテキストの始めに置かれます。例えば、"yfe" はカーソルを動かしませんが、"yFe" はカーソルをヤンクのスタートした "e" の左側に移動します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*linewise* *characterwise*
+The operator either affects whole lines, or the characters between the start
+and end position.  Generally, motions that move between lines affect lines
+(are linewise), and motions that move within a line affect characters (are
+characterwise).  However, there are some exceptions.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{linewise}
+@anchor{characterwise}
+@cindex linewise
+@cindex characterwise
+オペレータは行全体もしくは開始位置と終了位置の間の文字に対して施されます。一般的に、行をまたいで移動するコマンドは行に対して施され(行単位)、行内を移動するコマンドは文字に対して施されます(文字単位)。しかしながらいくつかの例外はあります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*exclusive* *inclusive*
+A character motion is either inclusive or exclusive.  When inclusive, the
+start and end position of the motion are included in the operation.  When
+exclusive, the last character towards the end of the buffer is not included.
+Linewise motions always include the start and end position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{exclusive}
+@anchor{inclusive}
+@cindex exclusive
+@cindex inclusive
+文字単位の移動は内包的 (inclusive) か排他的 (exclusive) のどちらかです。内包的な場合は移動の最初と最後の位置がオペレータの対象に含まれますが、排他的な場合はバッファの最後に向かって最後の文字は対象に含まれません。行単位の移動は常に最初と最後の位置が含まれます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Which motions are linewise, inclusive or exclusive is mentioned with the
+command.  There are however, two general exceptions:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+どの移動コマンドが行単位であり、内包的であり、排他的であるかはコマンドのそばに書かれています。しかしながら 2 つの例外があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. If the motion is exclusive and the end of the motion is in column 1, the
+   end of the motion is moved to the end of the previous line and the motion
+   becomes inclusive.  Example: "}" moves to the first line after a paragraph,
+   but "d}" will not include that line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item
+移動コマンドが排他的で移動後の位置が1桁目であれば、移動の最後は一行前の行の最後に動かされ、移動コマンドは内包的になります。例: "@}" は段落の後の最初の行まで移動しますが "d@}" はその行を含めません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*exclusive-linewise*
+2. If the motion is exclusive, the end of the motion is in column 1 and the
+   start of the motion was at or before the first non-blank in the line, the
+   motion becomes linewise.  Example: If a paragraph begins with some blanks
+   and you do "d}" while standing on the first non-blank, all the lines of
+   the paragraph are deleted, including the blanks.  If you do a put now, the
+   deleted lines will be inserted below the cursor position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{exclusive-linewise}
+@cindex exclusive-linewise
+@item
+移動コマンドが排他的で、移動後の位置が 1 桁目でかつ移動初めの位置がその行の最初の非空白文字かその手前の位置であれば、移動コマンドは行単位になります。例: 段落が空白文字で始まっていて、カーソルが最初の非空白文字に位置しているとすれば "d@}" は段落中のすべての行を最初の空白も含めて削除します。それから put コマンドを行えば削除された行はカーソルの位置の下から挿入されます。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that when the operator is pending (the operator command is typed, but the
+motion isn't yet), a special set of mappings can be used.  See |:omap|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オペレータが待機しているとき (オペレータコマンドがタイプされていて移動コマンドはまだタイプされていない状態 )でのみ動作するマップを作成することができます。参照: |:omap|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Instead of first giving the operator and then a motion you can use Visual
+mode: mark the start of the text with "v", move the cursor to the end of the
+text that is to be affected and then hit the operator.  The text between the
+start and the cursor position is highlighted, so you can see what text will
+be operated upon.  This allows much more freedom, but requires more key
+strokes and has limited redo functionality.  See the chapter on Visual mode
+|Visual-mode|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+初めにオペレータコマンドを指定してそれから移動コマンドを打つ、という風にする代わりにビジュアルモードを使うこともできます: テキストの最初を "v" でマークしてからカーソルをテキストの終わりまで移動させます。そうするとその範囲に対してオペレータコマンドを打つことで処理を施すことができます。テキストの初めとカーソル位置の間はハイライトされていますので、どの部分のテキストにオペレータが施されるのかを目で確認することができます。こうすることで自由度が上がりますが、打ち込むキーストロークは増え、そしてリドゥ機能が制限されます。ビジュアルモードの章もご覧下さい。|Visual-mode|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use a ":" command for a motion.  For example "d:call FindEnd()".
+But this can't be repeated with "." if the command is more than one line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+移動に ":" コマンドを使うことができます。例えば "d:call FindEnd()"。しかし、コマンドが 1 行以上になると "." で繰り返すことができません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This can be repeated: >
+	d:call search("f")<CR>
+This cannot be repeated: >
+	d:if 1<CR>
+	   call search("f")<CR>
+	endif<CR>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは繰り返せます:
+@example
+d:call search("f")<CR>
+@end example
+これは繰り返せません:
+@example
+d:if 1<CR>
+call search("f")<CR>
+endif<CR>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Note that when using ":" any motion becomes characterwise exclusive.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note} @*
+":" を使った全ての移動は、排他的な文字単位になることに注意してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+FORCING A MOTION TO BE LINEWISE, CHARACTERWISE OR BLOCKWISE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec 移動を行単位、文字単位、ブロック単位にする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When a motion is not of the type you would like to use, you can force another
+type by using "v", "V" or CTRL-V just after the operator.
+Example: >
+	dj
+deletes two lines >
+	dvj
+deletes from the cursor position until the character below the cursor >
+	d<C-V>j
+deletes the character under the cursor and the character below the cursor. >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+移動があなたの望むタイプと違う場合は、オペレータコマンドの後に "v", "V", @kbd{CTRL-V} を使うことで別のタイプにすることができます。
+
+例:
+@example
+dj
+@end example
+は 2 行を削除します。
+@example
+dvj
+@end example
+はカーソル位置からカーソルの 1 個下の文字の手前までを削除します。
+@example
+d<C-V>j
+@end example
+はカーソル位置とカーソルの 1 個下の文字を削除します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Be careful with forcing a linewise movement to be used characterwise or
+blockwise, the column may not always be defined.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+行単位の移動に文字単位・ブロック単位の移動をさせるときは注意してください。桁が必ずしも定義されていないかもしれません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*o_v*
+v		When used after an operator, before the motion command: Force
+		the operator to work characterwise, also when the motion is
+		linewise.  If the motion was linewise, it will become
+		|exclusive|.
+		If the motion already was characterwise, toggle
+		inclusive/exclusive.  This can be used to make an exclusive
+		motion inclusive and an inclusive motion exclusive.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{o_v}
+@cindex o_v
+@table @asis
+@item v
+オペレータコマンドと移動コマンドの間で使われたとき: 移動コマンドが行単位であっても、オペレータコマンドが文字単位で機能するようにします。移動コマンドが行単位のときは排他的 |exclusive| になります。移動コマンドが既に文字単位の場合には、内包的／排他的を切り替えます。これによって排他的な移動を内包的にしたり、その逆にしたりできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*o_V*
+V		When used after an operator, before the motion command: Force
+		the operator to work linewise, also when the motion is
+		characterwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{o_V}
+@cindex o_V
+@item V
+オペレータコマンドと移動コマンドの間で使われたとき: 移動コマンドが文字単位であっても、オペレータコマンドが行単位で機能するようにします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*o_CTRL-V*
+CTRL-V		When used after an operator, before the motion command: Force
+		the operator to work blockwise.  This works like Visual block
+		mode selection, with the corners defined by the cursor
+		position before and after the motion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{o_CTRL-V}
+@cindex o_CTRL-V
+@item CTRL-V
+オペレータコマンドと移動コマンドの間で使われたとき: オペレータコマンドがブロック単位で機能するようにします。これは移動の前後のカーソル位置を端点とする矩形範囲を選択したのと同じように動作します。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Left-right motions					*left-right-motions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{left-right-motions}
+@cindex left-right-motions
+@unnumberedsubsec 2. 左右の移動
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These commands move the cursor to the specified column in the current line.
+They stop at the first column and at the end of the line, except "$", which
+may move to one of the next lines.  See 'whichwrap' option to make some of the
+commands move across line boundaries.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この節で説明するコマンドはどれも、カーソルをカレント行の指定の位置に移動させます。これらのコマンドは行の先頭と末尾でストップします。例外は "$" で、カウントを指定した場合は下の行へ移動します。'@option{whichwrap}' をオンにすると、これらのコマンドが行をまたいで移動するようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+h		or					*h*
+<Left>		or					*<Left>*
+CTRL-H		or					*CTRL-H* *<BS>*
+<BS>			[count] characters to the left.  |exclusive| motion.
+			Note: If you prefer <BS> to delete a character, use
+			the mapping:
+				:map CTRL-V<BS>		X
+			(to enter "CTRL-V<BS>" type the CTRL-V key, followed
+			by the <BS> key)
+			See |:fixdel| if the <BS> key does not do what you
+			want.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{h}
+@anchor{<Left>}
+@anchor{CTRL-H}
+@anchor{<BS>}
+@cindex h
+@cindex <Left>
+@cindex CTRL-H
+@cindex <BS>
+@table @asis
+@item h or <Left> or CTRL-H or <BS>
+[count] 文字左に移動します |exclusive|。
+@quotation
+@strong{Note:} @*
+<BS> キーには文字を削除させたければ次のマッピングを使ってください:
+@example
+:map CTRL-V<BS>		X
+@end example
+("CTRL-V<BS>" を入力するには @kbd{CTRL-V} キーをタイプした後 @key{<BS>} キーをタイプしてください) @key{<BS>} キーがうまく動作しない場合は |:fixdel| を参照してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+l		or					*l*
+<Right>		or					*<Right>* *<Space>*
+<Space>			[count] characters to the right.  |exclusive| motion.
+			See the 'whichwrap' option for adjusting the behavior
+			at end of line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{l}
+@anchor{<Right>}
+@anchor{<Space>}
+@cindex l
+@cindex <Right>
+@cindex <Space>
+@item l or <Right> or <Space>
+[count] 文字右に移動します |exclusive|。行末での挙動を調節するにはオプション '@option{whichwrap}' を参照して下さい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*0*
+0			To the first character of the line.  |exclusive|
+			motion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{0}
+@cindex 0
+@item 0
+その行の最初の文字に移動します |exclusive|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*<Home>* *<kHome>*
+<Home>			To the first character of the line.  |exclusive|
+			motion.  When moving up or down next, stay in same
+			TEXT column (if possible).  Most other commands stay
+			in the same SCREEN column.  <Home> works like "1|",
+			which differs from "0" when the line starts with a
+			<Tab>.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<Home>}
+@anchor{<kHome>}
+@cindex <Home>
+@cindex <kHome>
+@item <Home>
+その行の最初の文字に移動します |exclusive|。上下に移動するときは同じ論理桁位置に留まります。(可能であれば)。他のほとんどのコマンドは同じ物理桁位置に留まります。<Home> は "1|" と同じように動作し、"0" との違いは行が <Tab> で始まる場合です。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*^*
+^			To the first non-blank character of the line.
+			|exclusive| motion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{^}
+@item ^
+その行の最初の非空白文字に移動します |exclusive|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*$* *<End>* *<kEnd>*
+$  or <End>		To the end of the line.  When a count is given also go
+			[count - 1] lines downward |inclusive|.
+			In Visual mode the cursor goes to just after the last
+			character in the line.
+			When 'virtualedit' is active, "$" may move the cursor
+			back from past the end of the line to the last
+			character in the line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{$}
+@anchor{<End>}
+@anchor{<kEnd>}
+@cindex $
+@cindex <End>
+@cindex <kEnd>
+@item $ or <End>
+その行の最後に移動します。カウントが指定された場合は、[count - 1] 行下にも移動します |exclusive|。ビジュアルモードではカーソルは行の最後の文字の後へ移動します。
+
+'@option{virtualedit}' がオンのときには、"$" によってカーソルが行末の先から行の最後の文字へバックするかもしれません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*g_*
+g_			To the last non-blank character of the line and
+			[count - 1] lines downward |inclusive|. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g_}
+@cindex g_
+@item g_
+[count - 1] 行下の最後の非空白文字へ移動 |inclusive|。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*g0* *g<Home>*
+g0 or g<Home>		When lines wrap ('wrap' on): To the first character of
+			the screen line.  |exclusive| motion.  Differs from
+			"0" when a line is wider than the screen.
+			When lines don't wrap ('wrap' off): To the leftmost
+			character of the current line that is on the screen.
+			Differs from "0" when the first character of the line
+			is not on the screen.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g0}
+@anchor{g<Home>}
+@cindex g0
+@cindex g<Home>
+@item g0 or g<Home>
+行が折り返されている場合 ('@option{wrap}' オン): スクリーン行の初めの文字に移動 |exclusive|。スクリーンより広い行の場合に "0" と違う動作になります。
+
+行が折り返されていない場合は ('@option{wrap}' オフ): スクリーン上の現在の行でもっとも左の文字に移動します。最初の文字がスクリーン上にない場合に "0" とは違う動作になります。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*g^*
+g^			When lines wrap ('wrap' on): To the first non-blank
+			character of the screen line.  |exclusive| motion.
+			Differs from "^" when a line is wider than the screen.
+			When lines don't wrap ('wrap' off): To the leftmost
+			non-blank character of the current line that is on the
+			screen.  Differs from "^" when the first non-blank
+			character of the line is not on the screen.  {not in
+			Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g^}
+@cindex g^
+@item g^
+行が折り返されている場合 ('@option{wrap}' オン): スクリーン行の最初の非空白文字に移動します |exclusive|。スクリーンより広い行の場合に "^" とは違う動作になります。
+
+行が折り返されていない場合は ('@option{wrap}' オフ): スクリーン上の現在の行でもっとも左側にある非空白文字に移動します。最初の非空白文字がスクリーン上にない場合に "^" とは違う動作になります。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*gm*
+gm			Like "g0", but half a screenwidth to the right (or as
+			much as possible). {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gm}
+@cindex gm
+@item gm
+"g0" と似ていますがスクリーンの幅の真ん中に移動します (もしくは可能な限り真ん中に向かって右に)。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*g$* *g<End>*
+g$ or g<End>		When lines wrap ('wrap' on): To the last character of
+			the screen line and [count - 1] screen lines downward
+			|inclusive|.  Differs from "$" when a line is wider
+			than the screen.
+			When lines don't wrap ('wrap' off): To the rightmost
+			character of the current line that is visible on the
+			screen.  Differs from "$" when the last character of
+			the line is not on the screen or when a count is used.
+			Additionally, vertical movements keep the column,
+			instead of going to the end of the line.
+			When 'virtualedit' is enabled moves to the end of the
+			screen line.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g$}
+@anchor{g<End>}
+@cindex g$
+@cindex g<End>
+@item g$ or g<End>
+行が折り返されている場合 ('@option{wrap}' オン): スクリーン行の最後の文字に、そして [count - 1] スクリーン行下に移動します |inclusive|。行がスクリーンより広い場合に "$" と違う動作になります。
+
+行が折り返されていない場合 ('@option{wrap}' オフ): スクリーン上に表示されている現在の行の文字のうち最も右に位置するものに移動します。行の最後の文字がスクリーン上にないかカウントが使われた場合に "$" とは違う動作になります。
+
+さらに、縦方向への移動は、行末でなく同じ桁になります。'@option{virtualedit}' が有効である場合、スクリーン行の末尾に移動します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*bar*
+|			To screen column [count] in the current line.
+			|exclusive| motion.  Ceci n'est pas une pipe.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{bar}
+@cindex bar
+@item |
+現在の行の [count] スクリーン桁位置に移動します |exclusive|。Ceci n'est pas une pipe. @{訳注: 「これはパイプではない」。同名のマグリットの絵がある@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*f*
+f{char}			To [count]'th occurrence of {char} to the right.  The
+			cursor is placed on {char} |inclusive|.
+			{char} can be entered as a digraph |digraph-arg|.
+			When 'encoding' is set to Unicode, composing
+			characters may be used, see |utf-8-char-arg|.
+			|:lmap| mappings apply to {char}.  The CTRL-^ command
+			in Insert mode can be used to switch this on/off
+			|i_CTRL-^|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{f}
+@cindex f
+@item f@{char@}
+右に向かって [count] 番目に現れる @{char@} に移動し、カーソルがその @{char@} 上に置かれます |inclusive|。@{char@} はダイグラフ |digraph-arg| でも構いません。
+
+'@option{encoding}' が Unicode にセットされているときは、composing character が使えます。|utf-8-char-arg| を参照。
+
+|:lmap| マッピングが @{char@} に適用されます。挿入モード時の @kbd{CTRL-^} コマンドでこれの on/off を切り替えられます |i_CTRL-^|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*F*
+F{char}			To the [count]'th occurrence of {char} to the left.
+			The cursor is placed on {char} |exclusive|.
+			{char} can be entered like with the |f| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{F}
+@cindex F
+@item F@{char@}
+左に向かって [count] 番目に現れる @{char@} に移動し、カーソルがその @{char@} 上に置かれます |exclusive|。@{char@} は |f| コマンドと同様に入力できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*t*
+t{char}			Till before [count]'th occurrence of {char} to the
+			right.  The cursor is placed on the character left of
+			{char} |inclusive|.
+			{char} can be entered like with the |f| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t}
+@cindex t
+@item t@{char@}
+右に向かって [count] 番目に現れる @{char@} まで移動します。カーソルは @{char@} の左側の文字に置かれます |inclusive|。
+
+@{char@} は |f| コマンドと同様に入力できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*T*
+T{char}			Till after [count]'th occurrence of {char} to the
+			left.  The cursor is placed on the character right of
+			{char} |exclusive|.
+			{char} can be entered like with the |f| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{T}
+@cindex T
+@item T@{char@}
+左に向かって [count] 番目に現れる @{char@} まで移動します。カーソルは @{char@} の右側の文字に置かれます |exclusive|。
+
+@{char@} は |f| コマンドと同様に入力できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*;*
+;			Repeat latest f, t, F or T [count] times. See |cpo-;|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{;}
+@cindex ;
+@item ;
+[count] 回最後の f, t, F, T を繰り返します。|cpo-;| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*,*
+,			Repeat latest f, t, F or T in opposite direction
+			[count] times. See also |cpo-;|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{,}
+@cindex ,
+@item ,
+[count] 回最後の f, t, F, T を反対方向に繰り返します。|cpo-;| 参照。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Up-down motions					*up-down-motions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{up-down-motions}
+@cindex up-down-motions
+@unnumberedsubsec 3. 上下の移動
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+k		or					*k*
+<Up>		or					*<Up>* *CTRL-P*
+CTRL-P			[count] lines upward |linewise|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{k}
+@anchor{<Up>}
+@anchor{CTRL-P}
+@cindex k
+@cindex <Up>
+@cindex CTRL-P
+@table @asis
+@item k or <Up> or CTRL-P
+[count] 行上に移動 (行単位 |linewise|)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+j		or					*j*
+<Down>		or					*<Down>*
+CTRL-J		or					*CTRL-J*
+<NL>		or					*<NL>* *CTRL-N*
+CTRL-N			[count] lines downward |linewise|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{j}
+@anchor{<Down>}
+@anchor{CTRL-J}
+@anchor{<NL>}
+@anchor{CTRL-N}
+@cindex j
+@cindex <Down>
+@cindex CTRL-J
+@cindex <NL>
+@cindex CTRL-N
+@item j or <Down> or CTRL-J or <NL> or CTRL-N
+[count] 行下に移動 (行単位 |linewise|)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+gk		or					*gk* *g<Up>*
+g<Up>			[count] display lines upward.  |exclusive| motion.
+			Differs from 'k' when lines wrap, and when used with
+			an operator, because it's not linewise.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gk}
+@anchor{g<Up>}
+@cindex gk
+@cindex g<Up>
+@item gk or g<Up>
+[count] 表示行上に移動 |exclusive|。行が折り返されている場合とオペレータコマンドとともに使われた場合は 'k' と違う動作になります (行単位ですから)。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+gj		or					*gj* *g<Down>*
+g<Down>			[count] display lines downward.  |exclusive| motion.
+			Differs from 'j' when lines wrap, and when used with
+			an operator, because it's not linewise.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gj}
+@anchor{g<Down>}
+@cindex gj
+@cindex g<Down>
+@item gj or g<Down>
+[count] 表示行下に移動 |exclusive|。行が折り返されている場合とオペレータコマンドとともに使われた場合は 'j' と違う動作になります (行単位ですから)。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*-*
+-  <minus>		[count] lines upward, on the first non-blank
+			character |linewise|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{-}
+@cindex -
+@item - <minus>
+[count] 行上の最初の非空白文字に移動します (行単位 |linewise|)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
++		or					*+*
+CTRL-M		or					*CTRL-M* *<CR>*
+<CR>			[count] lines downward, on the first non-blank
+			character |linewise|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{+}
+@anchor{CTRL-M}
+@anchor{<CR>}
+@cindex +
+@cindex CTRL-M
+@cindex <CR>
+@item + or CTRL-M or <CR>
+[count] 行下の最初の非空白文字に移動します (行単位 |linewise|)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*_*
+_  <underscore>		[count] - 1 lines downward, on the first non-blank
+			character |linewise|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{_}
+@cindex _
+@item _  <underscore>
+[count] -1 行下の最初の非空白文字に移動します (行単位 |linewise|)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*G*
+G			Goto line [count], default last line, on the first
+			non-blank character |linewise|.  If 'startofline' not
+			set, keep the same column.
+			G is a one of |jump-motions|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{G}
+@cindex G
+@item G
+[count] 行目の最初の非空白文字に移動します(行単位 |linewise|)。カウントの前置がなければ最後の行に移動します。'@option{startofline}' がセットされていなければ同じ桁位置に移動します。
+
+G はジャンプモーション (|jump-motions|) です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*<C-End>*
+<C-End>			Goto line [count], default last line, on the last
+			character |inclusive|. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<C-End>}
+@cindex <C-End>
+@item <C-End>
+[count] 行目へ移動 |inclusive|。カウントの前置がなければ最後の行の最後の文字へ移動します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<C-Home>	or					*gg* *<C-Home>*
+gg			Goto line [count], default first line, on the first
+			non-blank character |linewise|.  If 'startofline' not
+			set, keep the same column.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gg}
+@anchor{<C-Home>}
+@cindex gg
+@cindex <C-Home>
+@item <C-Home> or gg
+[count] 行目の最初の非空白文字に移動します (行単位 |linewise|)。
+
+カウントの前置がなければ最初の行に移動します。'@option{startofline}' がセットされていなければ同じ桁位置に移動します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:[range]*
+:[range]		Set the cursor on the last line number in [range].
+			[range] can also be just one line number, e.g., ":1"
+			or ":'m".
+			In contrast with |G| this command does not modify the
+			|jumplist|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:[range]}
+@item :[range]
+[range] 内の最後の行へカーソルを移動します。[range] は単に 1 個の数字であってもかまいません。例: ":1" や ":'m"。
+
+|G| と違ってこのコマンドはジャンプリスト (|jumplist|) を変更しません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*N%*
+{count}%		Go to {count} percentage in the file, on the first
+			non-blank in the line |linewise|.  To compute the new
+			line number this formula is used:
+			    ({count} * number-of-lines + 99) / 100
+			See also 'startofline' option.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{N%}
+@cindex N%
+@item @{count@}%
+ファイルの @{count@} パーセントの位置の最初の非空白文字に移動します (行単位 |linewise|)。新しい行番号を計算するのに次の式が使われます:
+@verbatim
+({count} * number-of-lines + 99) / 100
+@end verbatim
+'@option{startofline}' オプションも参照してください。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[range]go[to] [count]					*:go* *:goto* *go*
+[count]go		Go to [count] byte in the buffer.  Default [count] is
+			one, start of the file.  When giving [range], the
+			last number in it used as the byte count.  End-of-line
+			characters are counted depending on the current
+			'fileformat' setting.
+			Also see the |line2byte()| function, and the 'o'
+			option in 'statusline'.
+			{not in Vi}
+			{not available when compiled without the
+			|+byte_offset| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:go}
+@anchor{:goto}
+@anchor{go}
+@cindex :go
+@cindex :goto
+@cindex go
+@item :[range]go[to] [count] or [count]go
+バッファ中の [count] バイト目に移動します。デフォルトでは [count] は 1 で、ファイルの最初になっています。
+
+[range] が指定された場合は最後の数字が使われます。行の終わりを示す文字が数えられるかどうかは '@option{fileformat}' の設定によります。
+
+|line2byte()| 関数と '@option{statusline}' の 'o' オプションも参照。
+
+@{Vi にはありません@}
+
+@{|+byte_offset| 機能なしでコンパイルされた場合は使えません@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These commands move to the specified line.  They stop when reaching the first
+or the last line.  The first two commands put the cursor in the same column
+(if possible) as it was after the last command that changed the column,
+except after the "$" command, then the cursor will be put on the last
+character of the line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのコマンドは指定された行に移動します。最初の行もしくは最後の行に到達した場合はそれ以上動きません。最初の 2 つのコマンドはカーソルを桁位置を変更する最後のコマンドの後の位置と (可能であれば) 同じ桁位置に動かします。"$" コマンドは例外でカーソルは行の最後の位置に置かれます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If "k", "-" or CTRL-P is used with a [count] and there are less than [count]
+lines above the cursor and the 'cpo' option includes the "-" flag it is an
+error. |cpo--|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[count] をつけて "k", "-", @kbd{CTRL-P} を実行したが、カーソルより上に [count] 分の行がなかった場合、オプション '@option{cpo}' がフラグ "@var{-}" を含むならばエラーになります。|cpo--|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Word motions						*word-motions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{word-motions}
+@cindex word-motions
+@unnumberedsubsec 4. 単語単位の移動
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<S-Right>	or					*<S-Right>* *w*
+w			[count] words forward.  |exclusive| motion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<S-Right>}
+@anchor{w}
+@cindex <S-Right>
+@cindex w
+@table @asis
+@item <S-Right> or w
+[count] word 前方に。|exclusive|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<C-Right>	or					*<C-Right>* *W*
+W			[count] WORDS forward.  |exclusive| motion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<C-Right>}
+@anchor {W}
+@cindex <C-Right>
+@cindex W
+@item <C-Right> or W
+[count] WORD 前方に。|exclusive|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*e*
+e			Forward to the end of word [count] |inclusive|.
+			Does not stop in an empty line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{e}
+@cindex e
+@item e
+[count] word 前方の単語の終わりに。|inclusive|
+
+w や b と異なり、空行では止まりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E*
+E			Forward to the end of WORD [count] |inclusive|.
+			Does not stop in an empty line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E}
+@cindex E
+@item E
+[count] WORD 前方の単語の終わりに。|inclusive|
+
+w や b と異なり、空行では止まりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<S-Left>	or					*<S-Left>* *b*
+b			[count] words backward.  |exclusive| motion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<S-Left>}
+@anchor{b}
+@cindex <S-Left>
+@cindex b
+@item <S-Left> or b
+[count] word 後方に。|exclusive|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<C-Left>	or					*<C-Left>* *B*
+B			[count] WORDS backward.  |exclusive| motion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<C-Left>}
+@anchor{B}
+@cindex <C-Left>
+@cindex B
+@item <C-Left> or B
+[count] WORD 後方に。|exclusive|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*ge*
+ge			Backward to the end of word [count] |inclusive|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ge}
+@cindex ge
+@item ge
+[count] word 後方の単語の最後に。|inclusive|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*gE*
+gE			Backward to the end of WORD [count] |inclusive|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gE}
+@cindex gE
+@item gE
+[count] WORD 後方の単語の最後に。|inclusive|
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These commands move over words or WORDS.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのコマンドは word もしくは WORD 単位で移動します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*word*
+A word consists of a sequence of letters, digits and underscores, or a
+sequence of other non-blank characters, separated with white space (spaces,
+tabs, <EOL>).  This can be changed with the 'iskeyword' option.  An empty line
+is also considered to be a word.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{word}
+@cindex word
+word はアルファベット、数字、アンダースコア、もしくは他の非空白文字の連続で構成され、ホワイトスペース (スペース、タブ、<EOL>) で区切られます。これらは '@option{iskeyword}' オプションで変更することができます。空行も word とみなされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*WORD*
+A WORD consists of a sequence of non-blank characters, separated with white
+space.  An empty line is also considered to be a WORD.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{WORD}
+@cindex WORD
+WORD は非空白文字の連続で構成され、ホワイトスペースで区切られます。空行もまた 1 つの word と WORD と見なされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A sequence of folded lines is counted for one word of a single character.
+"w" and "W", "e" and "E" move to the start/end of the first word or WORD after
+a range of folded lines.  "b" and "B" move to the start of the first word or
+WORD before the fold.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折り畳まれた一連の行は 1 文字からなる1単語と数えられます。"w" と "W", "e" と "E" は折り畳まれた行の範囲の後の最初の word や WORD の初め／終わりに移動します。"b" と "B" は折り畳みの前の最初の word や WORD の初めに移動します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Special case: "cw" and "cW" are treated like "ce" and "cE" if the cursor is
+on a non-blank.  This is because "cw" is interpreted as change-word, and a
+word does not include the following white space.  {Vi: "cw" when on a blank
+followed by other blanks changes only the first blank; this is probably a
+bug, because "dw" deletes all the blanks}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特殊なケース: カーソルが非空白文字の上にあれば "cw" と "cW" は "ce" と "cE" のように扱われます。これは "cw" が単語を変更するコマンドだと解釈されるからで、単語には続くホワイトスペースは含まれていないからです。
+
+@{Vi: 後に空白文字が続く空白文字上で "cw" を実行した場合最初の空白文字のみが変更されました; これはおそらくバグです。なぜなら "dw" はすべての空白文字を削除するからです@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Another special case: When using the "w" motion in combination with an
+operator and the last word moved over is at the end of a line, the end of
+that word becomes the end of the operated text, not the first word in the
+next line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もう 1 つの特殊なケース: オペレータコマンドと移動コマンド "w" を組み合わせたときカーソルがその上を移動した最後の単語が行末にあった場合、その単語の終わりがオペレータの対象になるテキストの終わりになります。次の行の最初の単語ではありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The original Vi implementation of "e" is buggy.  For example, the "e" command
+will stop on the first character of a line if the previous line was empty.
+But when you use "2e" this does not happen.  In Vim "ee" and "2e" are the
+same, which is more logical.  However, this causes a small incompatibility
+between Vi and Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オリジナルの Vi の "e" の実装はかなりバギーでした。例えば、前の行が空行であった場合 "e" コマンドを打っても行の最初の文字に止まったままになりました。しかし"2e" と打つとこのことは起こりません。Vim では "ee" と "2e" は同じで、こちらの方が理にかなっています。しかしながら、このことは Vi と Vim との間に少し非互換性を生じさせていることになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Text object motions					*object-motions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{object-motions}
+@cindex object-motions
+@unnumberedsubsec 5. オブジェクト単位で移動
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*(*
+(			[count] sentences backward.  |exclusive| motion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{\(}
+@cindex (
+@table @asis
+@item (
+[count] 文後方に。|exclusive|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*)*
+)			[count] sentences forward.  |exclusive| motion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{)}
+@cindex )
+@item )
+[count] 文前方に。|exclusive|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*{*
+{			[count] paragraphs backward.  |exclusive| motion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{@{}
+@cindex @{
+@item @{
+[count] 段落後方に。|exclusive|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*}*
+}			[count] paragraphs forward.  |exclusive| motion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{@}}
+@cindex @}
+@item @}
+[count] 段落前方に。|exclusive|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*]]*
+]]			[count] sections forward or to the next '{' in the
+			first column.  When used after an operator, then also
+			stops below a '}' in the first column.  |exclusive|
+			Note that |exclusive-linewise| often applies.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{]]}
+@cindex ]]
+@item ]]
+[count] セクション前方に、もしくは 1 桁目が '@{' で始まる次の場所に。オペレータコマンドの後で使われた場合は1桁目の '@}' の下でも止まります。|exclusive|
+@quotation
+@strong{Note:} @*
+しばしば |exclusive-linewise| になる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*][*
+][			[count] sections forward or to the next '}' in the
+			first column.  |exclusive|
+			Note that |exclusive-linewise| often applies.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{][}
+@cindex ][
+@item ][
+[count] セクション前方に、もしくは 1 桁目が '@}' で始まる次の場所に。|exclusive|
+@quotation
+@strong{Note:} @*
+しばしば |exclusive-linewise| になる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*[[*
+[[			[count] sections backward or to the previous '{' in
+			the first column.  |exclusive|
+			Note that |exclusive-linewise| often applies.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{[[}
+@cindex [[
+@item [[
+[count] セクション後方に、もしくは 1 桁目が '@{' で始まる前の場所に。|exclusive|
+@quotation
+@strong{Note:} @*
+しばしば |exclusive-linewise| になる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*[]*
+[]			[count] sections backward or to the previous '}' in
+			the first column.  |exclusive|
+			Note that |exclusive-linewise| often applies.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{[]}
+@cindex []
+@item []
+[count] セクション後方に、もしくは 1 桁目が '@}' で始まる前の場所に。|exclusive|
+@quotation
+@strong{Note:} @*
+しばしば |exclusive-linewise| になる。
+@end quotation
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These commands move over three kinds of text objects.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのコマンドは 3 種類のテキストのまとまりの単位で移動します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*sentence*
+A sentence is defined as ending at a '.', '!' or '?' followed by either the
+end of a line, or by a space or tab.  Any number of closing ')', ']', '"'
+and ''' characters may appear after the '.', '!' or '?' before the spaces,
+tabs or end of line.  A paragraph and section boundary is also a sentence
+boundary.
+If the 'J' flag is present in 'cpoptions', at least two spaces have to
+follow the punctuation mark; <Tab>s are not recognized as white space.
+The definition of a sentence cannot be changed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sentence}
+@cindex sentence
+文は '.', '!', '?' で終わり、その後に行末かスペースもしくはタブが続くものとして定義されます。任意の数の閉じ ')', ']', '"', ''' 文字が '.', '!', '?' の後に、そして改行もしくはスペースかタブの前に現れてもよいです。段落とセクションの境界は文の境界でもあります。
+
+もし 'J' フラグが '@option{cpoptions}' にある場合は句読点の後に少なくとも 2 つのスペースがある必要があります; <Tab> はホワイトスペースとして認識されません。文の定義を変更することはできません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*paragraph*
+A paragraph begins after each empty line, and also at each of a set of
+paragraph macros, specified by the pairs of characters in the 'paragraphs'
+option.  The default is "IPLPPPQPP TPHPLIPpLpItpplpipbp", which corresponds to
+the macros ".IP", ".LP", etc.  (These are nroff macros, so the dot must be in
+the first column).  A section boundary is also a paragraph boundary.
+Note that a blank line (only containing white space) is NOT a paragraph
+boundary.
+Also note that this does not include a '{' or '}' in the first column.  When
+the '{' flag is in 'cpoptions' then '{' in the first column is used as a
+paragraph boundary |posix|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{paragraph}
+@cindex paragraph
+段落はそれぞれ空行の後から始まり、そしてまた段落マクロのセットからそれぞれ始まります。段落マクロは '@option{paragraphs}' オプションで指定されている文字のペアです。デフォルトで "IPLPPPQPP TPHPLIPpLpItpplpipbp" で、".IP", ".LP", などのマクロに一致します (これらは nroff のマクロです。ですのでドットは 1 桁目になければなりません)。セクションの境界は段落の境界でもあります。空行 (ホワイトスペースのみを含む行) は、段落の境界ではないということに注意してください。
+
+これは '@{' か '@}' を1桁目には含んでいないということにも注意してください。'@option{cpoptions}' にフラグ "@{" が入っていると1桁目の "@{" が段落の境界とみなされるようになります。|posix|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*section*
+A section begins after a form-feed (<C-L>) in the first column and at each of
+a set of section macros, specified by the pairs of characters in the
+'sections' option.  The default is "SHNHH HUnhsh", which defines a section to
+start at the nroff macros ".SH", ".NH", ".H", ".HU", ".nh" and ".sh".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{section}
+@cindex section
+セクションは 1 桁目の改ページ (form-feed) (<C-L>) の後から始まり、そしてセクションマクロのセットからそれぞれ始まります。セクションマクロは '@option{sections}' オプションで定義される文字のペアです。デフォルトは "SHNHH HUnhsh" で ".SH", ".NH", ".H", ".HU", ".nh", ".sh" といった nroff マクロでセクションを開始するものを定義しています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "]" and "[" commands stop at the '{' or '}' in the first column.  This is
+useful to find the start or end of a function in a C program.  Note that the
+first character of the command determines the search direction and the
+second character the type of brace found.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"]" と "[" コマンドは1桁目の '@{' もしくは '@}' でストップします。これは C のプログラムで関数の最初か最後を見つけるのに便利です。2 番目にタイプされたタイプの括弧が探されるということに留意しておいてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If your '{' or '}' are not in the first column, and you would like to use "[["
+and "]]" anyway, try these mappings: >
+   :map [[ ?{<CR>w99[{
+   :map ][ /}<CR>b99]}
+   :map ]] j0[[%/{<CR>
+   :map [] k$][%?}<CR>
+[type these literally, see |<>|]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もし '@{' か '@}' が 1 桁目にはないけれど、とにかく "[[" と "]]" を使って検索したい場合は次のマッピングを使ってみてください:
+@example
+:map [[ ?@{<CR>w99[@{
+:map ][ /@}<CR>b99]@}
+:map ]] j0[[%/@{<CR>
+:map [] k$][%?@}<CR>
+@end example
+[これらはそのままタイプしてください。参照 |<>|]
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Text object selection			*object-select* *text-objects*
+						*v_a* *v_i*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{object-select}
+@anchor{text-objects}
+@anchor{v_a}
+@anchor{v_i}
+@cindex object-select
+@cindex text-objects
+@cindex v_a
+@cindex v_i
+@unnumberedsubsec 6. オブジェクト単位で選択
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is a series of commands that can only be used while in Visual mode or
+after an operator.  The commands that start with "a" select "a"n object
+including white space, the commands starting with "i" select an "inner" object
+without white space, or just the white space.  Thus the "inner" commands
+always select less text than the "a" commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のものはビジュアルモードかオペレータコマンドの後でのみ使うことができる一連のコマンドを示しています。"a" で始まるコマンドは "a" (1 つの) まとまりをホワイトスペースを含めて選択します。"i" で始まるコマンドはまとまりの "inner" (内部) をホワイトスペースを含まずに選択するか、もしくはホワイトスペースのみを選択します。ですので、"inner" コマンドは常に "a" コマンドより少なくテキストを選択することになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These commands are {not in Vi}.
+These commands are not available when the |+textobjects| feature has been
+disabled at compile time.
+Also see `gn` and `gN`, operating on the last search pattern.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのコマンドは @{Vi にはありません@}
+
+これらのコマンドはコンパイル時に |+textobjects| 機能を無効にしていた場合には使えません。
+
+最後に使われた検索パターンによる操作をするには `gn` と `gN` を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_aw* *aw*
+aw			"a word", select [count] words (see |word|).
+			Leading or trailing white space is included, but not
+			counted.
+			When used in Visual linewise mode "aw" switches to
+			Visual characterwise mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_aw}
+@anchor{aw}
+@cindex v_aw
+@cindex aw
+@table @asis
+@item aw
+"a word"、[count] word 選択します (参照 |word|)。
+
+単語の前後に続いているホワイトスペースもともに含められますがカウントはされません。
+
+行単位ビジュアルモードで使われたときは、"aw" は文字単位ビジュアルモードに切り替えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_iw* *iw*
+iw			"inner word", select [count] words (see |word|).
+			White space between words is counted too.
+			When used in Visual linewise mode "iw" switches to
+			Visual characterwise mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_iw}
+@anchor{iw}
+@cindex v_iw
+@cindex iw
+@item iw
+"inner word"、[count] word 選択します (参照 |word|)。
+
+word の間のホワイトスペースもカウントされます。
+
+行単位ビジュアルモードで使われたときは、"iw" は文字単位ビジュアルモードに切り替えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_aW* *aW*
+aW			"a WORD", select [count] WORDs (see |WORD|).
+			Leading or trailing white space is included, but not
+			counted.
+			When used in Visual linewise mode "aW" switches to
+			Visual characterwise mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_aW}
+@anchor{aW}
+@cindex v_aW
+@cindex aW
+@item aW
+"a WORD"、[count] WORD 選択します (参照 |WORD|)。
+
+単語の前後に続いているホワイトスペースも含められますがカウントはされません。
+
+行単位ビジュアルモードで使われたときは、"aW" は文字単位ビジュアルモードに切り替えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_iW* *iW*
+iW			"inner WORD", select [count] WORDs (see |WORD|).
+			White space between words is counted too.
+			When used in Visual linewise mode "iW" switches to
+			Visual characterwise mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_iW}
+@anchor{iW}
+@cindex v_iW
+@cindex iW
+@item iW
+"inner WORD"、[count] WORD 選択します (参照 |WORD|)。
+
+ホワイトスペースもカウントされます。
+
+行単位ビジュアルモードで使われたときは、"iW" は文字単位ビジュアルモードに切り替えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_as* *as*
+as			"a sentence", select [count] sentences (see
+			|sentence|).
+			When used in Visual mode it is made characterwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_as}
+@anchor{as}
+@cindex v_as
+@cindex as
+@item as
+"a sentence"、[count] 文選択します (参照 |sentence|)。
+
+ビジュアルモードで使われたときは、文字単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_is* *is*
+is			"inner sentence", select [count] sentences (see
+			|sentence|).
+			When used in Visual mode it is made characterwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_is}
+@anchor{is}
+@cindex v_is
+@cindex is
+@item is
+"inner sentence"、[count] 文の内部を選択します (参照 |sentence|)。
+
+ビジュアルモードで使われたときは、文字単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_ap* *ap*
+ap			"a paragraph", select [count] paragraphs (see
+			|paragraph|).
+			Exception: a blank line (only containing white space)
+			is also a paragraph boundary.
+			When used in Visual mode it is made linewise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_ap}
+@anchor{ap}
+@cindex v_ap
+@cindex ap
+@item ap
+"a paragraph"、[count] 段落選択します (参照 |paragraph|)。
+
+例外: 空行 (空白だけからなる) も段落の境界になります。ビジュアルモードで使われたときは、行単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_ip* *ip*
+ip			"inner paragraph", select [count] paragraphs (see
+			|paragraph|).
+			Exception: a blank line (only containing white space)
+			is also a paragraph boundary.
+			When used in Visual mode it is made linewise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_ip}
+@anchor{ip}
+@cindex v_ip
+@cindex ip
+@item ip
+"inner paragraph"、[count] 段落の内部を選択します(参照 |paragraph|)。
+
+例外: 空行 (空白だけからなる) も段落の境界になります。ビジュアルモードで使われたときは、行単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+a]						*v_a]* *v_a[* *a]* *a[*
+a[			"a [] block", select [count] '[' ']' blocks.  This
+			goes backwards to the [count] unclosed '[', and finds
+			the matching ']'.  The enclosed text is selected,
+			including the '[' and ']'.
+			When used in Visual mode it is made characterwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_a]}
+@anchor{v_a[}
+@anchor{a]}
+@anchor{a[}
+@cindex v_a]
+@cindex v_a[
+@cindex a]
+@cindex a[
+@item a] or a[
+"a [] block"、[count] '[' ']' block を選択します。このコマンドは後方に [count] 番目に現れる '[' を探し、それから対応する ']' を探します。そしてその2つに囲まれたテキストを '[' と ']' も含めて選択します。
+
+ビジュアルモードで使われたときは、文字単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+i]						*v_i]* *v_i[* *i]* *i[*
+i[			"inner [] block", select [count] '[' ']' blocks.  This
+			goes backwards to the [count] unclosed '[', and finds
+			the matching ']'.  The enclosed text is selected,
+			excluding the '[' and ']'.
+			When used in Visual mode it is made characterwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_i]}
+@anchor{v_i[}
+@anchor{i]}
+@anchor{i[}
+@cindex v_i]
+@cindex v_i[
+@cindex i]
+@cindex i[
+@item i] or i[
+"inner [] block"、[count] '[' ']' block の内部を選択します。このコマンドは後方に [count] 番目に現れる '[' を探し、それから対応する ']' を探します。そしてその 2 つに囲まれたテキストを '[' と ']' を除いて選択します。
+
+ビジュアルモードで使われたときは、文字単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+a)							*v_a)* *a)* *a(*
+a(							*vab* *v_ab* *v_a(* *ab*
+ab			"a block", select [count] blocks, from "[count] [(" to
+			the matching ')', including the '(' and ')' (see
+			|[(|).  Does not include white space outside of the
+			parenthesis.
+			When used in Visual mode it is made characterwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_a)}
+@anchor{a)}
+@anchor{a(}
+@anchor{vab}
+@anchor{v_ab}
+@anchor{v_a(}
+@anchor{ab}
+@cindex v_a)
+@cindex a)
+@cindex a(
+@cindex vab
+@cindex v_ab
+@cindex v_a(
+@cindex ab
+@item a) or a( or ab
+"a block"、[count] block 選択します。"[count] [(" からそれに対応する ')' までで、'(' と ')' を含みます (参照 |[(|)。括弧の外側の空白は含みません。
+
+ビジュアルモードで使われたときは、文字単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+i)							*v_i)* *i)* *i(*
+i(							*vib* *v_ib* *v_i(* *ib*
+ib			"inner block", select [count] blocks, from "[count] [("
+			to the matching ')', excluding the '(' and ')' (see
+			|[(|).
+			When used in Visual mode it is made characterwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_i)}
+@anchor{i)}
+@anchor{i(}
+@anchor{vib}
+@anchor{v_ib}
+@anchor{v_i(}
+@anchor{ib}
+@cindex v_i)
+@cindex i)
+@cindex i(
+@cindex vib
+@cindex v_ib
+@cindex v_i(
+@cindex ib
+@item i) or i( or ib
+"inner block"、[count] block の内部を選択します。"[count] [(" からそれに対応する ')' までで、'(' と ')' を除きます(参照 |[(|)。
+
+ビジュアルモードで使われたときは、文字単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+a>						*v_a>* *v_a<* *a>* *a<*
+a<			"a <> block", select [count] <> blocks, from the
+			[count]'th unmatched '<' backwards to the matching
+			'>', including the '<' and '>'.
+			When used in Visual mode it is made characterwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_a>}
+@anchor{v_a<}
+@anchor{a>}
+@anchor{a<}
+@cindex v_a>
+@cindex v_a<
+@cindex a>
+@cindex a<
+@item a> or a<
+"a <> block"、[count] <> block 選択します。[count] 番目に現れる '<' を検索し、それに対応する '>' までを '<' と '>' を含めて選択します。
+
+ビジュアルモードで使われたときは、文字単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+i>						*v_i>* *v_i<* *i>* *i<*
+i<			"inner <> block", select [count] <> blocks, from
+			the [count]'th unmatched '<' backwards to the matching
+			'>', excluding the '<' and '>'.
+			When used in Visual mode it is made characterwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_i>}
+@anchor{v_i<}
+@anchor{i>}
+@anchor{i<}
+@cindex v_i>
+@cindex v_i<
+@cindex i>
+@cindex i<
+@item i> or i<
+"inner <> block"、[count] <> block の内部を選択します。[count] 番目に現れる '<' を検索し、それに対応する '>' までを '<' と '>' を除いて選択します。
+
+ビジュアルモードで使われたときは、文字単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*v_at* *at*
+at			"a tag block", select [count] tag blocks, from the
+			[count]'th unmatched "<aaa>" backwards to the matching
+			"</aaa>", including the "<aaa>" and "</aaa>".
+			See |tag-blocks| about the details.
+			When used in Visual mode it is made characterwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_at}
+@anchor{at}
+@cindex v_at
+@cindex at
+@item at
+"a tag block"、[count] 個のタグブロックを選択します。後方の [count] 番目の対応しない "<aaa>" からそれに対応する "</aaa>" までを含みます。詳しくは |tag-blocks| を参照してください。
+
+ビジュアルモードで使われたときは文字単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*v_it* *it*
+it			"inner tag block", select [count] tag blocks, from the
+			[count]'th unmatched "<aaa>" backwards to the matching
+			"</aaa>", excluding the "<aaa>" and "</aaa>".
+			See |tag-blocks| about the details.
+			When used in Visual mode it is made characterwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_it}
+@anchor{it}
+@cindex v_it
+@cindex it
+@item it
+"inner tag block"、[count]個のタグブロックを選択します。後方の [count] 番目の対応しない "<aaa>" からそれに対応する "</aaa>" までで、"<aaa>" と "</aaa>" を除きます。詳しくは |tag-blocks| を参照してください。
+
+ビジュアルモードで使われたときは文字単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+a}							*v_a}* *a}* *a{*
+a{							*v_aB* *v_a{* *aB*
+aB			"a Block", select [count] Blocks, from "[count] [{" to
+			the matching '}', including the '{' and '}' (see
+			|[{|).
+			When used in Visual mode it is made characterwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_a@}}
+@anchor{a@}}
+@anchor{a@{}
+@anchor{v_aB}
+@anchor{v_a@{}
+@anchor{aB}
+@cindex v_a@}
+@cindex a@}
+@cindex a@{
+@cindex v_aB
+@cindex v_a@{
+@cindex aB
+@item a@} or a@{ or aB
+"a Block"、[count] Block 選択します。"[count] [@{" からそれに対応する '@}' までで '@{' と '@}' を含みます (参照 |[@{|)。
+
+ビジュアルモードで使われたときは、文字単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+i}							*v_i}* *i}* *i{*
+i{							*v_iB* *v_i{* *iB*
+iB			"inner Block", select [count] Blocks, from "[count] [{"
+			to the matching '}', excluding the '{' and '}' (see
+			|[{|).
+			When used in Visual mode it is made characterwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_i@}}
+@anchor{i@}}
+@anchor{i@{}
+@anchor{v_iB}
+@anchor{v_i@{}
+@anchor{iB}
+@cindex v_i@}
+@cindex i@}
+@cindex i@{
+@cindex v_iB
+@cindex v_i@{
+@cindex iB
+@item i@} or i@{ or iB
+"inner Block"、[count] Block 選択します。"[count] [@{" からそれに対応する '@}' までで '@{' と '@}' を除きます(参照 |[@{|)。
+
+ビジュアルモードで使われたときは、文字単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+a"							*v_aquote* *aquote*
+a'							*v_a'* *a'*
+a`							*v_a`* *a`*
+			"a quoted string".  Selects the text from the previous
+			quote until the next quote.  The 'quoteescape' option
+			is used to skip escaped quotes.
+			Only works within one line.
+			When the cursor starts on a quote, Vim will figure out
+			which quote pairs form a string by searching from the
+			start of the line.
+			Any trailing white space is included, unless there is
+			none, then leading white space is included.
+			When used in Visual mode it is made characterwise.
+			Repeating this object in Visual mode another string is
+			included.  A count is currently not used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_aquote}
+@anchor{aquote}
+@anchor{v_a'}
+@anchor{a'}
+@anchor{v_a`}
+@anchor{a`}
+@cindex v_aquote
+@cindex aquote
+@cindex v_a'
+@cindex a'
+@cindex v_a`
+@cindex a`
+@item a" or a' or a`
+"a quoted string"。前の引用符から次の引用符までを選択します。オプション '@option{quoteescape}' を使ってエスケープされた引用符をスキップします。
+
+1 行内でだけ動作します。
+
+カーソルを引用符の上において実行されると、行の先頭から検索し、どの引用符のペアが文字列をなすかを調べます。後に空白文字があると、それも含まれます。ない場合、前に空白文字があれば含まれます。
+
+ビジュアルモードで使われたときは文字単位になります。ビジュアルモードでこのオブジェクトが繰り返し使われると、別の文字列を含むように選択範囲を拡大します。現在のところ、カウントは使われません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+i"							*v_iquote* *iquote*
+i'							*v_i'* *i'*
+i`							*v_i`* *i`*
+			Like a", a' and a`, but exclude the quotes and
+			repeating won't extend the Visual selection.
+			Special case: With a count of 2 the quotes are
+			included, but no extra white space as with a"/a'/a`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_iquote}
+@anchor{iquote}
+@anchor{v_i'}
+@anchor{i'}
+@anchor{v_i`}
+@anchor{i`}
+@cindex v_iquote
+@cindex iquote
+@cindex v_i'
+@cindex i'
+@cindex v_i`
+@cindex i`
+@item i" or i' or i`
+a", a', a` と同様ですが、引用符を含まず、繰り返し使われたとき選択範囲を拡大しません。
+
+特別な場合: カウントに2が指定された場合引用符が含まれます。ただし a"/a'/a` とは違い、前後の空白文字は含まれません。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When used after an operator:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec オペレータコマンドの後に使われた場合:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+For non-block objects:
+	For the "a" commands: The operator applies to the object and the white
+	space after the object.  If there is no white space after the object
+	or when the cursor was in the white space before the object, the white
+	space before the object is included.
+	For the "inner" commands: If the cursor was on the object, the
+	operator applies to the object.  If the cursor was on white space, the
+	operator applies to the white space.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item ブロック以外のオブジェクト:
+"a" コマンド: オペレータコマンドはオブジェクトとオブジェクトの後に続くホワイトスペースに対して施されます。オブジェクトの後にホワイトスペースがないか、もしくはオブジェクトの前のホワイトスペースにカーソルが位置している場合オブジェクトの前のホワイトスペースも含まれます。
+
+"inner" コマンド: カーソルがオブジェクト上にあればオペレータコマンドはオブジェクトに対して施されます。カーソルがホワイトスペース上にあればホワイトスペースに対して施されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+For a block object:
+	The operator applies to the block where the cursor is in, or the block
+	on which the cursor is on one of the braces.  For the "inner" commands
+	the surrounding braces are excluded.  For the "a" commands, the braces
+	are included.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ブロックオブジェクト:
+オペレータコマンドはカーソルがその内側に位置しているブロック、もしくは囲んでいる括弧上にカーソルがあるブロックに対して施されます。"inner" コマンドは囲んでいる括弧以外に対して施され、"a" コマンドの場合は括弧も含められます。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When used in Visual mode:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec ビジュアルモードで使われた場合:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When start and end of the Visual area are the same (just after typing "v"):
+	One object is selected, the same as for using an operator.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item ビジュアル範囲の初めと終わりが同一の場合(単に "v" と打っただけの場合):
+オペレータコマンドを使う場合と同様1つのオブジェクトが選択されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When start and end of the Visual area are not the same:
+	For non-block objects the area is extended by one object or the white
+	space up to the next object, or both for the "a" objects.  The
+	direction in which this happens depends on which side of the Visual
+	area the cursor is.  For the block objects the block is extended one
+	level outwards.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ビジュアル範囲の初めと終わりが同一でない場合:
+ブロック以外のオブジェクトの場合はビジュアル範囲を1オブジェクト分広げるか、もしくは次のオブジェクトまでのホワイトスペースまで広げます。"a" オブジェクトの場合はそれら両方を含みます。広げる方向はカーソルがビジュアル範囲のどちら側にあるかによります。つまりブロックオブジェクトの場合はブロックは1レベル外側に広げられます。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For illustration, here is a list of delete commands, grouped from small to big
+objects.  Note that for a single character and a whole line the existing vi
+movement commands are used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実例として削除コマンドのリストを挙げます。小さいオブジェクトから大きいオブジェクトの順で並べられています。1 文字と行全体の削除については今までにも存在していた vi 移動コマンドが使われているということに注意してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	"dl"	delete character (alias: "x")		|dl|
+	"diw"	delete inner word			*diw*
+	"daw"	delete a word				*daw*
+	"diW"	delete inner WORD (see |WORD|)		*diW*
+	"daW"	delete a WORD (see |WORD|)		*daW*
+	"dgn"   delete the next search pattern match    *dgn*
+	"dd"	delete one line				|dd|
+	"dis"	delete inner sentence			*dis*
+	"das"	delete a sentence			*das*
+	"dib"	delete inner '(' ')' block		*dib*
+	"dab"	delete a '(' ')' block			*dab*
+	"dip"	delete inner paragraph			*dip*
+	"dap"	delete a paragraph			*dap*
+	"diB"	delete inner '{' '}' block		*diB*
+	"daB"	delete a '{' '}' block			*daB*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .05 .2 .75
+@item @tab "dl" @tab 1 文字削除 ("x" と同じです) |dl|
+@anchor{diw}
+@cindex diw
+@item @tab "diw" @tab inner word を削除
+@anchor{daw}
+@cindex daw
+@item @tab "daw" @tab a word を削除
+@anchor{diW}
+@cindex diW
+@item @tab "diW" @tab inner WORD を削除 (参照: |WORD|)
+@anchor{daW}
+@cindex daW
+@item @tab "daW" @tab a WORD を削除 (参照: |WORD|)
+@anchor{dgn}
+@cindex dgn
+@item @tab "dgn" @tab 次に検索パターンにマッチするものを削除
+@item @tab "dd" @tab 1 行削除 |dd|
+@anchor{dis}
+@cindex dis
+@item @tab "dis" @tab inner sentence を削除
+@anchor{das}
+@cindex das
+@item @tab "das" @tab a sentence を削除
+@anchor{dib}
+@cindex dib
+@item @tab "dib" @tab inner '(' ')' block を削除
+@anchor{dab}
+@cindex dab
+@item @tab "dab" @tab a '(' ')' block を削除
+@anchor{dip}
+@cindex dip
+@item @tab "dip" @tab inner paragraph を削除
+@anchor{dap}
+@cindex dap
+@item @tab "dap" @tab a paragraph を削除
+@anchor{diB}
+@cindex diB
+@item @tab "diB" @tab inner '@{' '@}' Block を削除
+@anchor{daB}
+@cindex daB
+@item @tab "daB" @tab a '@{' '@}' Block を削除
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note the difference between using a movement command and an object.  The
+movement command operates from here (cursor position) to where the movement
+takes us.  When using an object the whole object is operated upon, no matter
+where on the object the cursor is.  For example, compare "dw" and "daw": "dw"
+deletes from the cursor position to the start of the next word, "daw" deletes
+the word under the cursor and the space after or before it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+移動コマンドを使う場合とオブジェクトを使う場合の違いに留意しておいてください。移動コマンドの場合はカーソルの位置から移動後の位置までに処理を施します。オブジェクトを使った場合はカーソルがオブジェクトの中のどこに位置していてもオペレータはオブジェクト全体に施されます。例として "dw" と "daw" を比べてみましょう: "dw" はカーソルの位置から次の word の初めまでを削除し、"daw" はカーソルの位置の単語と前後のスペースを削除します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Tag blocks						*tag-blocks*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tag-blocks}
+@cindex tag-blocks
+@unnumberedsubsubsec タグブロック
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For the "it" and "at" text objects an attempt is done to select blocks between
+matching tags for HTML and XML.  But since these are not completely compatible
+there are a few restrictions.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストオブジェクト "it" と "at" では HTML や XML の対応するタグの間のブロックを選択しようとします。しかしこれらは完全な互換ではないため、いくつかの制限があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The normal method is to select a <tag> until the matching </tag>.  For "at"
+the tags are included, for "it" they are excluded.  But when "it" is repeated
+the tags will be included (otherwise nothing would change).  Also, "it" used
+on a tag block with no contents will select the leading tag.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+通常の方法は <tag> から対応する </tag> までを選択します。"at" はそのタグ自身を含み、"it" はタグ自身を除きます。しかし "it" が繰り返し使われるとタグ自身が含まれます(そうでないと何も変わらない)。また、中身が何もないタグブロックの上で "it" を使うと開始タグが選択されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"<aaa/>" items are skipped.  Case is ignored, also for XML where case does
+matter.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"<aaa/>" はスキップされます。本来 XML では大文字・小文字の違いは区別されますが、Vim はその違いを無視します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In HTML it is possible to have a tag like <br> or <meta ...> without a
+matching end tag.  These are ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+HTML では <br> や <meta ...> のように対応する終了タグを持たないタグもありえます。これらは無視されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The text objects are tolerant about mistakes.  Stray end tags are ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このテキストオブジェクトはミスも許容します。対応する開始タグがない終了タグは無視されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. Marks					*mark-motions* *E20* *E78*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mark-motions}
+@anchor{E20}
+@anchor{E78}
+@cindex mark-motions
+@cindex E20
+@cindex E78
+@unnumberedsubsec 7. マーク
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Jumping to a mark can be done in two ways:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マークへジャンプするには２つの方法があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. With ` (backtick):	  The cursor is positioned at the specified location
+			  and the motion is |exclusive|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item
+` (バッククォート) で  : カーソルは指定された位置に置かれます。|exclusive|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+2. With ' (single quote): The cursor is positioned on the first non-blank
+			  character in the line of the specified location and
+			  the motion is linewise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+' (シングルクォート)で: カーソルは指定された位置の行の最初の非空白文字に置かれ移動は行単位です。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*m* *mark* *Mark*
+m{a-zA-Z}		Set mark {a-zA-Z} at cursor position (does not move
+			the cursor, this is not a motion command).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{m}
+@anchor{mark}
+@anchor{Mark}
+@cindex m
+@cindex mark
+@cindex Mark
+@table @asis
+@item m@{a-zA-Z@}
+カーソル位置を @{a-zA-Z@} にマークします(これは移動コマンドではありません。ですのでカーソルは動きません)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*m'* *m`*
+m'  or  m`		Set the previous context mark.  This can be jumped to
+			with the "''" or "``" command (does not move the
+			cursor, this is not a motion command).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{m'}
+@anchor{m`}
+@cindex m'
+@cindex m`
+@item m' or m`
+直前位置マークをセットします。"''" もしくは "``" コマンドでこの位置に移動できます。(移動コマンドではありません。ですのでカーソルは動きません)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*m[* *m]*
+m[  or  m]		Set the |'[| or |']| mark.  Useful when an operator is
+			to be simulated by multiple commands.  (does not move
+			the cursor, this is not a motion command).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{m[}
+@anchor{m]}
+@cindex m[
+@cindex m]
+@item m[ or m]
+マーク |'[| or |']| をセットします。オペレータコマンドが複数のコマンドでシミュレートされるときに便利です。(移動コマンドではありません。ですのでカーソルは動きません)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*m<* *m>*
+m<  or  m>		Set the |'<| or |'>| mark.  Useful to change what the
+			`gv` command selects.  (does not move the cursor, this
+			is not a motion command).
+			Note that the Visual mode cannot be set, only the
+			start and end position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{m<}
+@anchor{m>}
+@cindex m<
+@cindex m>
+@item m< or m>
+マーク |'<| or |'>| をセットします。`gv` コマンドで選択される範囲を変更するのに便利です。(移動コマンドありません。ですのでカーソルは動きません)。
+@quotation
+@strong{Note:} @*
+ビジュアルモードは設定できません。開始と終了の位置のみ設定できます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:ma* *:mark* *E191*
+:[range]ma[rk] {a-zA-Z'}
+			Set mark {a-zA-Z'} at last line number in [range],
+			column 0.  Default is cursor line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ma}
+@anchor{:mark}
+@anchor{E191}
+@cindex :ma
+@cindex :mark
+@cindex E191
+@item :[range]ma[rk] @{a-zA-Z'@}
+[range] の範囲の最後の行番号の 0 桁目を @{a-zA-Z@} にマークします。デフォルトはカーソル行です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:k*
+:[range]k{a-zA-Z'}	Same as :mark, but the space before the mark name can
+			be omitted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:k}
+@cindex :k
+@item :[range]k@{a-zA-Z'@}
+:mark コマンドと同じですが、マーク名の前のスペースは挿入しなくてもよいです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*'* *'a* *`* *`a*
+'{a-z}  `{a-z}		Jump to the mark {a-z} in the current buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'}
+@anchor{'a}
+@anchor{`}
+@anchor{`a}
+@cindex '
+@cindex 'a
+@cindex `
+@cindex `a
+@item '@{a-z@} `@{a-z@}
+カレントバッファのマーク @{a-z@} へジャンプ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*'A* *'0* *`A* *`0*
+'{A-Z0-9}  `{A-Z0-9}	To the mark {A-Z0-9} in the file where it was set (not
+			a motion command when in another file).  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'A}
+@anchor{'0}
+@anchor{`A}
+@anchor{`0}
+@cindex 'A
+@cindex '0
+@cindex `A
+@cindex `0
+@item '@{A-Z0-9@} `@{A-Z0-9@}
+マーク @{A-Z0-9@} を含むファイル・位置へジャンプ。(別のファイルにある場合は移動コマンドにはなりません)。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*g'* *g'a* *g`* *g`a*
+g'{mark}  g`{mark}
+			Jump to the {mark}, but don't change the jumplist when
+			jumping within the current buffer.  Example: >
+				g`"
+<			jumps to the last known position in a file.  See
+			$VIMRUNTIME/vimrc_example.vim.
+			Also see |:keepjumps|.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g'}
+@anchor{g'a}
+@anchor{g`}
+@anchor{g`a}
+@cindex g'
+@cindex g'a
+@cindex g`
+@cindex g`a
+@item g'@{mark@} g`@{mark@}
+@{mark@} へジャンプするが、カレントバッファ内で移動する場合にはジャンプリストを変更しない。例:
+@example
+g`"
+@end example
+これはファイル内の最後の記憶している位置にジャンプする。$VIMRUNTIME/vimrc_example.vim を参照。|:keepjumps| も参照。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:marks*
+:marks			List all the current marks (not a motion command).
+			The |'(|, |')|, |'{| and |'}| marks are not listed.
+			The first column has number zero.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:marks}
+@cindex :marks
+@item :marks
+現在のマークを全てリストします(移動コマンドではありません)。|'(|, |')|, |'@{| と |'@}| マークはリストされません。1 桁目は桁番号 0 となります。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*E283*
+:marks {arg}		List the marks that are mentioned in {arg} (not a
+			motion command).  For example: >
+				:marks aB
+<			to list marks 'a' and 'B'.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E283}
+@cindex E283
+@item :marks @{arg@}
+@{arg@} で指定されるマークをリストします(移動コマンドではありません)。例:
+@example
+:marks aB
+@end example
+マーク 'a' と 'B' をリストします。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:delm* *:delmarks*
+:delm[arks] {marks}	Delete the specified marks.  Marks that can be deleted
+			include A-Z and 0-9.  You cannot delete the ' mark.
+			They can be specified by giving the list of mark
+			names, or with a range, separated with a dash.  Spaces
+			are ignored.  Examples: >
+			   :delmarks a	      deletes mark a
+			   :delmarks a b 1    deletes marks a, b and 1
+			   :delmarks Aa       deletes marks A and a
+			   :delmarks p-z      deletes marks in the range p to z
+			   :delmarks ^.[]     deletes marks ^ . [ ]
+			   :delmarks \"	      deletes mark "
+<			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:delm}
+@anchor{:delmarks}
+@cindex :delm
+@cindex :delmarks
+@item :delm[arks] @{marks@}
+指定されたマークを削除します。削除できるマークは A-Z と 0-9 などです。マーク'は削除できません。それらはダッシュで区切られたマーク名のリストを与えることで指定できます。スペースは無視されます。例:
+@multitable @columnfractions .05 .45 .50
+@item @tab :delmarks a @tab マーク a を削除する
+@item @tab :delmarks a b 1 @tab マーク a, b, 1 を削除する
+@item @tab :delmarks Aa @tab マーク A, a を削除する
+@item @tab :delmarks p-z @tab p から z までのマークを削除する
+@item @tab :delmarks ^.[] @tab マーク ^ . [ ] を削除する
+@item @tab :delmarks \" @tab マーク " を削除する
+@end multitable
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:delm[arks]!		Delete all marks for the current buffer, but not marks
+			A-Z or 0-9.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :delm[arks]!
+A-Z, 0-9 を除くカレントバッファのすべてのマークを削除します。
+
+@{Vi にはありません@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A mark is not visible in any way.  It is just a position in the file that is
+remembered.  Do not confuse marks with named registers, they are totally
+unrelated.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マークはどのようにしても見えません。マークは単に覚えておかれるファイル中の位置に過ぎません。マークと名前付きレジスタを混同しないようにしてください、まったく別のものです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'a - 'z		lowercase marks, valid within one file
+'A - 'Z		uppercase marks, also called file marks, valid between files
+'0 - '9		numbered marks, set from .viminfo file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .05 .2 .75
+@item @tab 'a - 'z @tab 小文字のマークです。1 つのファイル中で有効です。
+@item @tab 'A - 'Z @tab 大文字のマークで、ファイルマークとも呼ばれます。ファイル間でも有効です。
+@item @tab '0 - '9 @tab 番号マークです。.viminfo ファイルによってセットされます。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Lowercase marks 'a to 'z are remembered as long as the file remains in the
+buffer list.  If you remove the file from the buffer list, all its marks are
+lost.  If you delete a line that contains a mark, that mark is erased.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+小文字のマーク 'a から 'z まではマークのあるファイルがバッファリストに存在する限り覚えておかれます。もしファイルをバッファリストから削除するとそのファイルに関するマーク一は全て失われます。またマークを含んでいる行を削除するとそのマークは消されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Lowercase marks can be used in combination with operators.  For example: "d't"
+deletes the lines from the cursor position to mark 't'.  Hint: Use mark 't' for
+Top, 'b' for Bottom, etc..  Lowercase marks are restored when using undo and
+redo.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+小文字のマークはオペレータコマンドとともに使うことができます。例: "d't" は現在のカーソル位置からマーク 't' までの行を削除します。@strong{Hint:} マーク 't' を Top 位置に設定したり、'b' を Bottom 位置に設定したりします。小文字のマークはアンドゥとリドゥによって復元することができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Uppercase marks 'A to 'Z include the file name.  {Vi: no uppercase marks} You
+can use them to jump from file to file.  You can only use an uppercase mark
+with an operator if the mark is in the current file.  The line number of the
+mark remains correct, even if you insert/delete lines or edit another file for
+a moment.  When the 'viminfo' option is not empty, uppercase marks are kept in
+the .viminfo file.  See |viminfo-file-marks|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+大文字のマーク 'A' から 'Z' はファイル名を含んでいます。@{Vi: 大文字のマークはありません@} ファイルからファイルに移動するのに使うことができます。大文字のマークをオペレータコマンドとともに使うにはマークは現在のファイルになければなりません。また大文字のマークの場合は行を挿入/削除したり一時的に他のファイルを編集したりしてもマークのある行番号は覚えておかれます。'@option{viminfo}' オプションの値が空でなければ大文字のマークは .viminfo ファイルに保持されます。参照: |viminfo-file-marks|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Numbered marks '0 to '9 are quite different.  They can not be set directly.
+They are only present when using a viminfo file |viminfo-file|.  Basically '0
+is the location of the cursor when you last exited Vim, '1 the last but one
+time, etc.  Use the "r" flag in 'viminfo' to specify files for which no
+Numbered mark should be stored.  See |viminfo-file-marks|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+番号マーク '0 から '9 まではこれらとはまったく異なります。直接セットすることはできず、viminfo ファイル |viminfo-file| を使っている場合にのみ存在します。基本的に '0 は最後に Vim を終了したときのカーソル位置であり、'1 は最後から 1 個前の位置、などなどです。特定のファイルを番号マークに保存しないようにするには '@option{viminfo}' の "@var{r}" フラグを使ってください。参照: |viminfo-file-marks|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+							*'[* *`[*
+'[  `[			To the first character of the previously changed
+			or yanked text.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'[}
+@anchor{`[}
+@cindex '[
+@cindex `[
+@table @asis
+@item '[ or `[
+直前に変更またはヤンクされたテキストの最初の文字へ移動します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*']* *`]*
+']  `]			To the last character of the previously changed or
+			yanked text.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{']}
+@anchor{`]}
+@cindex ']
+@cindex `]
+@item '] or `]
+直前に変更またはヤンクされたテキストの最後の文字へ移動します。
+
+@{Vi にはありません@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+After executing an operator the Cursor is put at the beginning of the text
+that was operated upon.  After a put command ("p" or "P") the cursor is
+sometimes placed at the first inserted line and sometimes on the last inserted
+character.  The four commands above put the cursor at either end.  Example:
+After yanking 10 lines you want to go to the last one of them: "10Y']".  After
+inserting several lines with the "p" command you want to jump to the lowest
+inserted line: "p']".  This also works for text that has been inserted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+なんらかのオペレータコマンドを実行した後は、カーソルはオペレータを施したテキストの初めに置かれます。プットコマンド ("p" もしくは "P") の後は、カーソルは挿入された最初の行に位置する場合と最後に挿入された文字に位置する場合があります。上の 4 つのコマンドはカーソルをどちらかの端に位置させます。
+
+例: 10 行ヤンクした後、その行の内の最後の行に移動したい場合は: "10Y']"。数行を "p" コマンドで挿入した後、1 番下に挿入された行に移動したい場合は: "p']"。これはすでに挿入済みのテキストに関しても動作させることができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: After deleting text, the start and end positions are the same, except
+when using blockwise Visual mode.  These commands do not work when no change
+was made yet in the current file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+矩形ビジュアルモードを使っているのでない限り、テキストの削除の後は始めと終わりの位置は同じです。これらのコマンドは、現在のファイルに対してまだ変更がされていない場合は動作しません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*'<* *`<*
+'<  `<			To the first line or character of the last selected
+			Visual area in the current buffer.  For block mode it
+			may also be the last character in the first line (to
+			be able to define the block).  {not in Vi}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'<}
+@anchor{`<}
+@cindex '<
+@cindex `<
+@table @asis
+@item '< or `<
+現在のバッファで最後に選択されたビジュアルエリアの最初の行 ('<) または最初の文字 (`<) に移動します。ブロックモードでは最初の行の最後の文字になる場合もあります (選択の開始位置による)。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*'>* *`>*
+'>  `>			To the last line or character of the last selected
+			Visual area in the current buffer.  For block mode it
+			may also be the first character of the last line (to
+			be able to define the block).  Note that 'selection'
+			applies, the position may be just after the Visual
+			area.  {not in Vi}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'>}
+@anchor{`>}
+@cindex '>
+@cindex `>
+@item '> or `>
+現在のバッファで最後に選択されたビジュアルエリアの最後の行 ('<) または最後の文字 (`<) に移動します。ブロックモードでは最後の行の最初の文字になる場合もあります(選択の '@option{selection}' が適用され、位置はビジュアルエリアの直後に開始位置による)。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*''* *``*
+''  ``			To the position before the latest jump, or where the
+			last "m'" or "m`" command was given.  Not set when the
+			|:keepjumps| command modifier was used.
+			Also see |restore-position|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{''}
+@anchor{``}
+@cindex ''
+@cindex ``
+@item '' or ``
+カーソルがジャンプする直前にいた、もしくは最後の "m'" か "m`" コマンドが行われた位置に移動します。|:keepjumps| コマンドモディファイヤが使われた場合にはセットされません。|restore-position| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*'quote* *`quote*
+'"  `"			To the cursor position when last exiting the current
+			buffer.  Defaults to the first character of the first
+			line.  See |last-position-jump| for how to use this
+			for each opened file.
+			Only one position is remembered per buffer, not one
+			for each window.  As long as the buffer is visible in
+			a window the position won't be changed.
+			{not in Vi}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'quote}
+@anchor{`quote}
+@item '" or `"
+現在のバッファを最後に終了した時のカーソル位置に移動します。デフォルトで最初の行の最初の文字に移動します。それぞれの開いたファイルでこれをどのようにして使うかについては |last-position-jump| をご覧下さい。
+
+ウィンドウごとに 1 つではなく、バッファに対して 1 つの位置が記憶されます。バッファがあるウィンドウに表示されている間はその位置は変わりません。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*'^* *`^*
+'^  `^			To the position where the cursor was the last time
+			when Insert mode was stopped.  This is used by the
+			|gi| command.  Not set when the |:keepjumps| command
+			modifier was used.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'^}
+@anchor{`^}
+@cindex '^
+@cindex `^
+@item '^ or `^
+最後に挿入モードが終了したときのカーソル位置に移動します。これは |gi| コマンドで使われます。|:keepjumps| コマンドモディファイヤが使われたときはセットされません。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*'.* *`.*
+'.  `.			To the position where the last change was made.  The
+			position is at or near where the change started.
+			Sometimes a command is executed as several changes,
+			then the position can be near the end of what the
+			command changed.  For example when inserting a word,
+			the position will be on the last character.
+			To jump to older changes use |g;|.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'.}
+@anchor{`.}
+@cindex '.
+@cindex `.
+@item '. or `.
+最後に変更された場所に移動します。変更が始まった場所かその近くです。1 つのコマンドが複数の変更をすることもあります。その場合は、変更の最後の近くになります。例えば、単語を入力をしたときは、最後の文字の上になります。さらに古い変更へジャンプするには |g;| が使えます。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*'(* *`(*
+'(  `(			To the start of the current sentence, like the |(|
+			command.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'(}
+@anchor{`(}
+@cindex '(
+@cindex `(
+@item '( or `(
+|(| コマンドのように、現在の文の最初に移動します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*')* *`)*
+')  `)			To the end of the current sentence, like the |)|
+			command.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{')}
+@anchor{`)}
+@cindex ')
+@cindex `)
+@item ') or `)
+|)| コマンドのように、現在の文の最後に移動します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*'{* *`{*
+'{  `{			To the start of the current paragraph, like the |{|
+			command.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'@{}
+@anchor{`@{}
+@cindex '@{
+@cindex `@{
+@item '@{ or `@{
+|@{| コマンドのように、現在の段落の最初に移動します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*'}* *`}*
+'}  `}			To the end of the current paragraph, like the |}|
+			command.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'@}}
+@anchor{`@}}
+@cindex '@}
+@cindex `@}
+@item '@} or `@}
+|@}| コマンドのように、現在の段落の最後に移動します。
+
+@{Vi にはありません@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These commands are not marks themselves, but jump to a mark:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのコマンドは、それ自身はマークではなく、マークへジャンプします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*]'*
+]'			[count] times to next line with a lowercase mark below
+			the cursor, on the first non-blank character in the
+			line. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{]'}
+@cindex ]'
+@table @asis
+@item ]'
+カーソルがある行から [count] 個先の小文字のマークがある行の最初の非空白文字へ移動します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*]`*
+]`			[count] times to lowercase mark after the cursor. {not
+			in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{]`}
+@cindex ]`
+@item ]`
+カーソル位置以降の [count] 個先の小文字のマークへ移動します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*['*
+['			[count] times to previous line with a lowercase mark
+			before the cursor, on the first non-blank character in
+			the line. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{['}
+@cindex ['
+@item ['
+カーソルがある行から [count] 個前の小文字のマークがある行の最初の非空白文字へ移動します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*[`*
+[`			[count] times to lowercase mark before the cursor.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{[`}
+@cindex [`
+@item [`
+カーソル位置より [count] 個前の小文字のマークへ移動します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+:loc[kmarks] {command}					*:loc* *:lockmarks*
+			Execute {command} without adjusting marks.  This is
+			useful when changing text in a way that the line count
+			will be the same when the change has completed.
+			WARNING: When the line count does change, marks below
+			the change will keep their line number, thus move to
+			another text line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:loc}
+@anchor{:lockmarks}
+@cindex :loc
+@cindex :lockmarks
+@item :loc[kmarks] @{command@}
+マークを調整することなく @{command@} を実行します。@{訳注: 普通にコマンドを実行したときはマーク位置が調整される@} これは、完了したときの行数が実行前と変わらないような変更をするときに便利です。
+
+@quotation
+@strong{警告:} @*
+行数が変わった場合には、変更箇所以降のマークは以前の行番号を持ち続けるので、別の行に移動することになります。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			These items will not be adjusted for deleted/inserted
+			lines:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下のものが行の削除・挿入後に調整されません:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			- lower case letter marks 'a - 'z
+			- upper case letter marks 'A - 'Z
+			- numbered marks '0 - '9
+			- last insert position '^
+			- last change position '.
+			- the Visual area '< and '>
+			- line numbers in placed signs
+			- line numbers in quickfix positions
+			- positions in the |jumplist|
+			- positions in the |tagstack|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 小文字のマーク 'a - 'z
+@item 大文字のマーク 'A - 'Z
+@item 番号マーク '0 - '9
+@item 最後の挿入箇所 '^
+@item 最後の変更箇所 '.
+@item ビジュアルエリア '< と '>
+@item 目印が設置された行の番号
+@item QuickFix 箇所の行番号
+@item |jumplist| 内の位置
+@item |tagstack| 内の位置
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			These items will still be adjusted:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下のものは調整されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			- previous context mark ''
+			- the cursor position
+			- the view of a window on a buffer
+			- folds
+			- diffs
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 直前の文脈マーク ''
+@item カーソル位置
+@item the view of a window on a buffer
+@item 折り畳み
+@item diffs
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:kee[pmarks] {command}					*:kee* *:keepmarks*
+			Currently only has effect for the filter command
+			|:range!|:
+			- When the number of lines after filtering is equal to
+			  or larger than before, all marks are kept at the
+			  same line number.
+			- When the number of lines decreases, the marks in the
+			  lines that disappeared are deleted.
+			In any case the marks below the filtered text have
+			their line numbers adjusted, thus stick to the text,
+			as usual.
+			When the 'R' flag is missing from 'cpoptions' this has
+			the same effect as using ":keepmarks".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:kee}
+@anchor{:keepmarks}
+@cindex :kee
+@cindex :keepmarks
+@item :kee[pmarks] @{command@}
+現在のところ、フィルターコマンド |:range!| にだけ効果があります:
+@itemize @minus
+@item フィルタリングの後の行数が実行前以上の場合、全てのマークは同じ行番号を持ち続けます。
+@item 行数が減る場合、削除された行中のマークは削除されます。
+@end itemize
+どちらの場合にも、フィルタされたテキスト以降のマークは通常通りテキストに一致するよう調整されます。'@option{cpoptions}' オプション中に '@var{R}' フラグがない場合、これは "@command{:keepmarks}" を使うのと同じ効果があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:keepj* *:keepjumps*
+:keepj[umps] {command}
+			Moving around in {command} does not change the |''|,
+			|'.| and |'^| marks, the |jumplist| or the
+			|changelist|.
+			Useful when making a change or inserting text
+			automatically and the user doesn't want to go to this
+			position.  E.g., when updating a "Last change"
+			timestamp in the first line: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:keepj}
+@anchor{:keepjumps}
+@cindex :keepj
+@cindex :keepjumps
+@item :keepj[umps] @{command@}
+@{command@} の実行中の移動でマーク |''|, |'.|, |'^| と |jumplist| や |changelist|を変更しないようにします。
+
+自動的に変更やテキストの挿入を行い、ユーザーがその位置に行きたくないという場合に便利です。例:タイムスタンプ "Last change" を更新するとき:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				:let lnum = line(".")
+				:keepjumps normal gg
+				:call SetLastChange()
+				:keepjumps exe "normal " . lnum . "G"
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:let lnum = line(".")
+:keepjumps normal gg
+:call SetLastChange()
+:keepjumps exe "normal " . lnum . "G"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Note that ":keepjumps" must be used for every command.
+			When invoking a function the commands in that function
+			can still change the jumplist.  Also, for
+			":keepjumps exe 'command '" the "command" won't keep
+			jumps.  Instead use: ":exe 'keepjumps command'"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"@command{:keepjumps}" はコマンドごとに使わねばなりません。関数を呼び出すとその関数の中のコマンドはジャンプリストを変えてしまいます。また、":keepjumps exe 'command '" とすると、この "command" はジャンプリストを変えてしまいます。そうでなくて ":exe 'keepjumps command'" としてください。
+@end quotation
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+8. Jumps					*jump-motions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{jump-motions}
+@cindex jump-motions
+@unnumberedsubsec 8. ジャンプ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A "jump" is one of the following commands: "'", "`", "G", "/", "?", "n",
+"N", "%", "(", ")", "[[", "]]", "{", "}", ":s", ":tag", "L", "M", "H" and
+the commands that start editing a new file.  If you make the cursor "jump"
+with one of these commands, the position of the cursor before the jump is
+remembered.  You can return to that position with the "''" and "``" command,
+unless the line containing that position was changed or deleted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+「ジャンプ」とは次のコマンドのどれかを意味します: 新しいファイルの編集を始めるコマンドと、"'", "`", "G", "/", "?","n", "N", "%", "(", ")", "[[", "]]", "@{","@}", ":s", ":tag", "L", "M", "H" です。これらのコマンドのうちのどれかを使ってカーソルを「ジャンプ」させた場合、ジャンプする前のカーソルの位置は覚えておかれます。その位置を含む行を削除したり変更したりしていなければ、"''" と "``" コマンドを使ってその位置に戻ることができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*CTRL-O*
+CTRL-O			Go to [count] Older cursor position in jump list
+			(not a motion command).
+			{not in Vi}
+			{not available without the |+jumplist| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-O}
+@cindex CTRL-O
+@table @asis
+@item CTRL-O
+ジャンプリストの中の [count] だけ古いカーソル位置に移動します (移動コマンドではありません)。
+
+@{Vi にはありません@}
+
+@{|+jumplist| 機能なしのときは使用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<Tab>		or					*CTRL-I* *<Tab>*
+CTRL-I			Go to [count] newer cursor position in jump list
+			(not a motion command).
+			{not in Vi}
+			{not available without the |+jumplist| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-I}
+@anchor{<Tab>}
+@cindex CTRL-I
+@cindex <Tab>
+@item <Tab> or CTRL-I
+ジャンプリストの中の [count] だけ新しいカーソル位置に移動します (移動コマンドではありません)。
+
+@{Vi にはありません@}
+
+@{|+jumplist| 機能なしのときは使用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:ju* *:jumps*
+:ju[mps]		Print the jump list (not a motion command).
+			{not in Vi}
+			{not available without the |+jumplist| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ju}
+@anchor{:jumps}
+@cindex :ju
+@cindex :jumps
+@item :ju[mps]
+ジャンプリストを表示させます(移動コマンドではありません)。
+
+@{Vi にはありません@}
+
+@{|+jumplist| 機能なしのときは使用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cle* *:clearjumps*
+:cle[arjumps]		Clear the jump list of the current window.
+			{not in Vi}
+			{not available without the |+jumplist| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cle}
+@anchor{:clearjumps}
+@cindex :cle
+@cindex :clearjumps
+@item :cle[arjumps]
+現在のウィンドウのジャンプリストを空にします。
+
+@{Vi にはありません@}
+
+@{|+jumplist| 機能なしのときは使用できない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*jumplist*
+Jumps are remembered in a jump list.  With the CTRL-O and CTRL-I command you
+can go to cursor positions before older jumps, and back again.  Thus you can
+move up and down the list.  There is a separate jump list for each window.
+The maximum number of entries is fixed at 100.
+{not available without the |+jumplist| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{jumplist}
+@cindex jumplist
+ジャンプはジャンプリストに覚えておかれ、@kbd{CTRL-O} と @kbd{CTRL-I} コマンドで前の古い位置に移動し、そして再び新しい位置に戻ることができます。このようにしてジャンプリストの中を上下に移動することができます。ジャンプリストはそれぞれのウィンドウで分かれており、エントリの最大の数は 50 に固定されています。
+
+@{|+jumplist| 機能なしのときは使用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, after three jump commands you have this jump list:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、3 回ジャンプを行った後ではジャンプリストは次のようになっています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  jump line  col file/text ~
+    3	  1    0 some text ~
+    2	 70    0 another line ~
+    1  1154   23 end. ~
+ > ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+ jump line  col file/text
+   3     1    0 some text
+   2    70    0 another line
+   1  1154   23 end.
+>
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "file/text" column shows the file name, or the text at the jump if it is
+in the current file (an indent is removed and a long line is truncated to fit
+in the window).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"file/text" 欄はファイル名か現在のファイルであればジャンプするテキストを表示しています (インデントは取り除かれ、そして長い行はウィンドウに合うように短くカットされます)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You are currently in line 1167.  If you then use the CTRL-O command, the
+cursor is put in line 1154.  This results in:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在 1167 行目にいるとして、@kbd{CTRL-O} コマンドを使うとカーソルは 1154 行目に移動します。結果として次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  jump line  col file/text ~
+    2	  1    0 some text ~
+    1	 70    0 another line ~
+ >  0  1154   23 end. ~
+    1  1167    0 foo bar ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+ jump line  col file/text
+   2     1    0 some text
+   1    70    0 another line
+>  0  1154   23 end.
+   1  1167    0 foo bar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The pointer will be set at the last used jump position.  The next CTRL-O
+command will use the entry above it, the next CTRL-I command will use the
+entry below it.  If the pointer is below the last entry, this indicates that
+you did not use a CTRL-I or CTRL-O before.  In this case the CTRL-O command
+will cause the cursor position to be added to the jump list, so you can get
+back to the position before the CTRL-O.  In this case this is line 1167.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ポインターは最後に使われたジャンプ位置にセットされます。次の @kbd{CTRL-O} コマンドはエントリの上に、次の @kbd{CTRL-I} コマンドはエントリの下に移動するのに使います。ポインターが最後のエントリの下に位置している場合、このことは前に @kbd{CTRL-I} もしくは @kbd{CTRL-O} を使っていないことを意味します。この場合 @kbd{CTRL-O} コマンドを使うとカーソル位置がジャンプリストにくわえられます。そうしてその @kbd{CTRL-O} コマンドを使う前の位置に戻ることもできます。この場合は 1167 行目です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+With more CTRL-O commands you will go to lines 70 and 1.  If you use CTRL-I
+you can go back to 1154 and 1167 again.  Note that the number in the "jump"
+column indicates the count for the CTRL-O or CTRL-I command that takes you to
+this position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さらに @kbd{CTRL-O} コマンドを実行することで 70 行目と 1 行目に移動し、@kbd{CTRL-I} コマンドを使うことで再び 1154 行目と 1167 行目に戻ることができます。"jump" 欄の数はこの場所に移動するのに何回の @kbd{CTRL-O} もしくは @kbd{CTRL-I} コマンドが必要なのかを示していることも覚えておいてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you use a jump command, the current line number is inserted at the end of
+the jump list.  If the same line was already in the jump list, it is removed.
+The result is that when repeating CTRL-O you will get back to old positions
+only once.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジャンプコマンドを使うと現在の行がジャンプリストの最後に加えられます。同じ行がすでにジャンプリストにあった場合はそれは削除され、結果としては @kbd{CTRL-O} を繰り返していると以前の場所には一度だけ戻ることになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the |:keepjumps| command modifier is used, jumps are not stored in the
+jumplist.  Jumps are also not stored in other cases, e.g., in a |:global|
+command.  You can explicitly add a jump by setting the ' mark with "m'".  Note
+that calling setpos() does not do this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:keepjumps| コマンド修飾子が使われた場合、ジャンプ操作はリストに記憶されません。また、他の場合にもジャンプ操作は記憶されません。例. |:global| の中。明示的にジャンプリストに追加するには "m'" でマーク'を設定します。
+@quotation
+@strong{Note:} @*
+setpos() を呼んでもこれはしません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+After the CTRL-O command that got you into line 1154 you could give another
+jump command (e.g., "G").  The jump list would then become:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@kbd{CTRL-O} コマンドを行って 1154 行目に移動した後、他のジャンプコマンド (例えば: "G") を実行したとするとジャンプリストは次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  jump line  col file/text ~
+    4	  1    0 some text ~
+    3	 70    0 another line ~
+    2  1167    0 foo bar ~
+    1  1154   23 end. ~
+ > ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+ jump line  col file/text
+   4     1    0 some text
+   3    70    0 another line
+   2  1167    0 foo bar
+   1  1154   23 end.
+>
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The line numbers will be adjusted for deleted and inserted lines.  This fails
+if you stop editing a file without writing, like with ":n!".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+行が削除されたり挿入された場合は行番号も調整されますが、保存しないで (":n!" コマンドなどを使って)編集を中断した場合は失敗します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you split a window, the jumplist will be copied to the new window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウを分割すると、ジャンプリストは新しいウィンドウにコピーされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you have included the ' item in the 'viminfo' option the jumplist will be
+stored in the viminfo file and restored when starting Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{viminfo}' オプションに項目 ' を含めていると、viminfo ファイルにジャンプリストが保存され、Vim を起動したときに復元されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CHANGE LIST JUMPS			*changelist* *change-list-jumps* *E664*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{changelist}
+@anchor{change-list-jumps}
+@anchor{E664}
+@cindex changelist
+@cindex change-list-jumps
+@cindex E664
+@unnumberedsubsubsec 変更リストへのジャンプ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When making a change the cursor position is remembered.  One position is
+remembered for every change that can be undone, unless it is close to a
+previous change.  Two commands can be used to jump to positions of changes,
+also those that have been undone:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+変更がなされたとき、カーソル位置が記憶されます。アンドゥできる全ての変更に対し、それが前の変更に近くない限り、1 つの位置が記憶されます。変更点やアンドゥされた位置へジャンプするのに、以下の 2 つのコマンドを使うことができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*g;* *E662*
+g;			Go to [count] older position in change list.
+			If [count] is larger than the number of older change
+			positions go to the oldest change.
+			If there is no older change an error message is given.
+			(not a motion command)
+			{not in Vi}
+			{not available without the |+jumplist| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g;}
+@anchor{E662}
+@cindex g;
+@cindex E662
+@table @asis
+@item g;
+変更リスト中の [count] 個前の位置に移動します。[count] が前の変更箇所の数より大きければ、最も古い変更箇所へ移動します。それ以上古い変更が無ければエラーメッセージが表示されます。(移動コマンドではありません)
+
+@{Vi にはありません@}
+
+@{|+jumplist| 機能なしのときは使用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*g,* *E663*
+g,			Go to [count] newer cursor position in change list.
+			Just like |g;| but in the opposite direction.
+			(not a motion command)
+			{not in Vi}
+			{not available without the |+jumplist| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g,}
+@anchor{E663}
+@cindex g,
+@cindex E663
+@item g,
+変更リスト中の [count] 個後の位置に移動します。|g;| の逆方向で、あとは同様です。(移動コマンドではありません)
+
+@{Vi にはありません@}
+
+@{|+jumplist| 機能なしのときは使用できない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When using a count you jump as far back or forward as possible.  Thus you can
+use "999g;" to go to the first change for which the position is still
+remembered.  The number of entries in the change list is fixed and is the same
+as for the |jumplist|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+count を使うと、可能な限り前／後にジャンプできます。つまり、"999g;" とすると履歴に残っている最初の変更箇所へジャンプできます。変更リストのエントリの数は固定されていて、|jumplist| のものと同じです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When two undo-able changes are in the same line and at a column position less
+than 'textwidth' apart only the last one is remembered.  This avoids that a
+sequence of small changes in a line, for example "xxxxx", adds many positions
+to the change list.  When 'textwidth' is zero 'wrapmargin' is used.  When that
+also isn't set a fixed number of 79 is used.  Detail: For the computations
+bytes are used, not characters, to avoid a speed penalty (this only matters
+for multi-byte encodings).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+アンドゥ可能な変更が2回、同じ行の '@option{textwidth}' よりも小さい桁で行われたときは、後者だけが記憶されます。これは "xxxxx" のような一連の小さな変更をリストに残すのを避けるためです。'@option{textwidth}' が 0 のときは '@option{wrapmargin}' が使われます。
+
+'@option{wrapmargin}' もセットされていないときは 79 となります。詳細: 速度が落ちるのを避けるため、計算には文字数でなくバイト数が使われます (これはマルチバイトエンコーディングに対してのみ関係します)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that when text has been inserted or deleted the cursor position might be
+a bit different from the position of the change.  Especially when lines have
+been deleted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+テキストが挿入または削除されると、カーソル位置が変更箇所と少しずれるかもしれません。(特に行が削除されたときは)
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the |:keepjumps| command modifier is used the position of a change is not
+remembered.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:keepjumps| コマンドモディファイヤが使われたときは変更箇所は記憶されません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:changes*
+:changes		Print the change list.  A ">" character indicates the
+			current position.  Just after a change it is below the
+			newest entry, indicating that "g;" takes you to the
+			newest entry position.  The first column indicates the
+			count needed to take you to this position.  Example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:changes}
+@cindex :changes
+@table @asis
+@item :changes
+変更リストを表示します。文字 ">" のついているエントリは現在の位置であることを示しています。変更が行われると ">" は最新のエントリの下になり、"g;" で最新のエントリの場所に移動できることを表します。1 列目はその場所に移動するのに必要な count を示しています。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				change line  col text ~
+				    3     9    8 bla bla bla
+				    2    11   57 foo is a bar
+				    1    14   54 the latest changed line
+				>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+change line  col text
+   3      9    8 bla bla bla
+   2     11   57 foo is a bar
+   1     14   54 the latest changed line
+>
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			The "3g;" command takes you to line 9.  Then the
+			output of ":changes is:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"3g;" とすると9行目に移動します。すると次の ":changes" の出力はこうなります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				change line  col text ~
+				>   0     9    8 bla bla bla
+				    1    11   57 foo is a bar
+				    2    14   54 the latest changed line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+change line  col text
+>   0     9    8 bla bla bla
+    1    11   57 foo is a bar
+    2    14   54 the latest changed line
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Now you can use "g," to go to line 11 and "2g," to go
+			to line 14.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この状態で "g," とすると 11 行目に移動し、"2g," とすると 14 行目に移動します。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+9. Various motions				*various-motions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{various-motions}
+@cindex various-motions
+@unnumberedsubsec 9. 様々な移動
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*%*
+%			Find the next item in this line after or under the
+			cursor and jump to its match. |inclusive| motion.
+			Items can be:
+			([{}])		parenthesis or (curly/square) brackets
+					(this can be changed with the
+					'matchpairs' option)
+			/* */		start or end of C-style comment
+			#if, #ifdef, #else, #elif, #endif
+					C preprocessor conditionals (when the
+					cursor is on the # or no ([{
+					following)
+			For other items the matchit plugin can be used, see
+			|matchit-install|.  This plugin also helps to skip
+			matches in comments.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{%}
+@cindex %
+@table @asis
+@item %
+現在の行のカーソルの後もしくは下の次のアイテムを検索しその対応するものにジャンプします|inclusive|。アイテムは次のものです:
+@table @asis
+@item ([@{@}])
+丸括弧もしくは(波/角)括弧 (これは '@option{matchpairs}' オプションで変更できます)
+@item /* */
+C スタイルのコメントの始めと終わり
+@item #if, #ifdef, #else, #elif, #endif
+C プリプロセッサー条件命令 (カーソルが # の上にあるか ([@{ が後にないとき)
+@end table
+他のアイテムに対しては matchit プラグインが使えます。|matchit-install| を参照。このプラグインを使うと、コメント内の対応する括弧をスキップするという効果もあります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			When 'cpoptions' contains "M" |cpo-M| backslashes
+			before parens and braces are ignored.  Without "M" the
+			number of backslashes matters: an even number doesn't
+			match with an odd number.  Thus in "( \) )" and "\( (
+			\)" the first and last parenthesis match.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{cpoptions}' が "@var{M}" |cpo-m| を含んでいる場合、丸括弧と大括弧の前のバックスラッシュは考慮されません。"@var{M}" がない場合はバックスラッシュの数が考慮され、偶数個と奇数個は対応しないようになります。つまり、" ( \) )" や "\( ( \)" となっているとき、それぞれ最初と最後の括弧が対応します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			When the '%' character is not present in 'cpoptions'
+			|cpo-%|, parens and braces inside double quotes are
+			ignored, unless the number of parens/braces in a line
+			is uneven and this line and the previous one does not
+			end in a backslash.  '(', '{', '[', ']', '}' and ')'
+			are also ignored (parens and braces inside single
+			quotes).  Note that this works fine for C, but not for
+			Perl, where single quotes are used for strings.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@var{%}' 文字 |cpo-%| が '@option{cpoptions}' にない場合、1 つの行の中の丸括弧/大括弧の数が偶数ではなく、そして現在行と 1 つ前の行がバックスラッシュで終わっていない限り、二重引用符の中の丸括弧と大括弧は無視されます。'(', '@{', '[', ']', '@}', ')' も無視されます (シングル引用符の中の丸括弧と大括弧)。このことは C ではうまく動作しますが Perl ではあんまりうまくないことに注意してください。Perl では文字列にシングル引用符も使われるのです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Nothing special is done for matches in comments.  You
+			can either use the matchit plugin |matchit-install| or
+			put quotes around matches.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コメント内にある括弧もそうでない括弧も同様に扱われます。matchit プラグイン |matchit-install| を使うか、コメント内の括弧に対しては前後に引用符を書くことで、コメント内の括弧を認識して区別できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			No count is allowed, {count}% jumps to a line {count}
+			percentage down the file |N%|.  Using '%' on
+			#if/#else/#endif makes the movement linewise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カウントの前置はできません(@{count@}% はファイルの @{count@} パーセントの位置に移動します)。'%' を #if/#else/#endif 上で使うと動作は行単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*[(*
+[(			go to [count] previous unmatched '('.
+			|exclusive| motion. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{[(}
+@cindex [(
+@item [(
+[count] 前のマッチするものがない '(' に移動します。|exclusive|
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*[{*
+[{			go to [count] previous unmatched '{'.
+			|exclusive| motion. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{[@{}
+@cindex [@{
+@item [@{
+[count] 前のマッチするものがない '@{' に移動します。|exclusive|
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*])*
+])			go to [count] next unmatched ')'.
+			|exclusive| motion. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{])}
+@cindex ])
+@item ])
+[count] 次のマッチするものがない ')' に移動します。|exclusive|
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*]}*
+]}			go to [count] next unmatched '}'.
+			|exclusive| motion. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{]@}}
+@cindex ]@}
+@item ]@}
+[count] 次のマッチするものがない '@}' に移動します。|exclusive|
+
+@{Vi にはありません@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The above four commands can be used to go to the start or end of the current
+code block.  It is like doing "%" on the '(', ')', '{' or '}' at the other
+end of the code block, but you can do this from anywhere in the code block.
+Very useful for C programs.  Example: When standing on "case x:", "[{" will
+bring you back to the switch statement.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上の 4 つのコマンドは現在のコードブロックの最初か最後に移動するのに使うことができます。'(', ')', '@{', '@}' 上で "%" コマンドを実行するのに似ていますが、この場合コードブロック内のどこにいても実行することができます。C プログラムで非常に役に立ちます。例: "case x:" にいる時に "[@{" を実行することで switch 文の所に戻ります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*]m*
+]m			Go to [count] next start of a method (for Java or
+			similar structured language).  When not before the
+			start of a method, jump to the start or end of the
+			class.  When no '{' is found after the cursor, this is
+			an error.  |exclusive| motion. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{]m}
+@cindex ]m
+@table @asis
+@item ]m
+[count] 次のメソッドの始めに移動します (Java もしくは似たような構造の言語用)。メソッドの始まりの前でなければ、クラスの始めか終わりに移動します。カーソルの後に '@{' が見つからなければエラーとなります。|exclusive|
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*]M*
+]M			Go to [count] next end of a method (for Java or
+			similar structured language).  When not before the end
+			of a method, jump to the start or end of the class.
+			When no '}' is found after the cursor, this is an
+			error. |exclusive| motion. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{]M}
+@cindex ]M
+@item ]M
+[count] 次のメソッドの終わりに移動します (Java もしくは似たような構造の言語用)。メソッドの終わりの前でなければ、クラスの始めか終わりに移動します。カーソルの後に '@}' が見つからなけばエラーとなります。|exclusive|
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*[m*
+[m			Go to [count] previous start of a method (for Java or
+			similar structured language).  When not after the
+			start of a method, jump to the start or end of the
+			class.  When no '{' is found before the cursor this is
+			an error. |exclusive| motion. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{[m}
+@cindex [m
+@item [m
+[count] 前のメソッドの始めに移動します (Java もしくは似たような構造の言語用)。メソッドの始まりの後でなければ、クラスの始めか終わりに移動します。カーソルの前に '@{' が見つからなければエラーとなります。|exclusive|
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*[M*
+[M			Go to [count] previous end of a method (for Java or
+			similar structured language).  When not after the
+			end of a method, jump to the start or end of the
+			class.  When no '}' is found before the cursor this is
+			an error. |exclusive| motion. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{[M}
+@cindex [M
+@item [M
+[count] 前のメソッドの終わりに移動します (Java もしくは似たような構造の言語用)。メソッドの終わりの後でなければ、クラスの始めか終わりに移動します。カーソルの前に '@}' が見つからなければエラーとなります。|exclusive|
+
+@{Vi にはありません@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The above two commands assume that the file contains a class with methods.
+The class definition is surrounded in '{' and '}'.  Each method in the class
+is also surrounded with '{' and '}'.  This applies to the Java language.  The
+file looks like this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上記の 2 つのコマンドはファイルがメソッドとともにクラスを含んでいることを前提としています。クラスの定義は '@{' と '@}' で囲まれていることです。クラスの中のそれぞれのメソッドもまた '@{' と '@}' で囲まれています。このことは Java 言語にも当てはまります。ファイルは次のようなものです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	// comment
+	class foo {
+		int method_one() {
+			body_one();
+		}
+		int method_two() {
+			body_two();
+		}
+	}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+// comment
+class foo {
+    int method_one() {
+        body_one();
+    }
+    int method_two() {
+        body_two();
+    }
+}
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Starting with the cursor on "body_two()", using "[m" will jump to the '{' at
+the start of "method_two()" (obviously this is much more useful when the
+method is long!).  Using "2[m" will jump to the start of "method_one()".
+Using "3[m" will jump to the start of the class.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"body_two()" にカーソルをおいて始めてみましょう。"[m" とすると "method_two()" の始めの '@{' に移動します (当然 method が長いともっと便利です)。"2[m" とすると "method_one()" の始めに移動します。"3[m" とするとクラスの最初に移動します。 
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*[#*
+[#			go to [count] previous unmatched "#if" or "#else".
+			|exclusive| motion. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{[#}
+@cindex [#
+@table @asis
+@item [#
+[count] 前のマッチするものがない "#if" か "#else" に移動します。|exclusive|
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*]#*
+]#			go to [count] next unmatched "#else" or "#endif".
+			|exclusive| motion. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{]#}
+@cindex ]#
+@item ]#
+[count] 次のマッチするものがない "#else" か "#endif" に移動します。|exclusive|
+
+@{Vi にはありません@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These two commands work in C programs that contain #if/#else/#endif
+constructs.  It brings you to the start or end of the #if/#else/#endif where
+the current line is included.  You can then use "%" to go to the matching line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらの 2 つのコマンドは #if/#else/#endif を含む C のプログラムで使います。これを使うと #if/#else/#endif の最初か最後に移動することができます (その場合現在の行も含みます)。それから "%" を使うことでマッチする行に移動することができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*[star* *[/*
+[*  or  [/		go to [count] previous start of a C comment "/*".
+			|exclusive| motion. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{[star}
+@anchor{[/}
+@cindex [star
+@cindex [/
+@table @asis
+@item [* or [/
+[count] 前の C コメントの始まり "/*" に移動します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*]star* *]/*
+]*  or  ]/		go to [count] next end of a C comment "*/".
+			|exclusive| motion. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{]star}
+@anchor{]/}
+@cindex ]star
+@cindex ]/
+@item ]* or ]/
+[count] 次の C コメントの終わり "*/" に移動します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+						*H*
+H			To line [count] from top (Home) of window (default:
+			first line on the window) on the first non-blank
+			character |linewise|.  See also 'startofline' option.
+			Cursor is adjusted for 'scrolloff' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{H}
+@cindex H
+@item H
+スクリーンの最上行から [count] 行目 (デフォルト: スクリーンの最上行) の最初の非空白文字に移動します (行単位 |linewise|)。'@option{startofline}' オプションも参照してください。カーソル位置は '@option{scrolloff}' オプションに合うように調整されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*M*
+M			To Middle line of window, on the first non-blank
+			character |linewise|.  See also 'startofline' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{M}
+@cindex M
+@item M
+スクリーンの中央の最初の非空白文字に移動します (行単位 |linewise|)。'@option{startofline}' オプションも参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*L*
+L			To line [count] from bottom of window (default: Last
+			line on the window) on the first non-blank character
+			|linewise|.  See also 'startofline' option.
+			Cursor is adjusted for 'scrolloff' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{L}
+@cindex L
+@item L
+スクリーンの最下行から [count] 行目 (デフォルト: スクリーンの最下行) の最初の非空白文字に移動します (行単位 |linewise|)。'@option{startofline}' オプションも参照してください。カーソル位置は '@option{scrolloff}' オプションに合うように調整されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<LeftMouse>		Moves to the position on the screen where the mouse
+			click is |exclusive|.  See also |<LeftMouse>|.  If the
+			position is in a status line, that window is made the
+			active window and the cursor is not moved.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item <LeftMouse>
+スクリーン上でマウスがクリックされた場所に移動します |exclusive|。参照 |<LeftMouse>|。もしその位置がステータス行の中であると、そのウィンドウがアクティブなウィンドウとなりカーソルは動きません。
+
+@{Vi にはありません@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset

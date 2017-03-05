@@ -19,7 +19,8 @@ REFMANUALS = \
 	doc/debug.texi \
 	doc/develop.texi \
 	doc/starting.texi \
-	doc/editing.texi
+	doc/editing.texi \
+	doc/motion.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
