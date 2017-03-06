@@ -20,7 +20,9 @@ REFMANUALS = \
 	doc/develop.texi \
 	doc/starting.texi \
 	doc/editing.texi \
-	doc/motion.texi
+	doc/motion.texi \
+	doc/scroll.texi \
+	doc/insert.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
