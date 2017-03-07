@@ -1,6 +1,7 @@
 PRG = /usr/local/bin/texi2any
 PRG_KANA=$(HOME)/project/mto/src/mto.py
-HTML_OPT = --html --css-include=style.css
+HTML_OPT = --html --no-split --css-include=style.css
+HTML_OPT_S = --html --css-ref=style.css
 ORIG = $(HOME)/dev/vim/runtime
 TRAN = ./
 
@@ -22,7 +23,8 @@ REFMANUALS = \
 	doc/editing.texi \
 	doc/motion.texi \
 	doc/scroll.texi \
-	doc/insert.texi
+	doc/insert.texi \
+	doc/change.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
@@ -43,14 +45,15 @@ refpdf: pdfs/refrman.pdf ;
 kyukana: htmls/tk-ok-usrman.html ;
 
 htmls/usrman.html: $(USRMANUALS)
-	${PRG} ${HTML_OPT} --no-split -o $@ $<
+	${PRG} ${HTML_OPT} -o $@ $<
 	sh utils/trick_for_mobile.sh $@
 
 htmls/refman.html: $(REFMANUALS) $(USRMANUALS)
-	${PRG} ${HTML_OPT} --no-split -o $@ $<
+	${PRG} ${HTML_OPT} -o $@ $<
 
 htmls/refman: $(REFMANUALS) $(USRMANUALS)
-	${PRG} ${HTML_OPT} -o $@ $<
+	cp style.css htmls/refman/
+	${PRG} ${HTML_OPT_S} -o $@ $<
 
 pdfs/userman.pdf: $(USRMANUALS)
 	PDFTEX=luatex texi2pdf -c -o $@ $<
