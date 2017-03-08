@@ -1,0 +1,3134 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node indent.txt, , , 目次
+@unnumbered C 言語や、その他の言語の自動インデント
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*indent.txt*    For Vim version 8.0.  Last change: 2014 Dec 06
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*indent.txt*    For Vim バージョン 8.0.  Last change: 2014 Dec 06
+
+
+		VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+This file is about indenting C programs and other files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このファイルには C ソースコードとその他のファイルのインデント (字下げ) について書かれている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Indenting C style programs	|C-indenting|
+2. Indenting by expression	|indent-expression|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item 1. C スタイルのソースコードのインデント @tab |@ref{C-indenting, , C-indenting}|
+@item 2. スクリプトを用いたインデント @tab |@ref{indent-expression, , indent-expression}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Indenting C style programs				*C-indenting*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{C-indenting}
+@cindex C-indenting
+@section 1. C ソースコードのインデント
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The basics for C style indenting are explained in section |30.2| of the user
+manual.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+C 言語 (以下、単に「C」) スタイルのソースコード用インデントの基本はユーザーマニュアルの |@ref{30.2, , 30.2}| 節で説明されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim has options for automatically indenting C style program files. Many
+programming languages including Java and C++ follow very closely the
+formatting conventions established with C.  These options affect only the
+indent and do not perform other formatting.  There are additional options that
+affect other kinds of formatting as well as indenting, see |format-comments|,
+|fo-table|, |gq| and |formatting| for the main ones.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim には C スタイルの言語を自動的にインデントするためのオプションがある。C スタイルの言語とは、Java や C++ など、C によく似た書式の言語のことである。これらのオプションはインデントだけに影響し、その他の整形は行わない。その他の整形については、|format-comments|, |fo-table|, |gq|, |formatting| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that this will not work when the |+smartindent| or |+cindent| features
+have been disabled at compile time.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コンパイル時に |+smartindent| か |+cindent| 機能を無効にした時には、これが動作しないことに注意。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are in fact four main methods available for indentation, each one
+overrides the previous if it is enabled, or non-empty for 'indentexpr':
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実際のところインデントには 4 つの主な方法がある。後のものが有効にされると、前のものより優先される ('@option{indentexpr}' は空でない文字列がセットされたとき)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+'autoindent'	uses the indent from the previous line.
+'smartindent'	is like 'autoindent' but also recognizes some C syntax to
+		increase/reduce the indent where appropriate.
+'cindent'	Works more cleverly than the other two and is configurable to
+		different indenting styles.
+'indentexpr'	The most flexible of all: Evaluates an expression to compute
+		the indent of a line.  When non-empty this method overrides
+		the other ones.  See |indent-expression|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .75
+@item '@option{autoindent}' @tab 1 つ前の行に基づくインデント
+@item '@option{smartindent}' @tab '@option{autoindent}' と同様だが幾つかの C 構文を認識し、適切な箇所のインデントを増減させる。
+@item '@option{cindent}' @tab 他の 2 つの方法よりも賢く動作し、設定することで異なるインデントスタイルにも対応できる。
+@item '@option{indentexpr}' @tab この中で一番融通が利く: ある行のインデントを計算するのに Vim script を実行する。この方法が有効である (空でない) 時にはその他のインデントは抑制される。|indent-expression| 参照。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The rest of this section describes the 'cindent' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この節の残りはオプション '@option{cindent}' について述べる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that 'cindent' indenting does not work for every code scenario.  Vim
+is not a C compiler: it does not recognize all syntax.  One requirement is
+that toplevel functions have a '{' in the first column.  Otherwise they are
+easily confused with declarations.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{cindent}' はあらゆる C ソースを正しくインデントできるわけではないことに注意。Vim は C コンパイラではない: だから全ての構文は認識できない。1 つの要求事項は、トップレベル関数が第 1 桁が '@{' で始まっていることである。そうなっていないと宣言との区別が困難である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These four options control C program indenting:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+C のインデントはこの 4 つのオプションで制御されている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+'cindent'	Enables Vim to perform C program indenting automatically.
+'cinkeys'	Specifies which keys trigger reindenting in insert mode.
+'cinoptions'	Sets your preferred indent style.
+'cinwords'	Defines keywords that start an extra indent in the next line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .75
+@item '@option{cindent}' @tab C の自動インデントを有効化する。
+@item '@option{cinkeys}' @tab 再インデントの引金となる挿入モードでのキーを指定する。
+@item '@option{cinoptions}' @tab 好みのインデントスタイルを設定する。
+@item '@option{cinwords}' @tab 次の行から特別なインデントを開始するキーワードを定義する。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If 'lisp' is not on and 'equalprg' is empty, the "=" operator indents using
+Vim's built-in algorithm rather than calling an external program.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{lisp}' がオフで '@option{equalprg}' が空ならば、オペレータ "=" は外部プログラムではなく Vim の内蔵アルゴリズムを使用してインデントを行う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See |autocommand| for how to set the 'cindent' option automatically for C code
+files and reset it for others.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+C のファイルに対して自動的に '@option{cindent}' をオンにしてそれ以外のファイルに対してはオフにする方法は |autocommand| を参照。
+
+@{訳注: バージョン 6.0 以降はファイル形式プラグイン (|filetype| 参照) とバッファローカルオプション (|:setlocal|) を使うことが推奨される。Vim にはデフォルトで C 用のファイル形式プラグイン ($VIMRUNTIME/ftplug/c.vim) が付属しているから、これを行いたい時は単にファイル形式プラグインを有効化するだけで良い。@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*cinkeys-format* *indentkeys-format*
+The 'cinkeys' option is a string that controls Vim's indenting in response to
+typing certain characters or commands in certain contexts.  Note that this not
+only triggers C-indenting.  When 'indentexpr' is not empty 'indentkeys' is
+used instead.  The format of 'cinkeys' and 'indentkeys' is equal.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cinkeys-format}
+@anchor{indentkeys-format}
+@cindex cinkeys-format
+@cindex indentkeys-format
+オプション '@option{cinkeys}' は Vim のインデントを制御する文字列で、どの文字がタイプされた時に、どのような状況下でコマンドが実行されたかに応じてインデントを行うかを定義する。これが C インデントの唯一の引金ではないことには注意する。'@option{indentexpr}' が空でない時には代わりに '@option{indentkeys}' が使われる。'@option{cinkeys}' と '@option{indentkeys}' の書式は同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The default is "0{,0},0),:,0#,!^F,o,O,e" which specifies that indenting occurs
+as follows:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトは "0@{,0@},0),:,0#,!^F,o,O,e" で、これにより次のような時にインデントが行われる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	"0{"	if you type '{' as the first character in a line
+	"0}"	if you type '}' as the first character in a line
+	"0)"	if you type ')' as the first character in a line
+	":"	if you type ':' after a label or case statement
+	"0#"	if you type '#' as the first character in a line
+	"!^F"	if you type CTRL-F (which is not inserted)
+	"o"	if you type a <CR> anywhere or use the "o" command (not in
+		insert mode!)
+	"O"	if you use the "O" command (not in insert mode!)
+	"e"	if you type the second 'e' for an "else" at the start of a
+		line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .9
+@item "0@{" @tab 行の先頭で '@{' をタイプした時
+@item "0@}" @tab 行の先頭で '@}' をタイプした時
+@item "0)" @tab 行の先頭で ')' をタイプした時
+@item ":" @tab ラベルや case 文のあとで ':' をタイプした時
+@item "0#" @tab 行の先頭で '#' をタイプした時
+@item "!^F" @tab @kbd{CTRL-F} をタイプした時 (CTRL-F 自体は入力されない)
+@item "o" @tab 挿入モードで <CR> をタイプした後、及びノーマルモードで "o" コマンドを使用した時
+@item "O" @tab ノーマルモードで "O" コマンドを使用した時
+@item "e" @tab 行の先頭で "else" の 2 つ目の 'e' をタイプした時
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Characters that can precede each key:				*i_CTRL-F*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{i_CTRL-F}
+@cindex i_CTRL-F
+各キーの前に置くことのできる文字は次の通り:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+!	When a '!' precedes the key, Vim will not insert the key but will
+	instead reindent the current line.  This allows you to define a
+	command key for reindenting the current line.  CTRL-F is the default
+	key for this.  Be careful if you define CTRL-I for this because CTRL-I
+	is the ASCII code for <Tab>.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item !
+'!' をキーの前に置くと、Vim はそのキーを挿入するのではなく替わりに現在の行のインデントを再調整する。これにより現在の行の再調整するためのコマンドキーを定義することができる。@kbd{CTRL-F} はそのデフォルトキーである。@kbd{CTRL-I} は <Tab> の ASCII コードだから、@kbd{CTRL-I} を定義する際に気をつけること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*	When a '*' precedes the key, Vim will reindent the line before
+	inserting the key.  If 'cinkeys' contains "*<Return>", Vim reindents
+	the current line before opening a new line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item *
+'*' をキーの前に置くと、Vim はインデント再調整を行ってからそのキーを挿入する。'@option{cinkeys}' に "*<Return>" が含まれている時には、Vim は新しい行を作成する前に現在行のインデントを再調整する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+0	When a zero precedes the key (but appears after '!' or '*') Vim will
+	reindent the line only if the key is the first character you type in
+	the line.  When used before "=" Vim will only reindent the line if
+	there is only white space before the word.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 0
+'0' をキーの前 ('!' や '*' の後ということはあるが) に置くと、Vim はそのキーが行の先頭で入力された時だけインデント再調整を行う。"=" の前に使われた時には Vim はその単語の前に空白文字しか無い時にだけ再調整が行われる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When neither '!' nor '*' precedes the key, Vim reindents the line after you
+type the key.  So ';' sets the indentation of a line which includes the ';'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'!' と '*' のいずれもキーの前に置かれていない時は、Vim はそのキーがタイプされた時にインデント再調整を行う。だから ';' を含めれば ';' が入力された行のインデントが調整される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Special key names:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特別なキーの名称:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<>	Angle brackets mean spelled-out names of keys.  For example: "<Up>",
+	"<Ins>" (see |key-notation|).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item <>
+折カッコは書き下されたキーの名前を意味する。例: "<Up>" や "<Ins>" (|key-notation|参照)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+^	Letters preceded by a caret (^) are control characters.  For example:
+	"^F" is CTRL-F.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ^
+キャレット (^) が前に置かれた文字はコントロール文字。例: "^F" は CTRL-F
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+o	Reindent a line when you use the "o" command or when Vim opens a new
+	line below the current one (e.g., when you type <Enter> in insert
+	mode).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item o
+"o" コマンドを使用した時もしくは Vim が現在の行の下に新しい行を作成した時にインデント再調整をする (例えば、挿入モードで @key{<Enter>} をタイプした時)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+O	Reindent a line when you use the "O" command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item O
+"O" コマンドを使用した時にインデント再調整をする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+e	Reindent a line that starts with "else" when you type the second 'e'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item e
+"else" で始まる行の 2 つ目の 'e' をタイプした時にインデント再調整をする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:	Reindent a line when a ':' is typed which is after a label or case
+	statement.  Don't reindent for a ":" in "class::method" for C++.  To
+	Reindent for any ":", use "<:>".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :
+ラベルや case 文の後に ':' をタイプした時にインデント再調整をする。C++ の "class::method" 内の ":" では再調整しない。どんな ":" でもインデントするには "<:>" を使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+=word	Reindent when typing the last character of "word".  "word" may
+	actually be part of another word.  Thus "=end" would cause reindenting
+	when typing the "d" in "endif" or "endwhile".  But not when typing
+	"bend".  Also reindent when completion produces a word that starts
+	with "word".  "0=word" reindents when there is only white space before
+	the word.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item =word
+"word" の最後の文字をタイプした時にインデント再調整をする。"word" は実際は別の単語の一部かもしれない。"=end" のように設定すれば "endif" や "endwhile" の "d" をタイプした時に再調整が起こる。しかし "bend" では起こらない。補完により "word" で始まる単語が提示された時にも再調整は起こる。"0=word" は単語の前に空白文字しかない時に再調整を行う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+=~word	Like =word, but ignore case.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item =~word
+=word に似ているが、大文字小文字の区別がされない。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you really want to reindent when you type 'o', 'O', 'e', '0', '<', '>',
+'*', ':' or '!', use "<o>", "<O>", "<e>", "<0>", "<<>", "<>>", "<*>", "<:>" or
+"<!>", respectively, for those keys.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+キー 'o', 'O', 'e', '0', '<', '>', '*', ':' それに '!' そのものを入力した時にインデント再調整を行いたいのならば、それぞれ "<o>", "<O>", "<e>", "<0>", "<<>", "<>>", "<*>", "<:>" そして "<!>" を使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For an emacs-style indent mode where lines aren't indented every time you
+press <Enter> but only if you press <Tab>, I suggest:
+	:set cinkeys=0{,0},:,0#,!<Tab>,!^F
+You might also want to switch off 'autoindent' then.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@key{Enter} を押す度ではなく emacs のように @key{Tab} キーを押した時にだけインデントを行うようにするには、次の設定を提案する:
+@example
+:set cinkeys=0@{,0@},:,0#,!<Tab>,!^F
+@end example
+その時には '@option{autoindent}' もオフにしたほうが良いかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: If you change the current line's indentation manually, Vim ignores the
+cindent settings for that line.  This prevents vim from reindenting after you
+have changed the indent by typing <BS>, <Tab>, or <Space> in the indent or
+used CTRL-T or CTRL-D.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+現在の行のインデントを手動で変更すれば、Vim はその行については @option{cindent} の設定を無視する。これによりインデントの中で @key{<BS>}, @key{<Tab>} や @key{<Space>} を入力したり、@kbd{CTRL-T} や @kbd{CTRL-D} を使用してインデントを変更した後では、Vim はインデントの再調整を行わなくなる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*cinoptions-values*
+The 'cinoptions' option sets how Vim performs indentation.  The value after
+the option character can be one of these (N is any number):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cinoptions-values}
+@cindex cinoptions-values
+オプション '@option{cinoptions}' では Vim がどのようなインデントを行うのかを設定する。オプション文字の後ろは次のような形式で指定できる (N は任意の数字):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	N	indent N spaces
+	-N	indent N spaces to the left
+	Ns	N times 'shiftwidth' spaces
+	-Ns	N times 'shiftwidth' spaces to the left
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .15 .85
+@item N @tab N スペースインデント
+@item -N @tab N スペースインデント (左方向に)
+@item Ns @tab '@option{shiftwidth}' の N 倍のスペース
+@item -Ns @tab '@option{shiftwidth}' の N 倍のスペース (左方向に)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the list below,
+"N" represents a number of your choice (the number can be negative).  When
+there is an 's' after the number, Vim multiplies the number by 'shiftwidth':
+"1s" is 'shiftwidth', "2s" is two times 'shiftwidth', etc.  You can use a
+decimal point, too: "-0.5s" is minus half a 'shiftwidth'.
+The examples below assume a 'shiftwidth' of 4.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下のリストでは、"N" は指定したい数値を意味する (数値は負でも良い)。数値のあとに 's' がある時には、数値に '@option{shiftwidth}' の数を掛算して使用する: "1s" は '@option{shiftwidth}' に等しく、"2s" は '@option{shiftwidth}' の 2 倍になり、以下同様。小数を使うこともできる: "-0.5s" は '@option{shiftwidth}' の半分の負の数である。以下の例では '@option{shiftwidth}' は 4 と想定している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino->*
+	>N    Amount added for "normal" indent.  Used after a line that should
+	      increase the indent (lines starting with "if", an opening brace,
+	      etc.).  (default 'shiftwidth').
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino->}
+@cindex cino->
+@table @asis
+@item >N
+通常のインデントで追加される量。インデントを増やすべき行(ifで始まる行や、開き波カッコ等)の直後で使用される。(省略値 'shiftwidth')
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=		    cino=>2		cino=>2s >
+		  if (cond)	      if (cond)		  if (cond)
+		  {		      {			  {
+		      foo;		foo;			  foo;
+		  }		      }			  }
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino=>2             cino=>2s
+  if (cond)           if (cond)           if (cond)
+  {                   {                   {
+      foo;              foo;                      foo;
+  }                   }                   }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-e*
+	eN    Add N to the prevailing indent inside a set of braces if the
+	      opening brace at the End of the line (more precise: is not the
+	      first character in a line).  This is useful if you want a
+	      different indent when the '{' is at the start of the line from
+	      when '{' is at the end of the line.  (default 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-e}
+@cindex cino-e
+@item eN
+開き波カッコが行末にある (正確には行頭ではない) 時に、カッコ内のインデントを通常よりも N 追加する。'@{' が行頭ある場合と行末にある場合とでインデント量を変更したい時に便利。(省略値 0)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=		    cino=e2		cino=e-2 >
+		  if (cond) {	      if (cond) {	  if (cond) {
+		      foo;		    foo;	    foo;
+		  }		      }			  }
+		  else		      else		  else
+		  {		      {			  {
+		      bar;		  bar;		      bar;
+		  }		      }			  }
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino=e2             cino=e-2
+  if (cond) {         if (cond) {         if (cond) {
+      foo;                  foo;            foo;
+  }                   }                   }
+  else                else                else
+  {                   {                   {
+      bar;                bar;                bar;
+  }                   }                   }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-n*
+	nN    Add N to the prevailing indent for a statement after an "if",
+	      "while", etc., if it is NOT inside a set of braces.  This is
+	      useful if you want a different indent when there is no '{'
+	      before the statement from when there is a '{' before it.
+	      (default 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-n}
+@cindex cino-n
+@item nN
+"if", "while" その他の直後、波カッコのセットに囲まれていないならば、その文のインデントを現行よりも N 追加する。文の前に '@{' が無い時と有る時とでインデント量を変更したい時に便利。(省略値 0)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=		    cino=n2		cino=n-2 >
+		  if (cond)	      if (cond)		  if (cond)
+		      foo;		    foo;	    foo;
+		  else		      else		  else
+		  {		      {			  {
+		      bar;		  bar;		      bar;
+		  }		      }			  }
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino=n2             cino=n-2
+  if (cond)           if (cond)           if (cond)
+      foo;                  foo;            foo;
+  else                else                else
+  {                   {                   {
+      bar;                  bar;              bar;
+  }                   }                   }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-f*
+	fN    Place the first opening brace of a function or other block in
+	      column N.  This applies only for an opening brace that is not
+	      inside other braces and is at the start of the line.  What comes
+	      after the brace is put relative to this brace.  (default 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-f}
+@cindex cino-f
+@item fN
+関数やその他のブロックを示す開き波カッコを N 列目に配置する。これは他の波カッコの内側ではなく、かつ行頭である開き波カッコだけに適用される。波カッコの後の続くものはこの波カッコと相対的な位置に配置される。(省略値 0)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=		    cino=f.5s		cino=f1s >
+		  func()	      func()		  func()
+		  {			{		      {
+		      int foo;		    int foo;		  int foo;
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino=f.5s           cino=f1s
+  func()              func()              func()
+  {                     {                     {
+      int foo;              int foo;              int foo;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-{*
+	{N    Place opening braces N characters from the prevailing indent.
+	      This applies only for opening braces that are inside other
+	      braces.  (default 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@ifnottex
+@anchor{cino-@{}
+@cindex cino-@{
+@end ifnottex
+@item @{N
+開き波カッコを現行のインデントから N の位置に配置する。これは他の波カッコの内側にある開き波カッコにのみ適用される。(省略値 0)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=		    cino={.5s		cino={1s >
+		  if (cond)	      if (cond)		  if (cond)
+		  {			{		      {
+		      foo;		  foo;		      foo;
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino={.5s           cino={1s
+  if (cond)           if (cond)           if (cond)
+  {                     {                     {
+      foo;                foo;                foo;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-}*
+	}N    Place closing braces N characters from the matching opening
+	      brace.  (default 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@ifnottex
+@anchor{cino-@}}
+@cindex cino-@}
+@end ifnottex
+@item @}N
+閉じ波カッコを対応する開き波カッコから N の位置に配置する。(省略値 0)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=		    cino={2,}-0.5s	cino=}2 >
+		  if (cond)	      if (cond)		  if (cond)
+		  {			{		  {
+		      foo;		  foo;		      foo;
+		  }		      }			    }
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino={2,}-0.5s      cino=}2
+  if (cond)           if (cond)           if (cond)
+  {                     {                 {
+      foo;                foo;                foo;
+  }                   }                     }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-^*
+	^N    Add N to the prevailing indent inside a set of braces if the
+	      opening brace is in column 0.  This can specify a different
+	      indent for whole of a function (some may like to set it to a
+	      negative number).  (default 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-^}
+@cindex cino-^
+@item ^N
+開き波カッコが 0 列目にある波カッコセットの内側のインデントを現行よりも N 追加する。これにより関数全体には異なるインデント量を指定することができる。(省略値 0)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=		    cino=^-2		cino=^-s >
+		  func()	      func()		  func()
+		  {		      {			  {
+		      if (cond)		if (cond)	  if (cond)
+		      {			{		  {
+			  a = b;	    a = b;	      a = b;
+		      }			}		  }
+		  }		      }			  }
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino=^-2            cino=^-s
+  func()              func()              func()
+  {                   {                   {
+      if (cond)         if (cond)         if (cond)
+      {                 {                 {
+          a = b;            a = b;            a = b;
+      }                 }                 }
+  }                   }                   }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-L*
+	LN    Controls placement of jump labels. If N is negative, the label
+	      will be placed at column 1. If N is non-negative, the indent of
+	      the label will be the prevailing indent minus N.  (default -1).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-L}
+@cindex cino-L
+@item LN
+ジャンプラベルの位置を制御する。N が負数ならラベルは 1 列目に置かれる。N が正数ならラベルはインデントから N を引いた位置に置かれる。(省略値 -1)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=               cino=L2             cino=Ls >
+		  func()              func()              func()
+		  {                   {                   {
+		      {                   {                   {
+		          stmt;               stmt;               stmt;
+		  LABEL:                    LABEL:            LABEL:
+		      }                   }                   }
+		  }                   }                   }
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino=L2             cino=Ls
+  func()              func()              func()
+  {                   {                   {
+      {                   {                   {
+          stmt;               stmt;               stmt;
+  LABEL:                    LABEL:            LABEL:
+      }                   }                   }
+  }                   }                   }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-:*
+	:N    Place case labels N characters from the indent of the switch().
+	      (default 'shiftwidth').
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-:}
+@cindex cino-:
+@item :N
+case ラベルを switch() のインデントから N の位置に配置する。(省略値 'shiftwidth')
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=		    cino=:0 >
+		  switch (x)	      switch(x)
+		  {		      {
+		      case 1:	      case 1:
+			  a = b;	  a = b;
+		      default:	      default:
+		  }		      }
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino=:0
+  switch (x)          switch(x)
+  {                   {
+      case 1:         case 1:
+          a = b;          a = b;
+      default:        default:
+  }                   }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-=*
+	=N    Place statements occurring after a case label N characters from
+	      the indent of the label.  (default 'shiftwidth').
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-=}
+@cindex cino-=
+@item =N
+case ラベル後に現れる文をラベルのインデントから N の位置に配置する。(省略値 'shiftwidth')
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=		    cino==10 >
+		   case 11:		case 11:  a = a + 1;
+		       a = a + 1;		  b = b + 1;
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino==10 >
+   case 11:             case 11:  a = a + 1;
+       a = a + 1;                 b = b + 1;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-l*
+	lN    If N != 0 Vim will align with a case label instead of the
+	      statement after it in the same line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-l}
+@cindex cino-l
+@item lN
+N が 0 でなければ Vim は case ラベル後の文の替わりに、case ラベルそのものを基本にして配置を行う。(省略値 0)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=			    cino=l1 >
+		    switch (a) {	      switch (a) {
+			case 1: {		  case 1: {
+				    break;	      break;
+				}		  }
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=                       cino=l1
+    switch (a) {              switch (a) {
+        case 1: {                 case 1: {
+                    break;            break;
+                }                 }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-b*
+	bN    If N != 0 Vim will align a final "break" with the case label,
+	      so that case..break looks like a sort of block.  (default: 0).
+	      When using 1, consider adding "0=break" to 'cinkeys'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-b}
+@cindex cino-b
+@item bN
+N が 0 でなければ、末尾の "break" を case ラベルに合わせて整列し、case..break がブロックのように見えるようにする。(省略値 0)。1 に設定するときは、'@option{cinkeys}' に "@var{0=break}" を追加するとよいだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=		    cino=b1 >
+		  switch (x)	      switch(x)
+		  {		      {
+		      case 1:		  case 1:
+			  a = b;	      a = b;
+			  break;	  break;
+
+		      default:		  default:
+			  a = 0;	      a = 0;
+			  break;	  break;
+		  }		      }
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino=b1
+  switch (x)          switch(x)
+  {                   {
+      case 1:             case 1:
+          a = b;              a = b;
+          break;          break;
+
+      default:            default:
+          a = 0;              a = 0;
+          break;          break;
+  }                   }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-g*
+	gN    Place C++ scope declarations N characters from the indent of the
+	      block they are in.  (default 'shiftwidth').  A scope declaration
+	      can be "public:", "protected:" or "private:".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-g}
+@cindex cino-g
+@item gN
+C++ のスコープ宣言をそれが含まれるブロックのインデントから N の位置へ配置する。"public:", "protected:", "private:" がスコープ宣言になり得る。(省略値 'shiftwidth')
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=		    cino=g0 >
+		  {		      {
+		      public:	      public:
+			  a = b;	  a = b;
+		      private:	      private:
+		  }		      }
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino=g0
+  {                   {
+      public:         public:
+          a = b;          a = b;
+      private:        private:
+  }                   }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-h*
+	hN    Place statements occurring after a C++ scope declaration N
+	      characters from the indent of the label.  (default
+	      'shiftwidth').
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-h}
+@cindex cino-h
+@item hN
+C++ スコープ宣言後に現れる文をそのラベルのインデントから N の位置に配置する。(省略値 'shiftwidth')
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=		    cino=h10 >
+		   public:		public:   a = a + 1;
+		       a = a + 1;		  b = b + 1;
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino=h10
+   public:              public:   a = a + 1;
+       a = a + 1;                 b = b + 1;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-N*
+	NN    Indent inside C++ namespace N characters extra compared to a
+	      normal block.  (default 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-N}
+@cindex cino-N
+@item NN
+C++ ネームスペースの中を通常のブロックに加えて N 文字インデントする。(省略値 0)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=			   cino=N-s >
+		  namespace {                namespace {
+		      void function();       void function();
+		  }                          }
+
+		  namespace my               namespace my
+		  {                          {
+		      void function();       void function();
+		  }                          }
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=                      cino=N-s
+  namespace {                namespace {
+      void function();       void function();
+  }                          }
+
+  namespace my               namespace my
+  {                          {
+      void function();       void function();
+  }                          }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-p*
+	pN    Parameter declarations for K&R-style function declarations will
+	      be indented N characters from the margin.  (default
+	      'shiftwidth').
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-p}
+@cindex cino-p
+@item pN
+K&R スタイルの関数宣言の引数宣言を N 文字インデントする。(省略値 'shiftwidth')
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=		    cino=p0		cino=p2s >
+		  func(a, b)	      func(a, b)	  func(a, b)
+		      int a;	      int a;			  int a;
+		      char b;	      char b;			  char b;
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino=p0             cino=p2s
+  func(a, b)          func(a, b)          func(a, b)
+      int a;          int a;                      int a;
+      char b;         char b;                     char b;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-t*
+	tN    Indent a function return type declaration N characters from the
+	      margin.  (default 'shiftwidth').
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-t}
+@cindex cino-t
+@item tN
+関数の戻り型の宣言を N 文字インデントする。(省略値 'shiftwidth')
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=		    cino=t0		cino=t7 >
+		      int	      int			 int
+		  func()	      func()		  func()
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=               cino=t0             cino=t7
+      int             int                        int
+  func()              func()              func()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-i*
+	iN    Indent C++ base class declarations and constructor
+	      initializations, if they start in a new line (otherwise they
+	      are aligned at the right side of the ':').
+	      (default 'shiftwidth').
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-i}
+@cindex cino-i
+@item iN
+C++ の基底クラスの宣言やコンストラクタが新しい行で始まる時に N 文字インデントする (そうでない時には右端の ':' を基準にする)。(省略値 'shiftwidth')
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=			  cino=i0 >
+		  class MyClass :	    class MyClass :
+		      public BaseClass      public BaseClass
+		  {}			    {}
+		  MyClass::MyClass() :	    MyClass::MyClass() :
+		      BaseClass(3)	    BaseClass(3)
+		  {}			    {}
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=                     cino=i0
+  class MyClass :           class MyClass :
+      public BaseClass      public BaseClass
+  {}                        {}
+  MyClass::MyClass() :      MyClass::MyClass() :
+      BaseClass(3)          BaseClass(3)
+  {}                        {}
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-+*
+	+N    Indent a continuation line (a line that spills onto the next)
+              inside a function N additional characters.  (default
+              'shiftwidth').
+              Outside of a function, when the previous line ended in a
+              backslash, the 2 * N is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-+}
+@cindex cino-+
+@item +N
+関数の内側の継続行 (次の行へと分割された行) を N 文字分インデントする。(省略値 'shiftwidth')
+
+関数の外側では、直前の行の末尾にバックスラッシュがあるときは 2 * N が使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=			  cino=+10 >
+		  a = b + 9 *		    a = b + 9 *
+		      c;			      c;
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=                 cino=+10
+  a = b + 9 *           a = b + 9 *
+      c;                          c;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-c*
+	cN    Indent comment lines after the comment opener, when there is no
+	      other text with which to align, N characters from the comment
+	      opener.  (default 3).  See also |format-comments|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-c}
+@cindex cino-c
+@item cN
+コメント開始子の後のコメント本文を、配置すべきその他のテキストが無ければ、コメント開始子から N 文字でインデントする。(省略値 3) |format-comments|も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=			  cino=c5 >
+		  /*			    /*
+		     text.			 text.
+		   */			     */
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=                 cino=c5
+  /*                    /*
+     text.                   text.
+   */                    */
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-C*
+	CN    When N is non-zero, indent comment lines by the amount specified
+	      with the c flag above even if there is other text behind the
+	      comment opener.  (default 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-C}
+@cindex cino-C
+@item CN
+N が 0 でなければ、コメント開始子の後に他のテキストがある場合でも、コメントの行に c フラグで指定した量でインデントがされる。(省略値 0)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=c0			  cino=c0,C1 >
+		  /********		    /********
+		    text.		    text.
+		  ********/		    ********/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=c0               cino=c0,C1
+  /********             /********
+    text.               text.
+  ********/             ********/
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	      (Example uses ":set comments& comments-=s1:/* comments^=s0:/*")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+(":set comments& comments-=s1:/* comments^=s0:/*" を同時に設定)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*cino-/*
+	/N    Indent comment lines N characters extra.  (default 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-/}
+@cindex cino-/
+@item /N
+コメント行を N 文字インデントする。(省略値 0)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		cino=			  cino=/4 >
+		  a = b;		    a = b;
+		  /* comment */			/* comment */
+		  c = d;		    c = d;
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=                 cino=/4
+  a = b;                a = b;
+  /* comment */             /* comment */
+  c = d;                c = d;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-(*
+	(N    When in unclosed parentheses, indent N characters from the line
+	      with the unclosed parentheses.  Add a 'shiftwidth' for every
+	      unclosed parentheses.  When N is 0 or the unclosed parentheses
+	      is the first non-white character in its line, line up with the
+	      next non-white character after the unclosed parentheses.
+	      (default 'shiftwidth' * 2).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-(}
+@cindex cino-(
+@item (N
+閉じていない丸カッコ内では開き丸カッコのあるラインより N 文字インデントする。インデント量は 1 つの丸カッコにつき '@option{shiftwidth}' ずつ増える。N が 0 であるか、閉じていない丸カッコが行頭にある時は、インデント位置はそのカッコ後の非空白文字の位置になる。(省略値 'shiftwidth' * 2)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=			  cino=(0 >
+		  if (c1 && (c2 ||	    if (c1 && (c2 ||
+			      c3))		       c3))
+		      foo;			foo;
+		  if (c1 &&		    if (c1 &&
+			  (c2 || c3))		(c2 || c3))
+		     {			       {
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=                     cino=(0
+  if (c1 && (c2 ||          if (c1 && (c2 ||
+              c3))                     c3))
+      foo;                      foo;
+  if (c1 &&                 if (c1 &&
+          (c2 || c3))           (c2 || c3))
+     {                         {
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-u*
+	uN    Same as (N, but for one level deeper.  (default 'shiftwidth').
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-u}
+@cindex cino-u
+@item uN
+(N と同じだが、一段階内側の丸カッコについての設定。(省略値 'shiftwidth')
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=			  cino=u2 >
+		  if (c123456789	    if (c123456789
+			  && (c22345		    && (c22345
+			      || c3))		      || c3))
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=                     cino=u2
+  if (c123456789            if (c123456789
+          && (c22345                && (c22345
+              || c3))                 || c3))
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-U*
+	UN    When N is non-zero, do not ignore the indenting specified by
+	      ( or u in case that the unclosed parentheses is the first
+	      non-white character in its line.  (default 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-U}
+@cindex cino-U
+@item UN
+N が 0 ではない時には、閉じていない丸カッコが行頭にある場合でも ( や u で指定したインデントを無視しない。(省略値 0)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino= or cino=(s	  cino=(s,U1 >
+		  c = c1 &&		    c = c1 &&
+		      (				(
+		       c2 ||			    c2 ||
+		       c3			    c3
+		      ) && c4;			) && c4;
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino= or cino=(s          cino=(s,U1
+  c = c1 &&                 c = c1 &&
+      (                         (
+       c2 ||                        c2 ||
+       c3                           c3
+      ) && c4;                  ) && c4;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-w*
+	wN    When in unclosed parentheses and N is non-zero and either
+	      using "(0" or "u0", respectively, or using "U0" and the unclosed
+	      parentheses is the first non-white character in its line, line
+	      up with the character immediately after the unclosed parentheses
+	      rather than the first non-white character.  (default 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-w}
+@cindex cino-w
+@item wN
+N が 0 ではなければ次に示すような場合の、閉じていない丸カッコ後の非空白文字ではなく、カッコ直後の位置がインデントに使用される:
+@itemize @minus
+@item "(0" を使用している時の閉じていない丸カッコ
+@item "u0" を使用している時の閉じていない丸カッコ
+@item "U0" を使用している時の行頭の閉じていない丸カッコ
+@end itemize
+(省略値 0)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=(0			  cino=(0,w1 >
+		  if (   c1		    if (   c1
+			 && (   c2		&& (   c2
+				|| c3))		    || c3))
+		      foo;			foo;
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=(0                   cino=(0,w1
+  if (   c1                 if (   c1
+         && (   c2              && (   c2
+                || c3))             || c3))
+      foo;                      foo;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-W*
+	WN    When in unclosed parentheses and N is non-zero and either
+	      using "(0" or "u0", respectively and the unclosed parentheses is
+	      the last non-white character in its line and it is not the
+	      closing parentheses, indent the following line N characters
+	      relative to the outer context (i.e. start of the line or the
+	      next unclosed parentheses).  (default: 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-W}
+@cindex cino-W
+@item WN
+N が 0 でない時に、丸カッコが閉じていなくて、"(0" か "u0" のどちらかが使われていて閉じていない開き丸カッコが行末にある時、続く行を最初の行から相対的にインデントする。(省略値 0)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=(0			   cino=(0,W4 >
+		  a_long_line(		    a_long_line(
+			      argument,		argument,
+			      argument);	argument);
+		  a_short_line(argument,    a_short_line(argument,
+			       argument);		 argument);
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=(0                    cino=(0,W4
+  a_long_line(              a_long_line(
+              argument,         argument,
+              argument);        argument);
+  a_short_line(argument,    a_short_line(argument,
+               argument);                argument);
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-k*
+	kN    When in unclosed parentheses which follow "if", "for" or
+	      "while" and N is non-zero, overrides the behaviour defined by
+	      "(N": causes the indent to be N characters relative to the outer
+	      context (i.e. the line where "if", "for" or "while" is).  Has
+	      no effect on deeper levels of nesting.  Affects flags like "wN"
+	      only for the "if", "for" and "while" conditions.  If 0, defaults
+	      to behaviour defined by the "(N" flag.  (default: 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-k}
+@cindex cino-k
+@item kN
+"if", "for", "while" の後の丸カッコが閉じていなくて、N が 0 でない時、"(N" で指定される挙動を上書きする。これにより、外側の文脈 (例えば、"if", "for", "while" がある行) に対して N 文字インデントとされる。より深いレベルのネストに対しては効果はない。"wN" のように働くが、"if", "for", "while" の条件のみに働く。N が 0 の場合は "(N" フラグで指定された挙動となる。(省略値 0)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=(0			   cino=(0,ks >
+		  if (condition1	    if (condition1
+		      && condition2)		    && condition2)
+		      action();			action();
+		  function(argument1	    function(argument1
+			   && argument2);	     && argument2);
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=(0                    cino=(0,ks
+  if (condition1            if (condition1
+      && condition2)                && condition2)
+      action();                 action();
+  function(argument1        function(argument1
+           && argument2);            && argument2);
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-m*
+	mN    When N is non-zero, line up a line starting with a closing
+	      parentheses with the first character of the line with the
+	      matching opening parentheses.  (default 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-m}
+@cindex cino-m
+@item mN
+N が 0 でない時には、閉じ丸カッコで始まる行を対応する開き丸カッコのある行頭に並べる。(省略値 0)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=(s			  cino=(s,m1 >
+		  c = c1 && (		    c = c1 && (
+		      c2 ||			c2 ||
+		      c3			c3
+		      ) && c4;		    ) && c4;
+		  if (			    if (
+		      c1 && c2			c1 && c2
+		     )			    )
+		      foo;			foo;
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=(s               cino=(s,m1
+  c = c1 && (           c = c1 && (
+      c2 ||                 c2 ||
+      c3                    c3
+      ) && c4;          ) && c4;
+  if (                  if (
+      c1 && c2              c1 && c2
+     )                  )
+      foo;                  foo;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cino-M*
+	MN    When N is non-zero, line up a line starting with a closing
+	      parentheses with the first character of the previous line.
+	      (default 0).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-M}
+@cindex cino-M
+@item MN
+N が非ゼロのとき、閉じ括弧で始まる行のインデントを前の行の最初の文字と同じ位置にする (省略値 0)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		cino=			  cino=M1 >
+		  if (cond1 &&		    if (cond1 &&
+			 cond2			   cond2
+		     )				   )
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cino=                 cino=M1
+  if (cond1 &&          if (cond1 &&
+         cond2                 cond2
+     )                         )
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				*java-cinoptions* *java-indenting* *cino-j*
+	jN    Indent Java anonymous classes correctly.  Also works well for
+	      Javascript.  The value 'N' is currently unused but must be
+	      non-zero (e.g. 'j1').  'j1' will indent for example the
+	      following code snippet correctly: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{java-cinoptions}
+@anchor{java-indenting}
+@anchor{cino-j}
+@cindex java-cinoptions
+@cindex java-indenting
+@cindex cino-j
+@item jN
+Java の無名クラスを正しくインデントする。JavaScript に対しても機能する。値 'N' は現在のところ使われていないが 0 以外 (例 'j1') にしなければならない。'j1' にすることで例えば次のようなコードが正しくインデントされる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		object.add(new ChangeListener() {
+		    public void stateChanged(ChangeEvent e) {
+			do_something();
+		    }
+		});
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+object.add(new ChangeListener() {
+    public void stateChanged(ChangeEvent e) {
+        do_something();
+    }
+});
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			*javascript-cinoptions* *javascript-indenting* *cino-J*
+	JN    Indent JavaScript object declarations correctly by not confusing
+	      them with labels.  The value 'N' is currently unused but must be 
+	      non-zero (e.g. 'J1').  If you enable this you probably also want
+	      to set |cino-j|. >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{javascript-cinoptions}
+@anchor{javascript-indenting}
+@anchor{cino-J}
+@cindex javascript-cinoptions
+@cindex javascript-indenting
+@cindex cino-J
+@item JN
+JavaScript のオブジェクト定義を (ラベルと混同せずに) 適切にインデントする。'N' は今のところ使用されていないが非ゼロを指定する必要がある (例: 'J1')。このオプションを有効にした場合、もしかしたら |cino-j| もセットしたほうがいいかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		var bar = {
+		    foo: {
+			that: this,
+			some: ok,
+		    },
+		    "bar":{ 
+			a : 2,
+			b: "123abc",
+			x: 4,
+			"y": 5
+		    }
+		}
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+var bar = {
+    foo: {
+        that: this,
+        some: ok,
+    },
+    "bar":{ 
+        a : 2,
+        b: "123abc",
+        x: 4,
+        "y": 5
+    }
+}
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*cino-)*
+	)N    Vim searches for unclosed parentheses at most N lines away.
+	      This limits the time needed to search for parentheses.  (default
+	      20 lines).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-)}
+@cindex cino-)
+@item )N
+Vim は N 行まで遡って閉じていないカッコを探す。これはカッコを探すのにかかる時間を制限する。(省略値 20)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								*cino-star*
+	*N    Vim searches for unclosed comments at most N lines away.  This
+	      limits the time needed to search for the start of a comment.
+	      If your /* */ comments stop indenting after N lines this is the
+	      value you will want to change.
+	      (default 70 lines).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-star}
+@cindex cino-star
+@item *N
+Vim は N 行まで遡って閉じられていないコメントを探す。これはコメントの始まりを探すのにかかる時間を制限する。N 行以降で /* */ コメントがインデントされない、というときはこのオプションを設定すること。(省略値 70行)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								*cino-#*
+	#N    When N is non-zero recognize shell/Perl comments starting with
+	      '#', do not recognize preprocessor lines; allow right-shifting
+	      lines that start with "#".
+	      When N is zero (default): don't recognize '#' comments, do
+	      recognize preprocessor lines; right-shifting lines that start
+	      with "#" does not work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cino-#}
+@cindex cino-#
+@item #N
+N がゼロでないときは '#' で始まる shell/Perl のコメントを認識する。プリプロセッサー行は認識されない。"#" で始まる行を右シフトできるようになる。
+
+N がゼロのとき (初期設定): '#' コメントを認識しない。プリプロセッサー行は認識される。"#" で始まる行に対する右シフトは機能しない。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The defaults, spelled out in full, are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+省略値を全て並べるとこうなる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	cinoptions=>s,e0,n0,f0,{0,}0,^0,L-1,:s,=s,l0,b0,gs,hs,N0,ps,ts,is,+s,
+			c3,C0,/0,(2s,us,U0,w0,W0,k0,m0,j0,J0,)20,*70,#0
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+cinoptions=>s,e0,n0,f0,{0,}0,^0,L-1,:s,=s,l0,b0,gs,hs,N0,ps,ts,is,+s,
+                c3,C0,/0,(2s,us,U0,w0,W0,k0,m0,j0,J0,)20,*70,#0
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim puts a line in column 1 if:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のような場合には Vim は行頭を 1 列目に持っていく:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- It starts with '#' (preprocessor directives), if 'cinkeys' contains '#0'.
+- It starts with a label (a keyword followed by ':', other than "case" and
+  "default") and 'cinoptions' does not contain an 'L' entry with a positive
+  value.
+- Any combination of indentations causes the line to have less than 0
+  indentation.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item '@option{cinkeys}' が '#0' を含み行が '#' (プリプロセッサー命令) で始まる場合
+@item 行がラベル ("case" と "default" 以外のキーワードの後に ':' があるもの) で始まり、'@option{cinoptions}' に正数を持った '@var{L}' フラグがない場合。
+@item インデントの組合わせの結果、その行のインデント量が 0 以下になった場合。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Indenting by expression				*indent-expression*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{indent-expression}
+@cindex indent-expression
+@section 2. スクリプトを用いたインデント
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The basics for using flexible indenting are explained in section |30.3| of the
+user manual.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+融通の利くインデントの基本はユーザーマニュアルの |@ref{30.3, , 30.3}| 節で説明されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to write your own indent file, it must set the 'indentexpr'
+option.  Setting the 'indentkeys' option is often useful.  See the
+$VIMRUNTIME/indent directory for examples.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+独自にインデントファイルを書きたいならば、オプション '@option{indentexpr}' を設定しなければならない。同時にオプション '@option{indentkeys}' を設定すると便利だろう。インデントファイルの例は $VIMRUNTIME/indent ディレクトリを参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+REMARKS ABOUT SPECIFIC INDENT FILES ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec インデントファイルについての覚書
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CLOJURE					*ft-clojure-indent* *clojure-indent*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-clojure-indent}
+@anchor{clojure-indent}
+@cindex ft-clojure-indent
+@cindex clojure-indent
+@unnumberedsubsubsec CLOJURE
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Clojure indentation differs somewhat from traditional Lisps, due in part to
+the use of square and curly brackets, and otherwise by community convention.
+These conventions are not universally followed, so the Clojure indent script
+offers a few configurable options, listed below.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Clojure のインデントは伝統的な Lisp とは若干異なる。それは角カッコや波カッコの扱いや、コミュニティの習慣などによる。それらの習慣は普遍的ではないので、Clojure のインデントスクリプトは以下に挙げる設定可能オプションを用意している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the current vim does not include searchpairpos(), the indent script falls
+back to normal 'lisp' indenting, and the following options are ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使用している vim に searchpairpos() がない場合は通常の 'lisp' インデントにフォールバックする。その場合、以下のオプションは無視される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*g:clojure_maxlines*
+
+Set maximum scan distance of searchpairpos(). Larger values trade performance
+for correctness when dealing with very long forms. A value of 0 will scan
+without limits.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:clojure_maxlines}
+@cindex g:clojure_maxlines
+searchpairpos() による検索の最大範囲を設定する。大きな値を指定すれば、フォームが長い場合に、パフォーマンスと引き換えに正しい結果を得ることができる。0 を指定すると制限なしになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	" Default
+	let g:clojure_maxlines = 100
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+" Default
+let g:clojure_maxlines = 100
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*g:clojure_fuzzy_indent*
+					*g:clojure_fuzzy_indent_patterns*
+					*g:clojure_fuzzy_indent_blacklist*
+
+The 'lispwords' option is a list of comma-separated words that mark special
+forms whose subforms must be indented with two spaces.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:clojure_fuzzy_indent}
+@anchor{g:clojure_fuzzy_indent_patterns}
+@anchor{g:clojure_fuzzy_indent_blacklist}
+@cindex g:clojure_fuzzy_indent
+@cindex g:clojure_fuzzy_indent_patterns
+@cindex g:clojure_fuzzy_indent_blacklist
+'@option{lispwords}' オプションはコンマ区切りの単語のリストで、サブフォームをスペース 2 個でインデントする特別なフォームを指定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example:
+>
+	(defn bad []
+	      "Incorrect indentation")
+
+	(defn good []
+	  "Correct indentation")
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+(defn bad []
+      "Incorrect indentation")
+
+(defn good []
+  "Correct indentation")
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+If you would like to specify 'lispwords' with a |pattern| instead, you can use
+the fuzzy indent feature:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{lispwords}' をパターン (|pattern|) で指定したい場合は、ファジーインデント機能が使える:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	" Default
+	let g:clojure_fuzzy_indent = 1
+	let g:clojure_fuzzy_indent_patterns = ['^with', '^def', '^let']
+	let g:clojure_fuzzy_indent_blacklist =
+		\ ['-fn$', '\v^with-%(meta|out-str|loading-context)$']
+
+	" Legacy comma-delimited string version; the list format above is
+	" recommended. Note that patterns are implicitly anchored with ^ and $
+	let g:clojure_fuzzy_indent_patterns = 'with.*,def.*,let.*'
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+" 初期設定
+let g:clojure_fuzzy_indent = 1
+let g:clojure_fuzzy_indent_patterns = ['^with', '^def', '^let']
+let g:clojure_fuzzy_indent_blacklist =
+    \ ['-fn$', '\v^with-%(meta|out-str|loading-context)$']
+
+" 古い設定方法。文字列をコンマ区切りで指定する。現在は上記のリストによ
+" る設定が推奨される。Note: パターンは暗黙的に ^ と $ で固定される。
+let g:clojure_fuzzy_indent_patterns = 'with.*,def.*,let.*'
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+|g:clojure_fuzzy_indent_patterns| and |g:clojure_fuzzy_indent_blacklist| are
+|Lists| of patterns that will be matched against the unquoted, unqualified
+symbol at the head of a list. This means that a pattern like "^foo" will match
+all these candidates: "foobar", "my.ns/foobar", and "#'foobar".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|g:clojure_fuzzy_indent_patterns| と |g:clojure_fuzzy_indent_blacklist| はパターンのリストで、unquoted symbol や unqualified symbol に対してマッチする。つまり、"^foo" というパターンは、"foobar", "my.ns/foobar", "#'foobar" などにマッチする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Each candidate word is tested for special treatment in this order:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+各単語は次の順番で検査される:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	1. Return true if word is literally in 'lispwords'
+	2. Return false if word matches a pattern in
+	   |g:clojure_fuzzy_indent_blacklist|
+	3. Return true if word matches a pattern in
+	   |g:clojure_fuzzy_indent_patterns|
+	4. Return false and indent normally otherwise
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item 単語が '@option{lispwords}' に含まれていたら真を返す
+@item 単語が |g:clojure_fuzzy_indent_blacklist| にマッチしたら偽を返す
+@item 単語が |g:clojure_fuzzy_indent_patterns| にマッチしたら真を返す
+@item それ以外は、偽を返し、通常どおりにインデントする
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*g:clojure_special_indent_words*
+
+Some forms in Clojure are indented so that every subform is indented only two
+spaces, regardless of 'lispwords'. If you have a custom construct that should
+be indented in this idiosyncratic fashion, you can add your symbols to the
+default list below.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:clojure_special_indent_words}
+@cindex g:clojure_special_indent_words
+Clojure のいくつかのフォームは、'@option{lispwords}' に依らず、すべてのサブフォームがスペース 2 個でインデントされる。そのような特異なインデントで扱いたい構造が他にもある場合は、そのシンボルを次の初期値に加えること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	" Default
+	let g:clojure_special_indent_words =
+	   \ 'deftype,defrecord,reify,proxy,extend-type,extend-protocol,letfn'
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+" 初期設定
+let g:clojure_special_indent_words =
+   \ 'deftype,defrecord,reify,proxy,extend-type,extend-protocol,letfn'
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+					*g:clojure_align_multiline_strings*
+
+Align subsequent lines in multiline strings to the column after the opening
+quote, instead of the same column.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:clojure_align_multiline_strings}
+@cindex g:clojure_align_multiline_strings
+複数行文字列を、クォート文字と同じ列で揃えるのではなく、クォート文字の 1 つ後ろの列で整列させる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	(def default
+	  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+	  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+	  enim ad minim veniam, quis nostrud exercitation ullamco laboris
+	  nisi ut aliquip ex ea commodo consequat.")
+
+	(def aligned
+	  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+	   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+	   enim ad minim veniam, quis nostrud exercitation ullamco laboris
+	   nisi ut aliquip ex ea commodo consequat.")
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+(def 初期設定
+  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+  enim ad minim veniam, quis nostrud exercitation ullamco laboris
+  nisi ut aliquip ex ea commodo consequat.")
+
+(def 整列する場合
+  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+   enim ad minim veniam, quis nostrud exercitation ullamco laboris
+   nisi ut aliquip ex ea commodo consequat.")
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This option is off by default.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このオプションは初期設定でオフになっている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	" Default
+	let g:clojure_align_multiline_strings = 0
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+" 初期設定
+let g:clojure_align_multiline_strings = 0
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*g:clojure_align_subforms*
+
+By default, parenthesized compound forms that look like function calls and
+whose head subform is on its own line have subsequent subforms indented by
+two spaces relative to the opening paren:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:clojure_align_subforms}
+@cindex g:clojure_align_subforms
+初期設定では、括弧で囲まれた関数呼び出しのような形でその最初の subform が括弧と同じ行にあるとき、そのうしろの subform は最初の括弧からスペース 2 つ分インデントされる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	(foo
+	  bar
+	  baz)
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+(foo
+  bar
+  baz)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Setting this option changes this behavior so that all subforms are aligned to
+the same column, emulating the default behavior of clojure-mode.el:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このオプションを設定すると、clojure-mode.el のデフォルトの振る舞いのように、すべての subform を同じカラムに揃えることができる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	(foo
+	 bar
+	 baz)
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+(foo
+ bar
+ baz)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This option is off by default.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このオプションは初期設定ではオフになっている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	" Default
+	let g:clojure_align_subforms = 0
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+" 初期設定
+let g:clojure_align_subforms = 0
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+FORTRAN							*ft-fortran-indent*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-fortran-indent}
+@cindex ft-fortran-indent
+@unnumberedsubsubsec FORTRAN
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Block if, select case, where, and forall constructs are indented.  So are
+type, interface, associate, block, and enum constructs.  The indenting of
+subroutines, functions, modules, and program blocks is optional.  Comments,
+labelled statements and continuation lines are indented if the Fortran is in
+free source form, whereas they are not indented if the Fortran is in fixed
+source form because of the left margin requirements.  Hence manual indent
+corrections will be necessary for labelled statements and continuation lines
+when fixed source form is being used.  For further discussion of the method
+used for the detection of source format see |ft-fortran-syntax|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Block if, select case, where, forall 構造がインデントされる。さらに type, interface, associate, block, enum 構造も。サブルーチン、関数、モジュール、プログラムブロックのインデントは任意。コメント、ラベル付き文、そして 2 行にまたがった行は、Fortran が自由形式のソースではインデントされるが、一方 Fortran が固定形式ソースの場合には左余白が言語仕様により決定されているのでインデントされない。それ故に固定形式ソースを使っている時にはラベル付き文と 2 行にまたがった行については手動でインデントを修正する必要がある。ソース形式の判定に使われている方法についてのさらなる議論は |ft-fortran-syntax| を参照のこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Do loops ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Do ループ
+
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+All do loops are left unindented by default.  Do loops can be unstructured in
+Fortran with (possibly multiple) loops ending on a labelled executable
+statement of almost arbitrary type.  Correct indentation requires
+compiler-quality parsing.  Old code with do loops ending on labelled statements
+of arbitrary type can be indented with elaborate programs such as Tidy
+(http://www.unb.ca/chem/ajit/f_tidy.htm).  Structured do/continue loops are
+also left unindented because continue statements are also used for purposes
+other than ending a do loop.  Programs such as Tidy can convert structured
+do/continue loops to the do/enddo form.  Do loops of the do/enddo variety can
+be indented.  If you use only structured loops of the do/enddo form, you should
+declare this by setting the fortran_do_enddo variable in your .vimrc as
+follows >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトでは全ての do ループはインデントされない。Fortran では、ループはラベル付けされたほとんど任意の型の実行可能な文で (場合によっては多重に) 終わるので、do ループは非構造的になる。これを正しくインデントするにはコンパイラ級の構文解析が必要になる。任意の型の実行可能文で終わる do ループを持っていたとしても、古いコードであれば Tidy (http://www.unb.ca/chem/ajit/f_tidy.htm) のように念入りに作られたプログラムでインデントすることはできる。
+
+構造化 do/continue ループも、continue 文が do ループを終了する以外の目的でも使用されるので、インデントせずに残される。Tidy のようなプログラムは構造化 do/continue ループを do/enddo 形式に変換することができる。do/enddo タイプの do ループならばインデントすることができる。do/enddo の形の構造化されたループしか使わないのならば、.vimrc で以下のように fortran_do_enddo 変数を設定してそのことを宣言するべきである:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   let fortran_do_enddo=1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+let fortran_do_enddo=1
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+in which case do loops will be indented.  If all your loops are of do/enddo
+type only in, say, .f90 files, then you should set a buffer flag with an
+autocommand such as >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このようにすれば do ループはインデントされる。例えば拡張子が .f90 であるファイルの中にある全てのループが do/enddo タイプだけならば、このような autocommand を使ってのバッファフラグを設定することができる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  au! BufRead,BufNewFile *.f90 let b:fortran_do_enddo=1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+au! BufRead,BufNewFile *.f90 let b:fortran_do_enddo=1
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+to get do loops indented in .f90 files and left alone in Fortran files with
+other extensions such as .for.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+こうすれば .f90 のファイル内の do ループはインデントし、それ以外、例えば拡張子が .for の Fortran のファイルのループはインデントせずに残すことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Program units ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プログラム単位
+
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The indenting of program units (subroutines, functions, modules, and program
+blocks) is enabled by default but can be suppressed if a lighter, screen-width
+preserving indent style is desired.  To suppress the indenting of program
+units for all fortran files set the global fortran_indent_less variable in
+your .vimrc as follows >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プログラム単位 (サブルーチン、関数、モジュール、プログラムブロック) のインデントは初期設定では有効になっている。軽くてスクリーン幅指向のインデントスタイルが好みなら無効化することができる。すべての Fortran ファイルでプログラム単位のインデントを無効化するにはグローバル変数の fortran_indent_less を .vimrc で設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  let fortran_indent_less=1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+let fortran_indent_less=1
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A finer level of suppression can be achieved by setting the corresponding
+buffer-local variable as follows >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファ単位で無効化したい場合はバッファローカル変数を設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  let b:fortran_indent_less=1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+let b:fortran_indent_less=1
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+HTML				*ft-html-indent* *html-indent* *html-indenting*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-html-indent}
+@anchor{html-indent}
+@anchor{html-indenting}
+@cindex ft-html-indent
+@cindex html-indent
+@cindex html-indenting
+@unnumberedsubsubsec HTML
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is about variables you can set in your vimrc to customize HTML indenting.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらの変数を vimrc で設定することで HTML のインデントをカスタマイズできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can set the indent for the first line after <script> and <style>
+"blocktags" (default "zero"): >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+<script> と <style> の最初の行のインデントを設定できる (初期設定は "zero"):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+      :let g:html_indent_script1 = "inc"
+      :let g:html_indent_style1 = "inc"
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:let g:html_indent_script1 = "inc"
+:let g:html_indent_style1 = "inc"
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+      VALUE	MEANING ~
+      "zero"	zero indent
+      "auto"	auto indent (same indent as the blocktag)
+      "inc"	auto indent + one indent step
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .15 .85
+@headitem 値 @tab 意味
+@item "zero" @tab ゼロインデント
+@item "auto" @tab 自動インデント (ブロックタグのインデントと同じ)
+@item "inc" @tab 自動インデント + 1 インデント増加
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Many tags increase the indent for what follows per default (see "Add Indent
+Tags" in the script).  You can add further tags with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+初期設定では多くのタグで、続くタグのインデントが増加される (このスクリプトの "Add Indent Tags" 参照)。そのように扱うタグを追加するには:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+      :let g:html_indent_inctags = "html,body,head,tbody"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:let g:html_indent_inctags = "html,body,head,tbody"
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can also remove such tags with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+対象から除外するには:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+      :let g:html_indent_autotags = "th,td,tr,tfoot,thead"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:let g:html_indent_autotags = "th,td,tr,tfoot,thead"
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Default value is empty for both variables.  Note: the initial "inctags" are
+only defined once per Vim session.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらの変数の初期設定は空である。
+@quotation
+@strong{Note:} @*
+"inctags" は Vim の編集セッションごとに一度だけ初期化される。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+User variables are only read when the script is sourced.  To enable your
+changes during a session, without reloading the HTML file, you can manually
+do: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザー変数はスクリプトが実行されたときだけ読まれる。編集中に HTML ファイルを再読み込みすることなしに設定変更を反映したい場合は、手動で次のようにする:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+      :call HtmlIndent_CheckUserSettings()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:call HtmlIndent_CheckUserSettings()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Detail:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+詳細:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+  Calculation of indent inside "blocktags" with "alien" content:
+      BLOCKTAG   INDENT EXPR	    WHEN APPLICABLE ~
+      <script> : {customizable}	    if first line of block
+	       : cindent(v:lnum)    if attributes empty or contain "java"
+	       : -1		    else (vbscript, tcl, ...)
+      <style>  : {customizable}	    if first line of block
+	       : GetCSSIndent()	    else
+      <!-- --> : -1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+異質な内容を含むブロックタグ内のインデントの計算:
+@multitable @columnfractions .20 .05 .30 .45
+@headitem BLOCKTAG @tab @tab インデント式 @tab 適用できるとき
+@item <script> @tab : @tab @{カスタマイズ可@} @tab ブロックの最初の行
+@item @tab : @tab cindent(v:lnum) @tab 属性が空または "java" を含むとき
+@item @tab : @tab -1 @tab その他 (vbscript, tcl, ...)
+@item <style> @tab : @tab @{カスタマイズ可@} @tab ブロックの最初の号
+@item @tab : @tab GetCSSIndent() @tab その他
+@item <!@minus{}@minus{} @minus{}@minus{}> @tab : @tab -1
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+PHP				*ft-php-indent* *php-indent* *php-indenting*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-php-indent}
+@anchor{php-indent}
+@anchor{php-indenting}
+@cindex ft-php-indent
+@cindex php-indent
+@cindex php-indenting
+@unnumberedsubsubsec PHP
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NOTE:	PHP files will be indented correctly only if PHP |syntax| is active.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+|syntax| がオンのときのみ PHP のファイルは正しくインデントされる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are editing a file in Unix 'fileformat' and '\r' characters are present
+before new lines, indentation won't proceed correctly ; you have to remove
+those useless characters first with a command like: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{fileformat}' を "@var{unix}" にしている場合、文字 '\r' が改行の前にあると、インデントは正しく行われない。これらの不要な文字を削除するには次のコマンドを使う:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    :%s /\r$//g
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:%s /\r$//g
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Or, you can simply |:let| the variable PHP_removeCRwhenUnix to 1 and the
+script will silently remove them when Vim loads a PHP file (at each |BufRead|).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+または |:let| コマンドを使って変数 PHP_removeCRwhenUnix に 1 をセットすると、PHP ファイルを読み込んだとき、|BufRead| のタイミングで自動的にこれらが削除される (そのとき特にメッセージは表示されない)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+OPTIONS: ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション:
+
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+PHP indenting can be altered in several ways by modifying the values of some
+global variables:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+下記のグローバル変数をセットすることで、PHP のインデントをカスタマイズできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*php-comment* *PHP_autoformatcomment*
+To not enable auto-formatting of comments by default (if you want to use your
+own 'formatoptions'): >
+    :let g:PHP_autoformatcomment = 0
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{php-comment}
+@anchor{PHP_autoformatcomment}
+@cindex php-comment
+@cindex PHP_autoformatcomment
+デフォルトでは有効になっているコメントの自動整形を無効化するには ('@option{formatoptions}' に従うようにするには)次のようにする:
+@example
+:let g:PHP_autoformatcomment = 0
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Else, 't' will be removed from the 'formatoptions' string and "qrowcb" will be
+added, see |fo-table| for more information.
+-------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これをしない場合、'@option{formatoptions}' から '@var{t}' が除かれ、"@var{qrowcb}" が加えられる。詳しくは |fo-table| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*PHP_outdentSLComments*
+To add extra indentation to single-line comments: >
+    :let g:PHP_outdentSLComments = N
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{PHP_outdentSLComments}
+@cindex PHP_outdentSLComments
+一行コメントに追加のインデントを加える:
+@example
+:let g:PHP_outdentSLComments = N
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+With N being the number of 'shiftwidth' to add.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+N は '@option{shiftwidth}' に追加される値。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Only single-line comments will be affected such as: >
+    # Comment
+    // Comment
+    /* Comment */
+-------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のような一行コメントのみ影響する:
+@verbatim
+# Comment
+// Comment
+/* Comment */
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*PHP_default_indenting*
+To add extra indentation to every PHP lines with N being the number of
+'shiftwidth' to add: >
+    :let g:PHP_default_indenting = N
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{PHP_default_indenting}
+@cindex PHP_default_indenting
+すべての PHP の行に対しインデントを増やすには、次のようにする:
+@example
+:let g:PHP_default_indenting = N
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, with N = 1, this will give:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ここで N は整数。N 個の '@option{shiftwidth}' 分のインデントが追加される。例として N = 1 の場合、次のようになる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+    <?php
+	if (!isset($History_lst_sel))
+	    if (!isset($History_lst_sel))
+		if (!isset($History_lst_sel)) {
+		    $History_lst_sel=0;
+		} else
+		    $foo="bar";
+
+	$command_hist = TRUE;
+    ?>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+<?php
+if (!isset($History_lst_sel))
+    if (!isset($History_lst_sel))
+    if (!isset($History_lst_sel)) {
+        $History_lst_sel=0;
+    } else
+        $foo="bar";
+
+$command_hist = TRUE;
+?>
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+(Notice the extra indentation between the PHP container markers and the code)
+-------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+(<?php タグよりコードの方が 1 段階多くインデントされている)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*PHP_outdentphpescape*
+To indent PHP escape tags as the surrounding non-PHP code (only affects the
+PHP escape tags): >
+:let g:PHP_outdentphpescape = 0
+-------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{PHP_outdentphpescape}
+@cindex PHP_outdentphpescape
+PHP エスケープタグを囲まれている PHP ではないコードとしてインデントする (PHP エスケープタグにのみ影響):
+@example
+:let g:PHP_outdentphpescape = 0
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*PHP_removeCRwhenUnix*
+To automatically remove '\r' characters when the 'fileformat' is set to Unix: >
+    :let g:PHP_removeCRwhenUnix = 1
+-------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{PHP_removeCRwhenUnix}
+@cindex PHP_removeCRwhenUnix
+'@option{fileformat}' を "@var{unix}" にしているとき、自動的に '\r' を削除するには次のようにする:
+@example
+:let g:PHP_removeCRwhenUnix = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*PHP_BracesAtCodeLevel*
+To indent braces at the same level than the code they contain: >
+    :let g:PHP_BracesAtCodeLevel = 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{PHP_BracesAtCodeLevel}
+@cindex PHP_BracesAtCodeLevel
+波カッコ @{@} をその内側と同じインデントレベルにするには:
+@example
+:let g:PHP_BracesAtCodeLevel = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+    
+@ifset EN
+This will give the following result: >
+    if ($foo)
+	{
+	foo();
+	}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すると、次のようになる:
+@verbatim
+if ($foo)
+    {
+    foo();
+    }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Instead of: >
+    if ($foo)
+    {
+	foo();
+    }
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトの場合:
+@verbatim
+if ($foo)
+{
+    foo();
+}
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NOTE:	Indenting will be a bit slower if this option is used because some
+	optimizations won't be available.
+-------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+このオプションをオンにすると、最適化の一部が効かなくなるため、インデントが少し遅くなる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*PHP_vintage_case_default_indent*
+To indent 'case:' and 'default:' statements in switch() blocks: >
+    :let g:PHP_vintage_case_default_indent = 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{PHP_vintage_case_default_indent}
+@cindex PHP_vintage_case_default_indent
+switch() ブロック内の 'case:' と 'default:' をインデントさせるには:
+@example
+:let g:PHP_vintage_case_default_indent = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In PHP braces are not required inside 'case/default' blocks therefore 'case:'
+and 'default:' are indented at the same level than the 'switch()' to avoid
+meaningless indentation. You can use the above option to return to the
+traditional way.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+PHP では 'case/default' ブロックの中で波カッコは不要なので、余計なインデントを避けるため、'case:' と 'default:' は 'switch()' と同じレベルにインデントされる。上記のオプションを使うことで古いインデント形式を使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+PYTHON							*ft-python-indent*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-python-indent}
+@cindex ft-python-indent
+@unnumberedsubsubsec PYTHON
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The amount of indent can be set for the following situations.  The examples
+given are the defaults.  Note that the variables are set to an expression, so
+that you can change the value of 'shiftwidth' later.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下の状況のためにインデントの量を設定することができる。この例は既定である。後で '@option{shiftwidth}' の値を変更するために変数に式を設定しておく。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Indent after an open paren: >
+	let g:pyindent_open_paren = '&sw * 2'
+Indent after a nested paren: >
+	let g:pyindent_nested_paren = '&sw'
+Indent for a continuation line: >
+	let g:pyindent_continue = '&sw * 2'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+開き括弧の後のインデント:
+@example
+let g:pyindent_open_paren = '&sw * 2'
+@end example
+ネストした括弧の後のインデント:
+@example
+let g:pyindent_nested_paren = '&sw'
+@end example
+継続行のインデント:
+@example
+let g:pyindent_continue = '&sw * 2'
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+R								*ft-r-indent*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-r-indent}
+@cindex ft-r-indent
+@unnumberedsubsubsec R
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Function arguments are aligned if they span for multiple lines. If you prefer
+do not have the arguments of functions aligned, put in your |vimrc|:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+関数の引数が複数行にまたがる場合はそれらは整列される。関数の引数を整列させたくない場合は |vimrc| に次の設定を書くこと:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+   let r_indent_align_args = 0
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+let r_indent_align_args = 0
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+All lines beginning with a comment character, #, get the same indentation
+level of the normal R code. Users of Emacs/ESS may be used to have lines
+beginning with a single # indented in the 40th column, ## indented as R code,
+and ### not indented. If you prefer that lines beginning with comment
+characters are aligned as they are by Emacs/ESS, put in your |vimrc|:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コメント文字 (#) で始まるすべての行は R の通常のコードと同じレベルでインデントされる。Emacs/ESS のユーザーは 1 つの # で始まる行を 40 桁でインデントし、## で始まる行を R コードと同じ桁でインデントし、### で始まる行をインデントしないようにしている。Emacs/ESS と同じようにインデントをしたい場合は |vimrc| に次の設定を書くこと:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+   let r_indent_ess_comments = 1
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+let r_indent_ess_comments = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+If you prefer that lines beginning with a single # are aligned at a column
+different from the 40th one, you should set a new value to the variable
+r_indent_comment_column, as in the example below:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+1 つの # で始まる行の整列位置を 40 桁から変えたい場合は r_indent_comment_column の値を設定すること。次のようにする:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+   let r_indent_comment_column = 30
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+let r_indent_comment_column = 30
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Any code after a line that ends with "<-" is indented. Emacs/ESS does not
+indent the code if it is a top level function. If you prefer that the
+Vim-R-plugin behaves like Emacs/ESS in this regard, put in your |vimrc|:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+行末が "<-" で終わる行に続くコードはインデントされる。Emacs/ESS ではそれがトップレベル関数ならインデントはされない。Emacs/ESS と同じようにインデントしたい場合は次の設定を |vimrc| に書くこと:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+   let r_indent_ess_compatible = 1
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+let r_indent_ess_compatible = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Below is an example of indentation with and without this option enabled:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このオプションを設定するかしないかで次のようにインデントが変わる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+   ### r_indent_ess_compatible = 1           ### r_indent_ess_compatible = 0
+   foo <-                                    foo <-
+       function(x)                               function(x)
+   {                                             {
+       paste(x)                                      paste(x)
+   }                                             }
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+### r_indent_ess_compatible = 1           ### r_indent_ess_compatible = 0
+foo <-                                    foo <-
+    function(x)                               function(x)
+{                                             {
+    paste(x)                                      paste(x)
+}                                             }
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+SHELL							*ft-sh-indent*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-sh-indent}
+@cindex ft-sh-indent
+@unnumberedsubsubsec SHELL
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The amount of indent applied under various circumstances in a shell file can
+be configured by setting the following keys in the |Dictionary|
+b:sh_indent_defaults to a specific amount or to a |Funcref| that references a
+function that will return the amount desired:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+シェルファイルの様々な状況に適用されるインデント量を調整するには、|Dictionary| b:sh_indent_defaults の以下のキーを設定するか、またはインデント量を計算して返す関数への参照 |Funcref| を用いる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+b:sh_indent_options['default']	Default amount of indent.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item b:sh_indent_options['default']
+インデント量の既定値。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+b:sh_indent_options['continuation-line']
+				Amount of indent to add to a continued line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b:sh_indent_options['continuation-line']
+継続行に対して追加されるインデント量。(実際には実装されていない)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+b:sh_indent_options['case-labels']
+				Amount of indent to add for case labels.
+				(not actually implemented)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b:sh_indent_options['case-labels']
+case のラベルに対して追加されるインデント量。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+b:sh_indent_options['case-statements']
+				Amount of indent to add for case statements.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b:sh_indent_options['case-statements']
+case の文に対して追加されるインデント量。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+b:sh_indent_options['case-breaks']
+				Amount of indent to add (or more likely
+				remove) for case breaks.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b:sh_indent_options['case-breaks']
+case の break に対して追加 (あるいは削減) されるインデント量。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+VERILOG							*ft-verilog-indent*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-verilog-indent}
+@cindex ft-verilog-indent
+@unnumberedsubsubsec VERILOG
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+General block statements such as if, for, case, always, initial, function,
+specify and begin, etc., are indented.  The module block statements (first
+level blocks) are not indented by default.  you can turn on the indent with
+setting a variable in the .vimrc as follows: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一般的なブロック文である if, for, case, always, initial, function, specify そして begin 等などはインデントされる。module ブロック文 (最初のレベルのブロック) はデフォルトではインデントされない。次のように .vimrc で以下の変数を設定するとそのインデントを有効化できる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  let b:verilog_indent_modules = 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+let b:verilog_indent_modules = 1
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+then the module blocks will be indented.  To stop this, remove the variable: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これにより module ブロックがインデントされる。これをやめるには変数を削除すれば良い:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  :unlet b:verilog_indent_modules
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:unlet b:verilog_indent_modules
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To set the variable only for Verilog file.  The following statements can be
+used: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Verilog のファイルにだけこの変数を設定するには、次の設定が使える:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  au BufReadPost * if exists("b:current_syntax")
+  au BufReadPost *   if b:current_syntax == "verilog"
+  au BufReadPost *     let b:verilog_indent_modules = 1
+  au BufReadPost *   endif
+  au BufReadPost * endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+au BufReadPost * if exists("b:current_syntax")
+au BufReadPost *   if b:current_syntax == "verilog"
+au BufReadPost *     let b:verilog_indent_modules = 1
+au BufReadPost *   endif
+au BufReadPost * endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Furthermore, setting the variable b:verilog_indent_width to change the
+indenting width (default is 'shiftwidth'): >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+その上、インデントの幅を変更するのに変数 b:verilog_indent_width を設定できる (省略値 'shiftwidth'):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  let b:verilog_indent_width = 4
+  let b:verilog_indent_width = &sw * 2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+let b:verilog_indent_width = 4
+let b:verilog_indent_width = &sw * 2
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In addition, you can turn the verbose mode for debug issue: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さらに、デバッグ目的で verbose モードを有効化できる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  let b:verilog_indent_verbose = 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+let b:verilog_indent_verbose = 1
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Make sure to do ":set cmdheight=2" first to allow the display of the message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メッセージを表示できるようにするために、先に ":set cmdheight=2" を実行することを確認すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+VHDL							*ft-vhdl-indent*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-vhdl-indent}
+@cindex ft-vhdl-indent
+@unnumberedsubsubsec VHDL
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Alignment of generic/port mapping statements are performed by default. This
+causes the following alignment example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+generic/port 文の桁揃えが自動的に行われる。これによって、次のように桁揃えされる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  ENTITY sync IS
+  PORT (
+         clk        : IN  STD_LOGIC;
+         reset_n    : IN  STD_LOGIC;
+         data_input : IN  STD_LOGIC;
+         data_out   : OUT STD_LOGIC
+       );
+  END ENTITY sync;
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+ENTITY sync IS
+PORT (
+       clk        : IN  STD_LOGIC;
+       reset_n    : IN  STD_LOGIC;
+       data_input : IN  STD_LOGIC;
+       data_out   : OUT STD_LOGIC
+     );
+END ENTITY sync;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To turn this off, add >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これをオフにするには、次を .vimrc に加える
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  let g:vhdl_indent_genportmap = 0
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+let g:vhdl_indent_genportmap = 0
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+to the .vimrc file, which causes the previous alignment example to change: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すると、先ほどの例が次のように変わる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  ENTITY sync IS
+  PORT (
+    clk        : IN  STD_LOGIC;
+    reset_n    : IN  STD_LOGIC;
+    data_input : IN  STD_LOGIC;
+    data_out   : OUT STD_LOGIC
+  );
+  END ENTITY sync;
+
+----------------------------------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+ENTITY sync IS
+PORT (
+  clk        : IN  STD_LOGIC;
+  reset_n    : IN  STD_LOGIC;
+  data_input : IN  STD_LOGIC;
+  data_out   : OUT STD_LOGIC
+);
+END ENTITY sync;
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Alignment of right-hand side assignment "<=" statements are performed by
+default. This causes the following alignment example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトで "<=" の右辺の桁揃えが行われる。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  sig_out <= (bus_a(1) AND
+             (sig_b OR sig_c)) OR
+             (bus_a(0) AND sig_d);
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+sig_out <= (bus_a(1) AND
+           (sig_b OR sig_c)) OR
+           (bus_a(0) AND sig_d);
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To turn this off, add >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これをオフにするには次を ~/.vimrc に加える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  let g:vhdl_indent_rhsassign = 0
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+let g:vhdl_indent_rhsassign = 0
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+to the .vimrc file, which causes the previous alignment example to change: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すると先ほどの例が次のように変わる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  sig_out <= (bus_a(1) AND
+    (sig_b OR sig_c)) OR
+    (bus_a(0) AND sig_d);
+
+----------------------------------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+sig_out <= (bus_a(1) AND
+  (sig_b OR sig_c)) OR
+  (bus_a(0) AND sig_d);
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Full-line comments (lines that begin with "--") are indented to be aligned with
+the very previous line's comment, PROVIDED that a whitespace follows after
+"--".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@samp{-- }" で始まるコメント行は、1 行前のコメント行と同じインデントになる。"@samp{--}" の後にスペースがついていなければならないことに注意。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  sig_a <= sig_b; -- start of a comment
+                  -- continuation of the comment
+                  -- more of the same comment
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+sig_a <= sig_b; -- start of a comment
+                -- continuation of the comment
+                -- more of the same comment
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+While in Insert mode, after typing "-- " (note the space " "), hitting CTRL-F
+will align the current "-- " with the previous line's "--".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+挿入モードでは、"@samp{-- }" (スペース " " に注意) をタイプしたあと、@kbd{CTRL-F} を押すと現在行の "@samp{-- }" を前の行の "@samp{--}" に揃えることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the very previous line does not contain "--", THEN the full-line comment
+will be aligned with the start of the next non-blank line that is NOT a
+full-line comment.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+1 行前が "@samp{--}" を含んでいない場合、その行は下方の「空行でもコメントでもない行」と同じインデントになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Indenting the following code: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下のコードをインデントすると:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  sig_c <= sig_d; -- comment 0
+         -- comment 1
+               -- comment 2
+    --debug_code:
+    --PROCESS(debug_in)
+         --BEGIN
+            --  FOR i IN 15 DOWNTO 0 LOOP
+             --    debug_out(8*i+7 DOWNTO 8*i) <= debug_in(15-i);
+            --  END LOOP;
+     --END PROCESS debug_code;
+
+      -- comment 3
+  sig_e <= sig_f; -- comment 4
+           -- comment 5
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+sig_c <= sig_d; -- comment 0
+       -- comment 1
+             -- comment 2
+  --debug_code:
+  --PROCESS(debug_in)
+       --BEGIN
+          --  FOR i IN 15 DOWNTO 0 LOOP
+           --    debug_out(8*i+7 DOWNTO 8*i) <= debug_in(15-i);
+          --  END LOOP;
+   --END PROCESS debug_code;
+
+    -- comment 3
+sig_e <= sig_f; -- comment 4
+         -- comment 5
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+results in: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のようになる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  sig_c <= sig_d; -- comment 0
+                  -- comment 1
+                  -- comment 2
+  --debug_code:
+  --PROCESS(debug_in)
+  --BEGIN
+  --  FOR i IN 15 DOWNTO 0 LOOP
+  --    debug_out(8*i+7 DOWNTO 8*i) <= debug_in(15-i);
+  --  END LOOP;
+  --END PROCESS debug_code;
+
+  -- comment 3
+  sig_e <= sig_f; -- comment 4
+                  -- comment 5
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+sig_c <= sig_d; -- comment 0
+                -- comment 1
+                -- comment 2
+--debug_code:
+--PROCESS(debug_in)
+--BEGIN
+--  FOR i IN 15 DOWNTO 0 LOOP
+--    debug_out(8*i+7 DOWNTO 8*i) <= debug_in(15-i);
+--  END LOOP;
+--END PROCESS debug_code;
+
+-- comment 3
+sig_e <= sig_f; -- comment 4
+                -- comment 5
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Notice that "--debug_code:" does not align with "-- comment 2"
+because there is no whitespace that follows after "--" in "--debug_code:".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@samp{--debug_code:}"  は "@samp{--}" の後にスペースがないため、"@samp{-- comment 2}" に揃えられてないことに注意。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Given the dynamic nature of indenting comments, indenting should be done TWICE.
+On the first pass, code will be indented. On the second pass, full-line
+comments will be indented according to the correctly indented code.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コメントをインデントする処理は、動的な性質のため 2 パスで行われる。1 パス目はコードがインデントされ、2 パス目は正しくインデントされたコードに沿ってコメントがインデントされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+VIM							*ft-vim-indent*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-vim-indent}
+@cindex ft-vim-indent
+@unnumberedsubsubsec VIM
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For indenting Vim scripts there is one variable that specifies the amount of
+indent for a continuation line, a line that starts with a backslash: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim script に対しては継続行 (バックスラッシュで始まる行) のインデント量を指定する変数が 1 つある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:let g:vim_indent_cont = &sw * 3
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:let g:vim_indent_cont = &sw * 3
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Three times shiftwidth is the default value.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+shiftwidth の 3 倍が既定値である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset

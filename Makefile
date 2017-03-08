@@ -24,7 +24,9 @@ REFMANUALS = \
 	doc/motion.texi \
 	doc/scroll.texi \
 	doc/insert.texi \
-	doc/change.texi
+	doc/change.texi \
+	doc/indent.texi \
+	doc/undo.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \

@@ -1,0 +1,1248 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node undo.txt, , , 目次
+@unnumbered アンドゥとリドゥ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*undo.txt*      For Vim version 8.0.  Last change: 2014 May 24
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*undo.txt*      For Vim バージョン 8.0.  Last change: 2014 May 24
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Undo and redo						*undo-redo*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{undo-redo}
+@cindex undo-redo
+undo と redo
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The basics are explained in section |02.5| of the user manual.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+基本的なことは |@ref{02.5, , 02.5}| で説明されています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Undo and redo commands	|undo-commands|
+2. Two ways of undo		|undo-two-ways|
+3. Undo blocks			|undo-blocks|
+4. Undo branches		|undo-branches|
+5. Undo persistence		|undo-persistence|
+6. Remarks about undo		|undo-remarks|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. undo と redo のコマンド @tab |@ref{undo-commands, , undo-commands}|
+@item 2. Undo の 2 つの方式 @tab |@ref{undo-two-ways, , undo-two-ways}|
+@item 3. Undo ブロック @tab |@ref{undo-blocks, , undo-blocks}|
+@item 4. Undo ブランチ @tab |@ref{undo-branches, , undo-branches}|
+@item 5. Undo の永続化 @tab |@ref{undo-persistence, , undo-persistence}|
+@item 6. 備考 @tab |@ref{undo-remarks, , undo-remarks}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Undo and redo commands				*undo-commands*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{undo-commands}
+@cindex undo-commands
+@section 1. undo と redo のコマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<Undo>		or					*undo* *<Undo>* *u*
+u			Undo [count] changes.  {Vi: only one level}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{undo}
+@anchor{<Undo>}
+@anchor{u}
+@cindex undo
+@cindex <Undo>
+@cindex u
+@table @asis
+@item <Undo> or u
+[count] 個の変更を元に戻す。
+
+@{Vi は 1 レベルだけ@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:u* *:un* *:undo*
+:u[ndo]			Undo one change.  {Vi: only one level}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:u}
+@anchor{:un}
+@anchor{:undo}
+@cindex :u
+@cindex :un
+@cindex :undo
+@item :u[ndo]
+1 つの変更を元に戻す。
+
+@{Vi は 1 レベルだけ@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*E830*
+:u[ndo] {N}		Jump to after change number {N}.  See |undo-branches|
+			for the meaning of {N}.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E830}
+@cindex E830
+@item :u[ndo] @{N@}
+変更番号 @{N@} の直後にジャンプする。@{N@} の意味については |undo-branches| を参照。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*CTRL-R*
+CTRL-R			Redo [count] changes which were undone.  {Vi: redraw
+			screen}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-R}
+@cindex CTRL-R
+@item CTRL-R
+undo された変更を [count] 個やり直す (redo する)。
+
+@{Vi ではこのキーはスクリーンの再描画@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:red* *:redo* *redo*
+:red[o]			Redo one change which was undone.  {Vi: no redo}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:red}
+@anchor{:redo}
+@anchor{redo}
+@cindex :red
+@cindex :redo
+@cindex redo
+@item :red[o]
+undo された変更を 1 つやり直す。
+
+@{Vi: redo はない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*U*
+U			Undo all latest changes on one line, the line where
+			the latest change was made. |U| itself also counts as
+			a change, and thus |U| undoes a previous |U|.
+			{Vi: while not moved off of the last modified line}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{U}
+@cindex U
+@item U
+最近変更された行の、1 つの行の中でのすべての最近の変更を元に戻す。|U| 自体も変更としてカウントされます。つまり |U| によってその前の |U| を元に戻すことができます。
+
+@{Vi では行から移動すると使えない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The last changes are remembered.  You can use the undo and redo commands above
+to revert the text to how it was before each change.  You can also apply the
+changes again, getting back the text before the undo.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+変更は記録されます。上記の undo コマンドや redo コマンドを使うと、それぞれの変更が加えられる前のテキストに戻したり、変更を元に戻した後でその変更を再び加えることができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "U" command is treated by undo/redo just like any other command.  Thus a
+"u" command undoes a "U" command and a 'CTRL-R' command redoes it again.  When
+mixing "U", "u" and 'CTRL-R' you will notice that the "U" command will
+restore the situation of a line to before the previous "U" command.  This may
+be confusing.  Try it out to get used to it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"U" コマンドは他のコマンドと同様に undo/redo の対象となります。つまり、"u" コマンドで "U" コマンドを undo したり、'CTRL-R' コマンドでそれを redo したりできます。"U" と "u" と 'CTRL-R' を混ぜて使うと、"U" コマンドが直前の "U" コマンド以前の状態を復元することに気づくでしょう。この動作はわかりにくいかもしれませんが、練習して慣れてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The "U" command will always mark the buffer as changed.  When "U" changes the
+buffer back to how it was without changes, it is still considered changed.
+Use "u" to undo changes until the buffer becomes unchanged.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"U" コマンドはバッファを変更有りの状態にします。つまり、"U" コマンドで変更が加えられる前のテキストに戻しても、それは変更有りの状態として認識されます。"u" を使って変更無しの状態まで undo してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Two ways of undo					*undo-two-ways*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{undo-two-ways}
+@cindex undo-two-ways
+@section 2. undo の 2 つの方式
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+How undo and redo commands work depends on the 'u' flag in 'cpoptions'.
+There is the Vim way ('u' excluded) and the Vi-compatible way ('u' included).
+In the Vim way, "uu" undoes two changes.  In the Vi-compatible way, "uu" does
+nothing (undoes an undo).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+undo コマンドと redo コマンドの動作は '@option{cpoptions}' の '@var{u}' フラグに依存しています。Vim 方式 ('u' がない場合) と Vi 互換方式 ('u' がある場合) があります。Vim 方式では "uu" は 2 つの変更を undo します。Vi 互換方式では "uu" は何もしません (undo を undo する)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'u' excluded, the Vim way:
+You can go back in time with the undo command.  You can then go forward again
+with the redo command.  If you make a new change after the undo command,
+the redo will not be possible anymore.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 'u' がない場合。Vim 方式:
+undo コマンドで過去に戻れます。そして、redo コマンドで再び先に進むことができます。undo コマンドを実行した後で新しい変更を加えると、redo はできなくなります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'u' included, the Vi-compatible way:
+The undo command undoes the previous change, and also the previous undo command.
+The redo command repeats the previous undo command.  It does NOT repeat a
+change command, use "." for that.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 'u' がある場合。Vi 互換方式:
+undo コマンドは直前の変更と undo コマンドを undo します。redo コマンドは直前の undo コマンドを繰り返します。変更コマンドが繰り返されるわけではないので、そうしたい場合は "." を使ってください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples	Vim way			Vi-compatible way	~
+"uu"		two times undo		no-op
+"u CTRL-R"	no-op			two times undo
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .33 .33 .33
+@headitem 例 @tab Vim 方式 @tab Vi 互換方式
+@item "uu" @tab 2回 undo @tab 変更なし
+@item "u CTRL-R" @tab 変更なし @tab 2 回 undo
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Rationale:  Nvi uses the "." command instead of CTRL-R.  Unfortunately, this
+	    is not Vi compatible.  For example "dwdwu." in Vi deletes two
+	    words, in Nvi it does nothing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{理由:} @*
+Nvi では @kbd{CTRL-R} の代わりに "." コマンドを使います。あいにくこれは Vi 互換ではありません。例えば、"dwdwu." は Vi では 2 つの単語が削除されますが、Nvi では何も変更されません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Undo blocks						*undo-blocks*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{undo-blocks}
+@cindex undo-blocks
+@section 3. Undo ブロック
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+One undo command normally undoes a typed command, no matter how many changes
+that command makes.  This sequence of undo-able changes forms an undo block.
+Thus if the typed key(s) call a function, all the commands in the function are
+undone together.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+undo コマンドは普通は 1 つのコマンドを undo します。そのコマンドがいくつの変更を加えるかは関係ありません。この undo 可能な変更の組が undo ブロックです。例えば、キーの入力によって関数が呼ばれた場合、その関数内のすべてのコマンドは一緒に undo されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to write a function or script that doesn't create a new undoable
+change but joins in with the previous change use this command:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+関数やスクリプトを作るとき、undo 可能な変更を新しく追加するのではなく、その変更を直前の変更につなげたい場合は、次のコマンドを使ってください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:undoj* *:undojoin* *E790*
+:undoj[oin]		Join further changes with the previous undo block.
+			Warning: Use with care, it may prevent the user from
+			properly undoing changes.  Don't use this after undo
+			or redo.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:undoj}
+@anchor{:undojoin}
+@anchor{E790}
+@cindex :undoj
+@cindex :undojoin
+@cindex E790
+@table @asis
+@item :undoj[oin]
+以降の変更を直前の undo ブロックにつなげる。
+@quotation
+@strong{警告:} @*
+注意して使ってください。ユーザーが適切に変更を undo するのを妨げてしまうかもしれません。undo や redo の後でこのコマンドを使わないでください。
+@end quotation
+
+@{Vi にはない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is most useful when you need to prompt the user halfway through a change.
+For example in a function that calls |getchar()|.  Do make sure that there was
+a related change before this that you must join with.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは特に変更の途中でプロンプトを表示するような場合に便利です。例えば関数の中で |getchar()| を呼び出すなど。変更をつなげてしかるべき関連性のある変更がそこにあることがわかっている場合に使ってください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This doesn't work by itself, because the next key press will start a new
+change again.  But you can do something like this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドは単独では機能しません。なぜなら、次のキー入力によって再び新しい変更が開始されるからです。しかし例えば次のように使うことはできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:undojoin | delete
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:undojoin | delete
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+After this an "u" command will undo the delete command and the previous
+change.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この後で "u" コマンドを実行すると delete コマンドとその直前の変更が undo されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To do the opposite, break a change into two undo blocks, in Insert mode use
+CTRL-G u.  This is useful if you want an insert command to be undoable in
+parts.  E.g., for each sentence.  |i_CTRL-G_u|
+Setting the value of 'undolevels' also breaks undo.  Even when the new value
+is equal to the old value.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+反対の動作、つまり変更を 2 つの undo ブロックに分けるには、挿入モードで @kbd{CTRL-G u} を使います。挿入コマンドを部分ごと (例えば文単位) に undo できるようにしたい場合に便利です。|i_CTRL-G_u|
+
+'@option{undolevels}' の値を設定したときも undo は区切られます。新しい値と古い値が同じでもそうなります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Undo branches				*undo-branches* *undo-tree*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{undo-branches}
+@anchor{undo-tree}
+@cindex undo-branches
+@cindex undo-tree
+@section 4. Undo ブランチ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Above we only discussed one line of undo/redo.  But it is also possible to
+branch off.  This happens when you undo a few changes and then make a new
+change.  The undone changes become a branch.  You can go to that branch with
+the following commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ここまでは一線上の undo/redo について説明してきました。しかし、それを枝分かれさせることもできます。枝分かれは、変更を undo してから新しい変更を加えることで起こります。undo された変更は枝 (ブランチ) になります。以下のコマンドで枝に移動できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is explained in the user manual: |usr_32.txt|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザーマニュアルに説明があります: |@ref{usr_32.txt, , usr_32.txt}|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:undol* *:undolist*
+:undol[ist]		List the leafs in the tree of changes.  Example:
+			   number changes  when               saved ~
+			       88      88  2010/01/04 14:25:53
+			      108     107  08/07 12:47:51
+			      136      46  13:33:01             7
+			      166     164  3 seconds ago
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:undol}
+@anchor{:undolist}
+@cindex :undol
+@cindex :undolist
+@table @asis
+@item :undol[ist]
+@verbatim
+変更木 (tree) の、葉 (leaf) を一覧表示する。例:
+number changes  when               saved
+    88      88  2010/01/04 14:25:53
+   108     107  08/07 12:47:51
+   136      46  13:33:01             7
+   166     164  3 seconds ago
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			The "number" column is the change number.  This number
+			continuously increases and can be used to identify a
+			specific undo-able change, see |:undo|.
+			The "changes" column is the number of changes to this
+			leaf from the root of the tree.
+			The "when" column is the date and time when this
+			change was made.  The four possible formats are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"number" 列は変更番号です。この番号は連続的に増えていき、undo 可能な変更の識別番号として使えます。|:undo| 参照。
+
+"changes" 列は木のルートから葉までの変更の数です。
+
+"when" 列は変更が加えられた日付と時刻です。日時の表記は 4 種類あります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			    N seconds ago
+			    HH:MM:SS             hour, minute, seconds
+			    MM/DD HH:MM:SS       idem, with month and day
+			    YYYY/MM/DD HH:MM:SS  idem, with year
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item N seconds ago @tab 秒前
+@item HH:MM:SS @tab 時:分:秒
+@item MM/DD HH:MM:SS @tab 月/日 時:分:秒
+@item YYYY/MM/DD HH:MM:SS @tab 年/月/日 時:分:秒
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			The "saved" column specifies, if this change was
+			written to disk and which file write it was. This can
+			be used with the |:later| and |:earlier| commands.
+			For more details use the |undotree()| function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"saved" 列は変更がディスクに保存されたかどうか、そしてそれがどの書き込みだったかを示します。この番号は |:later| コマンドと |:earlier| コマンドで使用できます。詳細を取得するには |undotree()| 関数を使います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*g-*
+g-			Go to older text state.  With a count repeat that many
+			times.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g-}
+@cindex g-
+@item g-
+古いテキスト状態に移動する。カウント指定で繰り返し回数を指定できます。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:ea* *:earlier*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ea}
+@anchor{:earlier}
+@cindex :ea
+@cindex :earlier
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:earlier {count}	Go to older text state {count} times.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :earlier @{count@}
+@{count@} 回前の古いテキスト状態に移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:earlier {N}s		Go to older text state about {N} seconds before.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :earlier @{N@}s
+@{N@} 秒前の古いテキスト状態に移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:earlier {N}m		Go to older text state about {N} minutes before.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :earlier @{N@}m
+@{N@} 分前の古いテキスト状態に移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:earlier {N}h		Go to older text state about {N} hours before.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :earlier @{N@}h
+@{N@} 時間前の古いテキスト状態に移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:earlier {N}d		Go to older text state about {N} days before.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :earlier @{N@}d
+@{N@} 日前の古いテキスト状態に移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:earlier {N}f		Go to older text state {N} file writes before.
+			When changes were made since the last write
+			":earlier 1f" will revert the text to the state when
+			it was written.  Otherwise it will go to the write
+			before that.
+			When at the state of the first file write, or when
+			the file was not written, ":earlier 1f" will go to
+			before the first change.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :earlier @{N@}f
+@{N@} 回前のファイルを保存したときのテキスト状態に移動する。
+
+最後の保存から何か変更が加えられていたとき、"@command{:earlier 1f}" は保存時の状態に移動します。変更がない場合は 1 つ前の保存時の状態に移動します。
+
+最初にファイルを保存した直後か、ファイルをまだ保存していないときは、"@command{:earlier 1f}" は最初の変更の前に移動します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*g+*
+g+			Go to newer text state.  With a count repeat that many
+			times.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g+}
+@cindex g+
+@item g+
+新しいテキスト状態に移動する。カウント指定で繰り返し回数を指定できます。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:lat* *:later*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lat}
+@anchor{:later}
+@cindex :lat
+@cindex :later
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:later {count}		Go to newer text state {count} times.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :later @{count@}
+@{count@} 回後の新しいテキスト状態に移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:later {N}s		Go to newer text state about {N} seconds later.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :later @{N@}s
+@{N@} 秒後の新しいテキスト状態に移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:later {N}m		Go to newer text state about {N} minutes later.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :later @{N@}m
+@{N@} 分後の新しいテキスト状態に移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:later {N}h		Go to newer text state about {N} hours later.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :later @{N@}h
+@{N@} 時間後の新しいテキスト状態に移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:later {N}d		Go to newer text state about {N} days later.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :later @{N@}d
+@{N@} 日後の新しいテキスト状態に移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:later {N}f		Go to newer text state {N} file writes later.
+			When at the state of the last file write, ":later 1f"
+			will go to the newest text state.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :later @{N@}f
+@{N@} 回後のファイルを保存したときのテキスト状態に移動する。最後に保存した状態にいるときは、"@command{:later 1f}" は一番新しいテキスト状態に移動します。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Note that text states will become unreachable when undo information is cleared
+for 'undolevels'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+テキスト状態は、'@option{undolevels}' により undo 情報がクリアされると、到達不可能になります。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Don't be surprised when moving through time shows multiple changes to take
+place at a time.  This happens when moving through the undo tree and then
+making a new change.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+時間を移動すると一度に複数の変更が現れることもあります。これは undo ツリーを移動して新しい変更を加えたときに起こります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+EXAMPLE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Start with this text:
+	one two three ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のテキストがあります:
+@verbatim
+one two three
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Delete the first word by pressing "x" three times:
+	ne two three ~
+	e two three ~
+	 two three ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"x" を 3 回押して最初の単語を削除します:
+@verbatim
+ne two three
+e two three
+ two three
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now undo that by pressing "u" three times:
+	e two three ~
+	ne two three ~
+	one two three ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"u" を 3 回押してそれを undo します:
+@verbatim
+e two three
+ne two three
+one two three
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Delete the second word by pressing "x" three times:
+	one wo three ~
+	one o three ~
+	one  three ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"x" を 3 回押して 2 番目の単語を削除します:
+@verbatim
+one wo three
+one o three
+one  three
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now undo that by using "g-" three times:
+	one o three ~
+	one wo three ~
+	 two three ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"g-" を 3 回押してそれを undo します:
+@verbatim
+one o three
+one wo three
+ two three
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You are now back in the first undo branch, after deleting "one".  Repeating
+"g-" will now bring you back to the original text:
+	e two three ~
+	ne two three ~
+	one two three ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初の undo ブランチ ("one" を削除した後) に戻りました。さらに "g-" を押していくと元のテキストに戻ります:
+@verbatim
+e two three
+ne two three
+one two three
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Jump to the last change with ":later 1h":
+	one  three ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:later 1h}" を実行すると最後の変更にジャンプします:
+@verbatim
+one  three
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+And back to the start again with ":earlier 1h":
+	one two three ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:earlier 1h}" を実行すると最初に戻ります:
+@verbatim
+one two three
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Note that using "u" and CTRL-R will not get you to all possible text states
+while repeating "g-" and "g+" does.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"u" と CTRL-R では "g-" と "g+" のようにすべてのテキスト状態に移動することはできません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Undo persistence		*undo-persistence* *persistent-undo*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{undo-persistence}
+@anchor{persistent-undo}
+@cindex undo-persistence
+@cindex persistent-undo
+@section 5. Undo の永続化 (Undo persistence)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When unloading a buffer Vim normally destroys the tree of undos created for
+that buffer.  By setting the 'undofile' option, Vim will automatically save
+your undo history when you write a file and restore undo history when you edit
+the file again.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファがアンロードされるとき、通常はバッファの undo ツリーは廃棄されます。'@option{undofile}' オプションを設定することで、ファイルを書き込んだときに自動的に undo 履歴が保存され、後でファイルを開いたときに undo 履歴が復元されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'undofile' option is checked after writing a file, before the BufWritePost
+autocommands.  If you want to control what files to write undo information
+for, you can use a BufWritePre autocommand: >
+	au BufWritePre /tmp/* setlocal noundofile
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{undofile}' オプションはファイルを書き込んだ後、BufWritePost 自動コマンドの前に参照されます。undo 情報の保存をファイルごとに制御したい場合は BufWritePre 自動コマンドを使います:
+@verbatim
+au BufWritePre /tmp/* setlocal noundofile
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim saves undo trees in a separate undo file, one for each edited file, using
+a simple scheme that maps filesystem paths directly to undo files. Vim will
+detect if an undo file is no longer synchronized with the file it was written
+for (with a hash of the file contents) and ignore it when the file was changed
+after the undo file was written, to prevent corruption.  An undo file is also
+ignored if its owner differs from the owner of the edited file, except when
+the owner of the undo file is the current user.  Set 'verbose' to get a
+message about that when opening a file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+undo ツリーは undo ファイルとして分けて保存されます。undo ファイルは編集ファイルごとに作られます。保存場所の決定にはファイルシステムのパスをそのまま使用した簡単な方法が使われます。
+
+Vim は編集ファイルと undo ファイルの同期がとれているかどうかを確認し (ファイルの中身のハッシュ値で判断)、undo ファイルが書き込まれた後で編集ファイルが変更されていたときは、データの損失を防ぐため、undo ファイルを無視します。
+
+開いているファイルと undo ファイルの所有者が違うときも undo ファイルは無視されます。ただし、undo ファイルの所有者が現在のユーザーである時を除きます。
+
+ファイルを開いたときにこの事についてのメッセージを表示させるには '@option{verbose}' を設定してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Undo files are normally saved in the same directory as the file.  This can be
+changed with the 'undodir' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+通常、undo ファイルは編集ファイルと同じディレクトリに保存されます。この動作は '@option{undodir}' オプションで変更できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the file is encrypted, the text in the undo file is also crypted.  The
+same key and method is used. |encryption|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルが暗号化されているときは、undo ファイル内のテキストも暗号化されます。ファイルと同じ暗号化メソッドとキーが使用されます。 |encryption|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can also save and restore undo histories by using ":wundo" and ":rundo"
+respectively:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:wundo}" と "@command{:rundo}" を使うことで undo 履歴の保存と復元を手動で実行することもできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:wundo* *:rundo*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:wundo}
+@anchor{:rundo}
+@cindex :wundo
+@cindex :rundo
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:wundo[!] {file}
+		Write undo history to {file}.
+		When {file} exists and it does not look like an undo file
+		(the magic number at the start of the file is wrong), then
+		this fails, unless the ! was added.
+		If it exists and does look like an undo file it is
+		overwritten. If there is no undo-history, nothing will be 
+		written.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :wundo[!] @{file@}
+undo 履歴を @{file@} に保存する。@{file@} が存在し、それが undo ファイルでないなら (ファイル先頭のマジックナンバーが違うなら)、コマンドは失敗します。それでも保存したい場合は ! を付けてください。
+
+@{file@} が存在し、それが undo ファイルなら上書きされます。undo 履歴がない場合は何も書き込まれません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Implementation detail: Overwriting happens by first deleting
+		the existing file and then creating a new file with the same
+		name. So it is not possible to overwrite an existing undofile
+		in a write-protected directory.
+		{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実装詳細: 上書きは、最初にそのファイルを削除して、同じ名前のファイルを新しく作成することで実行されます。そのため、書き込み制限のかかったディレクトリ内の undo ファイルは上書きできません。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:rundo {file}	Read undo history from {file}.
+		{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :rundo @{file@}
+@{file@} から undo 履歴を読み込む。
+
+@{Vi にはない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use these in autocommands to explicitly specify the name of the
+history file.  E.g.: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動コマンドを使うことで undo ファイルの名前を明示的に指定することができます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	au BufReadPost * call ReadUndo()
+	au BufWritePost * call WriteUndo()
+	func ReadUndo()
+	  if filereadable(expand('%:h'). '/UNDO/' . expand('%:t'))
+	    rundo %:h/UNDO/%:t
+	  endif
+	endfunc
+	func WriteUndo()
+	  let dirname = expand('%:h') . '/UNDO'
+	  if !isdirectory(dirname)
+	    call mkdir(dirname)
+	  endif
+	  wundo %:h/UNDO/%:t
+	endfunc
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+au BufReadPost * call ReadUndo()
+au BufWritePost * call WriteUndo()
+func ReadUndo()
+  if filereadable(expand('%:h'). '/UNDO/' . expand('%:t'))
+    rundo %:h/UNDO/%:t
+  endif
+endfunc
+func WriteUndo()
+  let dirname = expand('%:h') . '/UNDO'
+  if !isdirectory(dirname)
+    call mkdir(dirname)
+  endif
+  wundo %:h/UNDO/%:t
+endfunc
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You should keep 'undofile' off, otherwise you end up with two undo files for
+every write.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これを使うときは '@option{undofile}' をオフにしておく必要があります。そうしないと 2 つの undo ファイルが作成されてしまいます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use the |undofile()| function to find out the file name that Vim would
+use.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|undofile()| 関数を使うと、Vim が使用する undo ファイルの名前を取得できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that while reading/writing files and 'undofile' is set most errors will
+be silent, unless 'verbose' is set.  With :wundo and :rundo you will get more
+error messages, e.g., when the file cannot be read or written.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+'@option{undofile}' が設定された状態でファイルを読み書きするとき、ほとんどのエラーは表示されません ('@option{verbose}' が設定されていなければ)。:wundo と :rundo を使うときはより多くのエラーメッセージが表示されます。例えばファイルが読めない、書き込めないとき。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NOTE: undo files are never deleted by Vim.  You need to delete them yourself.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Vim は undo ファイルを削除しません。自分で削除する必要があります。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Reading an existing undo file may fail for several reasons:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec undo ファイルの読み込みが失敗する原因はいくつかあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*E822*	It cannot be opened, because the file permissions don't allow it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{E822}
+@cindex E822
+@item E822
+パーミッションの設定によりファイルを開けない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*E823*	The magic number at the start of the file doesn't match.  This usually
+	means it is not an undo file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E823}
+@cindex E823
+@item E823
+ファイル先頭のマジックナンバーが違う。普通はそのファイルが undo ファイルでないことを意味します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*E824*	The version number of the undo file indicates that it's written by a
+	newer version of Vim.  You need that newer version to open it.  Don't
+	write the buffer if you want to keep the undo info in the file.
+"File contents changed, cannot use undo info"
+	The file text differs from when the undo file was written.  This means
+	the undo file cannot be used, it would corrupt the text.  This also
+	happens when 'encoding' differs from when the undo file was written.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E824}
+@cindex E824
+@item E824
+undo ファイルのバージョン番号が、それが Vim の新しいバージョンで書き込まれたことを示している。新しいバージョンで開く必要があります。undo ファイルの情報を維持したいならそのバッファを保存してはいけません。
+@display
+"ファイルが変更されています。undo 情報を使用できません"
+("File contents changed, cannot use undo info")
+@end display
+ファイルのテキストが undo ファイルを保存したときから変わっています。テキストが壊れてしまうため、その undo ファイルは使用できません。これは '@option{encoding}' の設定が undo ファイル保存時と違う場合にも起こります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*E825*  The undo file does not contain valid contents and cannot be used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E825}
+@cindex E825
+@item E825
+undo ファイルの中身が不正なので使用できません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*E826*  The undo file is encrypted but decryption failed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E826}
+@cindex E826
+@item E826
+undo ファイルが暗号化されていて、復号に失敗しました。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*E827*  The undo file is encrypted but this version of Vim does not support
+	encryption.  Open the file with another Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E827}
+@cindex E827
+@item E827
+undo ファイルが暗号化されていて、使用中の Vim が暗号化をサポートしていません。他の Vim でファイルを開いてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*E832*  The undo file is encrypted but 'key' is not set, the text file is not
+	encrypted.  This would happen if the text file was written by Vim
+	encrypted at first, and later overwritten by not encrypted text.
+	You probably want to delete this undo file.
+"Not reading undo file, owner differs"
+	The undo file is owned by someone else than the owner of the text
+	file.  For safety the undo file is not used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E832}
+@cindex E832
+@item E832
+undo ファイルが暗号化されていて、'key' が設定されておらず、テキストファイルは暗号化されていません。これはテキストファイルが暗号化を使用して保存された後で、暗号化を使用しないで上書きされた場合に起こります。おそらく undo ファイルを削除する必要があります。
+@display
+"undo ファイルを読み込めません。所有者が違います"
+("Not reading undo file, owner differs")
+@end display
+undo ファイルの所有者とテキストファイルの所有者が違います。安全のため undo ファイルは使用されません。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Writing an undo file may fail for these reasons:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec undo ファイルの書き込みは次のような理由で失敗することがあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*E828*	The file to be written cannot be created.  Perhaps you do not have
+	write permissions in the directory.
+"Cannot write undo file in any directory in 'undodir'"
+	None of the directories in 'undodir' can be used.
+"Will not overwrite with undo file, cannot read"
+	A file exists with the name of the undo file to be written, but it
+	cannot be read.  You may want to delete this file or rename it.
+"Will not overwrite, this is not an undo file"
+	A file exists with the name of the undo file to be written, but it
+	does not start with the right magic number.  You may want to delete
+	this file or rename it.
+"Skipping undo file write, nothing to undo"
+	There is no undo information to be written, nothing has been changed
+	or 'undolevels' is negative.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{E828}
+@cindex E828
+@item E828
+書き込みのためのファイルを作成できません。おそらくディレクトリの書き込み権限がありません。
+@display
+"'undodir' で指定されたディレクトリに undo ファイルを保存できません"
+("Cannot write undo file in any directory in 'undodir'")
+@end display
+'undodir' で指定されたディレクトリの中に使用可能なものがありません。
+@display
+"undo ファイルを上書きしません。読み込み不可です"
+("Will not overwrite with undo file, cannot read")
+@end display
+undo ファイルと同じ名前のファイルが存在し、それが読み込みできない状態になっています。そのファイルを削除するか名前を変更する必要があります。
+@display
+"上書きしません。undo ファイルではありません"
+("Will not overwrite, this is not an undo file")
+@end display
+undo ファイルと同じ名前のファイルが存在し、そのファイルの先頭に正しいマジックナンバーがありません。そのファイルを削除するか名前を変更する必要があります。
+@display
+"undo ファイルの書き込みをスキップします。undo がありません"
+("Skipping undo file write, noting to undo")
+@end display
+保存する undo 情報がありません。何も変更されていないか '@option{undolevels}' がマイナス値です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*E829*	An error occurred while writing the undo file.  You may want to try
+	again.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E829}
+@cindex E829
+@item E829
+undo ファイルの保存中にエラーが発生しました。もう一度試してみてください。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Remarks about undo					*undo-remarks*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{undo-remarks}
+@cindex undo-remarks
+@section 6. 備考
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The number of changes that are remembered is set with the 'undolevels' option.
+If it is zero, the Vi-compatible way is always used.  If it is negative no
+undo is possible.  Use this if you are running out of memory.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+記録される変更の数は '@option{undolevels}' オプションで設定できます。ゼロに設定すると、Vi 互換方式の動作になります。マイナスの値に設定すると undo は使用できなくなります。メモリが足りない場合に設定してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*clear-undo*
+When you set 'undolevels' to -1 the undo information is not immediately
+cleared, this happens at the next change.  To force clearing the undo
+information you can use these commands: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{clear-undo}
+@cindex clear-undo
+'@option{undolevels}' を -1 に設定しても、undo 情報はすぐにはクリアされません。次の変更が加えられたときにクリアされます。強制的に undo 情報をクリアしたいときは次のコマンドを使ってください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:let old_undolevels = &undolevels
+	:set undolevels=-1
+	:exe "normal a \<BS>\<Esc>"
+	:let &undolevels = old_undolevels
+	:unlet old_undolevels
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:let old_undolevels = &undolevels
+:set undolevels=-1
+:exe "normal a \<BS>\<Esc>"
+:let &undolevels = old_undolevels
+:unlet old_undolevels
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Marks for the buffer ('a to 'z) are also saved and restored, together with the
+text.  {Vi does this a little bit different}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファのマーク ('a から 'z) はテキストと同様に記録、復元されます。
+
+@{Vi とは少し動作が違います@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When all changes have been undone, the buffer is not considered to be changed.
+It is then possible to exit Vim with ":q" instead of ":q!" {not in Vi}.  Note
+that this is relative to the last write of the file.  Typing "u" after ":w"
+actually changes the buffer, compared to what was written, so the buffer is
+considered changed then.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべての変更を undo したとき、バッファは変更ありとはみなされません。その状態からは ":q" (":q!" ではなく) で Vim を終了できます。
+
+@{Vi にはない@}
+@quotation
+@strong{Note:} @*
+これはいつファイルを保存したかに関係します。":w" の後で "u" を実行すると、保存したときから見てバッファは変更された状態なので、バッファは変更ありと認識されます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When manual |folding| is being used, the folds are not saved and restored.
+Only changes completely within a fold will keep the fold as it was, because
+the first and last line of the fold don't change.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マニュアル設定の折り畳み (|folding|) を使っているとき、折り畳みは記録も復元もされません。変更が折り畳みの中だけで行われた場合のみ (折り畳みの最初と最後の行が変わらないので) 折り畳みは維持されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The numbered registers can also be used for undoing deletes.  Each time you
+delete text, it is put into register "1.  The contents of register "1 are
+shifted to "2, etc.  The contents of register "9 are lost.  You can now get
+back the most recent deleted text with the put command: '"1P'.  (also, if the
+deleted text was the result of the last delete or copy operation, 'P' or 'p'
+also works as this puts the contents of the unnamed register).  You can get
+back the text of three deletes ago with '"3P'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+番号レジスタを使って削除を元に戻すこともできます。テキストを削除すると、それは "1 レジスタに記録されます。元々 "1 にあったものは "2 にシフトされ、他の番号レジスタも同様にシフトされます。"9 レジスタの内容は失われます。
+
+そして、プットコマンド '"1P' を使って削除されたテキストを元に戻すことができます。(削除やコピーの操作をした後ならテキストは無名レジスタに入っているので 'P' や 'p' でも元に戻せます)。3 回前に削除されたテキストなら '"3P' で戻せます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*redo-register*
+If you want to get back more than one part of deleted text, you can use a
+special feature of the repeat command ".".  It will increase the number of the
+register used.  So if you first do ""1P", the following "." will result in a
+'"2P'.  Repeating this will result in all numbered registers being inserted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{redo-register}
+@cindex redo-register
+数回に分けて削除されたテキストを戻したい場合は、"." コマンドの特殊な機能が役に立ちます。"." コマンドは使用されたレジスタの番号を増加させます。例えば、""1P" を実行した後で "." を押すと '"2P' が実行されます。さらに "." を押していくとすべての番号レジスタが挿入されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example:	If you deleted text with 'dd....' it can be restored with
+		'"1P....'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:		'dd....' でテキストを削除したら '"1P....' で元に戻せる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you don't know in which register the deleted text is, you can use the
+:display command.  An alternative is to try the first register with '"1P', and
+if it is not what you want do 'u.'.  This will remove the contents of the
+first put, and repeat the put command for the second register.  Repeat the
+'u.' until you got what you want.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+削除されたテキストがどのレジスタに記録されているかわからないときは @command{:display} コマンドで確認できます。あるいは、'"1P' を実行してみて、もしそれが違うものなら 'u.' を実行します。'u.' は最初にプットされたテキストを削除し、2 番目のレジスタを使ってプットコマンドを実行します。目的のものが出るまで 'u.' を繰り返してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
