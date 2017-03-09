@@ -26,7 +26,8 @@ REFMANUALS = \
 	doc/insert.texi \
 	doc/change.texi \
 	doc/indent.texi \
-	doc/undo.texi
+	doc/undo.texi \
+	doc/repeat.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \

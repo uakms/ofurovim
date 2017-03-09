@@ -1,0 +1,2662 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node repeat.txt, , , 目次
+@unnumbered 繰り返しコマンド、Vim script、スクリプトのデバッグ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*repeat.txt*    For Vim version 8.0.  Last change: 2017 Feb 06
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*repeat.txt*    For Vim バージョン 8.0.  Last change: 2017 Feb 06
+
+
+		VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Repeating commands, Vim scripts and debugging			*repeating*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{repeating}
+@cindex repeating
+繰り返しコマンド、Vim script とデバッグ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Chapter 26 of the user manual introduces repeating |usr_26.txt|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+繰り返しについてはユーザーマニュアルの 26 章 |@ref{usr_26.txt, , usr_26.txt}| に紹介がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Single repeats		|single-repeat|
+2. Multiple repeats		|multi-repeat|
+3. Complex repeats		|complex-repeat|
+4. Using Vim scripts		|using-scripts|
+5. Using Vim packages		|packages|
+6. Creating Vim packages	|package-create|
+7. Debugging scripts		|debug-scripts|
+8. Profiling			|profiling|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. 単発繰り返し @tab |@ref{single-repeat, , single-repeat}|
+@item 2. 多重繰り返し @tab |@ref{multi-repeat, , multi-repeat}|
+@item 3. 複雑な繰り返し @tab |@ref{complex-repeat, , complex-repeat}|
+@item 4. Vim script を使う @tab |@ref{using-scripts, , using-scripts}|
+@item 5. Vimパッケージを使う @tab |@ref{packages, , packages}|
+@item 6. Vimパッケージを作る @tab |@ref{package-create, , package-create}|
+@item 7. スクリプトのデバッグ @tab |@ref{debug-scripts, , debug-scripts}|
+@item 8. プロファイリング @tab |@ref{profiling, , profiling}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Single repeats					*single-repeat*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{single-repeat}
+@cindex single-repeat
+@section 1. 単発繰り返し
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*.*
+.			Repeat last change, with count replaced with [count].
+			Also repeat a yank command, when the 'y' flag is
+			included in 'cpoptions'.  Does not repeat a
+			command-line command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{.}
+@cindex .
+@table @asis
+@item .
+最後の変更を繰り返す。変更の回数は [count] で指定した回数で置き換えられる。'@option{cpoptions}' に '@var{y}' フラグが含まれてる時には、ヤンクコマンドも繰り返す。コマンドラインコマンドは繰り返さない。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Simple changes can be repeated with the "." command.  Without a count, the
+count of the last change is used.  If you enter a count, it will replace the
+last one.  |v:count| and |v:count1| will be set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+単純な変更は "." コマンドで繰り返すことができる。回数を指定しなければ、最後の変更の回数が使用される。回数を指定した場合、最後のそれと置き換えられる。|v:count| と |v:count1| が設定される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the last change included a specification of a numbered register, the
+register number will be incremented.  See |redo-register| for an example how
+to use this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最後に行なわれた変更が番号付きレジスタの指定を含んでいた場合、レジスタ番号は増加される。これをどのように使うかの例は |redo-register| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that when repeating a command that used a Visual selection, the same SIZE
+of area is used, see |visual-repeat|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビジュアル選択を使用したコマンドを繰り返す時は、同じ「サイズ」の範囲が使用されることに注意。|visual-repeat| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*@:*
+@:			Repeat last command-line [count] times.
+			{not available when compiled without the
+			|+cmdline_hist| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{@@:}
+@cindex @@:
+@table @asis
+@item @@:
+最後のコマンドラインを [count] 回繰り返す。
+
+@{|+cmdline_hist| が無効にされていると使えない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+2. Multiple repeats					*multi-repeat*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{multi-repeat}
+@cindex multi-repeat
+@section 2. 多重繰り返し
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:g* *:global* *E147* *E148*
+:[range]g[lobal]/{pattern}/[cmd]
+			Execute the Ex command [cmd] (default ":p") on the
+			lines within [range] where {pattern} matches.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:g}
+@anchor{:global}
+@anchor{E147}
+@anchor{E148}
+@cindex :g
+@cindex :global
+@cindex E147
+@cindex E148
+@table @asis
+@item :[range]g[lobal]/@{pattern@}/[cmd]
+[range] の範囲で @{pattern@} にマッチする行に対して、Ex コマンド [cmd] (省略した場合 ":p") を実行する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[range]g[lobal]!/{pattern}/[cmd]
+			Execute the Ex command [cmd] (default ":p") on the
+			lines within [range] where {pattern} does NOT match.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[range]g[lobal]!/@{pattern@}/[cmd]
+[range] の範囲で @{pattern@} にマッチしない行に対して、Ex コマンド [cmd] (省略した場合 ":p") を実行する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:v* *:vglobal*
+:[range]v[global]/{pattern}/[cmd]
+			Same as :g!.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:v}
+@anchor{:vglobal}
+@cindex :v
+@cindex :vglobal
+@item :[range]v[global]/@{pattern@}/[cmd]
+:g! と同じ。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Instead of the '/' which surrounds the {pattern}, you can use any other
+single byte character, but not an alphabetic character, '\', '"' or '|'.
+This is useful if you want to include a '/' in the search pattern or
+replacement string.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{pattern@} の両側の '/' の代わりにどんなシングルバイト文字でも使うことができる。しかしアルファベット、'\'、'"'、'|' は使えない。これは、検索パターンや置換文字列に '/' が含まれる場合に便利である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For the definition of a pattern, see |pattern|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パターンの定義については |pattern| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NOTE [cmd] may contain a range; see |collapse| and |edit-paragraph-join| for
+examples.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+[cmd] は範囲指定を含むかもしれない。実例は |collapse| や |edit-paragraph-join| を参照。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The global commands work by first scanning through the [range] lines and
+marking each line where a match occurs (for a multi-line pattern, only the
+start of the match matters).
+In a second scan the [cmd] is executed for each marked line, as if the cursor
+was in that line.  For ":v" and ":g!" the command is executed for each not
+marked line.  If a line is deleted its mark disappears.
+The default for [range] is the whole buffer (1,$).  Use "CTRL-C" to interrupt
+the command.  If an error message is given for a line, the command for that
+line is aborted and the global command continues with the next marked or
+unmarked line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+global コマンドの動作はまず第 1 に [range] の行をスキャンしマッチした行すべてに印をつける (複数行にかかるパターンではマッチの最初の行だけが重要である)。
+
+次のスキャンでマークされたすべての行について、カーソルがその行にあるかのように [cmd] が実行される。":v" と ":g!" の場合は、マークされていないすべての行についてコマンドが実行される。行が削除された場合そのマークは消滅する。
+
+省略した場合の [range] はバッファ全体 (1,$) である。コマンドを中断するには "@kbd{CTRL-C}" を使用する。ある行についてエラーメッセージが与えられると、そのラインに対するコマンドは中断され global コマンドはマッチした次の行の処理を続ける。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To repeat a non-Ex command, you can use the ":normal" command: >
+	:g/pat/normal {commands}
+Make sure that {commands} ends with a whole command, otherwise Vim will wait
+for you to type the rest of the command for each match.  The screen will not
+have been updated, so you don't know what you are doing.  See |:normal|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+非 Ex コマンドを繰り返すには "@command{:normal}" コマンドを使用すれば良い:
+@example
+:g/pat/normal @{commands@}
+@end example
+@{commands@} が完全なコマンドとして終了することを確認すること。そうでないと Vim は全部のマッチに 1 つ 1 つについて、コマンドの残りを期待して貴方の入力を待ち続けるだろう。画面は更新されないので、いま何をしているのかわからないだろう。|:normal| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The undo/redo command will undo/redo the whole global command at once.
+The previous context mark will only be set once (with "''" you go back to
+where the cursor was before the global command).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+undo/redo コマンドは global コマンドを一度に undo/redo する。以前の文脈マークだけが一度設定される ("''" でグローバルコマンド実行前にカーソルがあった場所に戻ることができる)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The global command sets both the last used search pattern and the last used
+substitute pattern (this is vi compatible).  This makes it easy to globally
+replace a string:
+	:g/pat/s//PAT/g
+This replaces all occurrences of "pat" with "PAT".  The same can be done with:
+	:%s/pat/PAT/g
+Which is two characters shorter!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+global コマンドは最後に使用した検索パターンと、最後に使用した置換パターンの両方を設定する (これは vi 互換)。これにより全体に対して文字列置換を行うのが簡単になる:
+@example
+:g/pat/s//PAT/g
+@end example
+これは全ての "pat" を "PAT" に置き換える。同じことがこれでも可能:
+@example
+:%s/pat/PAT/g
+@end example
+こっちのほうが 2 文字短い！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When using "global" in Ex mode, a special case is using ":visual" as a
+command.  This will move to a matching line, go to Normal mode to let you
+execute commands there until you use |Q| to return to Ex mode.  This will be
+repeated for each matching line.  While doing this you cannot use ":global".
+To abort this type CTRL-C twice.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ex モード中で "global" を使い、そのコマンドに "@command{:visual}" を指定する場合はやや特殊である。これを行うと、マッチする行へ移動してノーマルモードに入るので、|Q| を押して Ex モードへ戻るまでコマンドを実行することができる。これがマッチする各行に対して繰り返される。これを行っている間は ":global" を使うことはできない。中止するには @kbd{CTRL-C} を 2 回押すこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Complex repeats					*complex-repeat*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{complex-repeat}
+@cindex complex-repeat
+@section 3. 複雑な繰り返し
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*q* *recording*
+q{0-9a-zA-Z"}		Record typed characters into register {0-9a-zA-Z"}
+			(uppercase to append).  The 'q' command is disabled
+			while executing a register, and it doesn't work inside
+			a mapping and |:normal|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{q}
+@anchor{recording}
+@cindex q
+@cindex recording
+@table @asis
+@item q@{0-9a-zA-Z"@}
+タイプした文字をレジスタ @{0-9a-zA-Z"@} にレコーディングする (大文字なら追記)。レジスタを実行中は 'q' コマンドは無効化される。マッピングや |:normal| の中でも機能しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Note: If the register being used for recording is also
+			used for |y| and |p| the result is most likely not
+			what is expected, because the put will paste the
+			recorded macro and the yank will overwrite the
+			recorded macro. {Vi: no recording}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+もしレコーディングに使っているレジスタが、その最中に |y| や |p| で使われた場合、恐らく期待しない結果になるだろう。なぜなら、|p| で貼り付けられる内容は記録されたマクロのものになり、|y| でコピーを行うと記録されたマクロを上書きしてしまうからである。
+
+@{Vi: レコーディングはない@}
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+q			Stops recording.  (Implementation note: The 'q' that
+			stops recording is not stored in the register, unless
+			it was the result of a mapping)  {Vi: no recording}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item q
+レコーディングを終了する。(実装のメモ: レコーディングを終了する 'q' は、それがマッピングの結果であってもレジスタに記録されない)
+
+@{Vi: レコーディングはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*@*
+@{0-9a-z".=*+}		Execute the contents of register {0-9a-z".=*+} [count]
+			times.  Note that register '%' (name of the current
+			file) and '#' (name of the alternate file) cannot be
+			used.
+			The register is executed like a mapping, that means
+			that the difference between 'wildchar' and 'wildcharm'
+			applies.
+			For "@=" you are prompted to enter an expression.  The
+			result of the expression is then executed.
+			See also |@:|.  {Vi: only named registers}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{@@}
+@cindex @@
+@item @@@{0-9a-z".=*+@}
+レジスタ @{0-9a-z".=*+@} の内容を [count] 回実行する。
+@quotation
+@strong{Note:} @*
+レジスタ '%' (現在のファイルの名前) と '#' (オルタネートファイルの名前) は使用できない。
+@end quotation
+レジスタはマッピングと同様に実行される。つまり、'@option{wildchar}' と '@option{wildcharm}' の違いが動作に影響する。"@@=" を使用すると式を入力するためのプロンプトが表示され、そこに入力した式の評価結果が実行される。|@@:| も参照。
+
+@{Vi: 名前付きレジスタのみ@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*@@* *E748*
+@@			Repeat the previous @{0-9a-z":*} [count] times.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{@@@@}
+@anchor{E748}
+@cindex @@@@
+@cindex E748
+@item @@@@
+直前の @@@{0-9a-z":*@} を [count] 回繰り返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[addr]*{0-9a-z".=+}						*:@* *:star*
+:[addr]@{0-9a-z".=*+}	Execute the contents of register {0-9a-z".=*+} as an Ex
+			command.  First set cursor at line [addr] (default is
+			current line).  When the last line in the register does
+			not have a <CR> it will be added automatically when
+			the 'e' flag is present in 'cpoptions'.
+			Note that the ":*" command is only recognized when the
+			'*' flag is present in 'cpoptions'.  This is NOT the
+			default when 'nocompatible' is used.
+			For ":@=" the last used expression is used.  The
+			result of evaluating the expression is executed as an
+			Ex command.
+			Mappings are not recognized in these commands.
+			{Vi: only in some versions} Future: Will execute the
+			register for each line in the address range.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:@@}
+@anchor{:star}
+@cindex :@@
+@cindex :star
+@item :[addr]*@{0-9a-z".=+@} or :[addr]@@@{0-9a-z".=*+@}
+レジスタ @{0-9a-z".=*+@} の内容を Ex コマンドとして実行する。まず最初にカーソルを [addr] 行に設定する (省略した場合現在の行)。レジスタの最終行に <CR> が含まれない場合、'@option{cpoptions}' に '@var{e}' フラグが含まれていれば自動的に追加される。
+@quotation
+@strong{Note:} @*
+"@command{:*}" コマンドは '@option{cpoptions}' に '@var{*}' フラグが含まれていた場合にだけ認識されることに留意。これは '@option{nocompatible}' が使用されている時にはデフォルトにはならない。
+@end quotation
+":@@=" には最後に評価された式が使用される。式の評価結果が Ex コマンドとして実行される。これらのコマンド内ではマッピングは行われない。
+
+@{Vi: 幾つかのバージョンだけ@}
+
+将来: 指定された範囲の各々の行に対してレジスタの内容が実行されるだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:@:*
+:[addr]@:		Repeat last command-line.  First set cursor at line
+			[addr] (default is current line).  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:@@:}
+@cindex :@@:
+@item :[addr]@@:
+最後のコマンドラインを繰り返す。まずカーソルを [addr] 行に設定する (省略した場合現在の行)。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[addr]@							*:@@*
+:[addr]@@		Repeat the previous :@{0-9a-z"}.  First set cursor at
+			line [addr] (default is current line).  {Vi: only in
+			some versions}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:@@@@}
+@cindex :@@@@
+@item :[addr]@@ or :[addr]@@@@
+最後の :@@@{0-9a-z"@} を繰り返す。まず最初にカーソルを [addr] 行に設定する (省略した場合現在の行)。
+
+@{Vi: 幾つかのバージョンだけ@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Using Vim scripts					*using-scripts*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{using-scripts}
+@cindex using-scripts
+@section 4. Vim script を使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim script の書き方はユーザーマニュアルの 41 章 |@ref{usr_41.txt, , usr_41.txt}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*:so* *:source* *load-vim-script*
+:so[urce] {file}	Read Ex commands from {file}.  These are commands that
+			start with a ":".
+			Triggers the |SourcePre| autocommand.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:so}
+@anchor{:source}
+@anchor{load-vim-script}
+@cindex :so
+@cindex :source
+@cindex load-vim-script
+@table @asis
+@item :so[urce] @{file@}
+Ex コマンドを @{file@} から読み込む。これは ":" で始まるコマンドを列挙したファイルである。@{訳注: 実際に ":" を書く必要はない@}
+
+自動コマンド |SourcePre| が発生する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:so[urce]! {file}	Read Vim commands from {file}.  These are commands
+			that are executed from Normal mode, like you type
+			them.
+			When used after |:global|, |:argdo|, |:windo|,
+			|:bufdo|, in a loop or when another command follows
+			the display won't be updated while executing the
+			commands.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :so[urce]! @{file@}
+Vim コマンドを @{file@} から読み込む。ノーマルモードでファイルの内容をあなたがタイプしたのと同じように実行される。
+
+|:global|, |:argdo|, |:windo|, |:bufdo| で使ったとき、ループ中や他のコマンドが続けられたときは、コマンドの実行中は表示は更新されない。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:ru* *:runtime*
+:ru[ntime][!] [where] {file} ..
+			Read Ex commands from {file} in each directory given
+			by 'runtimepath' and/or 'packpath'.  There is no error
+			for non-existing files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ru}
+@anchor{:runtime}
+@cindex :ru
+@cindex :runtime
+@item :ru[ntime][!] [where] @{file@} ..
+'@option{runtimepath}' か '@option{packpath}' で示された各ディレクトリの @{file@}から Ex コマンドを読み込む。ファイルがなくてもエラーにはならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+			
+@ifset EN
+			Example: >
+				:runtime syntax/c.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:runtime syntax/c.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<			There can be multiple {file} arguments, separated by
+			spaces.  Each {file} is searched for in the first
+			directory from 'runtimepath', then in the second
+			directory, etc.  Use a backslash to include a space
+			inside {file} (although it's better not to use spaces
+			in file names, it causes trouble).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{file@} には空白で区切って複数のファイルを指定できる。指定された @{file@} は '@option{runtimepath}' の最初のディレクトリ、次に 2 番目のディレクトリ、と検索される。@{file@} に空白を含めるにはバックスラッシュを使う (しかしファイル名に空白を含めるのは望ましくない。トラブルのもとである)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			When [!] is included, all found files are sourced.
+			When it is not included only the first found file is
+			sourced.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[!] を付けると見つかった全てのファイルを読み込む。付けなければ最初に見つかったファイルだけを読み込む。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			When [where] is omitted only 'runtimepath' is used.
+			Other values:
+				START	search under "start" in 'packpath'
+				OPT 	search under "opt" in 'packpath'
+				PACK	search under "start" and "opt" in
+					'packpath'
+				ALL	first use 'runtimepath', then search
+					under "start" and "opt" in 'packpath'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[where] が省略された場合は '@option{runtimepath}' が使われる。
+
+他の値は以下の通り:
+@multitable @columnfractions .15 .85
+@item START @tab '@option{packpath}' の "@var{start}" ディレクトリ以下を検索する
+@item OPT @tab '@option{packpath}' の "@var{opt}" ディレクトリ以下を検索する
+@item PACK @tab '@option{packpath}' の "@var{start}" と "@var{opt}" ディレクトリ以下を検索する
+@item ALL @tab まず '@option{runtimepath}' が使われ、次に '@option{packpath}' の "@var{start}" と "@var{opt}" ディレクトリ以下を検索する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			When {file} contains wildcards it is expanded to all
+			matching files.  Example: >
+				:runtime! plugin/*.vim
+<			This is what Vim uses to load the plugin files when
+			starting up.  This similar command: >
+				:runtime plugin/*.vim
+<			would source the first file only.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{file@} がワイルドカードを含んでいるとそれは展開される。例:
+@example
+:runtime! plugin/*.vim
+@end example
+これは Vim が起動時にプラグインファイルを読み込むのに使っているものである。次のは似ているが:
+@example
+:runtime plugin/*.vim
+@end example
+これは最初に見つかったファイルだけを読み込む。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			When 'verbose' is one or higher, there is a message
+			when no file could be found.
+			When 'verbose' is two or higher, there is a message
+			about each searched file.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{verbose}' が 1 以上ならファイルが見つからないときにメッセージが表示される。'@option{verbose}' が 2 以上なら見つかった全てのファイルについてメッセージが表示される。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:pa* *:packadd* *E919*
+:pa[ckadd][!] {name}	Search for an optional plugin directory in 'packpath'
+			and source any plugin files found.  The directory must
+			match:
+				pack/*/opt/{name} ~
+			The directory is added to 'runtimepath' if it wasn't
+			there yet.
+			If the directory pack/*/opt/{name}/after exists it is
+			added at the end of 'runtimepath'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:pa}
+@anchor{:packadd}
+@anchor{E919}
+@cindex :pa
+@cindex :packadd
+@cindex E919
+@item :pa[ckadd][!] @{name@}
+'@option{packpath}' 中の任意のプラグインディレクトリを検索し、見つかったプラグインのファイルを読み込む。ディレクトリは以下にマッチしなければならない:
+@verbatim
+pack/*/opt/{name} ~
+@end verbatim
+見つかったディレクトリは、もし含まれていなければ '@option{runtimepath}' に追加される。もしディレクトリ @samp{pack/*/opt/@{name@}/after} が存在すれば、'@option{runtimepath}' の最後に追加される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Note that {name} is the directory name, not the name
+			of the .vim file.  All the files matching the pattern
+				pack/*/opt/{name}/plugin/**/*.vim ~
+			will be sourced.  This allows for using subdirectories
+			below "plugin", just like with plugins in
+			'runtimepath'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+@{name@} はディレクトリの名前である。.vim ファイルの名前ではない。以下のパターンにマッチする全てのファイルが読み込まれる。
+@verbatim
+pack/*/opt/{name}/plugin/**/*.vim
+@end verbatim
+これにより、ちょうど '@option{runtimepath}' 内のプラグインのように、"plugin" 以下のサブディレクトリを使うことができる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			If the filetype detection was not enabled yet (this
+			is usually done with a "syntax enable" or "filetype
+			on" command in your .vimrc file), this will also look
+			for "{name}/ftdetect/*.vim" files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルタイプの検知が有効化されていない場合 (これは通常 .vimrc 中の "syntax enable" か "filetype on" コマンドにより行われる)、"@{name@}/ftdetect/*.vim" ファイルを参照する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			When the optional ! is added no plugin files or
+			ftdetect scripts are loaded, only the matching
+			directories are added to 'runtimepath'.  This is
+			useful in your .vimrc.  The plugins will then be
+			loaded during initialization, see |load-plugins|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+任意の ! が付けられた場合、プラグインのファイルや ftdetect のスクリプトは読み込まれず、マッチしたディレクトリのみ '@option{runtimepath}' に追加される。これは .vimrc に書く場合は便利である。追加されたプラグインは初期化時に読み込まれる。|load-plugins| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Also see |pack-add|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+また |pack-add| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:packl* *:packloadall*
+:packl[oadall][!]	Load all packages in the "start" directory under each
+			entry in 'packpath'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:packl}
+@anchor{:packloadall}
+@cindex :packl
+@cindex :packloadall
+@item :packl[oadall][!]
+'@option{packpath}' 以下の "start" ディレクトリ中の全パッケージを読み込む。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+			
+@ifset EN
+			First all the directories found are added to
+			'runtimepath', then the plugins found in the
+			directories are sourced.  This allows for a plugin to
+			depend on something of another plugin, e.g. an
+			"autoload" directory.  See |packload-two-steps| for
+			how this can be useful.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初に、見つかったディレクトリが全て '@option{runtimepath}' に追加され、次にそのディレクトリ内で見つかったプラグインが読み込まれる。これにより、あるプラグインが別のプラグインの何か、例えば "autoload" ディレクトリに依存することが許可される。これがどのように役立つかは |packload-two-steps| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			This is normally done automatically during startup,
+			after loading your .vimrc file.  With this command it
+			can be done earlier.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは通常起動時に .vimrc が読み込まれた後に自動的に行われる。このコマンドはそれよりも前に行うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Packages will be loaded only once.  After this command
+			it won't happen again.  When the optional ! is added
+			this command will load packages even when done before.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パッケージの読み込みは一度だけ行われる。よってこのコマンドを実行した後に読み込みは行われない。任意の ! が付けられた場合はすでに読み込みが行われていてもパッケージを読み込む。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			An error only causes sourcing the script where it
+			happens to be aborted, further plugins will be loaded.
+			See |packages|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+(スクリプトを読み込む際の) エラーは読み込んでいるスクリプトの読み込みのみを中止させる。その他のプラグインは読み込まれる。|packages| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:scripte[ncoding] [encoding]		*:scripte* *:scriptencoding* *E167*
+			Specify the character encoding used in the script.
+			The following lines will be converted from [encoding]
+			to the value of the 'encoding' option, if they are
+			different.  Examples: >
+				scriptencoding iso-8859-5
+				scriptencoding cp932
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:scripte}
+@anchor{:scriptencoding}
+@anchor{E167}
+@cindex :scripte
+@cindex :scriptencoding
+@cindex E167
+@item :scripte[ncoding] [encoding]
+スクリプトで使われている文字コードを宣言する。それ以降の行は必要なら [encoding] から '@option{encoding}' オプションの文字コードに変換される。例:
+@verbatim
+scriptencoding iso-8859-5
+scriptencoding cp932
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			When [encoding] is empty, no conversion is done.  This
+			can be used to restrict conversion to a sequence of
+			lines: >
+				scriptencoding euc-jp
+				... lines to be converted ...
+				scriptencoding
+				... not converted ...
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[encoding] が空のときは変換はされない。これはそれ以降の行の文字コードの変換を限定するために使える:
+@verbatim
+scriptencoding euc-jp
+... 変換される ...
+scriptencoding
+... 変換されない ...
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<			When conversion isn't supported by the system, there
+			is no error message and no conversion is done.  When a
+			line can't be converted there is no error and the
+			original line is kept.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+変換がシステムによって提供されない場合、エラーメッセージは表示されず変換もされない。ある行が変換できなかった場合、エラーにはならず元の行が保持される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Don't use "ucs-2" or "ucs-4", scripts cannot be in
+			these encodings (they would contain NUL bytes).
+			When a sourced script starts with a BOM (Byte Order
+			Mark) in utf-8 format Vim will recognize it, no need
+			to use ":scriptencoding utf-8" then.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"ucs-2" や "ucs-4" を使わないこと。スクリプトをその文字コードで書くことはできない (NULバイトが含まれてしまうため)。スクリプトの最初に utf-8 の BOM (Byte Order Mark: バイトオーダーマーク) があると Vim はそれを認識する。":scriptencoding utf-8" と書く必要はない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			If you set the 'encoding' option in your |.vimrc|,
+			`:scriptencoding` must be placed after that. E.g.: >
+				set encoding=utf-8
+				scriptencoding utf-8
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|.vimrc| の中で '@option{encoding}' オプションを設定している場合は、`:scriptencoding` はそれよりも後に置かなければならない。例:
+@verbatim
+set encoding=utf-8
+scriptencoding utf-8
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			When compiled without the |+multi_byte| feature this
+			command is ignored.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が |+multi_byte| 付きでコンパイルされていない場合、このコマンドは無視される。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:scr* *:scriptnames*
+:scr[iptnames]		List all sourced script names, in the order they were
+			first sourced.  The number is used for the script ID
+			|<SID>|.
+			{not in Vi} {not available when compiled without the
+			|+eval| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:scr}
+@anchor{:scriptnames}
+@item :scr[iptnames]
+読み込まれているスクリプトを読み込まれた順番どおりに全て表示する。数字はスクリプトの ID (識別子) |<SID>| に使われている。
+
+@{Vi にはない@}
+
+@{|+eval| 付きでコンパイルしないと使えない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:fini* *:finish* *E168*
+:fini[sh]		Stop sourcing a script.  Can only be used in a Vim
+			script file.  This is a quick way to skip the rest of
+			the file.  If it is used after a |:try| but before the
+			matching |:finally| (if present), the commands
+			following the ":finally" up to the matching |:endtry|
+			are executed first.  This process applies to all
+			nested ":try"s in the script.  The outermost ":endtry"
+			then stops sourcing the script.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:fini}
+@anchor{:finish}
+@anchor{E168}
+@cindex :fini
+@cindex :finish
+@cindex E168
+@item :fini[sh]
+スクリプトの読み込みを停止する。スクリプトファイルでのみ使える。これはファイルの残りを読み込ませないための手軽な方法である。|:try| を使った後で |:finally| を見つける前に使われると、まず ":finally" と |:endtry| の間のコマンドが実行される。この手続きは入れ子になっている全ての ":try" に対して適用される。入れ子の一番外側の ":endtry" に達するとスクリプトを停止する。
+
+@{Vi にはない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All commands and command sequences can be repeated by putting them in a named
+register and then executing it.  There are two ways to get the commands in the
+register:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+全てのコマンドとコマンドシーケンスは、名前付きレジスタに格納することで繰り返し実行することができる。レジスタにコマンドを格納する方法は2つある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Use the record command "q".  You type the commands once, and while they are
+  being executed they are stored in a register.  Easy, because you can see
+  what you are doing.  If you make a mistake, "p"ut the register into the
+  file, edit the command sequence, and then delete it into the register
+  again.  You can continue recording by appending to the register (use an
+  uppercase letter).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item
+記録コマンド "q" を使用する。実際にコマンドをタイプし、実行しながらそれをレジスタに格納する。今、何が起こっているかを確認できるので簡単である。間違いをしたならば、レジスタの内容をいったんファイルへ書き出 ("p"ut) して、コマンドシーケンスを編集して、それからそれを削除して再びレジスタに格納することができる。レジスタに追加することで継続してレコーディングすることができる (大文字を使用する)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Delete or yank the command sequence into the register.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+コマンドシーケンスを削除かヤンクしてレジスタに入れる。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Often used command sequences can be put under a function key with the ':map'
+command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+良く使うコマンドは '@command{:map}' コマンドでファンクションキーに割当てることができる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An alternative is to put the commands in a file, and execute them with the
+':source!' command.  Useful for long command sequences.  Can be combined with
+the ':map' command to put complicated commands under a function key.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+別の方法としてコマンドをファイルに記述しておき、それを '@command{:source!}' コマンドで読込んで実行するという方法もある。長いコマンドシーケンスにとっては便利である。ファンクションキーに複雑なコマンドを割当てるために '@command{:map}' コマンドと組み合わせることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ':source' command reads Ex commands from a file line by line.  You will
+have to type any needed keyboard input.  The ':source!' command reads from a
+script file character by character, interpreting each character as if you
+typed it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@command{:source}' コマンドはファイルから 1 行ずつ Ex コマンドを読込む。キーボード入力が必要になった場合にはタイプする必要が生じる。'@command{:source!}' コマンドはスクリプトファイルから 1 字ずつ読込む。各々のキャラクタはユーザーがタイプしたものとして解釈される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example: When you give the ":!ls" command you get the |hit-enter| prompt.  If
+you ':source' a file with the line "!ls" in it, you will have to type the
+<Enter> yourself.  But if you ':source!' a file with the line ":!ls" in it,
+the next characters from that file are read until a <CR> is found.  You will
+not have to type <CR> yourself, unless ":!ls" was the last line in the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例: "@command{:!ls}" コマンドを実行したとすると |hit-enter| プロンプトが表示される。"!ls" を含むファイルを '@command{:source}' したならば、自分で @key{<Enter>} をタイプする必要があるだろう。しかし ':!ls' を含んだファイルを '@command{:source!}' したならば、<CR> が見つかるまでそのファイルから続く文字が読込まれる。"@command{:!ls}" がファイルの最終行でない限り、<CR> を自分でタイプする必要はないだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is possible to put ':source[!]' commands in the script file, so you can
+make a top-down hierarchy of script files.  The ':source' command can be
+nested as deep as the number of files that can be opened at one time (about
+15).  The ':source!' command can be nested up to 15 levels deep.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スクリプトファイルの中で '@command{:source[!]}' コマンドを使うことも可能なので、階層関係のあるスクリプトファイルを作ることもできる。'@command{:source}' コマンドは同時に開くことのできるファイル数 (だいたい 15) と同じだけネスト (入れ子に) することができる。'@command{:source!}' コマンドは 15 段までネストすることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use the "<sfile>" string (literally, this is not a special key) inside
+of the sourced file, in places where a file name is expected.  It will be
+replaced by the file name of the sourced file.  For example, if you have a
+"other.vimrc" file in the same directory as your ".vimrc" file, you can source
+it from your ".vimrc" file with this command: >
+	:source <sfile>:h/other.vimrc
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+読込まれるファイルの中ではファイル名が必要なところに、"<sfile>" という文字列 (文字通りであってスペシャルキーではない) を使うことができる。この文字列は読込まれたファイルのファイル名に置き換えられる。例えば、"@file{.vimrc}" ファイルと同じ場所に "@file{other.vimrc}" というファイルがあれば、"@file{.vimrc}" から次のコマンドでそれを読込むことができる:
+@example
+:source <sfile>:h/other.vimrc
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In script files terminal-dependent key codes are represented by
+terminal-independent two character codes.  This means that they can be used
+in the same way on different kinds of terminals.  The first character of a
+key code is 0x80 or 128, shown on the screen as "~@".  The second one can be
+found in the list |key-notation|.  Any of these codes can also be entered
+with CTRL-V followed by the three digit decimal code.  This does NOT work for
+the <t_xx> termcap codes, these can only be used in mappings.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スクリプトファイル内では端末依存のキーコードは端末非依存の 2 文字のコードで表現される。これは異なる種類の端末でも同じ方法で依存キーコードを使用できることを意味する。最初のキーコードの文字は 0x80 つまり 128 で、画面では "@samp{~@@}" と表される。2 つ目のキャラクタは |key-notation| の表にて見ることができる。これらのコードはどれも @kbd{CTRL-V} に続けて 3 つの 10 進コードを叩くことで入力できる。これは termcap コード <t_xx> に対しては使用できない。これらはマッピングの中だけで使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:source_crnl* *W15*
+MS-DOS, Win32 and OS/2: Files that are read with ":source" normally have
+<CR><NL> <EOL>s.  These always work.  If you are using a file with <NL> <EOL>s
+(for example, a file made on Unix), this will be recognized if 'fileformats'
+is not empty and the first line does not end in a <CR>.  This fails if the
+first line has something like ":map <F1> :help^M", where "^M" is a <CR>.  If
+the first line ends in a <CR>, but following ones don't, you will get an error
+message, because the <CR> from the first lines will be lost.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:source_crnl}
+@anchor{W15}
+@cindex :source_crnl
+@cindex W15
+MS-DOS, Win32 and OS/2: "@command{:source}" で読込まれるファイルは通常、行末に <CR><NL> を持っている。これらは常に働く。もしも行末に <NL> を持つファイルを使っているならば (例えば UNIX で作られたファイル)、'@option{fileformats}' が空でかつ先頭行が <CR> で終わってなければ正しく認識される。しかしこれは先頭行が "@samp{:map <F1> :help^M}" (^M は <CR>) みたいな内容だった場合には失敗する。ファイルの先頭行が <CR> で終わっていてその 1 行限りの時、先頭行から <CR> が失われてしまうのでエラーメッセージが出るだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Mac Classic: Files that are read with ":source" normally have <CR> <EOL>s.
+These always work.  If you are using a file with <NL> <EOL>s (for example, a
+file made on Unix), this will be recognized if 'fileformats' is not empty and
+the first line does not end in a <CR>.  Be careful not to use a file with <NL>
+linebreaks which has a <CR> in first line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Mac Classic: "@option{:source}" で読み込まれるファイルは通常、行末に <CR> を持っている。これらは常に機能する。もしも行末に <NL> を持つファイルを使っているならば (例えば UNIX で作られたファイル)、'@option{fileformats}' が空でかつ先頭行が <CR> で終わってなければ正しく認識される。先頭行に <CR> を持ち <NL> で改行しているファイルを使用しないように気をつけること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On other systems, Vim expects ":source"ed files to end in a <NL>.  These
+always work.  If you are using a file with <CR><NL> <EOL>s (for example, a
+file made on MS-DOS), all lines will have a trailing <CR>.  This may cause
+problems for some commands (e.g., mappings).  There is no automatic <EOL>
+detection, because it's common to start with a line that defines a mapping
+that ends in a <CR>, which will confuse the automaton.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+その他のシステムでは、Vim は "@command{:source}" で読込まれたファイルの行末は <NL> であることを期待する。これは常に働く。もしも行末が <CR><NL> であるファイル (例えば MS-DOS で作られたファイル) を使っているならば、全ての行が末尾に <CR> を持っていることになる。これは幾つかのコマンドにとって問題となるだろう (例、マッピング)。自動的に行末記号を検出する機構はない。なぜなら <CR> で終了するマッピングの定義をファイルの先頭に書くことは一般的で、自動検出用の仕組みを作るのが難しいからである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*line-continuation*
+Long lines in a ":source"d Ex command script file can be split by inserting
+a line continuation symbol "\" (backslash) at the start of the next line.
+There can be white space before the backslash, which is ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{line-continuation}
+@cindex line-continuation
+"@command{:source}" で読込まれた Ex コマンドスクリプトのファイル内の長い行は、行継続記号 "\" (backslash) を次行の先頭に挿入することで分割できる。バックスラッシュの前に空白を挿入することも可能で、これらは無視される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example: the lines >
+	:set comments=sr:/*,mb:*,el:*/,
+		     \://,
+		     \b:#,
+		     \:%,
+		     \n:>,
+		     \fb:-
+are interpreted as if they were given in one line:
+	:set comments=sr:/*,mb:*,el:*/,://,b:#,:%,n:>,fb:-
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例: 次の記述は
+@verbatim
+:set comments=sr:/*,mb:*,el:*/,
+         \://,
+         \b:#,
+         \:%,
+         \n:>,
+         \fb:-
+@end verbatim
+次の 1 行と同じ意味として解釈される:
+@example
+:set comments=sr:/*,mb:*,el:*/,://,b:#,:%,n:>,fb:-
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All leading whitespace characters in the line before a backslash are ignored.
+Note however that trailing whitespace in the line before it cannot be
+inserted freely; it depends on the position where a command is split up
+whether additional whitespace is allowed or not.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バックスラッシュの前に先行する空白文字は全部無視される。しかしながらバックスラッシュのある行の 1 つ前の行末には、自由に空白文字を挿入することはできない; 付加的な空白文字が許されるかどうかは、コマンドが分割される位置に依存する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When a space is required it's best to put it right after the backslash.  A
+space at the end of a line is hard to see and may be accidentally deleted. >
+	:syn match Comment
+		\ "very long regexp"
+		\ keepend
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スペースが必要な場合には、バックスラッシュの直後に書くのがベストである。行末にスペースを書くと、視認が難しく、誤って削除されてしまうかもしれない。
+@verbatim
+:syn match Comment
+    \ "very long regexp"
+    \ keepend
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There is a problem with the ":append" and ":insert" commands: >
+   :1append
+   \asdf
+   .
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:append}" と "@command{:insert}" コマンドには1つ問題がある:
+@verbatim
+:1append
+\asdf
+.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The backslash is seen as a line-continuation symbol, thus this results in the
+command: >
+   :1appendasdf
+   .
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バックスラッシュは行継続シンボルに見えるが、コマンドの結果はこのようになる:
+@verbatim
+:1appendasdf
+.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+To avoid this, add the 'C' flag to the 'cpoptions' option: >
+   :set cpo+=C
+   :1append
+   \asdf
+   .
+   :set cpo-=C
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これを避けるには、'@option{cpoptions}' に '@var{C}' フラグを追加することだ:
+@verbatim
+:set cpo+=C
+:function Foo()
+:1append
+\asdf
+:.
+:set cpo-=C
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that when the commands are inside a function, you need to add the 'C'
+flag when defining the function, it is not relevant when executing it. >
+   :set cpo+=C
+   :function Foo()
+   :1append
+   \asdf
+   .
+   :endfunction
+   :set cpo-=C
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+関数の中でその手のコマンドを実行するには、関数定義の際に '@var{C}' フラグを追加する必要があり、それが実行される際にではない。
+@verbatim
+:set cpo+=C
+:function Foo()
+:1append
+\asdf
+.
+:endfunction
+:set cpo-=C
+@end verbatim
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Rationale:
+	Most programs work with a trailing backslash to indicate line
+	continuation.  Using this in Vim would cause incompatibility with Vi.
+	For example for this Vi mapping: >
+		:map xx  asdf\
+<	Therefore the unusual leading backslash is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+解説:
+
+多くのプログラムは行継続を、継続する行の末尾にバックスラッシュを置くことで表現する。その方法をVimで採用してしまうと、Viとの互換性に重大な欠陥ができてしまう。たとえばこのようなViのマッピングを考えるとわかりやすい:
+@example
+:map xx  asdf\
+@end example
+従って一般的ではないが行頭のバックスラッシュを採用している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Using Vim packages					*packages*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{packages}
+@cindex packages
+@section 5. Vimパッケージを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A Vim package is a directory that contains one or more plugins.  The
+advantages over normal plugins:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim script のパッケージは 1 つかそれ以上のプラグインを含むディレクトリである。通常のプラグインと比べた長所は以下の通りである:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- A package can be downloaded as an archive and unpacked in its own directory.
+  Thus the files are not mixed with files of other plugins.  That makes it
+  easy to update and remove.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item
+パッケージは圧縮ファイルとしてダウンロードでき、独自のディレクトリに展開される。よってそのファイルは他のプラグインと混在することがない。これは更新と削除を簡素化する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- A package can be a git, mercurial, etc. repository.  That makes it really
+  easy to update.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+パッケージには git, mercurial などのリポジトリも使用可能。これはとても更新を簡素化する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- A package can contain multiple plugins that depend on each other.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+パッケージはお互いに依存する複数のプラグインを含むことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- A package can contain plugins that are automatically loaded on startup and
+  ones that are only loaded when needed with `:packadd`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+パッケージは起動時に自動的に読み込まれるプラグインと、必要になった時のみ `:packadd` により読み込まれるプラグインを含むことができる。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Using a package and loading automatically ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec パッケージの使用と自動読み込み
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Let's assume your Vim files are in the "~/.vim" directory and you want to add a
+package from a zip archive "/tmp/foopack.zip":
+	% mkdir -p ~/.vim/pack/foo
+	% cd ~/.vim/pack/foo
+	% unzip /tmp/foopack.zip
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+あなたの Vim 関連のファイルは "~/.vim/" にあるとする。さらに ZIP 圧縮ファイル "/tmp/foopack.zip" からパッケージを追加したい場合は以下の通りである:
+@example
+% mkdir -p ~/.vim/pack/foo
+% cd ~/.vim/pack/foo
+% unzip /tmp/foopack.zip
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The directory name "foo" is arbitrary, you can pick anything you like.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"foo" というディレクトリ名は任意である。あなたのお好きな名前を付けてよい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You would now have these files under ~/.vim:
+	pack/foo/README.txt
+	pack/foo/start/foobar/plugin/foo.vim
+	pack/foo/start/foobar/syntax/some.vim
+	pack/foo/opt/foodebug/plugin/debugger.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+今あなたの ~/.vim の下に以下のファイルがあるはずである:
+@verbatim
+pack/foo/README.txt
+pack/foo/start/foobar/plugin/foo.vim
+pack/foo/start/foobar/syntax/some.vim
+pack/foo/opt/foodebug/plugin/debugger.vim
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When Vim starts up, after processing your .vimrc, it scans all directories in
+'packpath' for plugins under the "pack/*/start" directory.  First all those
+directories are added to 'runtimepath'.  Then all the plugins are loaded.
+See |packload-two-steps| for how these two steps can be useful.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が起動した時、.vimrc を処理した後、'@option{packpath}' に含まれる "pack/*/start" ディレクトリの下の全てのディレクトリをスキャンする。最初にそのディレクトリは '@option{runtimepath}' に追加される。次に全てのプラグインがロードされる。これら 2 つのステップがどのように役立つかについては、|packload-two-steps| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the example Vim will find "pack/foo/start/foobar/plugin/foo.vim" and adds 
+"~/.vim/pack/foo/start/foobar" to 'runtimepath'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上記の例では "pack/foo/start/foobar/plugin/foo.vim" を見つけて "~/.vim/pack/foo/start/foobar" を '@option{runtimepath}' に追加する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the "foobar" plugin kicks in and sets the 'filetype' to "some", Vim will
+find the syntax/some.vim file, because its directory is in 'runtimepath'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もし "foobar" プラグインが作動し '@option{filetype}' を "@var{some}" にセットした場合、'@option{runtimepath}' に含まれているため、Vim は上記の @file{syntax/some.vim} ファイルを見つける。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will also load ftdetect files, if there are any.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もし存在するなら、Vim は ftdetect ファイルもロードする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the files under "pack/foo/opt" are not loaded automatically, only the
+ones under "pack/foo/start".  See |pack-add| below for how the "opt" directory
+is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"pack/foo/opt" 以下のファイルは自動的に読み込まれず、"pack/foo/start" 以下のファイルのみ読み込まれることに注意すること。"opt" ディレクトリがどのように使われるかについては下記の |pack-add| を参照。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Loading packages automatically will not happen if loading plugins is disabled,
+see |load-plugins|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パッケージの自動読み込みはプラグインの読み込みを無効化している場合は起こらない。|load-plugins| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To load packages earlier, so that 'runtimepath' gets updated: >
+	:packloadall
+This also works when loading plugins is disabled.  The automatic loading will
+only happen once.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{runtimepath}' を更新するためにパッケージを読み込むには:
+@example
+:packloadall
+@end example
+これはプラグインの読み込みを無効化していても効果がある。自動読み込みは一度だけ行われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the package has an "after" directory, that directory is added to the end of
+'runtimepath', so that anything there will be loaded later.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パッケージに "after" ディレクトリがある場合、そのディレクトリは '@option{runtimepath}' の末尾に追加される。そのため、そこにあるものは全て後でロードされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Using a single plugin and loading it automatically ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 単一プラグインの使用とその自動読み込み
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you don't have a package but a single plugin, you need to create the extra
+directory level:
+	% mkdir -p ~/.vim/pack/foo/start/foobar
+	% cd ~/.vim/pack/foo/start/foobar
+	% unzip /tmp/someplugin.zip
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パッケージでなく単一のプラグインがある場合は、余分なディレクトリ階層を作成する必要がある。
+@example
+% mkdir -p ~/.vim/pack/foo/start/foobar
+% cd ~/.vim/pack/foo/start/foobar
+% unzip /tmp/someplugin.zip
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You would now have these files:
+	pack/foo/start/foobar/plugin/foo.vim
+	pack/foo/start/foobar/syntax/some.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これで、次のファイルが作成される。
+@verbatim
+pack/foo/start/foobar/plugin/foo.vim
+pack/foo/start/foobar/syntax/some.vim
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+From here it works like above.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ここから上のように動作する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Optional plugins ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 任意のプラグイン
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*pack-add*
+To load an optional plugin from a pack use the `:packadd` command: >
+	:packadd foodebug
+This searches for "pack/*/opt/foodebug" in 'packpath' and will find
+~/.vim/pack/foo/opt/foodebug/plugin/debugger.vim and source it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{pack-add}
+@cindex pack-add
+上記の pack ディレクトリから任意のプラグインをロードするには `@command{:packadd}` コマンドを使う:
+@example
+:packadd foodebug
+@end example
+これは '@option{packpath}' の "pack/*/opt/foodebug" から @file{~/.vim/pack/foo/opt/foodebug/plugin/debugger.vim} を見つけ読み込む。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This could be done if some conditions are met.  For example, depending on
+whether Vim supports a feature or a dependency is missing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これにより何かしらの条件が満たされる時に実行されるようにできる。例えば、Vim がある機能をサポートしているかどうかとか、依存したモノが見つからないとか、そういうことに依存させることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can also load an optional plugin at startup, by putting this command in
+your |.vimrc|: >
+	:packadd! foodebug
+The extra "!" is so that the plugin isn't loaded if Vim was started with
+|--noplugin|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドをあなたの |.vimrc| に入れることで、起動時に任意のプラグインを読み込むこともできる。
+@example
+:packadd! foodebug
+@end example
+余分な "!" は Vim が |--noplugin| で起動されていれば、プラグインがロードされないようにするためである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is perfectly normal for a package to only have files in the "opt"
+directory.  You then need to load each plugin when you want to use it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パッケージが "opt" ディレクトリしか持たなかったとしても一向に構わない。その場合、それを使いたいときは (明示的に) 読み込む必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Where to put what ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec どこに何を置くか
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Since color schemes, loaded with `:colorscheme`, are found below
+"pack/*/start" and "pack/*/opt", you could put them anywhere.  We recommend
+you put them below "pack/*/opt", for example
+".vim/pack/mycolors/opt/dark/colors/very_dark.vim".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+`@command{:colorscheme}` で読み込まれるカラースキームは "pack/*/start" と "pack/*/opt" の下から探し出されるのでどこにでも置くことができる。たとえば、"@file{.vim/pack/mycolors/opt/dark/colors/very_dark.vim}" のように、"pack/*/opt" の下に置くことをお勧めする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Filetype plugins should go under "pack/*/start", so that they are always
+found.  Unless you have more than one plugin for a file type and want to
+select which one to load with `:packadd`.  E.g. depending on the compiler
+version: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Filetype プラグインはファイルタイプに複数のプラグインがあり、`@command{:packadd}` でロードするプラグインを選択したいのでない限り "pack/*/start" の下に置く必要がある。例えば、コンパイラのバージョンに依存する場合:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	if foo_compiler_version > 34
+	  packadd foo_new
+	else
+	  packadd foo_old
+	endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if foo_compiler_version > 34
+  packadd foo_new
+else
+  packadd foo_old
+endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "after" directory is most likely not useful in a package.  It's not
+disallowed though.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"after" ディレクトリはパッケージで使うには十中八九便利ではない。しかし、使用が禁じられているわけではない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Creating Vim packages				*package-create*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{package-create}
+@cindex package-create
+@section 6. Vimパッケージを作る
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This assumes you write one or more plugins that you distribute as a package.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パッケージとして配布する 1 つ以上のプラグインを記述していることを前提とする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you have two unrelated plugins you would use two packages, so that Vim
+users can chose what they include or not.  Or you can decide to use one
+package with optional plugins, and tell the user to add the ones he wants with
+`:packadd`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+2 つの無関係なプラグインがある場合は、2 つのパッケージを使用するので、Vim ユーザーはそのパッケージに含まれるものを選択できる。あるいは、オプションのプラグインで 1 つのパッケージを使用し、`@command{:packadd}` で必要なプラグインを追加するようにユーザーに指示することもできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Decide how you want to distribute the package.  You can create an archive or
+you could use a repository.  An archive can be used by more users, but is a
+bit harder to update to a new version.  A repository can usually be kept
+up-to-date easily, but it requires a program like "git" to be available.
+You can do both, github can automatically create an archive for a release.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パッケージの配布方法を決める。アーカイブを作成することも、リポジトリを使用することもできる。より多くのユーザーがアーカイブを使用できるが、新しいバージョンに更新するのは少し難しくなる。リポジトリは通常、最新の状態に保つことができるが、"git" のようなプログラムが必要である。github ではリリースを作成すると自動的にアーカイブが作られるので、あなたは両方を同時に行うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Your directory layout would be like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ディレクトリ構成は次のようになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   start/foobar/plugin/foo.vim    	" always loaded, defines commands
+   start/foobar/plugin/bar.vim    	" always loaded, defines commands
+   start/foobar/autoload/foo.vim  	" loaded when foo command used
+   start/foobar/doc/foo.txt       	" help for foo.vim
+   start/foobar/doc/tags          	" help tags
+   opt/fooextra/plugin/extra.vim  	" optional plugin, defines commands
+   opt/fooextra/autoload/extra.vim  	" loaded when extra command used
+   opt/fooextra/doc/extra.txt  	        " help for extra.vim
+   opt/fooextra/doc/tags  	        " help tags
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+start/foobar/plugin/foo.vim         " 常にロードされ、コマンドを定義する
+start/foobar/plugin/bar.vim         " 常にロードされ、コマンドを定義する
+start/foobar/autoload/foo.vim       " foo コマンドを使用した時に読み込む
+start/foobar/doc/foo.txt            " foo.vim のヘルプ
+start/foobar/doc/tags               " ヘルプタグ
+opt/fooextra/plugin/extra.vim       " オプションのプラグイン、コマンド定義
+opt/fooextra/autoload/extra.vim     " extra コマンドを使用した時に読み込む
+opt/fooextra/doc/extra.txt          " extra.vim のヘルプ
+opt/fooextra/doc/tags               " ヘルプタグ
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This allows for the user to do: >
+	mkdir ~/.vim/pack/myfoobar
+	cd ~/.vim/pack/myfoobar
+	git clone https://github.com/you/foobar.git
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これにより、ユーザーは次の操作を行うことができる。
+@example
+mkdir ~/.vim/pack/myfoobar
+cd ~/.vim/pack/myfoobar
+git clone https://github.com/you/foobar.git
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here "myfoobar" is a name that the user can choose, the only condition is that
+it differs from other packages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ここで "myfoobar" はユーザーが選択できる名前だが、唯一の条件は他のパッケージとは異なることである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In your documentation you explain what the plugins do, and tell the user how
+to load the optional plugin: >
+	:packadd! fooextra
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ドキュメントでは、プラグインの機能について説明し、オプションのプラグインをロードする方法をユーザーに伝える。
+@example
+:packadd! fooextra
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You could add this packadd command in one of your plugins, to be executed when
+the optional plugin is needed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この packadd コマンドをプラグインの 1 つに追加して、オプションのプラグインが必要なときに実行することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Run the `:helptags` command to generate the doc/tags file.  Including this
+generated file in the package means that the user can drop the package in his
+pack directory and the help command works right away.  Don't forget to re-run
+the command after changing the plugin help: >
+	:helptags path/start/foobar/doc
+	:helptags path/opt/fooextra/doc
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+`@command{:helptags}` コマンドを実行して、@file{doc/tags} ファイルを生成する。この生成されたファイルをパッケージに含めるということは、パッケージディレクトリにパッケージを落とすことができ、ヘルプコマンドがすぐに動作することを意味する。プラグインヘルプを変更した後にコマンドを再実行することを忘れないでほしい。
+@example
+:helptags path/start/foobar/doc
+:helptags path/opt/fooextra/doc
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Dependencies between plugins ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec プラグイン間の依存関係
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*packload-two-steps*
+Suppose you have two plugins that depend on the same functionality. You can
+put the common functionality in an autoload directory, so that it will be
+found automatically.  Your package would have these files:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{packload-two-steps}
+@cindex packload-two-steps
+同じ機能に依存する 2 つのプラグインがあるとする。共通機能を autoload ディレクトリに置くことで、自動的に見つかるようにすることができる。あなたのパッケージには次のファイルがあるとする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	pack/foo/start/one/plugin/one.vim  >
+		call foolib#getit()
+<	pack/foo/start/two/plugin/two.vim >
+		call foolib#getit()
+<	pack/foo/start/lib/autoload/foolib.vim >
+		func foolib#getit()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+pack/foo/start/one/plugin/one.vim
+@example
+call foolib#getit()
+@end example
+pack/foo/start/two/plugin/two.vim
+@example
+call foolib#getit()
+@end example
+pack/foo/start/lib/autoload/foolib.vim
+@example
+func foolib#getit()
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This works, because loading packages will first add all found directories to
+'runtimepath' before sourcing the plugins.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは動作する。なぜなら、パッケージをロードすると、プラグインを読み込む前に見つかったすべてのディレクトリが '@option{runtimepath}' に追加されるからである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. Debugging scripts					*debug-scripts*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debug-scripts}
+@cindex debug-scripts
+@section 7. スクリプトのデバッグ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Besides the obvious messages that you can add to your scripts to find out what
+they are doing, Vim offers a debug mode.  This allows you to step through a
+sourced file or user function and set breakpoints.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スクリプトの動作を知るためのコードを追加することができるのは当り前として、Vim はデバッグモードを提供している。これはスクリプトファイルやユーザーファンクションをステップ実行することやブレークポイントを仕掛けることを可能にする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NOTE: The debugging mode is far from perfect.  Debugging will have side
+effects on how Vim works.  You cannot use it to debug everything.  For
+example, the display is messed up by the debugging messages.
+{Vi does not have a debug mode}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+デバッグモードは未完成である。デバッグは Vim の動作に副作用をあたえる。全てをデバッグするのには使えない。例えば画面がデバッグメッセージで散乱するときなど。
+
+@{Vi にはデバッグモードはない@}
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An alternative to debug mode is setting the 'verbose' option.  With a bigger
+number it will give more verbose messages about what Vim is doing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デバッグモードの代わりに '@option{verbose}' オプションが使える。大きな値を設定すると Vim の動作についてより詳細なメッセージを得られる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+STARTING DEBUG MODE						*debug-mode*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debug-mode}
+@cindex debug-mode
+@unnumberedsubsec デバッグモードを開始する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To enter debugging mode use one of these methods:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デバッグモードを開始するにはこれらの方法のうちどれかを使う:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. Start Vim with the |-D| argument: >
+	vim -D file.txt
+<  Debugging will start as soon as the first vimrc file is sourced.  This is
+   useful to find out what is happening when Vim is starting up.  A side
+   effect is that Vim will switch the terminal mode before initialisations
+   have finished, with unpredictable results.
+   For a GUI-only version (Windows, Macintosh) the debugging will start as
+   soon as the GUI window has been opened.  To make this happen early, add a
+   ":gui" command in the vimrc file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item
+Vim を |-D| 引数付きで起動する:
+@example
+vim -D file.txt
+@end example
+最初にvimrcを読み込むところからデバッグを開始する。これはVimの起動時に何が起こっているのかを調査するのに便利である。副作用としてVimは初期化が完了する前に安全のためターミナルモードを切替える。
+
+(WindowsやMacintoshの)GUI専用バージョンではGUIウィンドウを開くとすぐにデバッグが開始する。これを早めるにはvimrcファイルに ":gui" と書くこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*:debug*
+2. Run a command with ":debug" prepended.  Debugging will only be done while
+   this command executes.  Useful for debugging a specific script or user
+   function.  And for scripts and functions used by autocommands.  Example: >
+	:debug edit test.txt.gz
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:debug}
+@cindex :debug
+@item
+":debug" を前に付けてコマンドを実行する。そのコマンドを実行する間だけデバッグできる。特定のスクリプトファイルやユーザー関数をデバッグするのに便利である。オートコマンドから呼び出されるスクリプトや関数にも便利である。例:
+@example
+:debug edit test.txt.gz
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+3. Set a breakpoint in a sourced file or user function.  You could do this in
+   the command line: >
+	vim -c "breakadd file */explorer.vim" .
+<  This will run Vim and stop in the first line of the "explorer.vim" script.
+   Breakpoints can also be set while in debugging mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+ブレークポイントをソースファイルやユーザーファンクションに設定する。コマンドラインから次のようにできる:
+@example
+vim -c "breakadd file */explorer.vim"
+@end example
+これは Vim を起動して "explorer.vim" の最初の行を読み込むところで停止する。デバッグモード中でもブレークポイントを設定できる。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In debugging mode every executed command is displayed before it is executed.
+Comment lines, empty lines and lines that are not executed are skipped.  When
+a line contains two commands, separated by "|", each command will be displayed
+separately.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デバッグモード中に実行されるコマンドはそれが実行される前に表示される。コメントや空の行、実行されない行は飛ばされる。行が "|" を使って 2 つのコマンドを含んでいた場合には分けて表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+DEBUG MODE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec デバッグモード
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Once in debugging mode, the usual Ex commands can be used.  For example, to
+inspect the value of a variable: >
+	echo idx
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デバッグモードに入ると、通常の Ex コマンドが使える。例えば、変数の値を見るには:
+@example
+echo idx
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When inside a user function, this will print the value of the local variable
+"idx".  Prepend "g:" to get the value of a global variable: >
+	echo g:idx
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザーファンクション内では、これはローカル変数の "idx" を表示する。"g:" を頭に付けるとグローバル変数の値を表示する:
+@example
+echo g:idx
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+All commands are executed in the context of the current function or script.
+You can also set options, for example setting or resetting 'verbose' will show
+what happens, but you might want to set it just before executing the lines you
+are interested in: >
+	:set verbose=20
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+全てのコマンドは実行中の関数やスクリプトの文脈として実行される。オプションを設定することもできる。例えば何が起こっているのかを表示するために '@option{verbose}' を設定することができる。興味のある部分を実行する前に次のようにするといいだろう:
+@example
+:set verbose=20
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Commands that require updating the screen should be avoided, because their
+effect won't be noticed until after leaving debug mode.  For example: >
+	:help
+won't be very helpful.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スクリーンの更新を必要とするコマンドは避けるべきである。なぜならデバッグモードを抜けるまでその作用に気づき難いからである。例えば:
+@example
+:help
+@end example
+これはとても不便である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There is a separate command-line history for debug mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デバッグモードのためのコマンドラインヒストリが別に用意されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The line number for a function line is relative to the start of the function.
+If you have trouble figuring out where you are, edit the file that defines
+the function in another Vim, search for the start of the function and do
+"99j".  Replace "99" with the line number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+関数の行番号はその関数の始まりから数える。見ている行の番号を数えるのに苦労する場合はその関数の書かれたファイルを別の Vim で開き、その関数の始まりを探しだし、"99j" を実行すること。"99" は実際の行番号に合わせて変えること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Additionally, these commands can be used:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さらに、以下のコマンドが使える:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*>cont*
+	cont		Continue execution until the next breakpoint is hit.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{>cont}
+@cindex >cont
+@table @asis
+@item cont
+次のブレークポイントまで実行する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*>quit*
+	quit		Abort execution.  This is like using CTRL-C, some
+			things might still be executed, doesn't abort
+			everything.  Still stops at the next breakpoint.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{>quit}
+@cindex >quit
+@item quit
+異常停止する。これは @kbd{CTRL-C} を使うことに似ているが、全てを停止するわけではない。次のブレークポイントで停止する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*>next*
+	next		Execute the command and come back to debug mode when
+			it's finished.  This steps over user function calls
+			and sourced files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{>next}
+@cindex >next
+@item next
+コマンドを実行しそれが終わるとデバッグモードに戻る。ユーザー関数やソースファイルの呼び出し時には呼び出し元の次の行に進む。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*>step*
+	step		Execute the command and come back to debug mode for
+			the next command.  This steps into called user
+			functions and sourced files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{>step}
+@cindex >step
+@item step
+コマンドを実行しそれが終わるとデバッグモードに戻る。ユーザー関数やソースファイルの呼び出し時には呼び出し先の行に進む。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*>interrupt*
+	interrupt	This is like using CTRL-C, but unlike ">quit" comes
+			back to debug mode for the next command that is
+			executed.  Useful for testing |:finally| and |:catch|
+			on interrupt exceptions.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{>interrupt}
+@cindex >interrupt
+@item interrupt
+@kbd{CTRL-C} を使うことに似ているが、次のコマンドを実行するためにデバッグモードに戻る場所が ">quit" と違う。例外割り込みについて |:finally| や |:catch| をテストするのに便利である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*>finish*
+	finish		Finish the current script or user function and come
+			back to debug mode for the command after the one that
+			sourced or called it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{>finish}
+@cindex >finish
+@item finish
+実行中のスクリプトやユーザー関数を終了し呼び出し元でデバッグモードに戻る。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*>bt*
+							*>backtrace*
+							*>where*
+	backtrace	Show the call stacktrace for current debugging session.
+	bt
+	where
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{>bt}
+@anchor{>backtrace}
+@anchor{>where}
+@cindex >bt
+@cindex >backtrace
+@cindex >where
+@item backtrace or bt or where
+現在のデバッグセッションの呼び出しスタックトレースを表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*>frame*
+	frame N		Goes to N backtrace level. + and - signs make movement
+			relative.  E.g., ":frame +3" goes three frames up.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{>frame}
+@cindex >frame
+@item frame N
+N 番目のスタックフレームへ移動する。+ や - 記号で、相対的に移動できる。例えば、"@samp{:frame +3}" で 3 つ上のスタックフレームへ移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*>up*
+	up		Goes one level up from call stacktrace.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{>up}
+@cindex >up
+@item up
+呼び出しスタックトレースを 1 つ上へ移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*>down*
+	down		Goes one level down from call stacktrace.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{>down}
+@cindex >down
+@item down
+呼び出しスタックトレースを 1 つ下へ移動する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+About the additional commands in debug mode:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デバッグモードのコマンドについて:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- There is no command-line completion for them, you get the completion for the
+  normal Ex commands only.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 補完はできない。通常の Ex コマンドのみ補完できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- You can shorten them, up to a single character, unless more than one command
+  starts with the same letter.  "f" stands for "finish", use "fr" for "frame".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item コマンド名は、他のコマンドが同じ文字で始まらないところまで省略できる。"f" は "finish" なるので "frame" を省略するには "fr" を用いる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Hitting <CR> will repeat the previous one.  When doing another command, this
+  is reset (because it's not clear what you want to repeat).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item <CR> を押すと前回のものを繰り返す。関係ないコマンドを使うとリセットされる (どうすべきかがわかりにくいため)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- When you want to use the Ex command with the same name, prepend a colon:
+  ":cont", ":next", ":finish" (or shorter).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 同じ名前の Ex コマンドを使うにはコロンを付けること: ":cont", ":next", ":finish" (省略時も)
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The backtrace shows the hierarchy of function calls, e.g.:
+	>bt ~
+	  3 function One[3] ~
+	  2 Two[3] ~
+	->1 Three[3] ~
+	  0 Four ~
+	line 1: let four = 4 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バックトレースは、関数呼び出しの階層を表示する。例えば:
+@verbatim
+>bt
+  3 function One[3]
+  2 Two[3]
+->1 Three[3]
+  0 Four
+行 1: let four = 4
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "->" points to the current frame.  Use "up", "down" and "frame N" to
+select another frame.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"->" は現在いるフレームを指す。"up"、"down"、"frame N" を使うことで、別のフレームを選択できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the current frame you can evaluate the local function variables.  There is
+no way to see the command at the current line yet.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在いるフレームの、その関数内でのローカル変数にアクセスできる。現在いるフレームの、現在行の内容を表示する方法はまだない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+DEFINING BREAKPOINTS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec ブレークポイントの定義
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:breaka* *:breakadd*
+:breaka[dd] func [lnum] {name}
+		Set a breakpoint in a function.  Example: >
+			:breakadd func Explore
+<		Doesn't check for a valid function name, thus the breakpoint
+		can be set before the function is defined.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:breaka}
+@anchor{:breakadd}
+@cindex :breaka
+@cindex :breakadd
+@table @asis
+@item :breaka[dd] func [lnum] @{name@}
+関数にブレークポイントを設定する。例:
+@example
+:breakadd func Explore
+@end example
+関数名が妥当かどうか検査しないので、関数定義の前にブレークポイントを定義できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:breaka[dd] file [lnum] {name}
+		Set a breakpoint in a sourced file.  Example: >
+			:breakadd file 43 .vimrc
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :breaka[dd] file [lnum] @{name@}
+ソースファイルにブレークポイントを設定する。例:
+@example
+:breakadd file 43 .vimrc
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:breaka[dd] here
+		Set a breakpoint in the current line of the current file.
+		Like doing: >
+			:breakadd file <cursor-line> <current-file>
+<		Note that this only works for commands that are executed when
+		sourcing the file, not for a function defined in that file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :breaka[dd] here
+カレントファイルのカレント行にブレークポイントを設定する。次を行うのと同様である:
+@example
+:breakadd file <cursor-line> <current-file>
+@end example
+@quotation
+@strong{Note:} @*
+これはファイルを読み込むときに実行されるコマンドに対してだけ働く。そのファイル中で定義される関数に対しては働かない。
+@end quotation
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The [lnum] is the line number of the breakpoint.  Vim will stop at or after
+this line.  When omitted line 1 is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[lnum] はブレークポイントにする行番号である。Vim はその行かそれ以降で停止する。省略時すると 1 行目になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:debug-name*
+{name} is a pattern that is matched with the file or function name.  The
+pattern is like what is used for autocommands.  There must be a full match (as
+if the pattern starts with "^" and ends in "$").  A "*" matches any sequence
+of characters.  'ignorecase' is not used, but "\c" can be used in the pattern
+to ignore case |/\c|.  Don't include the () for the function name!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:debug-name}
+@cindex :debug-name
+@{name@} はファイル名や関数名のパターンである。パターンはオートコマンドで使われるものと同じである。完全に一致しなければならない (パターンが "^" で始まって "$" で終わるように)。"*" は全ての文字列に一致する。'@option{ignorecase}' は使われないが、大文字と小文字を区別しないために "\c" を使うことができる |/\c|。関数名には () を付けないように！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The match for sourced scripts is done against the full file name.  If no path
+is specified the current directory is used.  Examples: >
+	breakadd file explorer.vim
+matches "explorer.vim" in the current directory. >
+	breakadd file *explorer.vim
+matches ".../plugin/explorer.vim", ".../plugin/iexplorer.vim", etc. >
+	breakadd file */explorer.vim
+matches ".../plugin/explorer.vim" and "explorer.vim" in any other directory.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ソースファイル名のパターン検査はファイルのフルネームに対して行われる。例:
+@example
+breakadd file explorer
+@end example
+パスが間違っているので一致しない。
+@example
+breakadd file *explorer.vim
+@end example
+".../plugin/explorer.vim" と ".../plugin/iexplorer.vim" に一致する。
+@example
+breakadd file */explorer.vim
+@end example
+".../plugin/explorer.vim" だけに一致する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The match for functions is done against the name as it's shown in the output
+of ":function".  For local functions this means that something like "<SNR>99_"
+is prepended.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+関数名のパターン検査は "@command{:function}" で表示される名前に対して行われる。ローカル関数には "<SNR>99_" といったものが前に付くということである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that functions are first loaded and later executed.  When they are loaded
+the "file" breakpoints are checked, when they are executed the "func"
+breakpoints.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+関数はまず読み込まれ、後で実行される。読み込まれたときに "file" ブレークポイントがチェックされ、実行されるときに "func" ブレークポイントがチェックされる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+DELETING BREAKPOINTS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec ブレークポイントの削除
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*:breakd* *:breakdel* *E161*
+:breakd[el] {nr}
+		Delete breakpoint {nr}.  Use |:breaklist| to see the number of
+		each breakpoint.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:breakd}
+@anchor{:breakdel}
+@anchor{E161}
+@cindex :breakd
+@cindex :breakdel
+@cindex E161
+@table @asis
+@item :breakd[el] @{nr@}
+ブレークポイント @{nr@} を削除する。|:breaklist| を使って番号を確認できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:breakd[el] *
+		Delete all breakpoints.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :breakd[el] *
+すべてのブレークポイントを削除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:breakd[el] func [lnum] {name}
+		Delete a breakpoint in a function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :breakd[el] func [lnum] @{name@}
+関数内のブレークポイントを削除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:breakd[el] file [lnum] {name}
+		Delete a breakpoint in a sourced file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :breakd[el] file [lnum] @{name@}
+ソースファイル内のブレークポイントを削除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:breakd[el] here
+		Delete a breakpoint at the current line of the current file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :breakd[el] here
+カレントファイルのカレント行のブレークポイントを削除する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When [lnum] is omitted, the first breakpoint in the function or file is
+deleted.
+The {name} must be exactly the same as what was typed for the ":breakadd"
+command.  "explorer", "*explorer.vim" and "*explorer*" are different.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[lnum] が省略されると関数、またはファイルの最初のブレークポイントが削除される。@{name@} は "@command{:breakadd}" で使った名前と完全に同じでなければならない。"explorer" と "*explorer.vim", "*explorer*" は違う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+LISTING BREAKPOINTS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec ブレークポイントを列挙する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:breakl* *:breaklist*
+:breakl[ist]
+		List all breakpoints.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:breakl}
+@anchor{:breaklist}
+@cindex :breakl
+@cindex :breaklist
+@table @asis
+@item :breakl[ist]
+全てのブレークポイントを列挙する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+OBSCURE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec その他
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:debugg* *:debuggreedy*
+:debugg[reedy]
+		Read debug mode commands from the normal input stream, instead
+		of getting them directly from the user.  Only useful for test
+		scripts.  Example: >
+		  echo 'q^Mq' | vim -e -s -c debuggreedy -c 'breakadd file script.vim' -S script.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:debugg}
+@anchor{:debuggreedy}
+@cindex :debugg
+@cindex :debuggreedy
+@table @asis
+@item :debugg[reedy]
+デバッグモードのコマンドをユーザーから直接得るのではなく標準入力から読み込む。スクリプトのテストのときに便利である。例:
+@example
+echo 'q^Mq' | vim -e -s -c debuggreedy -c 'breakadd file script.vim' -S script.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:0debugg[reedy]
+		Undo ":debuggreedy": get debug mode commands directly from the
+		user, don't use typeahead for debug commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :0debugg[reedy]
+"@command{:debuggreedy}" を取り消す。それ以降のデバッグモードコマンドを使わず、ユーザーから直接デバッグモードコマンドを受け取る。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+8. Profiling						*profile* *profiling*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{profile}
+@anchor{profiling}
+@cindex profile
+@cindex profiling
+@section 8. プロファイリング
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Profiling means that Vim measures the time that is spent on executing
+functions and/or scripts.  The |+profile| feature is required for this.
+It is only included when Vim was compiled with "huge" features.
+{Vi does not have profiling}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロファイリングとは、関数やスクリプトの実行にかかる時間を計測することである。これを行うには |+profile| 機能が必要である。この機能は "huge" 機能つきでコンパイルしたときだけ含まれる。
+
+@{Vi はプロファイリング機能を持っていない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can also use the |reltime()| function to measure time.  This only requires
+the |+reltime| feature, which is present more often.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+また、関数 |reltime()| を使っても時間を計測できる。この関数には |+reltime| 機能だけが必要である。これは "huge" 以外でもしばしばついてくる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For profiling syntax highlighting see |:syntime|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+シンタックスハイライトのプロファイリングについては |:syntime| を参照せよ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, to profile the one_script.vim script file: >
+	:profile start /tmp/one_script_profile
+	:profile file one_script.vim
+	:source one_script.vim
+	:exit
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、one_script.vim スクリプトファイルをプロファイリングするには:
+@example
+:profile start /tmp/one_script_profile
+:profile file one_script.vim
+:source one_script.vim
+:exit
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+:prof[ile] start {fname}			*:prof* *:profile* *E750*
+		Start profiling, write the output in {fname} upon exit.
+		"~/" and environment variables in {fname} will be expanded.
+		If {fname} already exists it will be silently overwritten.
+		The variable |v:profiling| is set to one.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:prof}
+@anchor{:profile}
+@anchor{E750}
+@cindex :prof
+@cindex :profile
+@cindex E750
+@table @asis
+@item :prof[ile] start @{fname@}
+プロファイリングを開始し、終了時に出力を @{fname@} に出力する。@{fname@} 中の "~/" や環境変数は展開される。@{fname@} がすでに存在するときは、警告なしに上書きされる。変数 |v:profiling| に 1 が代入される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:prof[ile] pause
+		Don't profile until the following ":profile continue".  Can be
+		used when doing something that should not be counted (e.g., an
+		external command).  Does not nest.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :prof[ile] pause
+次項の ":profile pause" が実行されるまでプロファイリングをしない。カウントされるべきでない何かを行う時に使うことができる (例えば外部コマンドなど)。ネストすることはできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:prof[ile] continue
+		Continue profiling after ":profile pause".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :prof[ile] continue
+":profile pause" の後にこれを実行すると、プロファイリングを再開する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:prof[ile] func {pattern}
+		Profile function that matches the pattern {pattern}.
+		See |:debug-name| for how {pattern} is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :prof[ile] func @{pattern@}
+パターン @{pattern@} にマッチする関数をプロファイリングする。@{pattern@} がどう使われるかは |:debug-name| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:prof[ile][!] file {pattern}
+		Profile script file that matches the pattern {pattern}.
+		See |:debug-name| for how {pattern} is used.
+		This only profiles the script itself, not the functions
+		defined in it.
+		When the [!] is added then all functions defined in the script
+		will also be profiled.
+		Note that profiling only starts when the script is loaded
+		after this command.  A :profile command in the script itself
+		won't work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :prof[ile][!] file @{pattern@}
+パターン @{pattern@} にマッチするスクリプトファイルをプロファイリングする。@{pattern@} がどう使われるかは |:debug-name| を参照。このコマンドはスクリプトそのものをプロファイリングするだけで、その中で定義されている関数のプロファイリングは行わない。
+
+[!] がつけられたときは、そのスクリプト中で定義されている全ての関数のプロファイリングも行う。
+@quotation
+@strong{Note:} @*
+スクリプトがこのコマンドの後で読み込まれたときだけ、そのプロファイリングは始まる。スクリプト自身にある @command{:profile} コマンドは働かない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+:profd[el] ...						*:profd* *:profdel*
+		Stop profiling for the arguments specified. See |:breakdel|
+		for the arguments.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:profd}
+@anchor{:profdel}
+@cindex :profd
+@cindex :profdel
+@item :profd[el] ...
+指定された引数に対するプロファイリングを停止する。引数については |:breakdel| を参照。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+You must always start with a ":profile start fname" command.  The resulting
+file is written when Vim exits.  Here is an example of the output, with line
+numbers prepended for the explanation:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初は常に "@samp{:profile start fname}" コマンドで始めなければならない。結果のファイルは Vim が終了するときに書き出される。次に出力の例を挙げる。説明のために行番号が行頭についている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  1 FUNCTION  Test2() ~
+  2 Called 1 time ~
+  3 Total time:   0.155251 ~
+  4  Self time:   0.002006 ~
+  5  ~
+  6 count  total (s)   self (s) ~
+  7	9	       0.000096   for i in range(8) ~
+  8	8   0.153655   0.000410     call Test3() ~
+  9	8	       0.000070   endfor ~
+ 10				  " Ask a question ~
+ 11	1	       0.001341   echo input("give me an answer: ") ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+1 FUNCTION  Test2()
+2 Called 1 time
+3 Total time:   0.155251
+4  Self time:   0.002006
+5
+6 count  total (s)   self (s)
+7     9              0.000096   for i in range(8)
+8     8   0.153655   0.000410     call Test3()
+9     8              0.000070   endfor
+10                              " Ask a question
+11    1              0.001341   echo input("give me an answer: ")
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The header (lines 1-4) gives the time for the whole function.  The "Total"
+time is the time passed while the function was executing.  The "Self" time is
+the "Total" time reduced by time spent in:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ヘッダー (1 行目から 4 行目) は関数全体にかかった時間を示している。"Total" はこの関数を実行している間に経過した時間である。"Self" は "Total" のうち、次のことにかかった時間を引いたものである:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- other user defined functions
+- sourced scripts
+- executed autocommands
+- external (shell) commands
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 他のユーザー定義関数
+@item スクリプトの読み込み
+@item 自動コマンドの実行
+@item 外部 (シェル) プログラム
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Lines 7-11 show the time spent in each executed line.  Lines that are not
+executed do not count.  Thus a comment line is never counted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+7 行目から 11 行目は各実行行にかかった時間を示している。実行されない行はカウントされない。それゆえ、コメント行は決してカウントされない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Count column shows how many times a line was executed.  Note that the
+"for" command in line 7 is executed one more time as the following lines.
+That is because the line is also executed to detect the end of the loop.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Count の桁はその行が何回実行されたかを示す。7 行目の "for" コマンドはそれ以下の行と同様に何回も実行されることに注意すること。これは、ループの終わりを検出するためにこの行が何回も実行されるためである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The time Vim spends waiting for user input isn't counted at all.  Thus how
+long you take to respond to the input() prompt is irrelevant.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザー入力待ちにかかった時間は一切カウントされない。それゆえ、input() のプロンプトに反応するのにどれだけ時間がかかろうとも無関係である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Profiling should give a good indication of where time is spent, but keep in
+mind there are various things that may clobber the results:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロファイリングはどこで時間が費やされたかのよい指標を与えてくれるが、多くの原因によりその結果がごまかされてしまう場合があるということを覚えておくように:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- The accuracy of the time measured depends on the gettimeofday() system
+  function.  It may only be as accurate as 1/100 second, even though the times
+  are displayed in micro seconds.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item
+システム関数 gettimeofday() に依存する時間計測の精度。たとえ時間がマイクロ秒で表示されていたとしても、1/100 秒の精度しかないこともある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Real elapsed time is measured, if other processes are busy they may cause
+  delays at unpredictable moments.  You may want to run the profiling several
+  times and use the lowest results.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+実経過時間が計測される。他のプロセスがビジーであると、それが予測できない箇所で遅れを引き起こす可能性がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- If you have several commands in one line you only get one time.  Split the
+  line to see the time for the individual commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+1 行に複数のコマンドを書いていると、1 つの時間しか得られない。ここのコマンドに対して時間を見るにはその行を分割すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- The time of the lines added up is mostly less than the time of the whole
+  function.  There is some overhead in between.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+各行の時間の総和をとると、たいてい関数全体の時間より小さくなる。各行の間にオーバーヘッドがある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Functions that are deleted before Vim exits will not produce profiling
+  information.  You can check the |v:profiling| variable if needed: >
+	:if !v:profiling
+	:   delfunc MyFunc
+	:endif
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+Vim が終了する前に削除された関数はプロファイリング情報を生成しない。必要なら変数 |v:profiling| をチェックすること:
+@verbatim
+:if !v:profiling
+:   delfunc MyFunc
+:endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Profiling may give weird results on multi-processor systems, when sleep
+  mode kicks in or the processor frequency is reduced to save power.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+マルチプロセッサーシステム上では、スリープモードが作動したときや、省力のためプロセッサーの周波数が下がったとき、プロファイリングが奇妙な結果を出すかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- The "self" time is wrong when a function is used recursively.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+関数が再帰的に呼ばれた場合、"self" 時間は正しくない。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
