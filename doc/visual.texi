@@ -1,0 +1,1448 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node visual.txt, , , 目次
+@unnumbered ビジュアルモード (テキストの選択)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*visual.txt*    For Vim version 8.0.  Last change: 2014 Mar 23
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*visual.txt*    For Vim バージョン 8.0.  Last change: 2014 Mar 23
+
+
+		VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Visual mode				*Visual* *Visual-mode* *visual-mode*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{Visual}
+@anchor{Visual-mode}
+@anchor{visual-mode}
+@cindex Visual
+@cindex Visual-mode
+@cindex visual-mode
+ビジュアルモード
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Visual mode is a flexible and easy way to select a piece of text for an
+operator.  It is the only way to select a block of text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビジュアルモードは利用者にとってテキストの部分を選択する柔軟で簡単な方法である。矩形 (くけい) 範囲のテキスト (ブロック) を選択する唯一の方法でもある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is introduced in section |04.4| of the user manual.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザーマニュアルの |@ref{04.4, , 04.4}| で簡単に説明されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Using Visual mode			|visual-use|
+2. Starting and stopping Visual mode	|visual-start|
+3. Changing the Visual area		|visual-change|
+4. Operating on the Visual area		|visual-operators|
+5. Blockwise operators			|blockwise-operators|
+6. Repeating				|visual-repeat|
+7. Examples				|visual-examples|
+8. Select mode				|Select-mode|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. ビジュアルモードを使う @tab |@ref{visual-use, , visual-use}|
+@item 2. ビジュアルモードの開始と終了 @tab |@ref{visual-start, , visual-start}|
+@item 3. ビジュアル領域の変更 @tab |@ref{visual-change, , visual-change}|
+@item 4. ビジュアル領域での操作 @tab |@ref{visual-operators, , visual-operators}|
+@item 5. 矩形範囲の操作 @tab |@ref{blockwise-operators, , blockwise-operators}|
+@item 6. 繰り返し @tab |@ref{visual-repeat, , visual-repeat}|
+@item 7. 使用例 @tab |@ref{visual-examples, , visual-examples}|
+@item 8. 選択モード @tab |@ref{Select-mode, , Select-mode}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi has no Visual mode, the name "visual" is used for Normal mode, to
+distinguish it from Ex mode}
+{Since Vim 7.4.200 the |+visual| feature is always included}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはビジュアルモードは無く、"visual" という名前はExモードとは区別するために、ノーマルモードを指して使われている@}
+
+@{Vim 7.4.200 からは |+visual| 機能は常に含まれる@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Using Visual mode					*visual-use*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{visual-use}
+@cindex visual-use
+@section 1. ビジュアルモードを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Using Visual mode consists of three parts:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビジュアルモードを使うには 3 つの部分から構成される:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. Mark the start of the text with "v", "V" or CTRL-V.
+   The character under the cursor will be used as the start.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item
+選択したいテキストの開始位置を "v"、"V" または @kbd{CTRL-V} でマークする。カーソルの下の文字が開始位置として使用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+2. Move to the end of the text.
+   The text from the start of the Visual mode up to and including the
+   character under the cursor is highlighted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+選択したいテキストの終了位置に移動する。ビジュアルモードの開始位置からカーソルの下の文字を含むテキストが強調される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+3. Type an operator command.
+   The highlighted characters will be operated upon.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+操作キー(オペレータ)を押す。強調された文字が操作対象になる。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'highlight' option can be used to set the display mode to use for
+highlighting in Visual mode.
+The 'virtualedit' option can be used to allow positioning the cursor to
+positions where there is no actual character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビジュアルモードでの強調表示の仕方を設定するのに、'@option{highlight}' オプションを使用することができる。
+
+文字のない場所を選択するには '@option{virtualedit}' を設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The highlighted text normally includes the character under the cursor.
+However, when the 'selection' option is set to "exclusive" and the cursor is
+after the Visual area, the character under the cursor is not included.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+強調されたテキストにはカーソルの下の文字も含まれる。けれども、'@option{selection}' オプションが "@var{exclusive}" に設定されていて、カーソルが Visual エリアの後にあるとき、カーソルの下の文字は含まれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+With "v" the text before the start position and after the end position will
+not be highlighted.  However, all uppercase and non-alpha operators, except
+"~" and "U", will work on whole lines anyway.  See the list of operators
+below.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"v" では開始位置より前と、終了位置より後のテキストは強調されない。しかし全ての大文字とアルファベット以外のキーによる操作は、"~" と "U" を除いて、表示に関係なく行単位で働く。下記の操作一覧を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*visual-block*
+With CTRL-V (blockwise Visual mode) the highlighted text will be a rectangle
+between start position and the cursor.  However, some operators work on whole
+lines anyway (see the list below).  The change and substitute operators will
+delete the highlighted text and then start insertion at the top left
+position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{visual-block}
+@cindex visual-block
+@kbd{CTRL-V} (矩形ビジュアルモード) は開始位置からカーソルの位置まで、テキストを矩形に強調する。しかし、幾つかの操作 (下記のリストを参照) はそれとは関係無く行単位で適用される。「変更」と「置き換え」の操作は強調されたテキストを削除し、選択範囲の左上より挿入を開始する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Starting and stopping Visual mode			*visual-start*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{visual-start}
+@cindex visual-start
+@section 2. ビジュアルモードの開始と終了
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*v* *characterwise-visual*
+[count]v		Start Visual mode per character.
+			With [count] select the same number of characters or
+			lines as used for the last Visual operation, but at
+			the current cursor position, multiplied by [count].
+			When the previous Visual operation was on a block both
+			the width and height of the block are multiplied by
+			[count].
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v}
+@anchor{characterwise-visual}
+@cindex v
+@cindex characterwise-visual
+@table @asis
+@item [count]v
+文字単位のビジュアルモードを開始する。[count] を指定すると、最後に実行したビジュアル操作の文字数または行数が選択される。ただし、選択位置は現在のカーソル位置であり、[count] を掛けた値が選択される。最後のビジュアル操作が矩形選択なら、幅と高さが [count] 倍される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			When there was no previous Visual operation [count]
+			characters are selected.  This is like moving the
+			cursor right N * [count] characters.  One less when
+			'selection' is not "exclusive".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最後に実行したビジュアル操作がない場合は、[count] 文字が選択される。つまり、カーソルを右に [count] 文字動かした範囲が選択される。'@option{selection}' が "@var{exclusive}" でない場合は 1 文字少なくなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*V* *linewise-visual*
+[count]V		Start Visual mode linewise.
+			With [count] select the same number of lines as used
+			for the last Visual operation, but at the current
+			cursor position, multiplied by [count].  When there
+			was no previous Visual operation [count] lines are
+			selected.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{V}
+@anchor{linewise-visual}
+@cindex V
+@cindex linewise-visual
+@item [count]V
+行単位のビジュアルモードを開始する。[count] を指定すると、最後のビジュアル操作と同じモードで同じ行数を選択する。ただし、現在の位置で選択を開始し、行数に [count] を掛ける。最後に実行したビジュアル操作がない場合は、[count] 行数が選択される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*CTRL-V* *blockwise-visual*
+[count]CTRL-V		Start Visual mode blockwise.  Note: Under Windows
+			CTRL-V could be mapped to paste text, it doesn't work
+			to start Visual mode then, see |CTRL-V-alternative|.
+			[count] is used as with `v` above.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-V}
+@anchor{blockwise-visual}
+@cindex CTRL-V
+@cindex blockwise-visual
+@item [count]CTRL-V
+矩形ビジュアルモードを開始する。
+@quotation
+@strong{Note:} @*
+Windows では @kbd{CTRL-V} はテキストの貼り付けにマップされることがあり、その際にはビジュアルモードを開始できない。|CTRL-V-alternative| を参照。
+@end quotation
+[count] を指定した場合は、上記の `v` と同様。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you use <Esc>, click the left mouse button or use any command that
+does a jump to another buffer while in Visual mode, the highlighting stops
+and no text is affected.  Also when you hit "v" in characterwise Visual mode,
+"CTRL-V" in blockwise Visual mode or "V" in linewise Visual mode.  If you hit
+CTRL-Z the highlighting stops and the editor is suspended or a new shell is
+started |CTRL-Z|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビジュアルモードの最中に @key{<Esc>} を使用したり、マウスの右ボタンをクリックしたり、または他のバッファに移動するコマンドを使用した場合には、強調は停止しテキストには何の操作も行われない。文字単位のビジュアルモード中に "v" を叩いた時や、矩形ビジュアルモード時の "@kbd{CTRL-V}"、行単位のビジュアルモードでの "V" も同様である。@kbd{CTRL-Z} を押すと強調は停止し、エディタが一時停止するか新しいシェルが開始される |CTRL-Z|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	      new mode after typing:		*v_v* *v_CTRL-V* *v_V*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_v}
+@anchor{v_CTRL-V}
+@anchor{v_V}
+@cindex v_v
+@cindex v_CTRL-V
+@cindex v_V
+タイプ後の新モード:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+old mode	     "v"	      "CTRL-V"		     "V"	~
+
+Normal		    Visual	   blockwise Visual	  linewise Visual
+Visual		    Normal	   blockwise Visual	  linewise Visual
+blockwise Visual    Visual	   Normal		  linewise Visual
+linewise Visual     Visual	   blockwise Visual	  Normal
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .25 .25 .25
+@headitem 旧モード @tab "v" @tab "CTRL-V" @tab "V"
+@item ノーマル @tab ビジュアル @tab 矩形ビジュアル @tab 行ビジュアル
+@item ビジュアル @tab ノーマル @tab 矩形ビジュアル @tab 行ビジュアル
+@item 矩形ビジュアル @tab ビジュアル @tab ノーマル @tab 行ビジュアル
+@item 行ビジュアル @tab ビジュアル @tab 矩形ビジュアル @tab ノーマル
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*gv* *v_gv* *reselect-Visual*
+gv			Start Visual mode with the same area as the previous
+			area and the same mode.
+			In Visual mode the current and the previous Visual
+			area are exchanged.
+			After using "p" or "P" in Visual mode the text that
+			was put will be selected.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gv}
+@anchor{v_gv}
+@anchor{reselect-Visual}
+@cindex gv
+@cindex v_gv
+@cindex reselect-Visual
+@table @asis
+@item gv
+最後に使用したのと同じ範囲のビジュアルモードを開始する。ビジュアルモードで使用すると、現在の選択領域と以前のものとが交換される。ビジュアルモードで "p" や "P" を実行した後にこれを使うと、プットしたテキストが選択される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								*gn* *v_gn*
+gn			Search forward for the last used search pattern, like
+			with `n`, and start Visual mode to select the match.
+			If the cursor is on the match, visually selects it.
+			If an operator is pending, operates on the match.
+			E.g., "dgn" deletes the text of the next match.
+			If Visual mode is active, extends the selection
+			until the end of the next match.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gn}
+@anchor{v_gn}
+@cindex gn
+@cindex v_gn
+@item gn
+最後に使われた検索パターンを前方検索し (`n` のように)、マッチしたものを選択してビジュアルモードを開始する。カーソルがマッチの上にあるときは、それをビジュアル選択する。
+
+オペレータ待ちのときは、マッチに対してオペレータを実行する。例: "dgn" は次のマッチを削除する。すでにビジュアルモードなら、次のマッチの末尾まで選択範囲を拡大する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								*gN* *v_gN*
+gN			Like |gn| but searches backward, like with `N`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gN}
+@anchor{v_gN}
+@cindex gN
+@cindex v_gN
+@item gN
+|gn| と同じだが、後方検索する (`N` のように)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*<LeftMouse>*
+<LeftMouse>		Set the current cursor position.  If Visual mode is
+			active it is stopped.  Only when 'mouse' option is
+			contains 'n' or 'a'.  If the position is within 'so'
+			lines from the last line on the screen the text is
+			scrolled up.  If the position is within 'so' lines from
+			the first line on the screen the text is scrolled
+			down.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<LeftMouse>}
+@cindex <LeftMouse>
+@item <LeftMouse>
+現在のカーソル位置を設定する。ビジュアルモードが活動中の場合は停止する。オプション 'mouse' が 'n' もしくは 'a' を含むときだけ働く。指定した位置がスクリーンの下端から 'so' 行以内の時にはテキストがスクロールアップする。指定した位置がスクリーンの上端から 'so' 行以内の時にはテキストがスクロールダウンする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*<RightMouse>*
+<RightMouse>		Start Visual mode if it is not active.  The text from
+			the cursor position to the position of the click is
+			highlighted.  If Visual mode was already active move
+			the start or end of the highlighted text, which ever
+			is closest, to the position of the click.  Only when
+			'mouse' option contains 'n' or 'a'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<RightMouse>}
+@cindex <RightMouse>
+@item <RightMouse>
+ビジュアルモードが活動していないのならば開始する。カーソルの位置からクリックした位置までのテキストが強調される。ビジュアルモードが既に活動しているならば、開始位置か終了位置のどちらか近いほうがクリックした位置になる。オプション '@option{mouse}' が '@var{n}' もしくは '@var{a}' を含むときだけ働く。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Note: when 'mousemodel' is set to "popup",
+			<S-LeftMouse> has to be used instead of <RightMouse>.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+'@option{mousemodel}' が "@var{popup}" の時には <RightMouse> の代わりに <S-LeftMouse> を使用する。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*<LeftRelease>*
+<LeftRelease>		This works like a <LeftMouse>, if it is not at
+			the same position as <LeftMouse>.  In an older version
+			of xterm you won't see the selected area until the
+			button is released, unless there is access to the
+			display where the xterm is running (via the DISPLAY
+			environment variable or the -display argument).  Only
+			when 'mouse' option contains 'n' or 'a'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<LeftRelease>}
+@cindex <LeftRelease>
+@item <LeftRelease>
+<LeftMouse> と同じ位置でなければ、これは <LeftMouse> のように働く。古い xterm では実行されているディスプレイ (環境変数 @env{DISPLAY} もしくは -display 引数による) へのアクセスが無い限り、xterm 上ではボタンが離されるまで選択領域を見ることはできない。'@option{mouse}' オプションが '@var{n}' もしくは '@var{a}' を含むときだけ働く。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If Visual mode is not active and the "v", "V" or CTRL-V is preceded with a
+count, the size of the previously highlighted area is used for a start.  You
+can then move the end of the highlighted area and give an operator.  The type
+of the old area is used (character, line or blockwise).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビジュアルモードが活動していない時に "v"、"V" もしくは @kbd{CTRL-V} が数字 (カウント) の後に使用されると、以前の強調領域の大きさが開始位置から使用される。その時カーソルは強調領域の終了位置へ移動し通常の操作を行うことができる。領域の形式 (文字、行、矩形) は過去のものが使用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Linewise Visual mode: The number of lines is multiplied with the count.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 行ビジュアルモード: 行数がカウント倍される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Blockwise Visual mode: The number of lines and columns is multiplied with
+  the count.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 矩形ビジュアルモード: 行数とカラム数がカウント倍される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Normal Visual mode within one line: The number of characters is multiplied
+  with the count.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 1 行内の通常ビジュアルモード: 文字数がカウント倍される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Normal Visual mode with several lines: The number of lines is multiplied
+  with the count, in the last line the same number of characters is used as
+  in the last line in the previously highlighted area.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 複数行にまたがる通常ビジュアルモード: 行数がカウント倍され、最終行だけは前回の強調領域の最終行と同じ文字数が使用される。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The start of the text is the Cursor position.  If the "$" command was used as
+one of the last commands to extend the highlighted text, the area will be
+extended to the rightmost column of the longest line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストの開始位置はカーソルの位置となる。強調テキストを拡張するための最後のコマンドとして "$" コマンドが使用された場合、領域は最長の行の最右端のカラムまで拡張される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to highlight exactly the same area as the last time, you can use
+"gv" |gv| |v_gv|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+前回の時と全く同じ領域を強調したいときには、"gv" を使用できる |gv| |v_gv|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_<Esc>*
+<Esc>			In Visual mode: Stop Visual mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_<Esc>}
+@cindex v_<Esc>
+@table @asis
+@item <Esc>
+ビジュアルモード時: ビジュアルモードを停止する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_CTRL-C*
+CTRL-C			In Visual mode: Stop Visual mode.  When insert mode is
+			pending (the mode message shows
+			"-- (insert) VISUAL --"), it is also stopped.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_CTRL-C}
+@cindex v_CTRL-C
+@item CTRL-C
+ビジュアルモード時: ビジュアルモードを停止する。挿入モードがぶら下がっている時には (モードメッセージが "@samp{-- (insert) VISUAL --}" となる)、そちらも終了する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Changing the Visual area				*visual-change*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{visual-change}
+@cindex visual-change
+@section 3. ビジュアル領域の変更
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_o*
+o			Go to Other end of highlighted text: The current
+			cursor position becomes the start of the highlighted
+			text and the cursor is moved to the other end of the
+			highlighted text.  The highlighted area remains the
+			same.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_o}
+@cindex v_o
+@table @asis
+@item o
+強調されたテキストのもう一方の端へ移動する: 現在のカーソルの位置が強調されたテキストの開始地点になり、カーソルは強調されたテキストのもう一方の端に移動する。強調された領域は同じままに保たれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_O*
+O			Go to Other end of highlighted text.  This is like
+			"o", but in Visual block mode the cursor moves to the
+			other corner in the same line.  When the corner is at
+			a character that occupies more than one position on
+			the screen (e.g., a <Tab>), the highlighted text may
+			change.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_O}
+@cindex v_O
+@item O
+強調されたテキストのもう一方の端へ移動する: これは "o" に近い動作だが、矩形ビジュアルモードではカーソルが同じ行内のもう一方のコーナーに移動する。移動した先のキャラクタが画面上で 1 つ以上の文字幅を占有している場合 (例えば <Tab> 文字)、強調される範囲は変更・拡張される。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*v_$*
+When the "$" command is used with blockwise Visual mode, the right end of the
+highlighted text will be determined by the longest highlighted line.  This
+stops when a motion command is used that does not move straight up or down.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_$}
+@cindex v_$
+矩形ビジュアルモード時に "$" コマンドを使用すると、選択されるテキストの右終端は選択されているラインのうち一番長いものによって決定される。この状態は水平方向への移動コマンドを使うことで終了する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For moving the end of the block many commands can be used, but you cannot
+use Ex commands, commands that make changes or abandon the file.  Commands
+(starting with) ".", "&", CTRL-^, "Z", CTRL-], CTRL-T, CTRL-R, CTRL-I
+and CTRL-O cause a beep and Visual mode continues.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ブロックの終端へ移動するために色々なコマンドを使うことができるが、Ex コマンド、変更を加えるコマンド、もしくはファイルを放棄するコマンドは使用できない。次の文字で開始するコマンド "@command{.}", "@command{&}", @kbd{CTRL-^}, "@command{Z}", @kbd{CTRL-]}, @kbd{CTRL-T}, @kbd{CTRL-R}, @kbd{CTRL-I}, @kbd{CTRL-O} を使用するとブザー音が発生し、ビジュアルモードが継続される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When switching to another window on the same buffer, the cursor position in
+that window is adjusted, so that the same Visual area is still selected.  This
+is especially useful to view the start of the Visual area in one window, and
+the end in another.  You can then use <RightMouse> (or <S-LeftMouse> when
+'mousemodel' is "popup") to drag either end of the Visual area.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同じバッファを表示している別のウィンドウに切り替えるとき、そのウィンドウのカーソル位置はビジュアル選択に合わせて調整される。これは特にビジュアル選択の開始位置や終了位置を確認するのに便利である。選択範囲を変更するのに <RightMouse> が使える。('@option{mousemodel}' が "@var{popup}" に設定されているときは <S-LeftMouse>)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Operating on the Visual area				*visual-operators*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{visual-operators}
+@cindex visual-operators
+@section 4. ビジュアル領域での操作
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The operators that can be used are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+施すことのできる操作:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	~	switch case					|v_~|
+	d	delete						|v_d|
+	c	change (4)					|v_c|
+	y	yank						|v_y|
+	>	shift right (4)					|v_>|
+	<	shift left (4)					|v_<|
+	!	filter through external command (1)		|v_!|
+	=	filter through 'equalprg' option command (1)	|v_=|
+	gq	format lines to 'textwidth' length (1)		|v_gq|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .75 .15
+@item ~ @tab 大/小文字の切替 @tab |v_~|
+@item d @tab 削除 @tab |v_d|
+@item c @tab 変更 (4) @tab |v_c|
+@item y @tab ヤンク @tab |v_y|
+@item > @tab 右シフト (4) @tab |v_>|
+@item < @tab 左シフト (4) @tab |v_<|
+@item ! @tab 外部コマンドによるフィルタ (1) @tab |v_!|
+@item = @tab 'equalprg' オプションで指定されたフィルタ (1) @tab |v_=|
+@item gq @tab 'textwidth' の長さによる行の整形 (1) @tab |v_gq|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The objects that can be used are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使用できるオブジェクト:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	aw	a word (with white space)			|v_aw|
+	iw	inner word					|v_iw|
+	aW	a WORD (with white space)			|v_aW|
+	iW	inner WORD					|v_iW|
+	as	a sentence (with white space)			|v_as|
+	is	inner sentence					|v_is|
+	ap	a paragraph (with white space)			|v_ap|
+	ip	inner paragraph					|v_ip|
+	ab	a () block (with parenthesis)			|v_ab|
+	ib	inner () block					|v_ib|
+	aB	a {} block (with braces)			|v_aB|
+	iB	inner {} block					|v_iB|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .7 .2
+@item aw @tab (空白文字を含む) 1語 @{訳注: |word|@} @tab |v_aw|
+@item iw @tab 1 語 @{訳注: |word|@} @tab |v_iw|
+@item aW @tab (空白文字を含む) 1 語 @{訳注: |WORD|@} @tab |v_aW|
+@item iW @tab 1 語 @{訳注: |WORD|@} @tab |v_iW|
+@item as @tab (空白文字を含む) 1 文 @tab |v_as|
+@item is @tab 1 文 @tab |v_is|
+@item ap @tab (空白文字を含む) 1 段落 @tab |v_ap|
+@item ip @tab 1 段落 @tab |v_ip|
+@item ab @tab (丸括弧文字を含む) () のブロック @tab |v_ab|
+@item ib @tab () のブロックの中身 @tab |v_ib|
+@item aB @tab (波括弧文字を含む) @{@} のブロック @tab |v_aB|
+@item iB @tab @{@} のブロックの中身 @tab |v_iB|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	at	a <tag> </tag> block (with tags)		|v_at|
+	it	inner <tag> </tag> block			|v_it|
+	a<	a <> block (with <>)				|v_a<|
+	i<	inner <> block					|v_i<|
+	a[	a [] block (with [])				|v_a[|
+	i[	inner [] block					|v_i[|
+	a"	a double quoted string (with quotes)		|v_aquote|
+	i"	inner double quoted string			|v_iquote|
+	a'	a single quoted string (with quotes)		|v_a'|
+	i'	inner simple quoted string			|v_i'|
+	a`	a string in backticks (with backticks)		|v_a`|
+	i`	inner string in backticks			|v_i`|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item at @tab (タグ自身を含む) <tag> </tag> ブロック @tab |v_at|
+@item it @tab <tag> </tag> ブロックの中身 @tab |v_it|
+@item a< @tab (大小記号文字を含む) <> のブロック @tab |v_a<|
+@item i< @tab <> のブロックの中身 @tab |v_i<|
+@item a[ @tab (角括弧文字を含む) [] のブロック @tab |v_a[|
+@item i] @tab [] のブロックの中身 @tab |v_i[|
+@item a" @tab (クォートを含む) ダブルクォート文字列 @tab |v_aquote|
+@item i" @tab ダブルクォート文字列の中身 @tab |v_iquote|
+@item a' @tab (クォートを含む) シングルクォート文字列 @tab |v_a'|
+@item i' @tab シングルクォート文字列の中身 @tab |v_i'|
+@item a` @tab (backtick を含む) backtick 文字列 @tab |v_a`|
+@item i` @tab backtick 文字列の中身 @tab |v_i`|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Additionally the following commands can be used:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+加えて、以下のコマンドが使用可能:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:	start Ex command for highlighted lines (1)	|v_:|
+	r	change (4)					|v_r|
+	s	change						|v_s|
+	C	change (2)(4)					|v_C|
+	S	change (2)					|v_S|
+	R	change (2)					|v_R|
+	x	delete						|v_x|
+	D	delete (3)					|v_D|
+	X	delete (2)					|v_X|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .7 .2
+@item : @tab 強調された行に Ex コマンドを適用 (1) @tab |v_:|
+@item r @tab 変更 (4) @tab |v_r|
+@item s @tab 変更 @tab |v_s|
+@item C @tab 変更 (2)(4) @tab |v_C|
+@item S @tab 変更 (2) @tab |v_S|
+@item R @tab 変更 (2) @tab |v_R|
+@item x @tab 削除 @tab |v_x|
+@item D @tab 削除 (3) @tab |v_D|
+@item X @tab 削除 (2) @tab |v_X|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Y	yank (2)					|v_Y|
+	p	put						|v_p|
+	J	join (1)					|v_J|
+	U	make uppercase					|v_U|
+	u	make lowercase					|v_u|
+	^]	find tag					|v_CTRL-]|
+	I	block insert					|v_b_I|
+	A	block append					|v_b_A|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item Y @tab ヤンク (2) @tab |v_Y|
+@item p @tab 貼り付け @tab |v_p|
+@item J @tab 連結 (1) @tab |v_J|
+@item U @tab 大文字化 @tab |v_U|
+@item u @tab 小文字化 @tab |v_u|
+@item ^] @tab タグ検索 @tab |v_CTRL-]|
+@item I @tab ブロック挿入 @tab |v_b_I|
+@item A @tab ブロック追加 @tab |v_b_A|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+(1): Always whole lines, see |:visual_example|.
+(2): Whole lines when not using CTRL-V.
+(3): Whole lines when not using CTRL-V, delete until the end of the line when
+     using CTRL-V.
+(4): When using CTRL-V operates on the block only.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .9
+@item (1): @tab 常に全部の行、|:visual_example| を参照。
+@item (2): @tab CTRL-V を使ってないときは全部の行。
+@item (3): @tab CTRL-V を使ってないときは全部の行、CTRL-V を使っているときは行の最後までを削除。
+@item (4): @tab CTRL-V を使っているときにはブロックにのみ作用。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the ":vmap" command can be used to specifically map keys in Visual
+mode.  For example, if you would like the "/" command not to extend the Visual
+area, but instead take the highlighted text and search for that: >
+	:vmap / y/<C-R>"<CR>
+(In the <> notation |<>|, when typing it you should type it literally; you
+need to remove the 'B' and '<' flags from 'cpoptions'.)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビジュアルモードでは特別なキー割り当てを行うために "@command{:vmap}" コマンドを使うことができることに注意。例えば、"/" をビジュアル領域を拡張するのではなくて、選択したテキストによる検索を行わせたい場合には:
+@example
+:vmap / y/<C-R>"<CR>
+@end example
+(<> 表記 |<>| の中身は、これを入力する時には文字通り入力すれば良い; ただし '@option{cpoptions}' から '@var{B}' と '@option{<}' のフラグを外しておく必要がある)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to give a register name using the """ command, do this just before
+typing the operator character: "v{move-around}"xd".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+""" コマンドを使用してレジスタ名を指定したい場合には、操作キーを入力する前にタイプする: "v@{move-around@}"xd"。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to give a count to the command, do this just before typing the
+operator character: "v{move-around}3>" (move lines 3 indents to the right).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドの回数を指定したい場合には、操作キーを入力する前にタイプする: "v@{move-around@}3>" (行を 3 単位、右へインデントする)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*{move-around}*
+The {move-around} is any sequence of movement commands.  Note the difference
+with {motion}, which is only ONE movement command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{@{move-around@}}
+@cindex @{move-around@}
+@{move-around@} は一連の移動コマンドのシーケンス。1 つの移動コマンドを意味する @{motion@} とは異なるので注意。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Another way to operate on the Visual area is using the |/\%V| item in a
+pattern.  For example, to replace all '(' in the Visual area with '#': >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビジュアル領域に対して操作を行うもう 1 つの方法は、パターンにアイテム |/\%V| を含めることがある。例えば、ビジュアル領域内のすべての '(' を 'X' に置換するには:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:'<,'>s/\%V(/#/g
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:'<,'>s/\%V(/#/g
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the "'<,'>" will appear automatically when you press ":" in Visual
+mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"'<,'>" はビジュアルモードで ":" を押すと自動的に挿入される。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Blockwise operators					*blockwise-operators*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{blockwise-operators}
+@cindex blockwise-operators
+@section 5. 矩形範囲の操作
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{not available when compiled without the |+visualextra| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{|+visualextra| 機能を無効にしてコンパイルした場合には利用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Reminder: Use 'virtualedit' to be able to select blocks that start or end
+after the end of a line or halfway a tab.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+参考: '@option{virtualedit}' オプションを設定して、行末を越えた選択や、Tab 文字の (表示上の) 途中での選択ができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Visual-block Insert						*v_b_I*
+With a blockwise selection, I{string}<ESC> will insert {string} at the start
+of block on every line of the block, provided that the line extends into the
+block.  Thus lines that are short will remain unmodified.  TABs are split to
+retain visual columns.
+See |v_b_I_example|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_b_I}
+@cindex v_b_I
+@unnumberedsubsec 矩形ビジュアル挿入
+矩形選択中に、I@{文字列@}<ESC> を行うとブロック内の全ての行のブロック先頭にその文字列が挿入され、行の長さはその分拡張される。選択ブロックの左側のカラムより短い行は変更されない。タブは見た目のカラムを保つように分解される。|v_b_I_example| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Visual-block Append						*v_b_A*
+With a blockwise selection, A{string}<ESC> will append {string} to the end of
+block on every line of the block.  There is some differing behavior where the
+block RHS is not straight, due to different line lengths:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_b_A}
+@cindex v_b_A
+@unnumberedsubsec 矩形ビジュアル追加
+矩形選択中に、A@{文字列@}<ESC> を行うとブロック内の全ての行のブロック末尾にその文字列が挿入される。ブロックの右端が真っ直ぐでない時には、行の長さの違いによって異なる動作がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Block was created with <C-v>$
+    In this case the string is appended to the end of each line.
+2. Block was created with <C-v>{move-around}
+    In this case the string is appended to the end of the block on each line,
+    and whitespace is inserted to pad to the end-of-block column.
+See |v_b_A_example|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item ブロックが <C-v>$ で作成された場合 @*
+このケースでは各行の最後に文字列が追加される。
+@item ブロックが <C-v>@{move-around@} で作成された場合 @*
+このケースではブロック内の各行のブロック末尾に文字列が追加され、行長が拡張される。さらにブロックの末尾を揃えるために空白文字が挿入される。
+@end enumerate
+|v_b_A_example|を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Note: "I" and "A" behave differently for lines that don't extend into the
+selected block.  This was done intentionally, so that you can do it the way
+you want.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"I" と "A" は変更によって行が拡張されるときに違う動作をする。これはわざとそうなっていて、あなたがしたいようにできる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Visual-block change						*v_b_c*
+All selected text in the block will be replaced by the same text string.  When
+using "c" the selected text is deleted and Insert mode started.  You can then
+enter text (without a line break).  When you hit <Esc>, the same string is
+inserted in all previously selected lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_b_c}
+@cindex v_b_c
+@unnumberedsubsec 矩形ビジュアル変更
+矩形選択されたテキストの全てが同じテキスト文字列によって置き換えられる。"c" を押した時には選択されたテキストが消去された後に挿入モードに入る。テキスト (改行を除く) を入力できる。@key{<Esc>} を叩くと、選択されていた行全てに同じ文字列が入力される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Visual-block Change						*v_b_C*
+Like using "c", but the selection is extended until the end of the line for
+all lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_b_C}
+@cindex v_b_C
+@unnumberedsubsec 矩形ビジュアル変更 (大文字)
+小文字の "c" と同様だが、選択領域が各行の末尾まで拡張される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								*v_b_<*
+Visual-block Shift						*v_b_>*
+The block is shifted by 'shiftwidth'.  The RHS of the block is irrelevant.  The
+LHS of the block determines the point from which to apply a right shift, and
+padding includes TABs optimally according to 'ts' and 'et'.  The LHS of the
+block determines the point upto which to shift left.
+See |v_b_>_example|.
+See |v_b_<_example|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_b_<}
+@anchor{v_b_>}
+@cindex v_b_<
+@cindex v_b_>
+@unnumberedsubsec 矩形ビジュアルシフト
+ブロックが '@option{shiftwidth}' によりシフトされる。ブロックの右端には拠らない。ブロックの左端がどのポイントから右シフトを適用するかを決定し、'ts' と 'et' に従い最適なタブ文字が埋め込まれる (パディング)。ブロックの左端が何処まで左シフトするかを決定する。|v_b_>_example|を参照。|v_b_<_example|を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Visual-block Replace						*v_b_r*
+Every screen char in the highlighted region is replaced with the same char, ie
+TABs are split and the virtual whitespace is replaced, maintaining screen
+layout.
+See |v_b_r_example|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_b_r}
+@cindex v_b_r
+@unnumberedsubsec 矩形ビジュアル置換
+強調された領域の全ての画面上の文字が同じ文字で置き換えられ、タブ文字は画面上のレイアウトを保持するために仮想的な空白文字に置き換えられる。|v_b_r_example| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+6. Repeating						*visual-repeat*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{visual-repeat}
+@cindex visual-repeat
+@section 6. 繰り返し
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When repeating a Visual mode operator, the operator will be applied to the
+same amount of text as the last time:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビジュアルモードの操作を繰り返して行う時には、最後の時と同じ量のテキストに対して操作が適用されている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Linewise Visual mode: The same number of lines.
+- Blockwise Visual mode: The same number of lines and columns.
+- Normal Visual mode within one line: The same number of characters.
+- Normal Visual mode with several lines: The same number of lines, in the
+  last line the same number of characters as in the last line the last time.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 行ビジュアルモード: 同じ行数
+@item 矩形ビジュアルモード: 同じ行数とカラム数
+@item 1 行内の通常ビジュアルモード: 同じ文字数
+@item 複数行にまたがる通常ビジュアルモード: 同じ行数で、最終行だけは前回の時の最終行と同じ文字数。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The start of the text is the Cursor position.  If the "$" command was used as
+one of the last commands to extend the highlighted text, the repeating will
+be applied up to the rightmost column of the longest line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストの開始位置は現在の位置となる。最後のコマンドとして強調されたテキストを拡張するために "$" が使用された場合には、繰り返されるコマンドへは一番長い行の右端のカラムが適用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+7. Examples						*visual-examples*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{visual-examples}
+@cindex visual-examples
+@section 7. 使用例
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:visual_example*
+Currently the ":" command works on whole lines only.  When you select part of
+a line, doing something like ":!date" will replace the whole line.  If you
+want only part of the line to be replaced you will have to make a mapping for
+it.  In a future release ":" may work on partial lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:visual_example}
+現在 "@command{:}" コマンドは行全体に対して働くだけである。行の一部を選択して、"@command{:!date}" のような何かを行っても1行全体が置換わってしまう。行の一部だけを置き換えたい場合には何かマッピングのようなものを作らなければならないだろう。将来のリリースでは "@command{:}" は部分的に動作するようになるだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here is an example, to replace the selected text with the output of "date": >
+	:vmap _a <Esc>`>a<CR><Esc>`<i<CR><Esc>!!date<CR>kJJ
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ここに 1 つ、選択されたテキストを "date" の出力に置き換える例がある:
+@example
+:vmap _a <Esc>`>a<CR><Esc>`<i<CR><Esc>!!date<CR>kJJ
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+(In the <> notation |<>|, when typing it you should type it literally; you
+need to remove the 'B' and '<' flags from 'cpoptions')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+(<> 表記 |<>| の中身は、これを入力する時には文字通り入力すれば良い; ただし '@option{cpoptions}' から '@var{B}' と '@var{<}' のフラグを外しておく必要がある)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+What this does is:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これが何をしているかというと:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<Esc>		stop Visual mode
+`>		go to the end of the Visual area
+a<CR><Esc>	break the line after the Visual area
+`<		jump to the start of the Visual area
+i<CR><Esc>	break the line before the Visual area
+!!date<CR>	filter the Visual text through date
+kJJ		Join the lines back together
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .75
+@item <Esc> @tab ビジュアルモードを終了する
+@item `> @tab 選択領域の最後に移動する
+@item a<CR><Esc> @tab 選択領域の直後に改行を挿入する
+@item `< @tab 選択領域の先頭に移動する
+@item i<CR><Esc> @tab 選択領域の直前に改行を挿入する
+@item !!date<CR> @tab 選択されたテキストを date でフィルタリングする
+@item kJJ @tab 分割した行を連結して 1 つにする
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*visual-search*
+Here is an idea for a mapping that makes it possible to do a search for the
+selected text: >
+	:vmap X y/<C-R>"<CR>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{visual-search}
+@cindex visual-search
+選択したテキストを検索に使用することを可能にするマッピングのアイデアがここにある:
+@example
+:vmap X y/<C-R>"<CR>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+(In the <> notation |<>|, when typing it you should type it literally; you
+need to remove the 'B' and '<' flags from 'cpoptions')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+(<> 表記 |<>| の中身は、これを入力する時には文字通り入力すれば良い; ただし '@option{cpoptions}' から '@var{B}' と '@var{<}' のフラグを外しておく必要がある)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that special characters (like '.' and '*') will cause problems.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特別なキャラクタ('.' や '*' のようなもの)が問題を引き起こすことに注意。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Visual-block Examples					*blockwise-examples*
+With the following text, I will indicate the commands to produce the block and
+the results below.  In all cases, the cursor begins on the 'a' in the first
+line of the test text.
+The following modeline settings are assumed ":ts=8:sw=4:".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{blockwise-examples}
+@cindex blockwise-examples
+@unnumberedsubsec 矩形ビジュアルモードの例
+以下のテキストを使って、矩形モードのコマンドの使用法と結果を示していく。どのケースでも、初めカーソルはテストテキストの最初の行の先頭の 'a' の上にあるものとする。以下、@option{modeline} の設定は "@var{:ts=8:sw=4:}" であることを仮定している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It will be helpful to
+:set hls
+/<TAB>
+where <TAB> is a real TAB.  This helps visualise the operations.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のように設定しておくと理解の助けになるだろう。
+@example
+:set hls
+/<TAB>
+@end example
+<TAB> と書かれている場所は本物のタブに読み替える。これが操作を可視化してくれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The test text is:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テストテキストは:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+abcdefghijklmnopqrstuvwxyz
+abc		defghijklmnopqrstuvwxyz
+abcdef  ghi		jklmnopqrstuvwxyz
+abcdefghijklmnopqrstuvwxyz
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+abcdefghijklmnopqrstuvwxyz
+abc             defghijklmnopqrstuvwxyz
+abcdef  ghi             jklmnopqrstuvwxyz
+abcdefghijklmnopqrstuvwxyz
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. fo<C-v>3jISTRING<ESC>					*v_b_I_example*
+
+abcdefghijklmnSTRINGopqrstuvwxyz
+abc	      STRING  defghijklmnopqrstuvwxyz
+abcdef  ghi   STRING	jklmnopqrstuvwxyz
+abcdefghijklmnSTRINGopqrstuvwxyz
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_b_I_example}
+@cindex v_b_I_example
+@unnumberedsubsubsec 1. fo<C-v>3jISTRING<ESC>
+@verbatim
+abcdefghijklmnSTRINGopqrstuvwxyz
+abc           STRING  defghijklmnopqrstuvwxyz
+abcdef  ghi   STRING    jklmnopqrstuvwxyz
+abcdefghijklmnSTRINGopqrstuvwxyz
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+2. fo<C-v>3j$ASTRING<ESC>					*v_b_A_example*
+
+abcdefghijklmnopqrstuvwxyzSTRING
+abc		defghijklmnopqrstuvwxyzSTRING
+abcdef  ghi		jklmnopqrstuvwxyzSTRING
+abcdefghijklmnopqrstuvwxyzSTRING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_b_A_example}
+@cindex v_b_A_example
+@unnumberedsubsubsec 2. fo<C-v>3j$ASTRING<ESC>
+@verbatim
+abcdefghijklmnopqrstuvwxyzSTRING
+abc             defghijklmnopqrstuvwxyzSTRING
+abcdef  ghi             jklmnopqrstuvwxyzSTRING
+abcdefghijklmnopqrstuvwxyzSTRING
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+3. fo<C-v>3j3l<..						*v_b_<_example*
+
+abcdefghijklmnopqrstuvwxyz
+abc	      defghijklmnopqrstuvwxyz
+abcdef  ghi   jklmnopqrstuvwxyz
+abcdefghijklmnopqrstuvwxyz
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_b_<_example}
+@cindex v_b_<_example
+@unnumberedsubsubsec 3. fo<C-v>3j3l<..
+@verbatim
+abcdefghijklmnopqrstuvwxyz
+abc           defghijklmnopqrstuvwxyz
+abcdef  ghi   jklmnopqrstuvwxyz
+abcdefghijklmnopqrstuvwxyz
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+4. fo<C-v>3j>..							*v_b_>_example*
+
+abcdefghijklmn		  opqrstuvwxyz
+abc			    defghijklmnopqrstuvwxyz
+abcdef  ghi			    jklmnopqrstuvwxyz
+abcdefghijklmn		  opqrstuvwxyz
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_b_>_example}
+@cindex v_b_>_example
+@unnumberedsubsubsec 4. fo<C-v>3j>..
+@verbatim
+abcdefghijklmn                    opqrstuvwxyz
+abc                                 defghijklmnopqrstuvwxyz
+abcdef  ghi                                 jklmnopqrstuvwxyz
+abcdefghijklmn                    opqrstuvwxyz
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+5. fo<C-v>5l3jrX						*v_b_r_example*
+
+abcdefghijklmnXXXXXXuvwxyz
+abc	      XXXXXXhijklmnopqrstuvwxyz
+abcdef  ghi   XXXXXX    jklmnopqrstuvwxyz
+abcdefghijklmnXXXXXXuvwxyz
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v_b_r_example}
+@cindex v_b_r_example
+@unnumberedsubsubsec 5. fo<C-v>5l3jrX
+@verbatim
+abcdefghijklmnXXXXXXuvwxyz
+abc           XXXXXXhijklmnopqrstuvwxyz
+abcdef  ghi   XXXXXX    jklmnopqrstuvwxyz
+abcdefghijklmnXXXXXXuvwxyz
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+8. Select mode						*Select* *Select-mode*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{Select}
+@anchor{Select-mode}
+@cindex Select
+@cindex Select-mode
+@section 8. 選択モード
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Select mode looks like Visual mode, but the commands accepted are quite
+different.  This resembles the selection mode in Microsoft Windows.
+When the 'showmode' option is set, "-- SELECT --" is shown in the last line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+選択モードはビジュアルモードに似ているように見えるが、受け付けるコマンドが少し異なる。これは Microsoft Windows の選択モードに似ている。オプション '@option{showmode}' が設定されている時には、"@samp{-- SELECT --}" が最下の行に表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Entering Select mode:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 選択モードに入るには:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Using the mouse to select an area, and 'selectmode' contains "mouse".
+  'mouse' must also contain a flag for the current mode.
+- Using a non-printable movement command, with the Shift key pressed, and
+  'selectmode' contains "key".  For example: <S-Left> and <S-End>.  'keymodel'
+  must also contain "startsel".
+- Using "v", "V" or CTRL-V command, and 'selectmode' contains "cmd".
+- Using "gh", "gH" or "g_CTRL-H" command in Normal mode.
+- From Visual mode, press CTRL-G.			*v_CTRL-G*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item '@option{selectmode}' が "@var{mouse}" を含んだ状態で、マウスを使って領域を選択する。'@option{mouse}' が現在のモードのフラグを含んでなければならない。
+@item '@option{selectmode}' が "@var{key}" を含んだ状態で、シフトキーを押しながら表示できない移動コマンドを使用する。例えば: <S-Left> や <S-End>。'@option{keymodel}' が "@var{startsel}" を含んでいる必要もある。
+@item '@option{selectmode}' が "@var{cmd}" を含んだ状態で "v", "V" もしくは @kbd{CTRL-V} を使用する。
+@item ノーマルモードで "gh", "gH" もしくは "g_CTRL-H" コマンドを使用する。
+@anchor{v_CTRL-G}
+@cindex v_CTRL-G
+@item ビジュアルモードでCTRL-Gを押す。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Commands in Select mode:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 選択モードのコマンド:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Printable characters, <NL> and <CR> cause the selection to be deleted, and
+  Vim enters Insert mode.  The typed character is inserted.
+- Non-printable movement commands, with the Shift key pressed, extend the
+  selection.  'keymodel' must include "startsel".
+- Non-printable movement commands, with the Shift key NOT pressed, stop Select
+  mode.  'keymodel' must include "stopsel".
+- ESC stops Select mode.
+- CTRL-O switches to Visual mode for the duration of one command. *v_CTRL-O*
+- CTRL-G switches to Visual mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 表示可能な文字、及び <NL> と <CR> は選択領域を削除し、Vim は入力モードに移行する。タイプした文字は挿入される。
+@item シフトキーを押しながらの表示不可能な移動コマンド、は選択領域を拡張する。'@option{keymodel}' は "@var{startsel}" を含まねばならない。
+@item シフトキーを押さずに表示不可能な移動コマンドを使用すると、選択モードを終了する。'@option{keymodel}' は "@var{stopsel}" を含まねばならない。
+@item ESC は選択モードを終了する。
+@anchor{v_CTRL-O}
+@cindex v_CTRL-O
+@item CTRL-O でビジュアルモードに切り替え 1 つだけコマンドを実行する。
+@item CTRL-G でビジュアルモードに切り替える。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Otherwise, typed characters are handled as in Visual mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+それ以外では、入力された文字はビジュアルモードと同様に扱われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When using an operator in Select mode, and the selection is linewise, the
+selected lines are operated upon, but like in characterwise selection.  For
+example, when a whole line is deleted, it can later be pasted halfway a line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+選択モードで操作が行われると、行選択の時には、選択された行が操作対象になるが、文字選択の時のように扱われる。例えば、行全体を削除した時には、後でその内容を行の中間に貼り付けることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Mappings and menus in Select mode.			*Select-mode-mapping*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{Select-mode-mapping}
+@cindex Select-mode-mapping
+@unnumberedsubsec 選択モード時のマッピングとメニュー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When mappings and menus are defined with the |:vmap| or |:vmenu| command they
+work both in Visual mode and in Select mode.  When these are used in Select
+mode Vim automatically switches to Visual mode, so that the same behavior as
+in Visual mode is effective.  If you don't want this use |:xmap| or |:smap|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンド |:vmap| や |:vmenu| で定義したマッピングとメニューはビジュアルモードと選択モードの両方で働く。選択モードでは、それらのマッピングやメニューが実行される直前に自動的にビジュアルモードに切り替わるので、ビジュアルモードと同じ動作が行われる。ビジュアルモードと選択モードで別々にマッピングを定義するときは |:xmap| や |:smap| を使うこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Users will expect printable characters to replace the selected area.
+Therefore avoid mapping printable characters in Select mode.  Or use
+|:sunmap|  after |:map| and |:vmap| to remove it for Select mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザーは印字可能な文字を押すと選択された領域が置換されることを期待している。そのため、選択モードで印字可能な文字にマップするのは避けること。または |:map| と |:vmap| のあとで |:sunmap| をして選択モードに対するマップを削除すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+After the mapping or menu finishes, the selection is enabled again and Select
+mode entered, unless the selected area was deleted, another buffer became
+the current one or the window layout was changed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マッピング及びメニューが終了した後には、選択領域が削除されるか、他のバッファに切り替わるか、ウィンドウのレイアウトが変更されない限り、選択領域が再び有効になり選択モードになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When a character was typed that causes the selection to be deleted and Insert
+mode started, Insert mode mappings are applied to this character.  This may
+cause some confusion, because it means Insert mode mappings apply to a
+character typed in Select mode.  Language mappings apply as well.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+文字が入力されたとき、選択領域が削除されて挿入モードに入り、その文字に対し挿入モードのマッピングが適用される。これは、選択モードで入力された文字に挿入モードのマッピングが適用されることを意味するため、おそらく混乱を招くだろう。そのうえ言語マッピングも適用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*gV* *v_gV*
+gV			Avoid the automatic reselection of the Visual area
+			after a Select mode mapping or menu has finished.
+			Put this just before the end of the mapping or menu.
+			At least it should be after any operations on the
+			selection.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gV}
+@anchor{v_gV}
+@cindex gV
+@cindex v_gV
+@table @asis
+@item gV
+選択モードのマッピング及びメニューが終了したあとでビジュアル領域が再度自動的に選択されるのを抑制する。マッピングやメニューの終わる直前にこれを使用する。少なくともセレクションのあらゆる操作の後に行われるべきである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*gh*
+gh			Start Select mode, characterwise.  This is like "v",
+			but starts Select mode instead of Visual mode.
+			Mnemonic: "get highlighted".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gh}
+@cindex gh
+@item gh
+文字選択モードを開始する。これは "v" に似ているが、ビジュアルモードの代わりに選択モードを開始する。覚え方: "get highlighted"
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*gH*
+gH			Start Select mode, linewise.  This is like "V",
+			but starts Select mode instead of Visual mode.
+			Mnemonic: "get Highlighted".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gH}
+@cindex gH
+@item gH
+行選択モードを開始する。これは "V" に似ているが、ビジュアルモードの代わりに選択モードを開始する。覚え方: "get Highlighted".
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*g_CTRL-H*
+g CTRL-H		Start Select mode, blockwise.  This is like CTRL-V,
+			but starts Select mode instead of Visual mode.
+			Mnemonic: "get Highlighted".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g_CTRL-H}
+@cindex g_CTRL-H
+@item g
+矩形選択モードを開始する。これは CTRL-V に似ているが、ビジュアルモードの代わりに選択モードを開始する。覚え方: "get Highlighted".
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset

@@ -10,24 +10,13 @@ REFMANUALS = \
 	doc/quickref.texi \
 	doc/uganda.texi \
 	doc/sponsor.texi \
-	doc/intro.texi \
-	doc/helphelp.texi \
-	doc/index.texi \
-	doc/howto.texi \
-	doc/tips.texi \
-	doc/message.texi \
-	doc/quotes.texi \
-	doc/debug.texi \
+	doc/intro.texi doc/helphelp.texi doc/index.texi doc/howto.texi \
+	doc/tips.texi doc/message.texi doc/quotes.texi doc/debug.texi \
 	doc/develop.texi \
-	doc/starting.texi \
-	doc/editing.texi \
-	doc/motion.texi \
-	doc/scroll.texi \
-	doc/insert.texi \
-	doc/change.texi \
-	doc/indent.texi \
-	doc/undo.texi \
-	doc/repeat.texi
+	doc/starting.texi doc/editing.texi doc/motion.texi doc/scroll.texi \
+	doc/insert.texi doc/change.texi doc/indent.texi doc/undo.texi \
+	doc/repeat.texi doc/visual.texi doc/various.texi doc/recover.texi \
+	doc/cmdline.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
