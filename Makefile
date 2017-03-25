@@ -16,7 +16,7 @@ REFMANUALS = \
 	doc/starting.texi doc/editing.texi doc/motion.texi doc/scroll.texi \
 	doc/insert.texi doc/change.texi doc/indent.texi doc/undo.texi \
 	doc/repeat.texi doc/visual.texi doc/various.texi doc/recover.texi \
-	doc/cmdline.texi
+	doc/cmdline.texi doc/options.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
@@ -37,8 +37,10 @@ refpdf: pdfs/refrman.pdf ;
 kyukana: htmls/tk-ok-usrman.html ;
 
 htmls/usrman.html: $(USRMANUALS)
+	sh utils/change_oum.sh doc/usr_toc.texi
 	${PRG} ${HTML_OPT} -o $@ $<
 	sh utils/trick_for_mobile.sh $@
+	mv doc/org_usr_toc.texi doc/usr_toc.texi
 
 htmls/refman.html: $(REFMANUALS) $(USRMANUALS)
 	${PRG} ${HTML_OPT} -o $@ $<
@@ -46,6 +48,7 @@ htmls/refman.html: $(REFMANUALS) $(USRMANUALS)
 htmls/refman: $(REFMANUALS) $(USRMANUALS)
 	cp style.css htmls/refman/
 	${PRG} ${HTML_OPT_S} -o $@ $<
+	sh utils/trick_for_mobile.sh htmls/refman/usr_005ftoc_002etxt.html
 
 pdfs/userman.pdf: $(USRMANUALS)
 	PDFTEX=luatex texi2pdf -c -o $@ $<
