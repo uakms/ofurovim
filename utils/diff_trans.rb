@@ -1,22 +1,21 @@
 # Author: nakinor
 # Created: 2017-01-26
-# Revised: 2017-02-21
+# Revised: 2017-08-03
 
 TAG_JA_START =
-  '> @ifset JA  @c ----------- v -----------  JA  ----------- v -----------'
+  '< @ifset JA  @c ----------- v -----------  JA  ----------- v -----------'
 TAG_JA_END =
-  '> @end ifset @c ----------- \^ -----------  JA  ----------- \^ -----------'
+  '< @end ifset @c ----------- \^ -----------  JA  ----------- \^ -----------'
 
 def diff_docs(ifn)
   origin = "#{ENV['ORIG_DOC']}/#{ifn.gsub(".texi", ".txt")}"
   trans = "#{ifn}"
-  diff = `diff #{origin} #{trans}`
-  remove_head = diff.gsub(/0a1.*-\*-\n/m, "")
-  removed_ja = remove_head.gsub(/#{TAG_JA_START}.*?#{TAG_JA_END}\n/m, "")
-  removed_tag = removed_ja.gsub(/> @ifset EN\n|> @end ifset\n/, "")
-  removed_lan = removed_tag.gsub(/> @clear EN\n|> @clear JA\n|> @set JA\n/, "")
-  removed_fin = removed_lan.gsub(/^> @.*\n/, "")
-  judge = removed_fin.gsub(/[0-9]+a[0-9].+?\n|> \n/, "")
+  diff = `diff #{trans} #{origin}`
+  removed_ja = diff.gsub(/#{TAG_JA_START}.*?#{TAG_JA_END}\n/m, "")
+  removed_tag = removed_ja.gsub(/< @ifset EN\n|< @end ifset\n/, "")
+  removed_lan = removed_tag.gsub(/< @clear EN\n|< @clear JA\n|< @set JA\n/, "")
+  removed_fin = removed_lan.gsub(/< .*\n/, "")
+  judge = removed_fin.gsub(/[0-9].+d[0-9]+?\n/, "")
   if judge.size == 0
     puts ifn + " --- \033[32mNot Modified.\033[0m"
   else

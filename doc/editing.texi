@@ -3,14 +3,14 @@
 @unnumbered ファイルの編集と保存
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*editing.txt*   For Vim version 8.0.  Last change: 2016 Nov 24
+*editing.txt*   For Vim version 8.0.  Last change: 2017 Aug 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*editing.txt*   For Vim バージョン 8.0.  Last change: 2016 Nov 24
+*editing.txt*   For Vim バージョン 8.0.  Last change: 2017 Aug 01
 
 
 		VIMリファレンスマニュアル    by Bram Moolenaar
@@ -1558,16 +1558,16 @@ list of the current window.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-:[count]arge[dit][!] [++opt] [+cmd] {name}		*:arge* *:argedit*
-			Add {name} to the argument list and edit it.
+:[count]arge[dit][!] [++opt] [+cmd] {name} ..		*:arge* *:argedit*
+			Add {name}s to the argument list and edit it.
 			When {name} already exists in the argument list, this
 			entry is edited.
 			This is like using |:argadd| and then |:edit|.
-			Note that only one file name is allowed, and spaces
-			inside the file name are allowed, like with |:edit|.
+			Spaces in filenames have to be escaped with "\".
 			[count] is used like with |:argadd|.
-			[!] is required if the current file cannot be
-			|abandon|ed.
+			If the current file cannot be |abandon|ed {name}s will
+			still be added to the argument list, but won't be
+			edited. No check for duplicates is done.
 			Also see |++opt| and |+cmd|.
 			{not in Vi}
 @end ifset
@@ -1576,14 +1576,11 @@ list of the current window.
 @anchor{:argedit}
 @cindex :arge
 @cindex :argedit
-@item :[count]arge[dit][!] [++opt] [+cmd] @{name@}
-引数リストに @{name@} を追加し、その編集を始める。@{name@} が既に引数リスト内にあるときは、その編集を始める。これはコマンド |:argadd| を使い、次に |:edit| を使うのと同じである。
-@quotation
-@strong{Note:} @*
-指定できるファイルは 1 個であり、|:edit| と同様ファイル名の中に空白が使えることに注意。[count] は |:argadd| と同様に使われる。
-@end quotation
-カレントファイルが放棄 |abandon| できないときは '!' が必要になる。
-
+@item :[count]arge[dit][!] [++opt] [+cmd] @{name@} ..
+引数リストに @{name@}s を追加し、その編集を始める。@{name@} が既に引数リスト内にあるときは、その編集を始める。これはコマンド |:argadd| を使い、次に |:edit| を使うのと同じである。
+ファイル名中のスペースは "\" でエスケープされなければならない。
+[count] は |:argadd| で使われるのと同じように使われる。
+もしもカレントファイルが放棄 |abandon| することができないのなら、編集されていないことを除き、まだ引数リストに @{name@}s が加えられているのだろう。複製の終了はチェックしない。
 |++opt| と |+cmd| も参照。
 
 @{Vi にはない@}
@@ -3518,9 +3515,11 @@ MS-DOS ではアクティブなドライブも変更する。カレントファ�
 
 @ifset EN
 							*:lc* *:lcd*
-:lc[d][!] {path}	Like |:cd|, but only set the current directory for the
-			current window.  The current directory for other
-			windows is not changed. {not in Vi}
+:lc[d][!] {path}	Like |:cd|, but only set the current directory when
+			the cursor is in the current window.  The current
+			directory for other windows is not changed, switching
+			to another window will stop using {path}.
+			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:lc}
@@ -3528,7 +3527,7 @@ MS-DOS ではアクティブなドライブも変更する。カレントファ�
 @cindex :lc
 @cindex :lcd
 @item :lc[d][!] @{path@}
-コマンド |:cd| と似ているが、カレントウィンドウのカレントディレクトリのみを変更する。別のウィンドウのカレントディレクトリに変化はない。
+コマンド |:cd| と似ているが、カーソルがカレントウィンドウにある時にカレントディレクトリのみを変更する。別のウィンドウのカレントディレクトリは変更されないし、別のウィンドウへの移動は @{path@} を使って止められる。
 
 @{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -4156,6 +4155,25 @@ file though, only when the file wasn't changed inside of Vim.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+If you do not want to be asked or automatically reload the file, you can use
+this: >
+	set buftype=nofile
+
+Or, when starting gvim from a shell: >
+	gvim file.log -c "set buftype=nofile"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしも質問されたくなかったり、ファイルを自動的に再読み込みをしたいのなら、次の設定を使うことができる:
+@example
+set buftype=nofile
+@end example
+もしくは、シェルから gvim を起動する時に
+@example
+gvim file.log -c "set buftype=nofile"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 Note that if a FileChangedShell autocommand is defined you will not get a
 warning message or prompt.  The autocommand is expected to handle this.
 @end ifset
@@ -4588,13 +4606,13 @@ set path=**;/u/user_x
 
 @ifset EN
    Note that completion for ":find", ":sfind", and ":tabfind" commands do not
-   currently work with 'path' items that contain a url or use the double star
+   currently work with 'path' items that contain a URL or use the double star
    with depth limiter (/usr/**2) or upward search (;) notations.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @quotation
 @strong{Note:} @*
-現在 ":find"、":sfind"、":tabfind" コマンドは、'@option{path}' アイテムに url や深さ制限付きのダブルスター (/usr/**2) や 上方検索 (;) などが含まれていると機能しない。
+現在 ":find"、":sfind"、":tabfind" コマンドは、'@option{path}' アイテムに URL や深さ制限付きのダブルスター (/usr/**2) や 上方検索 (;) などが含まれていると機能しない。
 @end quotation
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------

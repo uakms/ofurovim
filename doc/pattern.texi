@@ -1,0 +1,3905 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node pattern.txt, , , 目次
+@unnumbered 検索コマンドと正規表現
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*pattern.txt*   For Vim version 8.0.  Last change: 2017 Jun 05
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*pattern.txt*   For Vim バージョン 8.0.  Last change: 2017 Jun 05
+
+
+		  VIMリファレンスマニュアル	  by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Patterns and search commands				*pattern-searches*
+
+The very basics can be found in section |03.9| of the user manual.  A few more
+explanations are in chapter 27 |usr_27.txt|.
+
+1. Search commands		|search-commands|
+2. The definition of a pattern	|search-pattern|
+3. Magic			|/magic|
+4. Overview of pattern items	|pattern-overview|
+5. Multi items			|pattern-multi-items|
+6. Ordinary atoms		|pattern-atoms|
+7. Ignoring case in a pattern	|/ignorecase|
+8. Composing characters		|patterns-composing|
+9. Compare with Perl patterns	|perl-patterns|
+10. Highlighting matches	|match-highlight|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{pattern-searches}
+@cindex pattern-searches
+パターンと検索コマンド
+
+最も基本的な説明はユーザーマニュアルの |@ref{03.9, , 03.9}| にあります。27章 |@ref{usr_27.txt, , usr_27.txt}| にも説明があります。
+
+@multitable @columnfractions .5 .5
+@item 1. 検索コマンド @tab |@ref{search-commands, , search-commands}|
+@item 2. パターンの定義 @tab |@ref{search-pattern, , search-pattern}|
+@item 3. Magic @tab |@ref{/magic, , /magic}|
+@item 4. パターンの概要 @tab |@ref{pattern-overview, , pattern-overview}|
+@item 5. 量指定子 @tab |@ref{pattern-multi-items, , pattern-multi-items}|
+@item 6. 普通のアトム @tab |@ref{pattern-atoms, , pattern-atoms}|
+@item 7. 大文字と小文字を無視する @tab |@ref{/ignorecase, , /ignorecase}|
+@item 8. 合成文字 @tab |@ref{patterns-composing, , patterns-composing}|
+@item 9. Perl のパターンとの比較 @tab |@ref{perl-patterns, , perl-patterns}|
+@item 10. マッチしたテキストを強調する @tab |@ref{match-highlight, , match-highlight}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Search commands				*search-commands*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{search-commands}
+@cindex search-commands
+@section 1. 検索コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/*
+/{pattern}[/]<CR>	Search forward for the [count]'th occurrence of
+			{pattern} |exclusive|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/}
+@cindex /
+@table @asis
+@item /@{pattern@}[/]<CR>
+[count] 番目にマッチする @{pattern@} を前方検索します。|exclusive| (排他的)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+/{pattern}/{offset}<CR>	Search forward for the [count]'th occurrence of
+			{pattern} and go |{offset}| lines up or down.
+			|linewise|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item /@{pattern@}/@{offset@}<CR>
+[count] 番目にマッチする @{pattern@} を前方検索し、|@{offset@}| 行だけ上/下に移動します。|linewise| (行指向)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/<CR>*
+/<CR>			Search forward for the [count]'th occurrence of the
+			latest used pattern |last-pattern| with latest used
+			|{offset}|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/<CR>}
+@cindex /<CR>
+@item /<CR>
+[count] 番目にマッチする最終検索パターン |last-pattern| を、最後に使われた |@{offset@}| を使って、前方検索します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+//{offset}<CR>		Search forward for the [count]'th occurrence of the
+			latest used pattern |last-pattern| with new
+			|{offset}|.  If {offset} is empty no offset is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item //@{offset@}<CR>
+[count] 番目にマッチする最終検索パターン |last-pattern| を、新しい |@{offset@}| を使って前方検索します。@{offset@} を指定しなかった場合、|@{offset@}| は使われません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*?*
+?{pattern}[?]<CR>	Search backward for the [count]'th previous
+			occurrence of {pattern} |exclusive|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{?}
+@cindex ?
+@item ?@{pattern@}[?]<CR>
+[count] 番目にマッチする @{pattern@} を後方検索します。|exclusive| (排他的)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+?{pattern}?{offset}<CR>	Search backward for the [count]'th previous
+			occurrence of {pattern} and go |{offset}| lines up or
+			down |linewise|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ?@{pattern@}?@{offset@}<CR>
+[count] 番目にマッチする @{pattern@} を後方検索して |@{offset@}| 行だけ上/下に移動します。|linewise| (行指向)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*?<CR>*
+?<CR>			Search backward for the [count]'th occurrence of the
+			latest used pattern |last-pattern| with latest used
+			|{offset}|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{?<CR>}
+@cindex ?<CR>
+@item ?<CR>
+[count] 番目にマッチする最終検索パターン |last-pattern| を、最後に使われた |@{offset@}| を使って、後方検索します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+??{offset}<CR>		Search backward for the [count]'th occurrence of the
+			latest used pattern |last-pattern| with new
+			|{offset}|.  If {offset} is empty no offset is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ??@{offset@}<CR>
+[count] 番目にマッチする最終検索パターン |last-pattern| を、新しい |@{offset@}| を使って後方検索します。@{offset@} を指定しなかった場合、|@{offset@}| は使われません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*n*
+n			Repeat the latest "/" or "?" [count] times.
+			If the cursor doesn't move the search is repeated with
+			count + 1.
+			|last-pattern| {Vi: no count}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{n}
+@cindex n
+@item n
+最後の "/" か "?" を [count] 回繰り返します。カーソルが移動しないときは、検索は [count] + 1 で繰り返されます。|last-pattern|
+
+@{Vi: カウントの前置を受け付けません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*N*
+N			Repeat the latest "/" or "?" [count] times in
+			opposite direction. |last-pattern| {Vi: no count}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{N}
+@cindex N
+@item N
+最後の "/" か "?" を逆方向に [count] 回繰り返します。|last-pattern|
+
+@{Vi: カウントの前置を受け付けません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*star* *E348* *E349*
+*			Search forward for the [count]'th occurrence of the
+			word nearest to the cursor.  The word used for the
+			search is the first of:
+				1. the keyword under the cursor |'iskeyword'|
+				2. the first keyword after the cursor, in the
+				   current line
+				3. the non-blank word under the cursor
+				4. the first non-blank word after the cursor,
+				   in the current line
+			Only whole keywords are searched for, like with the
+			command "/\<keyword\>".  |exclusive|  {not in Vi}
+			'ignorecase' is used, 'smartcase' is not.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{star}
+@anchor{E348}
+@anchor{E349}
+@cindex star
+@cindex E348
+@cindex E349
+@item *
+[count] 番目にマッチする単語を前方検索します。検索される単語は、カーソルに最も近い単語です。次の順番で選択されます:
+@enumerate
+@item カーソル位置のキーワード |'@option{iskeyword}'|
+@item 現在行の、カーソルの後ろの最初のキーワード
+@item カーソル位置の単語 (|WORD|)
+@item 現在行の、カーソルの後ろの最初の単語 "/\<keyword\>" と検索するのと同じように、完全なキーワードのみ検索されます。|exclusive| (排他的)
+@end enumerate
+@{Vi にはありません@}
+
+'@option{smartcase}' ではなく '@option{ignorecase}' の設定が使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*#*
+#			Same as "*", but search backward.  The pound sign
+			(character 163) also works.  If the "#" key works as
+			backspace, try using "stty erase <BS>" before starting
+			Vim (<BS> is CTRL-H or a real backspace).  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{#}
+@cindex #
+@item #
+"*" と同じですが、後方検索します。ポンド記号 (文字コード 163) でも動作します。"#" キーがバックスペースとして動作する場合は、Vim を起動する前に "stty erase <BS>" としてみてください (<BS> は @kbd{CTRL-H} もしくは本当のバックスペースです)。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*gstar*
+g*			Like "*", but don't put "\<" and "\>" around the word.
+			This makes the search also find matches that are not a
+			whole word.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gstar}
+@cindex gstar
+@item g*
+"*" と似ていますが "\<" と "\>" を単語の周りに加えません。つまり単語の一部にマッチするものを検索することもできます。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*g#*
+g#			Like "#", but don't put "\<" and "\>" around the word.
+			This makes the search also find matches that are not a
+			whole word.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g#}
+@cindex g#
+@item g#
+"#" と似ていますが "\<" と "\>" を単語の周りに加えません。つまり単語の一部にマッチするものを検索することもできます。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*gd*
+gd			Goto local Declaration.  When the cursor is on a local
+			variable, this command will jump to its declaration.
+			First Vim searches for the start of the current
+			function, just like "[[".  If it is not found the
+			search stops in line 1.  If it is found, Vim goes back
+			until a blank line is found.  From this position Vim
+			searches for the keyword under the cursor, like with
+			"*", but lines that look like a comment are ignored
+			(see 'comments' option).
+			Note that this is not guaranteed to work, Vim does not
+			really check the syntax, it only searches for a match
+			with the keyword.  If included files also need to be
+			searched use the commands listed in |include-search|.
+			After this command |n| searches forward for the next
+			match (not backward).
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gd}
+@cindex gd
+@item gd
+ローカル宣言を検索します。カーソルがローカル変数の上にある場合、その変数の宣言にジャンプします。はじめに、Vim は現在の関数の開始行を検索します ("[[" コマンドと同じ)。見つからなかった場合は、ファイルの 1 行目に移動します。見つかった場合は、その場所から空行を後方検索します。そして、"*" コマンドで検索するのと同じように、キーワードを検索します。このとき、コメントと判断した行は無視します ('@option{comments}' オプション参照)。
+@quotation
+@strong{Note:} @*
+Vim は文法を実際にチェックしているわけではなく、キーワードにマッチするものを検索しているだけですので、これがうまく動作するとは限りません。インクルードされているファイル内も検索したい場合は、|include-search| で列挙されているコマンドを使ってください。このコマンドを実行した後、コマンド |n| で次のマッチを前方検索できます。
+@end quotation
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*gD*
+gD			Goto global Declaration.  When the cursor is on a
+			global variable that is defined in the file, this
+			command will jump to its declaration.  This works just
+			like "gd", except that the search for the keyword
+			always starts in line 1.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gD}
+@cindex gD
+@item gD
+グローバル宣言を検索します。ファイル内で定義されているグローバル変数の上にカーソルがある場合、その宣言にジャンプします。"gd" と同じですが、このコマンドは常に 1 行目からキーワードを検索します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*1gd*
+1gd			Like "gd", but ignore matches inside a {} block that
+			ends before the cursor position. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{1gd}
+@cindex 1gd
+@item 1gd
+"gd" と同じですが、現在のカーソル位置より前の @{@} ブロック内を無視します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*1gD*
+1gD			Like "gD", but ignore matches inside a {} block that
+			ends before the cursor position. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{1gD}
+@cindex 1gD
+@item 1gD
+"gD" と同じですが、現在のカーソル位置より前の @{@} ブロック内を無視します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*CTRL-C*
+CTRL-C			Interrupt current (search) command.  Use CTRL-Break on
+			MS-DOS |dos-CTRL-Break|.
+			In Normal mode, any pending command is aborted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-C}
+@cindex CTRL-C
+@item CTRL-C
+現在の(検索)コマンドを中止します。MS-DOS では @kbd{CTRL-Break} を使ってください |dos-CTRL-Break|。ノーマルモードでは、入力済みの、まだ実行されていないコマンドをすべて中止します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:noh* *:nohlsearch*
+:noh[lsearch]		Stop the highlighting for the 'hlsearch' option.  It
+			is automatically turned back on when using a search
+			command, or setting the 'hlsearch' option.
+			This command doesn't work in an autocommand, because
+			the highlighting state is saved and restored when
+			executing autocommands |autocmd-searchpat|.
+			Same thing for when invoking a user function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:noh}
+@anchor{:nohlsearch}
+@cindex :noh
+@cindex :nohlsearch
+@item :noh[lsearch]
+'@option{hlsearch}' オプションによる強調表示をやめます。検索コマンドを使うか、'@option{hlsearch}' をオンに設定すると、再び強調表示されます。このコマンドはオートコマンド中は機能しません。オートコマンドを実行する時に強調表示の状態を保存し、実行後に元に戻すからです。|autocmd-searchpat| ユーザー関数を呼び出したときも同様。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+While typing the search pattern the current match will be shown if the
+'incsearch' option is on.  Remember that you still have to finish the search
+command with <CR> to actually position the cursor at the displayed match.  Or
+use <Esc> to abandon the search.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{incsearch}' オプションがオンの場合、検索パターンを入力している途中に、その時点でマッチしているものが強調表示されます。実際に、その場所にカーソルを移動させるには @key{<CR>} を打って検索を終了する必要があります。検索を中止するには @key{<Esc>} キーを使ってください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All matches for the last used search pattern will be highlighted if you set
+the 'hlsearch' option.  This can be suspended with the |:nohlsearch| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{hlsearch}' オプションがオンの場合、最後に使った検索パターンは強調表示されます。|:nohlsearch| コマンドを使うと、一時的に強調表示をやめさせることができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When no match is found you get the error: *E486* Pattern not found
+Note that for the |:global| command this behaves like a normal message, for Vi
+compatibility.  For the |:s| command the "e" flag can be used to avoid the
+error message |:s_flags|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マッチが見つからなかった場合はエラーが表示されます:
+@display
+*E486* Pattern not found
+@end display
+@quotation
+@strong{Note:} @*
+|:global| コマンドではこの動作はノーマルメッセージと同じです (Vi 互換のため)。|:s| コマンドでは "e" フラグを指定することでエラーメッセージを抑制できます |:s_flags|。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*search-offset* *{offset}*
+These commands search for the specified pattern.  With "/" and "?" an
+additional offset may be given.  There are two types of offsets: line offsets
+and character offsets.  {the character offsets are not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{search-offset}
+@anchor{@{offset@}}
+@cindex search-offset
+@cindex @{offset@}
+上記の検索コマンドは指定されたパターンを検索します。"/" と "?" ではさらにオフセットを指定できます。オフセットには、行オフセットと文字オフセットの 2 種類あります。
+
+@{Vi には文字オフセットはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The offset gives the cursor position relative to the found match:
+    [num]	[num] lines downwards, in column 1
+    +[num]	[num] lines downwards, in column 1
+    -[num]	[num] lines upwards, in column 1
+    e[+num]	[num] characters to the right of the end of the match
+    e[-num]	[num] characters to the left of the end of the match
+    s[+num]	[num] characters to the right of the start of the match
+    s[-num]	[num] characters to the left of the start of the match
+    b[+num]	[num] identical to s[+num] above (mnemonic: begin)
+    b[-num]	[num] identical to s[-num] above (mnemonic: begin)
+    ;{pattern}  perform another search, see |//;|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オフセットを指定して、マッチした場所から相対的にカーソルを移動できます:
+@multitable @columnfractions .2 .8
+@item [num] @tab [num] 行下、1 桁目に移動
+@item +[num] @tab [num] 行下、1 桁目に移動
+@item -[num] @tab [num] 行上、1 桁目に移動
+@item e[+num] @tab [num] 文字右に、マッチ部分の終わりの場所から移動
+@item e[-num] @tab [num] 文字左に、マッチ部分の終わりの場所から移動
+@item s[+num] @tab [num] 文字右に、マッチ部分の初めの場所 (start) から移動
+@item s[-num] @tab [num] 文字左に、マッチ部分の初めの場所 (start) から移動
+@item b[+num] @tab [num] 上記 s[+num] と同じ (begin の b)
+@item b[-num] @tab [num] 上記 s[-num] と同じ (begin の b)
+@item ;@{pattern@} @tab さらに検索する。|//;| を参照。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If a '-' or '+' is given but [num] is omitted, a count of one will be used.
+When including an offset with 'e', the search becomes inclusive (the
+character the cursor lands on is included in operations).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'-' か '+' を指定して [num] を省略した場合は 1 が使われます。'e' を使ってオフセットを指定した場合、検索は包括的になります (カーソルが移動するであろう位置の文字まで含めて操作の対象になります)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples:
+
+pattern			cursor position	~
+/test/+1		one line below "test", in column 1
+/test/e			on the last t of "test"
+/test/s+2		on the 's' of "test"
+/test/b-3		three characters before "test"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@multitable @columnfractions .4 .6
+@item パターン @tab カーソルの位置
+@item /test/+1 @tab "test" の 1 行下の 1 桁目
+@item /test/e @tab "test" の最後
+@item /test/s+2 @tab "test" の 's'
+@item /test/b-3 @tab "test" の 3 文字前
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If one of these commands is used after an operator, the characters between
+the cursor position before and after the search is affected.  However, if a
+line offset is given, the whole lines between the two cursor positions are
+affected.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのコマンドがオペレータに対して使われた場合、現在のカーソル位置から、検索後のカーソル位置までが、操作の対象となります。ただし、行オフセットが指定された場合は、2 つのカーソル位置の間の行全体が操作の対象となります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An example of how to search for matches with a pattern and change the match
+with another word: >
+	/foo<CR>	find "foo"
+	c//e<CR>	change until end of match
+	bar<Esc>	type replacement
+	//<CR>		go to start of next match
+	c//e<CR>	change until end of match
+	beep<Esc>	type another replacement
+			etc.
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パターンを検索して置換する例:
+@multitable @columnfractions .4 .6
+@item /foo<CR> @tab "foo" を検索
+@item c//e<CR> @tab マッチした文字列を変更
+@item bar<Esc> @tab 置換する文字を入力
+@item //<CR> @tab 次のマッチへ移動
+@item c//e<CR> @tab マッチした文字列を変更
+@item beep<Esc> @tab 今度は別の文字で置換
+@item @tab ...
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*//;* *E386*
+A very special offset is ';' followed by another search command.  For example: >
+
+   /test 1/;/test
+   /test.*/+1;?ing?
+
+The first one first finds the next occurrence of "test 1", and then the first
+occurrence of "test" after that.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{//;}
+@anchor{E386}
+@cindex //;
+@cindex E386
+非常に特殊なオフセットですが、';' に続けて検索コマンドを指定できます。例:
+@verbatim
+/test 1/;/test
+/test.*/+1;?ing?
+@end verbatim
+1 つ目の例は、はじめに次の "test 1" を検索し、それから "test" を検索します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is like executing two search commands after each other, except that:
+- It can be used as a single motion command after an operator.
+- The direction for a following "n" or "N" command comes from the first
+  search command.
+- When an error occurs the cursor is not moved at all.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは、2 つの検索コマンドを分けて実行するのと似ていますが、次の点が違います:
+@itemize @minus
+@item 合わせて 1 つの検索コマンドなので、オペレータに対して使うことができます。
+@item "n"、"N" コマンドを使った場合、検索方向は最初の検索コマンドと同じです。
+@item エラーが起きた場合、カーソルはまったく動きません。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*last-pattern*
+The last used pattern and offset are remembered.  They can be used to repeat
+the search, possibly in another direction or with another count.  Note that
+two patterns are remembered: One for 'normal' search commands and one for the
+substitute command ":s".  Each time an empty pattern is given, the previously
+used pattern is used.  However, if there is no previous search command, a
+previous substitute pattern is used, if possible.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{last-pattern}
+@cindex last-pattern
+最後に使われた検索パターン (最終検索パターン) とオフセットは記憶され、同じ検索を繰り返すのに使うことができます。検索方向を変えたり、カウントを指定したりすることもできます。
+@quotation
+@strong{Note:} @*
+記憶されるパターンは 2 つあります。1 つは「通常の」検索コマンドのパターンです。もう 1 つは置換コマンド ":s" のパターンです。
+@end quotation
+空のパターンを指定すると直前に使用されたパターンが使われます。ただし、検索パターンがまだ使用されてなかった場合は、可能であれば、直前の置換コマンドのパターンが使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'magic' option sticks with the last used pattern.  If you change 'magic',
+this will not change how the last used pattern will be interpreted.
+The 'ignorecase' option does not do this.  When 'ignorecase' is changed, it
+will result in the pattern to match other text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{magic}' オプションは最終検索パターンに影響しません。'@option{magic}' を変更しても、最終検索パターンの解釈は変わりません。
+
+'@option{ignorecase}' オプションは違います。'@option{ignorecase}' が変更された場合、最終検索パターンは、違うテキストにマッチする可能性があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All matches for the last used search pattern will be highlighted if you set
+the 'hlsearch' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{hlsearch}' オプションがオンの場合、最終検索パターンにマッチするテキストが強調表示されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To clear the last used search pattern: >
+	:let @/ = ""
+This will not set the pattern to an empty string, because that would match
+everywhere.  The pattern is really cleared, like when starting Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最終検索パターンを消去するには次のようにします:
+@example
+:let @/ = ""
+@end example
+パターンに空文字列をセットしているのではありません。それだと全ての場所にマッチしてしまいます。パターンは本当に消去され、Vim 起動直後のように、何もない状態になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The search usually skips matches that don't move the cursor.  Whether the next
+match is found at the next character or after the skipped match depends on the
+'c' flag in 'cpoptions'.  See |cpo-c|.
+	   with 'c' flag:   "/..." advances 1 to 3 characters
+	without 'c' flag:   "/..." advances 1 character
+The unpredictability with the 'c' flag is caused by starting the search in the
+first column, skipping matches until one is found past the cursor position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+検索では通常、カーソル下のマッチはスキップされます。そのとき、すぐ隣の文字から検索を開始するのか、スキップしたマッチの後ろから検索を開始するのかは、'@option{cpoptions}' の '@var{c}' フラグに依存します。|cpo-c| を参照。
+@multitable @columnfractions .5 .5
+@item 'c' フラグがある場合: @tab "/..." は 1 から 3 文字ずつ進みます。
+@item 'c' フラグがない場合: @tab "/..." は 1 文字ずつ進みます。
+@end multitable
+検索は行頭から開始され、カーソル位置を過ぎたマッチを見付けるまでスキップされます。そのため、'c' フラグを含んでいる場合の動作は予想外かもしれません。
+@{訳注:
+@verbatim
+aaaaaa
+@end verbatim
+カーソルが 2 桁目にある場合、/aaa は 4 桁目からの @samp{aaa} にマッチする。これは、行頭から @samp{aaa aaa} というマッチの区切りになり、カーソルを含んだ最初の @samp{aaa} がスキップされるため。@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When searching backwards, searching starts at the start of the line, using the
+'c' flag in 'cpoptions' as described above.  Then the last match before the
+cursor position is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+後方検索するときも、検索は行頭から始まり、上述のように '@option{cpoptions}' の '@var{c}' フラグが使われます。そして、カーソル位置より前でマッチする最後のマッチが使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In Vi the ":tag" command sets the last search pattern when the tag is searched
+for.  In Vim this is not done, the previous search pattern is still remembered,
+unless the 't' flag is present in 'cpoptions'.  The search pattern is always
+put in the search history.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vi では、":tag" コマンドでタグを検索すると、最終検索パターンは上書きされます。Vim では、'@option{cpoptions}' に '@var{t}' フラグがある場合のみ、最終検索パターンが上書きされます。どちらにしても、検索パターンは常に検索履歴に保存されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the 'wrapscan' option is on (which is the default), searches wrap around
+the end of the buffer.  If 'wrapscan' is not set, the backward search stops
+at the beginning and the forward search stops at the end of the buffer.  If
+'wrapscan' is set and the pattern was not found the error message "pattern
+not found" is given, and the cursor will not be moved.  If 'wrapscan' is not
+set the message becomes "search hit BOTTOM without match" when searching
+forward, or "search hit TOP without match" when searching backward.  If
+wrapscan is set and the search wraps around the end of the file the message
+"search hit TOP, continuing at BOTTOM" or "search hit BOTTOM, continuing at
+TOP" is given when searching backwards or forwards respectively.  This can be
+switched off by setting the 's' flag in the 'shortmess' option.  The highlight
+method 'w' is used for this message (default: standout).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{wrapscan}' オプションがオン (初期設定) の場合、検索がバッファの端に到達したときに、もう一方の端に移動して検索が継続されます。オフの場合は、後方検索ならバッファの先頭、前方検索ならバッファの末尾でストップします。
+
+パターンが見つからなかった場合、'@option{wrapscan}' がオンのときは、"pattern not found" というメッセージが表示され、カーソルは動きません。オフのときは、後方検索なら "search hit TOP without match"、前方検索なら "search hit BOTTOM without match"、というメッセージが表示されます。
+
+'@option{wrapscan}' がオンのときに検索がバッファの端から端へ継続した場合、後方検索なら "search hit TOP, continuing at BOTTOM"、前方検索なら "search hit BOTTOM, continuing at TOP" というメッセージが表示されます。このメッセージを表示しないようにするには、'@option{shortmess}' オプションに '@var{s}' フラグを設定します。メッセージは '@option{highlight}' オプションの '@var{w}' で強調表示されます (初期設定: standout)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*search-range*
+You can limit the search command "/" to a certain range of lines by including
+\%>l items.  For example, to match the word "limit" below line 199 and above
+line 300: >
+	/\%>199l\%<300llimit
+Also see |/\%>l|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{search-range}
+@cindex search-range
+"/" コマンドで検索するとき、\%>l を含めることで検索の範囲を指定できます。例えば、199 行目と 300 行目の間にある "limit" という単語を検索するには次のようにします:
+@example
+/\%>199l\%<300llimit
+@end example
+|/\%>l| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Another way is to use the ":substitute" command with the 'c' flag.  Example: >
+   :.,300s/Pattern//gc
+This command will search from the cursor position until line 300 for
+"Pattern".  At the match, you will be asked to type a character.  Type 'q' to
+stop at this match, type 'n' to find the next match.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他にも、"@command{:substitute}" コマンドに '@var{c}' フラグをつける方法で、擬似的な範囲内検索ができます。例:
+@example
+:.,300s/Pattern//gc
+@end example
+この例では、カーソル位置から 300 行目までの間で "Pattern" が検索されます。マッチした場所で、動作を指示するためのキーを入力必要があります。検索を停止するには 'q' を、次のマッチを検索するには 'n' を入力します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "*", "#", "g*" and "g#" commands look for a word near the cursor in this
+order, the first one that is found is used:
+- The keyword currently under the cursor.
+- The first keyword to the right of the cursor, in the same line.
+- The WORD currently under the cursor.
+- The first WORD to the right of the cursor, in the same line.
+The keyword may only contain letters and characters in 'iskeyword'.
+The WORD may contain any non-blanks (<Tab>s and/or <Space>s).
+Note that if you type with ten fingers, the characters are easy to remember:
+the "#" is under your left hand middle finger (search to the left and up) and
+the "*" is under your right hand middle finger (search to the right and down).
+(this depends on your keyboard layout though).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"*", "#", "g*", "g#" コマンドはカーソルに近い単語を次の順番で検索します。最初に見つかったものが使われます:
+@itemize @minus
+@item カーソル位置のキーワード
+@item 同じ行の、カーソルの右側のキーワード
+@item カーソル位置の単語
+@item 同じ行の、カーソルの右側の単語
+@end itemize
+キーワードは、'@option{iskeyword}' で定義されている文字だけを含む文字列です。単語 (|WORD|) は、空白文字 (<Tab> や <Space>) を含まない文字列です。
+@quotation
+@strong{Note:} @*
+10 本の指を使ってタイプしているなら、このコマンドを覚えるのは簡単です:
+@itemize @bullet
+@item "#" は左手の中指で押します (左上に向かって検索します)。
+@item "*" は右手の中指で押します (右下に向かって検索します)。
+@end itemize
+@{訳注: これは英語キーボードでの話@}
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. The definition of a pattern		*search-pattern* *pattern* *[pattern]*
+					*regular-expression* *regexp* *Pattern*
+					*E76* *E383* *E476*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{search-pattern}
+@anchor{pattern}
+@anchor{[pattern]}
+@anchor{regular-expression}
+@anchor{regexp}
+@anchor{Pattern}
+@anchor{E76}
+@anchor{E383}
+@anchor{E476}
+@cindex search-pattern
+@cindex pattern
+@cindex [pattern]
+@cindex regular-expression
+@cindex regexp
+@cindex Pattern
+@cindex E76
+@cindex E383
+@cindex E476
+@section 2. パターンの定義
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For starters, read chapter 27 of the user manual |usr_27.txt|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+初心者の方はユーザーマニュアルの 27 章 |@ref{usr_27.txt, , usr_27.txt}| を読んでください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*/bar* */\bar* */pattern*
+1. A pattern is one or more branches, separated by "\|".  It matches anything
+   that matches one of the branches.  Example: "foo\|beep" matches "foo" and
+   matches "beep".  If more than one branch matches, the first one is used.
+
+   pattern ::=	    branch
+		or  branch \| branch
+		or  branch \| branch \| branch
+		etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/bar}
+@anchor{/\bar}
+@anchor{/pattern}
+@cindex /bar
+@cindex /\bar
+@cindex /pattern
+1. パターンは、"\|" で分けられた 1 つ以上のブランチからなります。ブランチがどれか 1 つでもマッチすればマッチします。例えば、"foo\|beep" は "foo" と "beep" にマッチします。複数のブランチがマッチした場合は、最初にマッチしたものが使われます。
+@verbatim
+pattern ::=      branch
+             or  branch \| branch
+             or  branch \| branch \| branch
+             etc.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*/branch* */\&*
+2. A branch is one or more concats, separated by "\&".  It matches the last
+   concat, but only if all the preceding concats also match at the same
+   position.  Examples:
+	"foobeep\&..." matches "foo" in "foobeep".
+	".*Peter\&.*Bob" matches in a line containing both "Peter" and "Bob"
+
+   branch ::=	    concat
+		or  concat \& concat
+		or  concat \& concat \& concat
+		etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/branch}
+@anchor{/\&}
+@cindex /branch
+@cindex /\&
+2. ブランチは、"\&" で分けられた1つ以上の連接からなります。全ての連接が同じ場所でマッチした場合に限り、最後の連接がマッチします。例:
+@itemize @bullet
+@item "foobeep\&..." は "foobeep" の "foo" にマッチします。
+@item ".*Peter\&.*Bob" は "Peter" と "Bob" が両方ある行でマッチします。
+@end itemize
+@verbatim
+ranch ::=       concat
+            or  concat \& concat
+            or  concat \& concat \& concat
+            etc.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*/concat*
+3. A concat is one or more pieces, concatenated.  It matches a match for the
+   first piece, followed by a match for the second piece, etc.  Example:
+   "f[0-9]b", first matches "f", then a digit and then "b".
+
+   concat  ::=	    piece
+		or  piece piece
+		or  piece piece piece
+		etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/concat}
+@cindex /concat
+3. 連接は、連続した 1 つ以上のピースからなります。ピースがすべて、順番どおりマッチした場合にマッチします。たとえば、"f[0-9]b" は最初に "f" にマッチし、次に 1 桁の数字、そして "b" にマッチします。
+@verbatim
+concat  ::=      piece
+             or  piece piece
+             or  piece piece piece
+             etc.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*/piece*
+4. A piece is an atom, possibly followed by a multi, an indication of how many
+   times the atom can be matched.  Example: "a*" matches any sequence of "a"
+   characters: "", "a", "aa", etc.  See |/multi|.
+
+   piece   ::=	    atom
+		or  atom  multi
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/piece}
+@cindex /piece
+4. ピースはアトムです。アトムが何回マッチするかを指示する、量指定子を後ろに置くことができます。たとえば "a*" はいくつの "a" でもマッチします。""、"a"、"aa" など。|/multi| を参照。
+@verbatim
+piece   ::=      atom
+             or  atom  multi
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*/atom*
+5. An atom can be one of a long list of items.  Many atoms match one character
+   in the text.  It is often an ordinary character or a character class.
+   Braces can be used to make a pattern into an atom.  The "\z(\)" construct
+   is only for syntax highlighting.
+
+   atom    ::=	    ordinary-atom		|/ordinary-atom|
+		or  \( pattern \)		|/\(|
+		or  \%( pattern \)		|/\%(|
+		or  \z( pattern \)		|/\z(|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/atom}
+@cindex /atom
+5. アトムはパターンアイテムを構成する要素です。ほとんどのアトムは 1 文字にマッチします。多くの場合、アトムは普通の文字か文字クラスです。カッコを使ってパターンからアトムを作れます。"\z(\)" は構文強調専用です。
+@verbatim
+atom    ::=      ordinary-atom       |/ordinary-atom|
+             or  \( pattern \)       |/\(|
+             or  \%( pattern \)      |/\%(|
+             or  \z( pattern \)      |/\z(|
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+				*/\%#=* *two-engines* *NFA*
+Vim includes two regexp engines:
+1. An old, backtracking engine that supports everything.
+2. A new, NFA engine that works much faster on some patterns, possibly slower
+   on some patterns.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\%#=}
+@anchor{two-engines}
+@anchor{NFA}
+@cindex /\%#=
+@cindex two-engines
+@cindex NFA
+Vim は 2 つの正規表現エンジンを持っています:
+@itemize
+@item 古い、バックトラッキングエンジン。すべての機能をサポート。
+@item 新しい、NFA エンジン。いくつかのパターンで動作が速いがいくつかのパターンでは遅くなる。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will automatically select the right engine for you.  However, if you run
+into a problem or want to specifically select one engine or the other, you can
+prepend one of the following to the pattern:
+
+	\%#=0	Force automatic selection.  Only has an effect when
+	        'regexpengine' has been set to a non-zero value.
+	\%#=1	Force using the old engine.
+	\%#=2	Force using the NFA engine.
+
+You can also use the 'regexpengine' option to change the default.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は自動的に適切なエンジンを選択します。何か問題が発生したか、あるいは明示的にエンジンを選択したいか、あるいはその他の理由で、エンジンを指定したい場合はパターンの先頭で次のように指定します:
+@multitable @columnfractions .1 .9
+@item \%#=0 @tab 強制的に自動選択にする。'@option{regexpengine}' が 0 以外のときだけ意味がある。
+@item \%#=1 @tab 強制的に古いエンジンを使う。
+@item \%#=2 @tab 強制的に NFA エンジンを使う。
+@end multitable
+'@option{regexpengine}' オプションでもデフォルトのエンジンを選択できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			 *E864* *E868* *E874* *E875* *E876* *E877* *E878*
+If selecting the NFA engine and it runs into something that is not implemented
+the pattern will not match.  This is only useful when debugging Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E864}
+@anchor{E868}
+@anchor{E874}
+@anchor{E875}
+@anchor{E876}
+@anchor{E877}
+@anchor{E878}
+@cindex E864
+@cindex E868
+@cindex E874
+@cindex E875
+@cindex E876
+@cindex E877
+@cindex E878
+NFA エンジンが選択され、未実装の機能が使用され、パターンがマッチしなかった場合に発生します。Vim のデバッグ用です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Magic							*/magic*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/magic}
+@cindex /magic
+@section 3. Magic
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some characters in the pattern are taken literally.  They match with the same
+character in the text.  When preceded with a backslash however, these
+characters get a special meaning.
+
+Other characters have a special meaning without a backslash.  They need to be
+preceded with a backslash to match literally.
+
+If a character is taken literally or not depends on the 'magic' option and the
+items mentioned next.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パターンの中でリテラルとして扱われる文字は、テキストの同じ文字とマッチします。しかし、バックスラッシュが前置されると、特別な意味を持つようになります。
+
+バックスラッシュを前置しなくても特別な意味を持つ文字があります。そのような文字をリテラル文字としてマッチさせるには、バックスラッシュを前置する必要があります。
+
+ある文字がリテラルとして処理されるかどうかは、オプション '@option{magic}' と、以下で説明するアイテムに依存します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*/\m* */\M*
+Use of "\m" makes the pattern after it be interpreted as if 'magic' is set,
+ignoring the actual value of the 'magic' option.
+Use of "\M" makes the pattern after it be interpreted as if 'nomagic' is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\m}
+@anchor{/\M}
+@cindex /\m
+@cindex /\M
+"\m" を使うと、それ以降のパターンは '@option{magic}' がオンの状態で処理されます。オプション '@option{magic}' の設定よりも優先されます。"\M" を使うと、それ以降のパターンは '@option{nomagic}' の状態で処理されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*/\v* */\V*
+Use of "\v" means that in the pattern after it all ASCII characters except
+'0'-'9', 'a'-'z', 'A'-'Z' and '_' have a special meaning.  "very magic"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\v}
+@anchor{/\V}
+@cindex /\v
+@cindex /\V
+"\v" を使うと、それ以降の、'0'-'9'、'a'-'z'、'A'-'Z'、'_'、以外のすべての ASCII 文字は特別な意味を持ちます。 "very magic"
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use of "\V" means that in the pattern after it only the backslash and the
+terminating character (/ or ?) has a special meaning.  "very nomagic"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"\V" を使うと、それ以降はバックスラッシュと終端文字 (/ や ?) だけが特別な意味を持ちます。 "very nomagic"
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples:
+after:	  \v	   \m	    \M	     \V		matches ~
+		'magic' 'nomagic'
+	  $	   $	    $	     \$		matches end-of-line
+	  .	   .	    \.	     \.		matches any character
+	  *	   *	    \*	     \*		any number of the previous atom
+	  ~	   ~	    \~	     \~		latest substitute string
+	  ()	   \(\)     \(\)     \(\)	grouping into an atom
+	  |	   \|	    \|	     \|		separating alternatives
+	  \a	   \a	    \a	     \a		alphabetic character
+	  \\	   \\	    \\	     \\		literal backslash
+	  \.	   \.	    .	     .		literal dot
+	  \{	   {	    {	     {		literal '{'
+	  a	   a	    a	     a		literal 'a'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@multitable @columnfractions .12 .12 .12 .12 .12 .40
+@item after: @tab \v @tab \m @tab \M @tab \V @tab マッチするもの
+@item @tab @tab '@option{magic}' @tab '@option{nomagic}'
+@item @tab $ @tab $ @tab $ @tab \$ @tab 行末
+@item @tab . @tab . @tab \. @tab \. @tab 何か 1 文字
+@item @tab * @tab * @tab \* @tab \* @tab 直前のアトムの繰り返し
+@item @tab ~ @tab ~ @tab \~ @tab \~ @tab 直近の置換文字列
+@item @tab () @tab \(\) @tab \(\) @tab \(\) @tab グループ化してアトムにする
+@item @tab | @tab \| @tab \| @tab \| @tab 選択の区切り
+@item @tab \a @tab \a @tab \a @tab \a @tab 英字
+@item @tab \\ @tab \\ @tab \\ @tab \\ @tab リテラルのバックスラッシュ
+@item @tab \. @tab \. @tab . @tab . @tab リテラルのドット
+@item @tab \@{ @tab @{ @tab @{ @tab @{ @tab リテラルの '@{'
+@item @tab a @tab a @tab a @tab a @tab リテラルの 'a'
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{only Vim supports \m, \M, \v and \V}
+
+It is recommended to always keep the 'magic' option at the default setting,
+which is 'magic'.  This avoids portability problems.  To make a pattern immune
+to the 'magic' option being set or not, put "\m" or "\M" at the start of the
+pattern.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{\m、\M、\v、\V、は Vim だけの機能です@}
+
+オプション '@option{magic}' は初期設定のままにしておいてください。環境の違いによるトラブルを回避できます。パターンが '@option{magic}' の設定に影響されないようにするには、パターンの先頭に "\m" か "\M" を置きます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Overview of pattern items				*pattern-overview*
+						*E865* *E866* *E867* *E869*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{pattern-overview}
+@anchor{E865}
+@anchor{E866}
+@anchor{E867}
+@anchor{E869}
+@cindex pattern-overview
+@cindex E865
+@cindex E866
+@cindex E867
+@cindex E869
+@section 4. パターンの概要
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Overview of multi items.				*/multi* *E61* *E62*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/multi}
+@anchor{E61}
+@anchor{E62}
+@cindex /multi
+@cindex E61
+@cindex E62
+@unnumberedsubsec 量指定子の概要
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+More explanation and examples below, follow the links.		*E64* *E871*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E64}
+@anchor{E871}
+@cindex E64
+@cindex E871
+詳しい説明や使用例は、リンク先を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	  multi ~
+     'magic' 'nomagic'	matches of the preceding atom ~
+|/star|	*	\*	0 or more	as many as possible
+|/\+|	\+	\+	1 or more	as many as possible (*)
+|/\=|	\=	\=	0 or 1		as many as possible (*)
+|/\?|	\?	\?	0 or 1		as many as possible (*)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec 量指定子
+@multitable @columnfractions .10 .15 .15 .20 .40
+@item @tab '@option{magic}' @tab '@option{nomagic}' @tab アトムがいくつマッチするか @tab
+@item |/star| @tab * @tab \* @tab 0 以上 @tab 最長一致
+@item |/\+| @tab \+ @tab \+ @tab 1 以上 @tab 最長一致 (*)
+@item |/\=| @tab \= @tab \= @tab 0 か 1 @tab 最長一致 (*)
+@item |/\?| @tab \? @tab \? @tab 0 か 1 @tab 最長一致 (*)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|/\{|	\{n,m}	\{n,m}	n to m		as many as possible (*)
+	\{n}	\{n}	n		exactly (*)
+	\{n,}	\{n,}	at least n	as many as possible (*)
+	\{,m}	\{,m}	0 to m		as many as possible (*)
+	\{}	\{}	0 or more	as many as possible (same as *) (*)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+@item |/\@{| @tab \@{n,m@} @tab \@{n,m@} @tab n 以上 m 以下 @tab 最長一致 (*)
+@item @tab \@{n@} @tab \@{n@} @tab n @tab 正確に指定した数だけ (*)
+@item @tab \@{n,@} @tab \@{n,@} @tab n 以上 @tab 最長一致 (*)
+@item @tab \@{,m@} @tab \@{,m@} @tab 0 以上 m 以下 @tab 最長一致 (*)
+@item @tab \@{@} @tab \@{@} @tab 0 以上 @tab 最長一致 (*と同じ) (*)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|/\{-|	\{-n,m}	\{-n,m}	n to m		as few as possible (*)
+	\{-n}	\{-n}	n		exactly (*)
+	\{-n,}	\{-n,}	at least n	as few as possible (*)
+	\{-,m}	\{-,m}	0 to m		as few as possible (*)
+	\{-}	\{-}	0 or more	as few as possible (*)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+@item |/\@{-| @tab \@{-n,m@} @tab \@{-n,m@} @tab n 以上 m 以下 @tab 最短一致 (*)
+@item @tab \@{-n@} @tab \@{-n@} @tab n @tab 正確に指定した数だけ (*)
+@item @tab \@{-n,@} @tab \@{-n,@} @tab n 以上 @tab 最短一致 (*)
+@item @tab \@{-,m@} @tab \@{-,m@} @tab 0 以上 m 以下 @tab 最短一致 (*)
+@item @tab \@{-@} @tab \@{-@} @tab 0 以上 @tab 最短一致 (*)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E59*
+|/\@>|	\@>	\@>	1, like matching a whole pattern (*)
+|/\@=|	\@=	\@=	nothing, requires a match |/zero-width| (*)
+|/\@!|	\@!	\@!	nothing, requires NO match |/zero-width| (*)
+|/\@<=|	\@<=	\@<=	nothing, requires a match behind |/zero-width| (*)
+|/\@<!|	\@<!	\@<!	nothing, requires NO match behind |/zero-width| (*)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E59}
+@cindex E59
+@item |/\@@>| @tab \@@> @tab \@@> @tab 1 @tab 強欲な量指定子 (*)
+@item |/\@@=| @tab \@@= @tab \@@= @tab なし @tab 幅ゼロの肯定先読み @*
+|/zero-width| (*)
+@item |/\@@!| @tab \@@! @tab \@@! @tab なし @tab 幅ゼロの否定先読み @*
+|/zero-width| (*)
+@item |/\@@<=| @tab \@@<= @tab \@@<= @tab なし @tab 幅ゼロの肯定後読み @*
+|/zero-width| (*)
+@item |/\@@<!| @tab \@@<! @tab \@@<! @tab なし @tab 幅ゼロの否定後読み @*
+|/zero-width| (*)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+(*) {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+(*) @{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Overview of ordinary atoms.				*/ordinary-atom*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/ordinary-atom}
+@cindex /ordinary-atom
+@unnumberedsubsec 普通のアトムの概要
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+More explanation and examples below, follow the links.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+詳しい説明や使用例は、リンク先を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+      ordinary atom ~
+      magic   nomagic	matches ~
+|/^|	^	^	start-of-line (at start of pattern) |/zero-width|
+|/\^|	\^	\^	literal '^'
+|/\_^|	\_^	\_^	start-of-line (used anywhere) |/zero-width|
+|/$|	$	$	end-of-line (at end of pattern) |/zero-width|
+|/\$|	\$	\$	literal '$'
+|/\_$|	\_$	\_$	end-of-line (used anywhere) |/zero-width|
+|/.|	.	\.	any single character (not an end-of-line)
+|/\_.|	\_.	\_.	any single character or end-of-line
+|/\<|	\<	\<	beginning of a word |/zero-width|
+|/\>|	\>	\>	end of a word |/zero-width|
+|/\zs|	\zs	\zs	anything, sets start of match
+|/\ze|	\ze	\ze	anything, sets end of match
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec アトム
+@multitable @columnfractions .15 .15 .15 .55
+@item @tab magic @tab nomagic @tab マッチするもの
+@item |/^| @tab ^ @tab ^ @tab 行頭 (パターンの先頭にある場合だけ) |/zero-width|
+@item |/\^| @tab \^ @tab \^ @tab リテラル文字 '^'
+@item |/\_^| @tab \_^ @tab \_^ @tab 行頭 (どこでも使える) |/zero-width|
+@item |/$| @tab $ @tab $ @tab 行末 (パターンの末尾にある場合だけ) |/zero-width|
+@item |/\$| @tab \$ @tab \$ @tab リテラル文字 '$'
+@item |/\_$| @tab \_$ @tab \_$ @tab 行末 (どこでも使える) |/zero-width|
+@item |/.| @tab . @tab \. @tab 何か 1 文字 (改行以外)
+@item |/\_.| @tab \_. @tab \_. @tab 何か 1 文字 (改行含む)
+@item |/\<| @tab \< @tab \< @tab 単語の先頭 |/zero-width|
+@item |/\>| @tab \> @tab \> @tab 単語の末尾 |/zero-width|
+@item |/\zs| @tab \zs @tab \zs @tab なし。マッチの開始地点を設定します
+@item |/\ze| @tab \ze @tab \ze @tab なし。マッチの終了地点を設定します
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+|/\%^|	\%^	\%^	beginning of file |/zero-width|		*E71*
+|/\%$|	\%$	\%$	end of file |/zero-width|
+|/\%V|	\%V	\%V	inside Visual area |/zero-width|
+|/\%#|	\%#	\%#	cursor position |/zero-width|
+|/\%'m|	\%'m	\%'m	mark m position |/zero-width|
+|/\%l|	\%23l	\%23l	in line 23 |/zero-width|
+|/\%c|	\%23c	\%23c	in column 23 |/zero-width|
+|/\%v|	\%23v	\%23v	in virtual column 23 |/zero-width|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E71}
+@cindex E71
+@item |/\%^| @tab \%^ @tab \%^ @tab ファイルの先頭 |/zero-width|
+@item |/\%$| @tab \%$ @tab \%$ @tab ファイルの末尾 |/zero-width|
+@item |/\%V| @tab \%V @tab \%V @tab 選択範囲内 |/zero-width|
+@item |/\%#| @tab \%# @tab \%# @tab カーソル位置 |/zero-width|
+@item |/\%'m| @tab \%'m @tab \%'m @tab マーク m の位置 |/zero-width|
+@item |/\%l| @tab \%23l @tab \%23l @tab 23 行目 |/zero-width|
+@item |/\%c| @tab \%23c @tab \%23c @tab 23 列目 |/zero-width|
+@item |/\%v| @tab \%23v @tab \%23v @tab 23 列目 (表示単位) |/zero-width|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Character classes {not in Vi}:				*/character-classes*
+      magic   nomagic	matches ~
+|/\i|	\i	\i	identifier character (see 'isident' option)
+|/\I|	\I	\I	like "\i", but excluding digits
+|/\k|	\k	\k	keyword character (see 'iskeyword' option)
+|/\K|	\K	\K	like "\k", but excluding digits
+|/\f|	\f	\f	file name character (see 'isfname' option)
+|/\F|	\F	\F	like "\f", but excluding digits
+|/\p|	\p	\p	printable character (see 'isprint' option)
+|/\P|	\P	\P	like "\p", but excluding digits
+|/\s|	\s	\s	whitespace character: <Space> and <Tab>
+|/\S|	\S	\S	non-whitespace character; opposite of \s
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/character-classes}
+@cindex /character-classes
+@unnumberedsubsubsec 文字クラス
+
+@{Vi にはありません@}:
+@multitable @columnfractions .15 .15 .15 .55
+@item @tab magic @tab nomagic @tab マッチするもの
+@item |/\i| @tab \i @tab \i @tab 識別子文字 (オプション '@option{isident}' を参照)
+@item |/\I| @tab \I @tab \I @tab "\i" と同じですが、数字は除外します
+@item |/\k| @tab \k @tab \k @tab キーワード文字 (オプション '@option{iskeyword}' を参照)
+@item |/\K| @tab \K @tab \K @tab "\k" と同じですが、数字は除外します
+@item |/\f| @tab \f @tab \f @tab ファイル名の文字 (オプション '@option{isfname}' を参照)
+@item |/\F| @tab \F @tab \F @tab "\f" と同じですが、数字は除外します
+@item |/\p| @tab \p @tab \p @tab 印字可能文字 (オプション '@option{isprint}' を参照)
+@item |/\P| @tab \P @tab \P @tab "\p" と同じですが、数字は除外します
+@item |/\s| @tab \s @tab \s @tab 空白文字: <Space> と <Tab>
+@item |/\S| @tab \S @tab \S @tab 空白文字以外。\s の反対です
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+|/\d|	\d	\d	digit:				[0-9]
+|/\D|	\D	\D	non-digit:			[^0-9]
+|/\x|	\x	\x	hex digit:			[0-9A-Fa-f]
+|/\X|	\X	\X	non-hex digit:			[^0-9A-Fa-f]
+|/\o|	\o	\o	octal digit:			[0-7]
+|/\O|	\O	\O	non-octal digit:		[^0-7]
+|/\w|	\w	\w	word character:			[0-9A-Za-z_]
+|/\W|	\W	\W	non-word character:		[^0-9A-Za-z_]
+|/\h|	\h	\h	head of word character:		[A-Za-z_]
+|/\H|	\H	\H	non-head of word character:	[^A-Za-z_]
+|/\a|	\a	\a	alphabetic character:		[A-Za-z]
+|/\A|	\A	\A	non-alphabetic character:	[^A-Za-z]
+|/\l|	\l	\l	lowercase character:		[a-z]
+|/\L|	\L	\L	non-lowercase character:	[^a-z]
+|/\u|	\u	\u	uppercase character:		[A-Z]
+|/\U|	\U	\U	non-uppercase character		[^A-Z]
+|/\_|	\_x	\_x	where x is any of the characters above: character
+			class with end-of-line included
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item |/\d| @tab \d @tab \d @tab 数字 [0-9]
+@item |/\D| @tab \D @tab \D @tab 数字以外 [^0-9]
+@item |/\x| @tab \x @tab \x @tab 16 進数字 [0-9A-Fa-f]
+@item |/\X| @tab \X @tab \X @tab 16 進数字以外 [^0-9A-Fa-f]
+@item |/\o| @tab \o @tab \o @tab 8 進数字 [0-7]
+@item |/\O| @tab \O @tab \O @tab 8 進数字以外 [^0-7]
+@item |/\w| @tab \w @tab \w @tab 単語を構成する文字 [0-9A-Za-z_]
+@item |/\W| @tab \W @tab \W @tab 単語を構成する文字以外 [^0-9A-Za-z_]
+@item |/\h| @tab \h @tab \h @tab 単語の先頭の文字 [A-Za-z_]
+@item |/\H| @tab \H @tab \H @tab 単語の先頭の文字以外 [^A-Za-z_]
+@item |/\a| @tab \a @tab \a @tab 英字 [A-Za-z]
+@item |/\A| @tab \A @tab \A @tab 英字以外 [^A-Za-z]
+@item |/\l| @tab \l @tab \l @tab 小文字英字 [a-z]
+@item |/\L| @tab \L @tab \L @tab 小文字英字以外 [^a-z]
+@item |/\u| @tab \u @tab \u @tab 大文字英字 [A-Z]
+@item |/\U| @tab \U @tab \U @tab 大文字英字以外 [^A-Z]
+@item |/\_| @tab \_x @tab \_x @tab x は上記の文字クラスのどれかです。文字クラスと改行がマッチします。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+(end of character classes)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+(文字クラスここまで)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+      magic   nomagic	matches ~
+|/\e|	\e	\e	<Esc>
+|/\t|	\t	\t	<Tab>
+|/\r|	\r	\r	<CR>
+|/\b|	\b	\b	<BS>
+|/\n|	\n	\n	end-of-line
+|/~|	~	\~	last given substitute string
+|/\1|	\1	\1	same string as matched by first \(\) {not in Vi}
+|/\2|	\2	\2	Like "\1", but uses second \(\)
+	   ...
+|/\9|	\9	\9	Like "\1", but uses ninth \(\)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .15 .15 .15 .55
+@item @tab magic @tab nomagic @tab マッチするもの
+@item |/\e| @tab \e @tab \e @tab <Esc>
+@item |/\t| @tab \t @tab \t @tab <Tab>
+@item |/\r| @tab \r @tab \r @tab <CR>
+@item |/\b| @tab \b @tab \b @tab <BS>
+@item |/\n| @tab \n @tab \n @tab 改行
+@item |/~| @tab ~ @tab \~ @tab 最後に置換された文字列
+@item |/\1| @tab \1 @tab \1 @tab 最初の \(\) と同じ文字列 @{Vi にはありません@}
+@item |/\2| @tab \2 @tab \2 @tab "\1" と同じですが、2 番目の \(\) を使います
+@item @tab ...
+@item |/\9| @tab \9 @tab \9 @tab "\1" と同じですが、9 番目の \(\) を使います
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*E68*
+|/\z1|	\z1	\z1	only for syntax highlighting, see |:syn-ext-match|
+	   ...
+|/\z1|	\z9	\z9	only for syntax highlighting, see |:syn-ext-match|
+
+	x	x	a character with no special meaning matches itself
+
+|/[]|	[]	\[]	any character specified inside the []
+|/\%[]|	\%[]	\%[]	a sequence of optionally matched atoms
+
+|/\c|	\c	\c	ignore case, do not use the 'ignorecase' option
+|/\C|	\C	\C	match case, do not use the 'ignorecase' option
+|/\Z|	\Z	\Z	ignore differences in Unicode "combining characters".
+			Useful when searching voweled Hebrew or Arabic text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E68}
+@cindex E68
+@item |/\z1| @tab \z1 @tab \z1 @tab 構文強調専用。|:syn-ext-match| を参照
+@item @tab ...
+@item |/\z1| @tab \z9 @tab \z9 @tab 構文強調専用。|:syn-ext-match| を参照
+@item 
+@item @tab x @tab x @tab 特別な意味のない文字は、その文字自身とマッチします
+@item 
+@item |/[]| @tab [] @tab \[] @tab [] で囲んだ文字のうちどれか
+@item |/\%[]| @tab \%[] @tab \%[] @tab 任意にマッチするアトム列
+@item 
+@item |/\c| @tab \c @tab \c @tab 大文字小文字を無視します。'@option{ignorecase}' は使用されない
+@item |/\C| @tab \C @tab \C @tab 大文字小文字を区別します。'@option{ignorecase}' は使用されない
+@item |/\Z| @tab \Z @tab \Z @tab Unicode の合成文字かどうかを無視します。ヘブライ語やアラビア語で母音を検索するときに便利です。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+      magic   nomagic	matches ~
+|/\m|	\m	\m	'magic' on for the following chars in the pattern
+|/\M|	\M	\M	'magic' off for the following chars in the pattern
+|/\v|	\v	\v	the following chars in the pattern are "very magic"
+|/\V|	\V	\V	the following chars in the pattern are "very nomagic"
+|/\%#=|   \%#=1   \%#=1   select regexp engine |/zero-width|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .15 .15 .15 .55
+@item @tab magic @tab nomagic @tab マッチするもの
+@item |/\m| @tab \m @tab \m @tab 以降のパターン文字を '@option{magic}' がオンの状態で処理します
+@item |/\M| @tab \M @tab \M @tab 以降のパターン文字を '@option{magic}' がオフの状態で処理します
+@item |/\v| @tab \v @tab \v @tab 以降のパターン文字を "very magic" で処理します
+@item |/\V| @tab \V @tab \V @tab 以降のパターン文字を "very nomagic" で処理します
+@item |/\%#=| @tab \%#=1 @tab \%#=1 @tab 正規表現エンジンを選択する |/zero-width|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|/\%d|	\%d	\%d	match specified decimal character (eg \%d123)
+|/\%x|	\%x	\%x	match specified hex character (eg \%x2a)
+|/\%o|	\%o	\%o	match specified octal character (eg \%o040)
+|/\%u|	\%u	\%u	match specified multibyte character (eg \%u20ac)
+|/\%U|	\%U	\%U	match specified large multibyte character (eg
+			\%U12345678)
+|/\%C|	\%C	\%C	match any composing characters
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item |/\%d| @tab \%d @tab \%d @tab 10 進数指定の特定の文字 (例 \%d123)
+@item |/\%x| @tab \%x @tab \%x @tab 16 進数指定の特定の文字 (例 \%x2a)
+@item |/\%o| @tab \%o @tab \%o @tab 8 進数指定の特定の文字  (例 \%o040)
+@item |/\%u| @tab \%u @tab \%u @tab 特定のマルチバイト文字 (例 \%u20ac)
+@item |/\%U| @tab \%U @tab \%U @tab 特定の広範囲のマルチバイト文字 (例 \%U12345678)
+@item |/\%C| @tab \%C @tab \%C @tab すべての合成文字
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example			matches ~
+\<\I\i*		or
+\<\h\w*
+\<[a-zA-Z_][a-zA-Z0-9_]*
+			An identifier (e.g., in a C program).
+
+\(\.$\|\. \)		A period followed by <EOL> or a space.
+
+[.!?][])"']*\($\|[ ]\)	A search pattern that finds the end of a sentence,
+			with almost the same definition as the ")" command.
+
+cat\Z			Both "cat" and "càt" ("a" followed by 0x0300)
+			Does not match "càt" (character 0x00e0), even
+			though it may look the same.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@headitem 例 @tab マッチするもの
+@item \<\I\i* @*
+\<\h\w* @*
+\<[a-zA-Z_][a-zA-Z0-9_]*
+@tab 識別子 (例えば C 言語の識別子)
+@item
+@item \(\.$\|\. \) @tab <EOL> かスペースの直前のピリオド
+@item
+@item [.!?][])"']*\($\|[ ]\) @tab 文末。")" コマンドが認識する文末と同じ定義です。
+@item
+@item cat\Z @tab "cat" と "càt" ("a" + 0x0300) にマッチする。見た目は似ていますが、"càt" (0x00e0) にはマッチしません。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+5. Multi items						*pattern-multi-items*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{pattern-multi-items}
+@cindex pattern-multi-items
+@section 5. 量指定子 (Multi items)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An atom can be followed by an indication of how many times the atom can be
+matched and in what way.  This is called a multi.  See |/multi| for an
+overview.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+アトムがどのように、何回マッチするかを指示するものを、量指定子 (multi) と呼びます。概要は |/multi| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/star* */\star*
+*	(use \* when 'magic' is not set)
+	Matches 0 or more of the preceding atom, as many as possible.
+	Example  'nomagic'	matches ~
+	a*	   a\*		"", "a", "aa", "aaa", etc.
+	.*	   \.\*		anything, also an empty string, no end-of-line
+	\_.*	   \_.\*	everything up to the end of the buffer
+	\_.*END	   \_.\*END	everything up to and including the last "END"
+				in the buffer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/star}
+@anchor{/\star}
+@cindex /star
+@cindex /\star
+@table @asis
+@item *
+('@option{magic}' がオフのときは \* )
+
+アトムの 0 回以上の繰り返し。最長一致。
+@multitable @columnfractions .25 .25 .50
+@item Example @tab '@option{nomagic}' @tab マッチするもの
+@item a* @tab a\* @tab ""、"a"、"aa"、"aaa"、など。
+@item .* @tab \.\* @tab 改行以外の全て (空文字列も)
+@item \_.* @tab \_.\* @tab バッファの末尾までの全て
+@item \_.*END @tab \_.\*END @tab 一番最後の "END" までの全て
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Exception: When "*" is used at the start of the pattern or just after
+	"^" it matches the star character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例外: パターンの最初と "^" の直後の "*" は、リテラルの "*" にマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Be aware that repeating "\_." can match a lot of text and take a long
+	time.  For example, "\_.*END" matches all text from the current
+	position to the last occurrence of "END" in the file.  Since the "*"
+	will match as many as possible, this first skips over all lines until
+	the end of the file and then tries matching "END", backing up one
+	character at a time.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"\_." の繰り返しには注意してください。たくさんのテキストがマッチして、そして、時間が掛かります。たとえば、"\_.*END" は、カーソルの位置から 1 番最後の "END" までのすべてのテキストがマッチします。"*" は最長一致なので、まずファイルの末尾までスキップして、それから 1 文字ずつ後退しながら "END" を探します。
+
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\+*
+\+	Matches 1 or more of the preceding atom, as many as possible. {not in
+	Vi}
+	Example		matches ~
+	^.\+$		any non-empty line
+	\s\+		white space of at least one character
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\+}
+@cindex /\+
+@item \+
+アトムの 1 回以上の繰り返し。最長一致。@{Vi にはありません@}
+@multitable @columnfractions .4 .6
+@item Example @tab マッチするもの ~
+@item ^.\+$ @tab 空行以外の行
+@item \s\+ @tab 1 文字以上の空白
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\=*
+\=	Matches 0 or 1 of the preceding atom, as many as possible. {not in Vi}
+	Example		matches ~
+	foo\=		"fo" and "foo"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\=}
+@cindex /\=
+@item \=
+0 回または 1 回のアトム。最長一致。@{Vi にはありません@}
+@multitable @columnfractions .4 .6
+@item Example @tab マッチするもの
+@item foo\= @tab "fo" と "foo"
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\?*
+\?	Just like \=.  Cannot be used when searching backwards with the "?"
+	command. {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\?}
+@cindex /\?
+@item \?
+\= と同じ。"?" コマンドによる後方検索では使えません。@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*/\{* *E60* *E554* *E870*
+\{n,m}	Matches n to m of the preceding atom, as many as possible
+\{n}	Matches n of the preceding atom
+\{n,}	Matches at least n of the preceding atom, as many as possible
+\{,m}	Matches 0 to m of the preceding atom, as many as possible
+\{}	Matches 0 or more of the preceding atom, as many as possible (like *)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@ifnottex
+@anchor{/\@{}
+@cindex /\@{
+@end ifnottex
+@anchor{E60}
+@anchor{E554}
+@anchor{E870}
+@cindex E60
+@cindex E554
+@cindex E870
+@item \@{n,m@}
+アトムの n 以上 m 以下の繰り返し。最長一致
+@item \@{n@}
+アトムの n 回の繰り返し
+@item \@{n,@}
+アトムの n 回以上の繰り返し。最長一致
+@item \@{,m@}
+アトムの 0 以上 m 以下の繰り返し。最長一致
+@item \@{@}
+アトムの 0 回以上の繰り返し。最長一致 (*と同じ)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*/\{-*
+\{-n,m}	matches n to m of the preceding atom, as few as possible
+\{-n}	matches n of the preceding atom
+\{-n,}	matches at least n of the preceding atom, as few as possible
+\{-,m}	matches 0 to m of the preceding atom, as few as possible
+\{-}	matches 0 or more of the preceding atom, as few as possible
+	{Vi does not have any of these}
+
+	n and m are positive decimal numbers or zero
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@ifnottex
+@anchor{/\@{-}
+@cindex /\@{-
+@end ifnottex
+@item \@{-n,m@}
+アトムの n 以上 m 以下の繰り返し。最短一致
+@item \@{-n@}
+アトムの n 回の繰り返し
+@item \@{-n,@}
+アトムの n 回以上の繰り返し。最短一致
+@item \@{-,m@}
+アトムの 0 以上 m 以下の繰り返し。最短一致
+@item \@{-@}
+アトムの 0 回以上の繰り返し。最短一致
+
+@{すべて Vi にはない機能です@}
+
+n と m には 10 進数正数、またはゼロを指定できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*non-greedy*
+	If a "-" appears immediately after the "{", then a shortest match
+	first algorithm is used (see example below).  In particular, "\{-}" is
+	the same as "*" but uses the shortest match first algorithm.  BUT: A
+	match that starts earlier is preferred over a shorter match: "a\{-}b"
+	matches "aaab" in "xaaab".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{non-greedy}
+@cindex non-greedy
+"@{" の直後に "-" がある場合は、最短一致のアルゴリズムが使われます (下記の例を参照)。特に、"\@{-@}" は "*" と同じですが、最短一致のアルゴリズムが使われます。しかし、早い位置でマッチするものが、短いマッチよりも優先されます。たとえば、"a\@{-@}b" は "xaaab" の "aaab" にマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Example			matches ~
+	ab\{2,3}c		"abbc" or "abbbc"
+	a\{5}			"aaaaa"
+	ab\{2,}c		"abbc", "abbbc", "abbbbc", etc.
+	ab\{,3}c		"ac", "abc", "abbc" or "abbbc"
+	a[bc]\{3}d		"abbbd", "abbcd", "acbcd", "acccd", etc.
+	a\(bc\)\{1,2}d		"abcd" or "abcbcd"
+	a[bc]\{-}[cd]		"abc" in "abcd"
+	a[bc]*[cd]		"abcd" in "abcd"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item Example @tab マッチするもの
+@item ab\@{2,3@}c @tab "abbc" または "abbbc"
+@item a\@{5@} @tab "aaaaa"
+@item ab\@{2,@}c @tab "abbc", "abbbc", "abbbbc", など
+@item ab\@{,3@}c @tab "ac", "abc", "abbc" or "abbbc"
+@item a[bc]\@{3@}d @tab "abbbd", "abbcd", "acbcd", "acccd" など
+@item a\(bc\)\@{1,2@}d @tab "abcd" または "abcbcd"
+@item a[bc]\@{-@}[cd] @tab "abcd" の "abc"
+@item a[bc]*[cd] @tab "abcd" の "abcd"
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	The } may optionally be preceded with a backslash: \{n,m\}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@} にバックスラッシュを前置するかどうかは任意です: \@{n,m\@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\@=*
+\@=	Matches the preceding atom with zero width. {not in Vi}
+	Like "(?=pattern)" in Perl.
+	Example			matches ~
+	foo\(bar\)\@=		"foo" in "foobar"
+	foo\(bar\)\@=foo	nothing
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@ifnottex
+@anchor{/\@@=}
+@cindex /\@@=
+@end ifnottex
+@item \@@=
+幅ゼロの肯定先読み。先行するアトムに幅ゼロでマッチします。@{Vi にはありません@}
+
+Perl の "(?=pattern)" と似ています。
+@multitable @columnfractions .5 .5
+@item Example @tab マッチするもの
+@item foo\(bar\)\@@= @tab "foobar" の "foo"
+@item foo\(bar\)\@@=foo @tab 何もマッチしない
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*/zero-width*
+	When using "\@=" (or "^", "$", "\<", "\>") no characters are included
+	in the match.  These items are only used to check if a match can be
+	made.  This can be tricky, because a match with following items will
+	be done in the same position.  The last example above will not match
+	"foobarfoo", because it tries match "foo" in the same position where
+	"bar" matched.
+
+	Note that using "\&" works the same as using "\@=": "foo\&.." is the
+	same as "\(foo\)\@=..".  But using "\&" is easier, you don't need the
+	braces.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/zero-width}
+@cindex /zero-width
+"\@@=" (や、"^"、"$"、"\<"、"\>"、など) を使った場合、その文字はマッチに含まれません。これらのアイテムは、マッチすることができるかどうかのチェックだけに使われます。続くアイテムが同じ場所でマッチすることに注意してください。上記の最後の例は "foobarfoo" にはマッチしません。"bar" がマッチしたのと同じ場所で "foo" とマッチしようとするからです。
+@quotation
+@strong{Note:} @*
+"\&" は "\@@=" と同じような働きをします。"foo\&.." と "\(foo\)\@@=.." は同じです。カッコを書かなくていいので "\&" の方が簡単です。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+							*/\@!*
+\@!	Matches with zero width if the preceding atom does NOT match at the
+	current position. |/zero-width| {not in Vi}
+	Like "(?!pattern)" in Perl.
+	Example			matches ~
+	foo\(bar\)\@!		any "foo" not followed by "bar"
+	a.\{-}p\@!		"a", "ap", "app", "appp", etc. not immediately
+				followed by a "p"
+	if \(\(then\)\@!.\)*$	"if " not followed by "then"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@ifnottex
+@anchor{/\@@!}
+@cindex /\@@!
+@end ifnottex
+@item \@@!
+幅ゼロの否定先読み。先行するアトムが現在の位置でマッチしない場合に、幅ゼロでマッチします。|/zero-width|
+
+@{Vi にはありません@}
+
+Perl の "(?!pattern)" と似ています。
+@multitable @columnfractions .4 .6
+@item Example @tab マッチするもの
+@item foo\(bar\)\@@! @tab 後ろに "bar" のない "foo"
+@item a.\@{-@}p\@@! @tab 後ろに "p" のない "a", "ap", "app", "appp" など
+@item if \(\(then\)\@@!.\)*$ @tab 後ろに "then" のない "if "
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Using "\@!" is tricky, because there are many places where a pattern
+	does not match.  "a.*p\@!" will match from an "a" to the end of the
+	line, because ".*" can match all characters in the line and the "p"
+	doesn't match at the end of the line.  "a.\{-}p\@!" will match any
+	"a", "ap", "app", etc. that isn't followed by a "p", because the "."
+	can match a "p" and "p\@!" doesn't match after that.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"\@@!" を使うには注意が必要です。パターンにマッチしない場所、というのはそこらじゅうにあるからです。"a.*p\@@!" は "a" から行末までマッチします。なぜなら、".*" が全ての文字にマッチし、"p" は行末にマッチしないからです。"a.\@{-@}p\@@!" は後ろに "p" のない文字列、"a", "ap", "app" などにマッチします。なぜなら、"." が "p" にもマッチし、"p\@@!" がその後ろにマッチする (つまり "p" がマッチしない) からです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	You can't use "\@!" to look for a non-match before the matching
+	position: "\(foo\)\@!bar" will match "bar" in "foobar", because at the
+	position where "bar" matches, "foo" does not match.  To avoid matching
+	"foobar" you could use "\(foo\)\@!...bar", but that doesn't match a
+	bar at the start of a line.  Use "\(foo\)\@<!bar".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+直前がマッチしないことを調べるために "\@@!" を使うことはできません。"\(foo\)\@@!bar" は "foobar" の "bar" にマッチします。なぜなら、"foo" がマッチしなかった場所で、"bar" がマッチするからです。"foobar" がマッチしないように、"\(foo\)\@@!...bar" とすることもできますが、これは行頭の "bar" にはマッチしません。"\(foo\)\@@<!bar" を使ってください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Useful example: to find "foo" in a line that does not contain "bar": >
+		/^\%(.*bar\)\@!.*\zsfoo
+<	This pattern first checks that there is not a single position in the
+	line where "bar" matches.  If ".*bar" matches somewhere the \@! will
+	reject the pattern.  When there is no match any "foo" will be found.
+	The "\zs" is to have the match start just before "foo".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実用的な例: "bar" を含んでいない行から "foo" を探す:
+@verbatim
+/^\%(.*bar\)\@@!.*\zsfoo
+@end verbatim
+このパターンはまず、行の中で "bar" がマッチしないことを確認します。もしどこかで ".*bar" がマッチすると \@@! によってこのパターンは否決されます。それがマッチせず、そしてどこかで "foo" が見つかると、"\zs" によって "foo" の直前でマッチが開始したことにされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\@<=*
+\@<=	Matches with zero width if the preceding atom matches just before what
+	follows. |/zero-width| {not in Vi}
+	Like "(?<=pattern)" in Perl, but Vim allows non-fixed-width patterns.
+	Example			matches ~
+	\(an\_s\+\)\@<=file	"file" after "an" and white space or an
+				end-of-line
+	For speed it's often much better to avoid this multi.  Try using "\zs"
+	instead |/\zs|.  To match the same as the above example:
+		an\_s\+\zsfile
+	At least set a limit for the look-behind, see below.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@ifnottex
+@anchor{/\@@<=}
+@cindex /\@@<=
+@end ifnottex
+@item \@@<=
+幅ゼロの肯定後読み。先行するアトムが、この後に続くパターンの直前にマッチする場合に、幅ゼロでマッチします。|/zero-width|
+
+@{Vi にはありません@}
+
+Perl の "(?<=pattern)" と似ていますが、Vim では可変長パターンも使えます。
+@multitable @columnfractions .4 .6
+@item Example @tab マッチするもの
+@item \(an\_s\+\)\@@<=file @tab "an" と空白文字 (改行含む) の後の "file"
+@end multitable
+処理速度を気にするなら、この量指定子は避けたほうが無難です。代わりに "\zs" を使ってください |/\zs|。次のものは上記の例と同じものにマッチします:
+@verbatim
+an\_s\+\zsfile
+@end verbatim
+あるいは少なくとも探索範囲を制限した方がいいでしょう。下記参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	"\@<=" and "\@<!" check for matches just before what follows.
+	Theoretically these matches could start anywhere before this position.
+	But to limit the time needed, only the line where what follows matches
+	is searched, and one line before that (if there is one).  This should
+	be sufficient to match most things and not be too slow.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"\@@<=" と "\@@<!" は直前の文字がマッチしているかどうかをチェックします。理論上は、マッチの現在位置よりも前ならどこでもマッチできます。しかし、処理時間を制限するために、マッチの現在行と、(もしあれば) 1 つ前の行だけが検索されます。ほとんどの場合はこれで十分ですし、遅くなり過ぎることもありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	In the old regexp engine the part of the pattern after "\@<=" and
+	"\@<!" are checked for a match first, thus things like "\1" don't work
+	to reference \(\) inside the preceding atom.  It does work the other
+	way around:
+	Bad example			matches ~
+	\%#=1\1\@<=,\([a-z]\+\)		",abc" in "abc,abc"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+古い正規表現エンジンでは "\@@<=" や "\@@<!" の後にくるパターンは最初にチェックされます。そのため、先行するアトムの内側にある \(\) に対する "\1" のような参照は機能しません。順番を逆にした場合は機能します:
+@multitable @columnfractions .5 .5
+@item 悪い例 @tab マッチするもの
+@item \%#=1\1\@@<=,\([a-z]\+\) @tab "abc,abc" の中の ",abc"
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	However, the new regexp engine works differently, it is better to not
+	rely on this behavior, do not use \@<= if it can be avoided:
+	Example				matches ~
+	\([a-z]\+\)\zs,\1		",abc" in "abc,abc"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しい正規表現エンジンでは動作が異なるので、この動作の違いに依存しないようにするのが無難です。可能なら \@@<= の使用を避けてください:
+@multitable @columnfractions .5 .5
+@item 例 @tab マッチするもの
+@item \([a-z]\+\)\zs,\1 @tab "abc,abc" の中の ",abc"
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+\@123<=
+	Like "\@<=" but only look back 123 bytes. This avoids trying lots
+	of matches that are known to fail and make executing the pattern very
+	slow.  Example, check if there is a "<" just before "span":
+		/<\@1<=span
+	This will try matching "<" only one byte before "span", which is the
+	only place that works anyway.
+	After crossing a line boundary, the limit is relative to the end of
+	the line.  Thus the characters at the start of the line with the match
+	are not counted (this is just to keep it simple).
+	The number zero is the same as no limit.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item \@@123<=
+"\@@<=" と同じですが 123 バイトまでしか探索しません。失敗すると分かっていて、その探索のせいで遅くなる状況を回避できます。例えば、"span" の前に "<" があるかどうかをチェックする場合:
+@verbatim
+/<\@1<=span
+@end verbatim
+このパターンは "span" の前の 1 バイトだけを見て "<" を探します。この例ではなんにしても 1 バイト前だけが唯一マッチする場所です。
+
+行をまたいだ場合、探索範囲はその行末からの相対位置になります。つまり、探索開始位置の行の文字はカウントされません (ものごとをシンプルに保つため)。
+
+数値のゼロは制限なしと同じです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\@<!*
+\@<!	Matches with zero width if the preceding atom does NOT match just
+	before what follows.  Thus this matches if there is no position in the
+	current or previous line where the atom matches such that it ends just
+	before what follows.  |/zero-width| {not in Vi}
+	Like "(?<!pattern)" in Perl, but Vim allows non-fixed-width patterns.
+	The match with the preceding atom is made to end just before the match
+	with what follows, thus an atom that ends in ".*" will work.
+	Warning: This can be slow (because many positions need to be checked
+	for a match).  Use a limit if you can, see below.
+	Example			matches ~
+	\(foo\)\@<!bar		any "bar" that's not in "foobar"
+	\(\/\/.*\)\@<!in	"in" which is not after "//"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@ifnottex
+@anchor{/\@@<!}
+@cindex /\@@<!
+@end ifnottex
+@item \@@<!
+幅ゼロの否定後読み。先行するアトムが、この後に続くパターンの直前にマッチしない場合に、幅ゼロでマッチします。現在行と 1 つ前の行だけがチェックされます。|/zero-width|
+
+@{Vi にはありません@}
+
+Perl の "(?<!pattern)" と似ていますが、Vimでは可変長パターンも使えます。対象のアトムは、続くアトムの直前までがマッチの範囲になるため、最後が ".*" で終わっているアトムも機能します。
+@quotation
+@strong{警告:} @*
+これは遅くなることがあります (マッチするかどうかを多くの場所でチェックする必要があるため)。可能であれば探索範囲に制限をかけてください。下記参照。
+@multitable @columnfractions .5 .5
+@item Example @tab マッチするもの
+@item \(foo\)\@@<!bar @tab "foobar" 以外の "bar"
+@item \(\/\/.*\)\@@<!in @tab "//" の後ろ以外の "in"
+@end multitable
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+\@123<!
+	Like "\@<!" but only look back 123 bytes. This avoids trying lots of
+	matches that are known to fail and make executing the pattern very
+	slow.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item \@@123<!
+"\@@<!" と同じですが 123 バイトまでしか探索しません。失敗すると分かっていて、その探索のせいで遅くなる状況を回避できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\@>*
+\@>	Matches the preceding atom like matching a whole pattern. {not in Vi}
+	Like "(?>pattern)" in Perl.
+	Example		matches ~
+	\(a*\)\@>a	nothing (the "a*" takes all the "a"'s, there can't be
+			another one following)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@ifnottex
+@anchor{/\@@>}
+@cindex /\@@>
+@end ifnottex
+@item \@@>
+強欲な量指定子。
+
+@{Vi にはありません@}
+
+Perlの "(?>pattern)" と似ています。
+@multitable @columnfractions .25 .75
+@item Example @tab マッチするもの
+@item \(a*\)\@@>a @tab 何もマッチしない ("a*" が全ての "a" を取るので、その後に "a" があることはありません)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	This matches the preceding atom as if it was a pattern by itself.  If
+	it doesn't match, there is no retry with shorter sub-matches or
+	anything.  Observe this difference: "a*b" and "a*ab" both match
+	"aaab", but in the second case the "a*" matches only the first two
+	"a"s.  "\(a*\)\@>ab" will not match "aaab", because the "a*" matches
+	the "aaa" (as many "a"s as possible), thus the "ab" can't match.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パターンがそのアトムだけであるかのようにマッチします。そして、パターン全体がマッチしなくても、そのアトムのマッチを短くして再トライしたりはしません (バックトラックしません)。次の違いに注意してください。"a*b" と "a*ab" は両方とも "aaab" にマッチします。このとき、後者の "a*" は先頭の "aa" にマッチしています。"\(a*\)\@@>ab" は "aaab" にマッチしません。なぜなら、"a*" が "aaa" にマッチする (最長一致する) ため、"ab" がマッチできないからです。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+6.  Ordinary atoms					*pattern-atoms*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{pattern-atoms}
+@cindex pattern-atoms
+@section 6. 普通のアトム
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An ordinary atom can be:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+普通のアトムは次のものです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/^*
+^	At beginning of pattern or after "\|", "\(", "\%(" or "\n": matches
+	start-of-line; at other positions, matches literal '^'. |/zero-width|
+	Example		matches ~
+	^beep(		the start of the C function "beep" (probably).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/^}
+@cindex /^
+@table @asis
+@item ^
+パターンの先頭にある場合、行頭にマッチします。"\|"、"\("、"\%(" の直後でも構いません。他の場所にある場合は、リテラル文字の '^' にマッチします。|/zero-width|
+@multitable @columnfractions .3 .7
+@item Example @tab マッチするもの
+@item ^beep( @tab (おそらく) C 言語の関数 "beep" の開始。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\^*
+\^	Matches literal '^'.  Can be used at any position in the pattern.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\^w}
+@cindex /\^w
+@item \^
+リテラル文字の '^' にマッチします。パターンのどの場所でも使えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\_^*
+\_^	Matches start-of-line. |/zero-width|  Can be used at any position in
+	the pattern.
+	Example		matches ~
+	\_s*\_^foo	white space and blank lines and then "foo" at
+			start-of-line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\_^}
+@cindex /\_^
+@item \_^
+行頭にマッチします。|/zero-width|  パターンのどの場所でも使えます。
+@multitable @columnfractions .3 .7
+@item Example @tab マッチするもの
+@item \_s*\_^foo @tab 空白文字や空行の直後の、行頭の "foo"
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/$*
+$	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
+	matches end-of-line <EOL>; at other positions, matches literal '$'.
+	|/zero-width|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/$}
+@cindex /$
+@item $
+パターンの末尾、または "\|"、"\)"、"\n" ('@option{magic}' on時) の前にある場合、行末 (<EOL>) にマッチします。他の場所にある場合は、リテラル文字の '$' にマッチします。|/zero-width|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\$*
+\$	Matches literal '$'.  Can be used at any position in the pattern.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\$}
+@cindex /\$
+@item \$
+リテラル文字の '$' にマッチします。パターンのどの場所でも使えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\_$*
+\_$	Matches end-of-line. |/zero-width|  Can be used at any position in the
+	pattern.  Note that "a\_$b" never matches, since "b" cannot match an
+	end-of-line.  Use "a\nb" instead |/\n|.
+	Example		matches ~
+	foo\_$\_s*	"foo" at end-of-line and following white space and
+			blank lines
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\_$}
+@cindex /\_$
+@item \_$
+行末にマッチします。|/zero-width|  パターンのどの場所でも使えます。
+@quotation
+@strong{Note:} @*
+"a\_$b" はどこにもマッチしません。"b" は行末とはマッチしないからです。代わりに、"a\nb" を使ってください |/\n|。
+@multitable @columnfractions .3 .7
+@item Example @tab マッチするもの
+@item foo\_$\_s* @tab 行末の "foo" と、それに続く空白や空行
+@end multitable
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+.	(with 'nomagic': \.)				*/.* */\.*
+	Matches any single character, but not an end-of-line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/.}
+@anchor{/\.}
+@cindex /.
+@cindex /\.
+@item . ('@option{nomagic}' なら \.)
+改行以外のすべての文字がマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\_.*
+\_.	Matches any single character or end-of-line.
+	Careful: "\_.*" matches all text to the end of the buffer!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\_.}
+@cindex /\_.
+@item \_.
+改行も含め、すべての文字がマッチします。
+@strong{注意:} "\_.*" はバッファの末尾までのすべてのテキストがマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\<*
+\<	Matches the beginning of a word: The next char is the first char of a
+	word.  The 'iskeyword' option specifies what is a word character.
+	|/zero-width|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\<}
+@cindex /\<
+@item \<
+単語の先頭にマッチします。このアトムの次の文字は単語の 1 文字目です。どの文字が単語を構成するかは、オプション '@option{iskeyword}' で設定します。|/zero-width|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\>*
+\>	Matches the end of a word: The previous char is the last char of a
+	word.  The 'iskeyword' option specifies what is a word character.
+	|/zero-width|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\>}
+@cindex /\>
+@item \>
+単語の末尾にマッチします。このアトムの前の文字は単語の最後の文字です。どの文字が単語を構成するかは、オプション '@option{iskeyword}' で設定します。|/zero-width|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\zs*
+\zs	Matches at any position, and sets the start of the match there: The
+	next char is the first char of the whole match. |/zero-width|
+	Example: >
+		/^\s*\zsif
+<	matches an "if" at the start of a line, ignoring white space.
+	Can be used multiple times, the last one encountered in a matching
+	branch is used.  Example: >
+		/\(.\{-}\zsFab\)\{3}
+<	Finds the third occurrence of "Fab".
+	This cannot be followed by a multi. *E888*
+	{not in Vi} {not available when compiled without the |+syntax| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\zs}
+@cindex /\zs
+@item \zs
+どこにでもマッチして、マッチの開始地点を設定します。このアトムの次の文字は、マッチした文字列の 1 文字目です。|/zero-width|
+
+例:
+@verbatim
+/^\s*\zsif
+@end verbatim
+これは、行頭からスペースを無視して、"if" にマッチします。複数回の繰り返しで使った場合は、最後にマッチしたものが使われます。
+
+例:
+@verbatim
+/\(.\{-}\zsFab\)\{3}
+@end verbatim
+これは、3 番目に現れた "Fab" にマッチします。
+@anchor{E888}
+@cindex E888
+後ろに量指定子を置くことはできない。
+
+@{Vi にはありません@}
+
+@{|+syntax| が有効な場合のみ利用できます@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*/\ze*
+\ze	Matches at any position, and sets the end of the match there: The
+	previous char is the last char of the whole match. |/zero-width|
+	Can be used multiple times, the last one encountered in a matching
+	branch is used.
+	Example: "end\ze\(if\|for\)" matches the "end" in "endif" and
+	"endfor".
+	This cannot be followed by a multi. |E888|
+	{not in Vi} {not available when compiled without the |+syntax| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\ze}
+@cindex /\ze
+@item \ze
+どこにでもマッチして、マッチの末尾を設定します。このアトムの前の文字は、マッチした文字列の最後の文字です。|/zero-width| 複数回の繰り返しで使った場合は、最後にマッチしたものが使われます。
+
+例:
+@verbatim
+/end\ze\(if\|for\)
+@end verbatim
+これは、"endif" または "endfor" の "end" にマッチします。
+後ろに量指定子を置くことはできない。|@ref{E888, , E888}|
+
+@{Vi にはありません@}
+
+@{|+syntax| が有効な場合のみ利用できます@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*/\%^* *start-of-file*
+\%^	Matches start of the file.  When matching with a string, matches the
+	start of the string. {not in Vi}
+	For example, to find the first "VIM" in a file: >
+		/\%^\_.\{-}\zsVIM
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\%^}
+@anchor{start-of-file}
+@cindex /\%^
+@cindex start-of-file
+@item \%^
+ファイルの先頭にマッチします。文字列 (|expr-string|) とマッチングする場合は、文字列の先頭にマッチします。
+
+@{Vi にはありません@}
+
+例:
+@verbatim
+/\%^\_.\{-}\zsVIM
+@end verbatim
+これは、ファイルの最初にある "VIM" にマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*/\%$* *end-of-file*
+\%$	Matches end of the file.  When matching with a string, matches the
+	end of the string. {not in Vi}
+	Note that this does NOT find the last "VIM" in a file: >
+		/VIM\_.\{-}\%$
+<	It will find the next VIM, because the part after it will always
+	match.  This one will find the last "VIM" in the file: >
+		/VIM\ze\(\(VIM\)\@!\_.\)*\%$
+<	This uses |/\@!| to ascertain that "VIM" does NOT match in any
+	position after the first "VIM".
+	Searching from the end of the file backwards is easier!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\%$}
+@anchor{end-of-file}
+@cindex /\%$
+@cindex end-of-file
+@item \%$
+ファイルの末尾にマッチします。文字列 (|expr-string|) とマッチングする場合は、文字列の末尾にマッチします。
+
+@{Vi にはありません@}
+@quotation
+@strong{Note:} @*
+次のパターンでは、ファイルの最後の "VIM" を検索できません:
+@verbatim
+/VIM\_.\{-}\%$
+@end verbatim
+これは、カーソル位置から次の "VIM" を検索します。"VIM" の後の "\_.\@{-@}\%$" が常にマッチするからです。ファイルの最後の "VIM" を検索するには、次のようにします:
+@verbatim
+/VIM\ze\(\(VIM\)\@!\_.\)*\%$
+@end verbatim
+"VIM" の後に "VIM" がないことを確実にするために |/\@@!| を使っています。ファイルの末尾から後方検索する方が簡単です。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*/\%V*
+\%V	Match inside the Visual area.  When Visual mode has already been
+	stopped match in the area that |gv| would reselect.
+	This is a |/zero-width| match.  To make sure the whole pattern is
+	inside the Visual area put it at the start and just before the end of
+	the pattern, e.g.: >
+		/\%Vfoo.*ba\%Vr
+<	This also works if only "foo bar" was Visually selected. This: >
+		/\%Vfoo.*bar\%V
+<	would match "foo bar" if the Visual selection continues after the "r".
+	Only works for the current buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\%V}
+@cindex /\%V
+@item \%V
+選択範囲内にマッチします。ビジュアルモードでないときは、|gv| で再選択できる範囲にマッチします。
+
+これはゼロ幅マッチ |/zero-width| です。パターンを選択範囲内でマッチさせたい場合は、パターンの最初と最後の直前にこれを指定してください。例:
+@verbatim
+/\%Vfoo.*ba\%Vr
+@end verbatim
+これは "foo bar" のみがビジュアル選択されている場合でも機能します。以下は、
+@verbatim
+/\%Vfoo.*bar\%V
+@end verbatim
+ビジュアル選択が "r" より後も含む場合に "foo bar" にマッチします。カレントバッファでのみ機能します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*/\%#* *cursor-position*
+\%#	Matches with the cursor position.  Only works when matching in a
+	buffer displayed in a window. {not in Vi}
+	WARNING: When the cursor is moved after the pattern was used, the
+	result becomes invalid.  Vim doesn't automatically update the matches.
+	This is especially relevant for syntax highlighting and 'hlsearch'.
+	In other words: When the cursor moves the display isn't updated for
+	this change.  An update is done for lines which are changed (the whole
+	line is updated) or when using the |CTRL-L| command (the whole screen
+	is updated).  Example, to highlight the word under the cursor: >
+		/\k*\%#\k*
+<	When 'hlsearch' is set and you move the cursor around and make changes
+	this will clearly show when the match is updated or not.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\%#}
+@anchor{cursor-position}
+@cindex /\%#
+@cindex cursor-position
+@item \%#
+カーソルの位置にマッチします。ウィンドウに表示されているバッファ内でマッチングする場合のみ機能します。@{Vi にはありません@}
+@quotation
+警告: パターンが使われた後で、カーソルを移動した場合、マッチの結果は正確ではなくなってしまいます。マッチの結果は自動的に更新されません。これは特に、構文強調と '@option{hlsearch}' に関係します。
+
+カーソルが移動しても、表示は自動的に更新されません。表示が更新されるのは、行を変更したため行全体が更新されたときや、|CTRL-L| コマンドを使ってスクリーン全体を更新したときです。カーソル位置の単語を強調表示するには次のようにします:
+@verbatim
+/\k*\%#\k*
+@end verbatim
+'@option{hlsearch}' をオンにして、カーソルを移動し、テキストを変更してみて、表示が更新されるかどうか確認してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*/\%'m* */\%<'m* */\%>'m*
+\%'m	Matches with the position of mark m.
+\%<'m	Matches before the position of mark m.
+\%>'m	Matches after the position of mark m.
+	Example, to highlight the text from mark 's to 'e: >
+		/.\%>'s.*\%<'e..
+<	Note that two dots are required to include mark 'e in the match.  That
+	is because "\%<'e" matches at the character before the 'e mark, and
+	since it's a |/zero-width| match it doesn't include that character.
+	{not in Vi}
+	WARNING: When the mark is moved after the pattern was used, the result
+	becomes invalid.  Vim doesn't automatically update the matches.
+	Similar to moving the cursor for "\%#" |/\%#|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\%'m}
+@anchor{/\%<'m}
+@anchor{/\%>'m}
+@cindex /\%'m
+@cindex /\%<'m
+@cindex /\%>'m
+@item \%'m
+マーク m の位置にマッチします。
+@item \%<'m
+マーク m より前の位置にマッチします。
+@item \%>'m
+マーク m より後の位置にマッチします。
+
+例えば、マーク 's から 'e までを強調するには次のようにします:
+@verbatim
+/.\%>'s.*\%<'e..
+@end verbatim
+@quotation
+@strong{Note:} @*
+マーク 'e の位置をマッチに含めるには 'e の後に二つのドットが必要です。なぜなら、"\%<'e" はマーク 'e の前の文字にマッチし、そしてそれはゼロ幅マッチ|/zero-width| なので、その文字は結果に含まれないからです。
+@end quotation
+@{Vi にはありません@}
+@quotation
+@strong{警告:} @*
+マークを検索した後にマークを移動した場合、その結果は正しくなくなります。Vim は自動的にマッチの強調表示を更新したりしません。|/\%#| で検索した後にカーソルを動かした場合と似ています。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*/\%l* */\%>l* */\%<l*
+\%23l	Matches in a specific line.
+\%<23l	Matches above a specific line (lower line number).
+\%>23l	Matches below a specific line (higher line number).
+	These three can be used to match specific lines in a buffer.  The "23"
+	can be any line number.  The first line is 1. {not in Vi}
+	WARNING: When inserting or deleting lines Vim does not automatically
+	update the matches.  This means Syntax highlighting quickly becomes
+	wrong.
+	Example, to highlight the line where the cursor currently is: >
+		:exe '/\%' . line(".") . 'l.*'
+<	When 'hlsearch' is set and you move the cursor around and make changes
+	this will clearly show when the match is updated or not.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\%l}
+@anchor{/\%>l}
+@anchor{/\%<l}
+@cindex /\%l
+@cindex /\%>l
+@cindex /\%<l
+@item \%23l
+指定した行にマッチします。
+@item \%<23l
+指定した行より上にマッチします。
+@item \%>23l
+指定した行より下にマッチします。
+
+この 3 つを使って、バッファの特定の行にマッチできます。"23" の所に行番号を指定してください。先頭の番号は 1 です。
+
+@{Vi にはありません@}
+@quotation
+警告: 行を挿入したり削除したりしても、マッチの結果は自動的に更新されません。そのため、このアトムを使った構文強調は、すぐに誤った表示になってしまいます。現在行を強調表示するには次のようにします:
+@verbatim
+:exe '/\%' . line(".") . 'l.*'
+@end verbatim
+'@option{hlsearch}' をオンにして、カーソルを移動し、テキストを変更してみて、表示が更新されるかどうか確認してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*/\%c* */\%>c* */\%<c*
+\%23c	Matches in a specific column.
+\%<23c	Matches before a specific column.
+\%>23c	Matches after a specific column.
+	These three can be used to match specific columns in a buffer or
+	string.  The "23" can be any column number.  The first column is 1.
+	Actually, the column is the byte number (thus it's not exactly right
+	for multi-byte characters).  {not in Vi}
+	WARNING: When inserting or deleting text Vim does not automatically
+	update the matches.  This means Syntax highlighting quickly becomes
+	wrong.
+	Example, to highlight the column where the cursor currently is: >
+		:exe '/\%' . col(".") . 'c'
+<	When 'hlsearch' is set and you move the cursor around and make changes
+	this will clearly show when the match is updated or not.
+	Example for matching a single byte in column 44: >
+		/\%>43c.\%<46c
+<	Note that "\%<46c" matches in column 45 when the "." matches a byte in
+	column 44.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\%c}
+@anchor{/\%>c}
+@anchor{/\%<c}
+@cindex /\%c
+@cindex /\%>c
+@cindex /\%<c
+@item \%23c
+指定した列にマッチします。
+@item \%<23c
+指定した列より前にマッチします。
+@item \%>23c
+指定した列より後にマッチします。
+
+この 3 つを使って、バッファの特定の列にマッチできます。"23" の所に列番号を指定してください。先頭の番号は 1 です。実際には、何バイト目かを指定するので、マルチバイト文字を扱うときには、"列番号" という表現は正確ではありません。
+
+@{Vi にはありません@}
+@quotation
+@strong{警告:} @*
+行を挿入したり削除したりしても、マッチの結果は自動的に更新されません。そのため、このアトムを使った構文強調は、すぐに誤った表示になってしまいます。カーソル位置の列を強調表示するには次のようにします:
+@verbatim
+:exe '/\%' . col(".") . 'c'
+@end verbatim
+'@option{hlsearch}' をオンにして、カーソルを移動し、テキストを変更してみて、表示が更新されるかどうか確認してください。44 バイト目を強調表示するには次のようにします:
+@verbatim
+/\%>43c.\%<46c
+@end verbatim
+@quotation
+@strong{Note:} @*
+"." が 44 バイト目にマッチした場合、"%<46c" は 45 列目にマッチします。
+@end quotation
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*/\%v* */\%>v* */\%<v*
+\%23v	Matches in a specific virtual column.
+\%<23v	Matches before a specific virtual column.
+\%>23v	Matches after a specific virtual column.
+	These three can be used to match specific virtual columns in a buffer
+	or string.  When not matching with a buffer in a window, the option
+	values of the current window are used (e.g., 'tabstop').
+	The "23" can be any column number.  The first column is 1.
+	Note that some virtual column positions will never match, because they
+	are halfway through a tab or other character that occupies more than
+	one screen character.  {not in Vi}
+	WARNING: When inserting or deleting text Vim does not automatically
+	update highlighted matches.  This means Syntax highlighting quickly
+	becomes wrong.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\%v}
+@anchor{/\%>v}
+@anchor{/\%<v}
+@cindex /\%v
+@cindex /\%>v
+@cindex /\%<v
+@item \%23v
+指定した表示列にマッチします。
+@item \%<23v
+指定した表示列より前にマッチします。
+@item \%>23v
+指定した表示列より後にマッチします。
+
+この 3 つを使って、バッファの特定の表示列にマッチできます。文字列 (|expr-string|) とマッチングするときは、カレントウィンドウの、'@option{tabstop}' などの設定が使われます。
+
+"23" の所に表示列番号を指定してください。先頭の番号は 1 です。
+@quotation
+@strong{Note:} @*
+Tab 文字や全角文字などの、複数列で表示される文字の途中の列を指定した場合は、マッチしません @{Vi にはありません@}
+@end quotation
+@quotation
+@strong{警告:} @*
+行を挿入したり削除したりしても、マッチの強調表示は自動的に更新されません。そのため、このアトムを使った構文強調は、すぐに誤った表示になってしまいます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Example, to highlight all the characters after virtual column 72: >
+		/\%>72v.*
+<	When 'hlsearch' is set and you move the cursor around and make changes
+	this will clearly show when the match is updated or not.
+	To match the text up to column 17: >
+		/^.*\%17v
+<	Column 17 is not included, because this is a |/zero-width| match. To
+	include the column use: >
+		/^.*\%17v.
+<	This command does the same thing, but also matches when there is no
+	character in column 17: >
+		/^.*\%<18v.
+<	Note that without the "^" to anchor the match in the first column,
+	this will also highlight column 17: >
+		/.*\%17v
+<	Column 17 is highlighted by 'hlsearch' because there is another match
+	where ".*" matches zero characters.
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+表示列の 72 桁目以降のすべての文字を強調表示するには次のようにします:
+@verbatim
+/\%>72v.*
+@end verbatim
+'@option{hlsearch}' をオンにして、カーソルを移動し、テキストを変更してみて、表示が更新されるかどうか確認してください。
+
+17 列までのテキストにマッチさせるには次のようにします:
+@verbatim
+/^.*\%17v
+@end verbatim
+17 列目は含まれません。なぜならこれはゼロ幅マッチ (|/zero-width|) である為です。列を含むには次を使用します:
+@verbatim
+/^.*\%17v.
+@end verbatim
+次のコマンドも同様の動作ですが、17 列目に文字が存在しなくてもマッチします:
+@verbatim
+/^.*\%<18v.
+@end verbatim
+@quotation
+@strong{Note:} @*
+これは "^" 無しでも最初のカラムに居たままマッチします。17 列目もハイライトされます:
+@verbatim
+/.*\%17v
+@end verbatim
+".*" がゼロ幅文字として別の文字にマッチするため 17 列目は '@option{hlsearch}' によりハイライトされます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Character classes: {not in Vi}
+\i	identifier character (see 'isident' option)	*/\i*
+\I	like "\i", but excluding digits			*/\I*
+\k	keyword character (see 'iskeyword' option)	*/\k*
+\K	like "\k", but excluding digits			*/\K*
+\f	file name character (see 'isfname' option)	*/\f*
+\F	like "\f", but excluding digits			*/\F*
+\p	printable character (see 'isprint' option)	*/\p*
+\P	like "\p", but excluding digits			*/\P*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 文字クラス: @{Vi にはありません@}
+@multitable @columnfractions .1 .9
+@anchor{/\i}
+@cindex /\i
+@item \i @tab 識別子文字 ('@option{isident}' 参照)
+@anchor{/\I}
+@cindex /\I
+@item \I @tab "\i" と同じですが、数字は除外します
+@anchor{/\k}
+@cindex /\k
+@item \k @tab キーワード文字 ('@option{iskeyword}' 参照)
+@anchor{/\K}
+@cindex /\K
+@item \K @tab "\k" と同じですが、数字は除外します
+@anchor{/\f}
+@cindex /\f
+@item \f @tab ファイル名の文字 ('@option{isfname}' 参照)
+@anchor{/\F}
+@cindex /\F
+@item \F @tab "\f" と同じですが、数字は除外します
+@anchor{/\p}
+@cindex /\p
+@item \p @tab 印字可能文字 ('@option{isprint}' 参照)
+@anchor{/\P}
+@cindex /\P
+@item \P @tab "\p" と同じですが、数字は除外します
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NOTE: the above also work for multi-byte characters.  The ones below only
+match ASCII characters, as indicated by the range.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+上記のものはマルチバイト文字に対しても機能します。次のものは、示された範囲の ASCII 文字だけがマッチします。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*whitespace* *white-space*
+\s	whitespace character: <Space> and <Tab>		*/\s*
+\S	non-whitespace character; opposite of \s	*/\S*
+\d	digit:				[0-9]		*/\d*
+\D	non-digit:			[^0-9]		*/\D*
+\x	hex digit:			[0-9A-Fa-f]	*/\x*
+\X	non-hex digit:			[^0-9A-Fa-f]	*/\X*
+\o	octal digit:			[0-7]		*/\o*
+\O	non-octal digit:		[^0-7]		*/\O*
+\w	word character:			[0-9A-Za-z_]	*/\w*
+\W	non-word character:		[^0-9A-Za-z_]	*/\W*
+\h	head of word character:		[A-Za-z_]	*/\h*
+\H	non-head of word character:	[^A-Za-z_]	*/\H*
+\a	alphabetic character:		[A-Za-z]	*/\a*
+\A	non-alphabetic character:	[^A-Za-z]	*/\A*
+\l	lowercase character:		[a-z]		*/\l*
+\L	non-lowercase character:	[^a-z]		*/\L*
+\u	uppercase character:		[A-Z]		*/\u*
+\U	non-uppercase character:	[^A-Z]		*/\U*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{whitespace}
+@anchor{white-space}
+@cindex whitespace
+@cindex white-space
+@multitable @columnfractions .1 .5 .4
+@anchor{/\s}
+@cindex /\s
+@item \s @tab 空白文字: @tab <Space> と <Tab>
+@anchor{/\S}
+@cindex /\S
+@item \S @tab 空白文字以外。\s の反対です
+@anchor{/\d}
+@cindex /\d
+@item \d @tab 数字: @tab [0-9]
+@anchor{/\D}
+@cindex /\D
+@item \D @tab 数字以外: @tab [^0-9]
+@anchor{/\x}
+@cindex /\x
+@item \x @tab 16 進数字: @tab [0-9A-Fa-f]
+@anchor{/\X}
+@cindex /\X
+@item \X @tab 16 進数字以外: @tab [^0-9A-Fa-f]
+@anchor{/\o}
+@cindex /\o
+@item \o @tab 8 進数字: @tab [0-7]
+@anchor{/\O}
+@cindex /\O
+@item \O @tab 8 進数字以外: @tab [^0-7]
+@anchor{/\w}
+@cindex /\w
+@item \w @tab 単語を構成する文字: @tab [0-9A-Za-z_]
+@anchor{/\W}
+@cindex /\W
+@item \W @tab 単語を構成する文字以外: @tab [^0-9A-Za-z_]
+@anchor{/\h}
+@cindex /\h
+@item \h @tab 単語の先頭の文字: @tab [A-Za-z_]
+@anchor{/\H}
+@cindex /\H
+@item \H @tab 単語の先頭の文字以外: @tab [^A-Za-z_]
+@anchor{/\a}
+@cindex /\a
+@item \a @tab 英字: @tab [A-Za-z]
+@anchor{/\A}
+@cindex /\A
+@item \A @tab 英字以外: @tab [^A-Za-z]
+@anchor{/\l}
+@cindex /\l
+@item \l @tab 小文字英字: @tab [a-z]
+@anchor{/\L}
+@cindex /\L
+@item \L @tab 小文字英字以外: @tab [^a-z]
+@anchor{/\u}
+@cindex /\u
+@item \u @tab 大文字英字: @tab [A-Z]
+@anchor{/\U}
+@cindex /\U
+@item \U @tab 大文字英字以外: @tab [^A-Z]
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	NOTE: Using the atom is faster than the [] form.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+これらのアトムは |/[]| を使うよりも高速です。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	NOTE: 'ignorecase', "\c" and "\C" are not used by character classes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+'@option{ignorecase}', "\c", "\C" は文字クラスには影響しません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			*/\_* *E63* */\_i* */\_I* */\_k* */\_K* */\_f* */\_F*
+			*/\_p* */\_P* */\_s* */\_S* */\_d* */\_D* */\_x* */\_X*
+			*/\_o* */\_O* */\_w* */\_W* */\_h* */\_H* */\_a* */\_A*
+			*/\_l* */\_L* */\_u* */\_U*
+\_x	Where "x" is any of the characters above: The character class with
+	end-of-line added
+(end of character classes)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\_}
+@anchor{E63}
+@anchor{/\_i}
+@anchor{/\_I}
+@anchor{/\_k}
+@anchor{/\_K}
+@anchor{/\_f}
+@anchor{/\_F}
+@anchor{/\_p}
+@anchor{/\_P}
+@anchor{/\_s}
+@anchor{/\_S}
+@anchor{/\_d}
+@anchor{/\_D}
+@anchor{/\_x}
+@anchor{/\_X}
+@anchor{/\_o}
+@anchor{/\_O}
+@anchor{/\_w}
+@anchor{/\_W}
+@anchor{/\_h}
+@anchor{/\_H}
+@anchor{/\_a}
+@anchor{/\_A}
+@anchor{/\_l}
+@anchor{/\_L}
+@anchor{/\_u}
+@anchor{/\_U}
+@cindex /\_
+@cindex E63
+@cindex /\_i
+@cindex /\_I
+@cindex /\_k
+@cindex /\_K
+@cindex /\_f
+@cindex /\_F
+@cindex /\_p
+@cindex /\_P
+@cindex /\_s
+@cindex /\_S
+@cindex /\_d
+@cindex /\_D
+@cindex /\_x
+@cindex /\_X
+@cindex /\_o
+@cindex /\_O
+@cindex /\_w
+@cindex /\_W
+@cindex /\_h
+@cindex /\_H
+@cindex /\_a
+@cindex /\_A
+@cindex /\_l
+@cindex /\_L
+@cindex /\_u
+@cindex /\_U
+@item \_x
+x は上記の文字クラスのどれかです。文字クラスと改行がマッチします。
+
+(文字クラスここまで)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+\e	matches <Esc>					*/\e*
+\t	matches <Tab>					*/\t*
+\r	matches <CR>					*/\r*
+\b	matches <BS>					*/\b*
+\n	matches an end-of-line				*/\n*
+	When matching in a string instead of buffer text a literal newline
+	character is matched.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\e}
+@cindex /\e
+@item \e
+<Esc> にマッチします
+@anchor{/\t}
+@cindex /\t
+@item \t
+<Tab> にマッチします
+@anchor{/\r}
+@cindex /\r
+@item \r
+<CR> にマッチします
+@anchor{/\b}
+@cindex /\b
+@item \b
+<BS> にマッチします
+@anchor{/\n}
+@cindex /\n
+@item \n
+改行にマッチします。バッファのテキストではなく、文字列 (|expr-string|) とマッチングするときは、リテラルの改行文字がマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+~	matches the last given substitute string	*/~* */\~*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/~}
+@anchor{/\~}
+@cindex /~
+@cindex /\~
+@item ~
+最後に置換された文字列とマッチします
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+\(\)	A pattern enclosed by escaped parentheses.	*/\(* */\(\)* */\)*
+	E.g., "\(^a\)" matches 'a' at the start of a line.
+	*E51* *E54* *E55* *E872* *E873*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\(}
+@anchor{/\(\)}
+@anchor{/\)}
+@cindex /\(
+@cindex /\(\)
+@cindex /\)
+@item \(\)
+パターンをカッコでまとめます
+@anchor{E51}
+@anchor{E54}
+@anchor{E55}
+@anchor{E872}
+@anchor{E873}
+@cindex E51
+@cindex E54
+@cindex E55
+@cindex E872
+@cindex E873
+たとえば、"\(^a\)" は行頭の 'a' にマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+\1      Matches the same string that was matched by	*/\1* *E65*
+	the first sub-expression in \( and \). {not in Vi}
+	Example: "\([a-z]\).\1" matches "ata", "ehe", "tot", etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\1}
+@anchor{E65}
+@cindex /\1
+@cindex E65
+@item \1
+\( と \) に囲まれた最初の部分正規表現がマッチした文字列と、同じ文字列にマッチします。
+
+@{Vi にない機能です@}
+
+たとえば、"\([a-z]\).\1" は "ata", "ehe", "tot" などにマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+\2      Like "\1", but uses second sub-expression,	*/\2*
+   ...							*/\3*
+\9      Like "\1", but uses ninth sub-expression.	*/\9*
+	Note: The numbering of groups is done based on which "\(" comes first
+	in the pattern (going left to right), NOT based on what is matched
+	first.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\2}
+@cindex /\2
+@item \2
+"\1" と同じですが、2 番目の部分正規表現を使います
+@anchor{/\3}
+@cindex /\3
+@item ...
+@anchor{/\9}
+@cindex /\9
+@item \9
+"\1" と同じですが、9 番目の部分正規表現を使います
+@quotation
+@strong{Note:} @*
+部分正規表現の番号は、最初の "\(" から数えて、左から右へ、順番に番号が付けられます。マッチする順番ではありません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+\%(\)	A pattern enclosed by escaped parentheses.	*/\%(\)* */\%(* *E53*
+	Just like \(\), but without counting it as a sub-expression.  This
+	allows using more groups and it's a little bit faster.
+	{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\%(\)}
+@anchor{/\%(}
+@anchor{E53}
+@cindex /\%(\)
+@cindex /\%(
+@cindex E53
+@item \%(\)
+パターンをカッコでまとめます
+
+\(\) と同じですが、部分正規表現としてカウントされません。たくさんのグループを作ることができますし、処理が少し高速です。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+x	A single character, with no special meaning, matches itself
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item x
+特別な意味のない文字は、その文字自身とマッチします
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\* */\\*
+\x	A backslash followed by a single character, with no special meaning,
+	is reserved for future expansions
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\}
+@anchor{/\\}
+@cindex /\
+@cindex /\\
+@item \x
+バックスラッシュと文字の組合せで、現在、特別な意味を持っていない文字は、将来の拡張のために予約されています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+[]	(with 'nomagic': \[])		*/[]* */\[]* */\_[]* */collection*
+\_[]
+	A collection.  This is a sequence of characters enclosed in brackets.
+	It matches any single character in the collection.
+	Example		matches ~
+	[xyz]		any 'x', 'y' or 'z'
+	[a-zA-Z]$	any alphabetic character at the end of a line
+	\c[a-z]$	same
+	[А-яЁё]		Russian alphabet (with utf-8 and cp1251)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/[]}
+@anchor{/\[]}
+@anchor{/\_[]}
+@anchor{/collection}
+@cindex /[]
+@cindex /\[]
+@cindex /\_[]
+@cindex /collection
+@item [] ('@option{nomagic}' のときは \[]) or \_[]
+コレクションです。複数の文字を角カッコで囲みます。コレクションに含まれる任意の 1 文字とマッチします。
+@multitable @columnfractions .3 .7
+@item Example @tab マッチするもの
+@item [xyz] @tab 'x'、'y'、'z' のどれか
+@item [a-zA-Z]$ @tab 行末の英字
+@item \c[a-z]$ @tab 同上
+@item [А-яЁё] @tab ロシア語アルファベット (utf-8 と cp1251)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								*/[\n]*
+	With "\_" prepended the collection also includes the end-of-line.
+	The same can be done by including "\n" in the collection.  The
+	end-of-line is also matched when the collection starts with "^"!  Thus
+	"\_[^ab]" matches the end-of-line and any character but "a" and "b".
+	This makes it Vi compatible: Without the "\_" or "\n" the collection
+	does not match an end-of-line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/[\n]}
+@cindex /[\n]
+"\_" を付けた場合、コレクションは改行も含みます。コレクションに "\n" を含めた場合と同じですが、"\_" を付けた場合は、コレクションの先頭が "^" の場合でも改行にマッチします。つまり、"\_[^ab]" は "a" や "b" 以外の文字と改行にマッチします。
+
+これは Vi 互換です。"\_" や "\n" を使わなければ、改行にはマッチしません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*E769*
+	When the ']' is not there Vim will not give an error message but
+	assume no collection is used.  Useful to search for '['.  However, you
+	do get E769 for internal searching.  And be aware that in a
+	`:substitute` command the whole command becomes the pattern.  E.g.
+	":s/[/x/" searches for "[/x" and replaces it with nothing.  It does
+	not search for "[" and replaces it with "x"!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E769}
+@cindex E769
+']' がない場合、Vim はエラーを表示せず、コレクションが使われているのではないと判断します。'[' を検索するときに便利です。しかし、Vim 内部での検索では E769 のエラーがでます。そして、`@command{:substitute}` コマンドでコマンド全体がパターンとなることに注意してください。例えば、":s/[/x/" は "[/x" を検索します。置換はおこなわれません。"[" を検索して "x" に置換するのではありません！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								*E944* *E945*
+	If the sequence begins with "^", it matches any single character NOT
+	in the collection: "[^xyz]" matches anything but 'x', 'y' and 'z'.
+	- If two characters in the sequence are separated by '-', this is
+	  shorthand for the full list of ASCII characters between them.  E.g.,
+	  "[0-9]" matches any decimal digit. If the starting character exceeds
+	  the ending character, e.g. [c-a], E944 occurs. Non-ASCII characters
+	  can be used, but the character values must not be more than 256 apart
+	  in the old regexp engine. For example, searching by [\u3000-\u4000]
+	  after setting re=1 emits a E945 error. Prepending \%#=2 will fix it.
+	- A character class expression is evaluated to the set of characters
+	  belonging to that character class.  The following character classes
+	  are supported:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E944}
+@anchor{E945}
+@cindex E944
+@cindex E945
+コレクション文字列の先頭が "^" の場合、コレクションに含まれている文字以外の文字がマッチします。"[^xyz]" は 'x'、'y'、'z' 以外の文字にマッチします。
+@itemize @minus
+@item 2 つの文字で '-' を挟んで、ASCII 文字の範囲を指定できます。たとえば、"[0-9]" はすべての数字にマッチします。もしも始めの文字が終わりの文字よりも大きい場合、例えば [c-a]、は エラー E944 を発生します。非 ASCII 文字も指定できますが、古い正規表現エンジンを使っている場合は、2 つの文字の値の差が 256 を超えてはなりません。例えば、re=1 を設定した後で [\u3000-\u4000] で検索するとエラー E945 を発生します。\%#=2 を前に付ければ直せるでしょう。
+@item 文字クラス表現を使って、その文字クラスが含んでいる文字を取り込むことができます。次の文字クラスがサポートされています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		  Name	      Func	Contents ~
+*[:alnum:]*	  [:alnum:]   isalnum	ASCII letters and digits
+*[:alpha:]*	  [:alpha:]   isalpha  	ASCII letters
+*[:blank:]*	  [:blank:]     	space and tab
+*[:cntrl:]*	  [:cntrl:]   iscntrl 	ASCII control characters
+*[:digit:]*	  [:digit:]     	decimal digits '0' to '9'
+*[:graph:]*	  [:graph:]   isgraph	ASCII printable characters excluding
+					space
+*[:lower:]*	  [:lower:]   (1)	lowercase letters (all letters when
+					'ignorecase' is used)
+*[:print:]*	  [:print:]   (2) 	printable characters including space
+*[:punct:]*	  [:punct:]   ispunct	ASCII punctuation characters
+*[:space:]*	  [:space:]     	whitespace characters: space, tab, CR,
+					NL, vertical tab, form feed
+*[:upper:]*	  [:upper:]   (3)	uppercase letters (all letters when
+					'ignorecase' is used)
+*[:xdigit:]*	  [:xdigit:]    	hexadecimal digits: 0-9, a-f, A-F
+*[:return:]*	  [:return:]		the <CR> character
+*[:tab:]*	  [:tab:]		the <Tab> character
+*[:escape:]*	  [:escape:]		the <Esc> character
+*[:backspace:]*	  [:backspace:]		the <BS> character
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .2 .6
+@item 名前 @tab Func @tab 含んでいるもの
+@anchor{[:alnum:]}
+@cindex [:alnum:]
+@item [:alnum:] @tab isalnum @tab ASCII の英数字
+@anchor{[:alpha:]}
+@cindex [:alpha:]
+@item [:alpha:] @tab isalpha @tab ASCII の英字
+@anchor{[:blank:]}
+@cindex [:blank:]
+@item [:blank:] @tab @tab スペースと Tab 文字
+@anchor{[:cntrl:]}
+@cindex [:cntrl:]
+@item [:cntrl:] @tab iscntrl @tab コントロール文字
+@anchor{[:digit:]}
+@cindex [:digit:]
+@item [:digit:] @tab @tab 10 進数字
+@anchor{[:graph:]}
+@cindex [:graph:]
+@item [:graph:] @tab isgraph @tab スペース以外の印字可能文字
+@anchor{[:lower:]}
+@cindex [:lower:]
+@item [:lower:] @tab (1) @tab 小文字英字 ('@option{ignorecase}' がオンのときはすべての英字)
+@anchor{[:print:]}
+@cindex [:print:]
+@item [:print:] @tab (2) @tab スペースを含む印字可能文字
+@anchor{[:punct:]}
+@cindex [:punct:]
+@item [:punct:] @tab ispunct @tab ASCII の句読点
+@anchor{[:space:]}
+@cindex [:space:]
+@item [:space:] @tab @tab 空白文字 (スペース、Tab、改ページ文字)
+@anchor{[:upper:]}
+@cindex [:upper:]
+@item [:upper:] @tab (3) @tab 大文字英字 ('@option{ignorecase}' がオンのときはすべての英字)
+@anchor{[:xdigit:]}
+@cindex [:xdigit:]
+@item [:xdigit:] @tab @tab 16 進数字
+@anchor{[:return:]}
+@cindex [:return:]
+@item [:return:] @tab @tab <CR> 文字
+@anchor{[:tab:]}
+@cindex [:tab:]
+@item [:tab:] @tab @tab <Tab> 文字
+@anchor{[:escape:]}
+@cindex [:escape:]
+@item [:escape:] @tab @tab <Esc> 文字
+@anchor{[:backspace:]}
+@cindex [:backspace:]
+@item [:backspace:] @tab @tab <BS> 文字
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	  The brackets in character class expressions are additional to the
+	  brackets delimiting a collection.  For example, the following is a
+	  plausible pattern for a UNIX filename: "[-./[:alnum:]_~]\+" That is,
+	  a list of at least one character, each of which is either '-', '.',
+	  '/', alphabetic, numeric, '_' or '~'.
+	  These items only work for 8-bit characters, except [:lower:] and
+	  [:upper:] also work for multi-byte characters when using the new
+	  regexp engine.  See |two-engines|.  In the future these items may
+	  work for multi-byte characters.  For now, to get all "alpha"
+	  characters you can use: [[:lower:][:upper:]].
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+角カッコで囲んだ文字クラス表現を、コレクションの角カッコ内に書きます。たとえば、"[-./[:alnum:]_~]\+" は、UNIX のファイル名として妥当なパターンです。このパターンは '-', '.', '/', 英数字, '_', '~' のどの文字の組合せでも、1 文字以上の文字列にマッチします。
+
+これらのものは、8 ビット文字のみマッチします。ただし、新しい正規表現エンジンを使用している場合は [:lower:] と [:upper:] のみマルチバイト文字にも作用します。|two-engines| を参照。将来的にはこれらの項目は、マルチバイト文字に作用するようになるでしょう。現状 "alpha" の全てを得るには [[:lower:][:upper:]] を使う事ができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	  The "Func" column shows what library function is used.  The
+	  implementation depends on the system.  Otherwise:
+	  (1) Uses islower() for ASCII and Vim builtin rules for other
+	  characters when built with the |+multi_byte| feature.
+	  (2) Uses Vim builtin rules
+	  (3) As with (1) but using isupper()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"Func" 列はどのようなライブラリ関数が使われているのかを示す。実装はシステムに依存している。その他のものについては:
+
+(1) ASCII に対しては islower() を使い、その他の文字については、|+multi_byte| が有効を有効にしてビルドした場合に Vim 内蔵のルールを使う。
+
+(2) Vim 内蔵のルールを使う
+
+(3) (1) のようだが isupper() を使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*/[[=* *[==]*
+	- An equivalence class.  This means that characters are matched that
+	  have almost the same meaning, e.g., when ignoring accents.  This
+	  only works for Unicode, latin1 and latin9.  The form is:
+		[=a=]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/[[=}
+@anchor{[==]}
+@cindex /[[=
+@cindex [==]
+@item 等価クラス。これはその文字とほぼ同じ文字にマッチします。例えば、アクセントを無視するなど。これは Unicode、latin1、latin9 でのみ機能します。次のように書きます:
+@verbatim
+[=a=]
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*/[[.* *[..]*
+	- A collation element.  This currently simply accepts a single
+	  character in the form:
+		[.a.]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/[[.}
+@anchor{[..]}
+@cindex /[[.
+@cindex [..]
+@item 照合要素。現在は中に一文字だけ指定できます:
+@verbatim
+[.a.]
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							  */\]*
+	- To include a literal ']', '^', '-' or '\' in the collection, put a
+	  backslash before it: "[xyz\]]", "[\^xyz]", "[xy\-z]" and "[xyz\\]".
+	  (Note: POSIX does not support the use of a backslash this way).  For
+	  ']' you can also make it the first character (following a possible
+	  "^"):  "[]xyz]" or "[^]xyz]" {not in Vi}.
+	  For '-' you can also make it the first or last character: "[-xyz]",
+	  "[^-xyz]" or "[xyz-]".  For '\' you can also let it be followed by
+	  any character that's not in "^]-\bdertnoUux".  "[\xyz]" matches '\',
+	  'x', 'y' and 'z'.  It's better to use "\\" though, future expansions
+	  may use other characters after '\'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\]}
+@cindex /\]
+リテラル文字の ']'、'^'、'-'、'\' をコレクションに含めるには、バックスラッシュを前置して、"[xyz\]]"、"[\^xyz]"、"[xy\-z]"、"[xyz\\]" と書きます。
+
+(@strong{Note:} POSIX ではこのようなバックスラッシュの使い方はサポートされていません。)
+
+']' は、コレクションの先頭、または '^' の直後にそのまま書いて、"[]xyz]" や "[^]xyz]" とすることができます。
+
+@{Vi にはありません@}
+
+'-' も、先頭や末尾にそのまま書いて "[-xyz]", "[^-xyz]", "[xyz-]" とすることができます。'\' も指定文字 "^]-\bdertnoUux" 以外の文字の前ならそのまま書けます。"[\xyz]" は、'\', 'x', 'y', 'z' の文字にマッチします。しかし、常に "\\" と書くようにした方がいいでしょう。'\' と何かの文字の組合せは将来的に拡張に使われる可能性があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	- Omitting the trailing ] is not considered an error. "[]" works like
+	  "[]]", it matches the ']' character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 末尾の ] を省略してもエラーにはなりません。"[]" は "[]]" と同じ意味になり ']' 文字にマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	- The following translations are accepted when the 'l' flag is not
+	  included in 'cpoptions' {not in Vi}:
+		\e	<Esc>
+		\t	<Tab>
+		\r	<CR>	(NOT end-of-line!)
+		\b	<BS>
+		\n	line break, see above |/[\n]|
+		\d123	decimal number of character
+		\o40	octal number of character up to 0377
+		\x20	hexadecimal number of character up to 0xff
+		\u20AC	hex. number of multibyte character up to 0xffff
+		\U1234	hex. number of multibyte character up to 0xffffffff
+	  NOTE: The other backslash codes mentioned above do not work inside
+	  []!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item '@option{cpoptions}' が '@var{l}' フラグを含んでいない場合、次のものが特別に解釈されます。@{Vi にはありません@}:
+@multitable @columnfractions .1 .9
+@item \e @tab <Esc>
+@item \t @tab <Tab>
+@item \r @tab <CR> (改行文字ではありません)
+@item \b @tab <BS>
+@item \n @tab 改行。|/[\n]| 参照。
+@item \d123 @tab 10 進数の文字番号
+@item \o40 @tab 8 進数の文字番号 (最大値 0377)
+@item \x20 @tab 16 進数の文字番号 (最大値 0xff)
+@item \u20AC @tab 16 進数のマルチバイト文字番号 (最大値 0xffff)
+@item \U1234 @tab 16 進数のマルチバイト文字番号 (最大値 0xffffffff)
+@end multitable
+@quotation
+@strong{Note:} @*
+他のバックスラッシュによる特殊文字の表記は、[] の中では機能しません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	- Matching with a collection can be slow, because each character in
+	  the text has to be compared with each character in the collection.
+	  Use one of the other atoms above when possible.  Example: "\d" is
+	  much faster than "[0-9]" and matches the same characters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item コレクションを使ったマッチングは遅くなることがあります。コレクションの文字と、テキストの文字を、それぞれ 1 文字ずつ比較する必要があるからです。同じ意味のアトムが他にある場合は、それを使ってください。たとえば、"\d" は "[0-9]" よりも速く、同じ文字にマッチします。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*/\%[]* *E69* *E70* *E369*
+\%[]	A sequence of optionally matched atoms.  This always matches.
+	It matches as much of the list of atoms it contains as possible.  Thus
+	it stops at the first atom that doesn't match.  For example: >
+		/r\%[ead]
+<	matches "r", "re", "rea" or "read".  The longest that matches is used.
+	To match the Ex command "function", where "fu" is required and
+	"nction" is optional, this would work: >
+		/\<fu\%[nction]\>
+<	The end-of-word atom "\>" is used to avoid matching "fu" in "full".
+	It gets more complicated when the atoms are not ordinary characters.
+	You don't often have to use it, but it is possible.  Example: >
+		/\<r\%[[eo]ad]\>
+<	Matches the words "r", "re", "ro", "rea", "roa", "read" and "road".
+	There can be no \(\), \%(\) or \z(\) items inside the [] and \%[] does
+	not nest.
+	To include a "[" use "[[]" and for "]" use []]", e.g.,: >
+		/index\%[[[]0[]]]
+<	matches "index" "index[", "index[0" and "index[0]".
+	{not available when compiled without the |+syntax| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\%[]}
+@anchor{E69}
+@anchor{E70}
+@anchor{E369}
+@cindex /\%[]
+@cindex E69
+@cindex E70
+@cindex E369
+@item \%[]
+任意にマッチするアトム列です。これは常にマッチします。アトム単位で最長一致し、最初にアトムがマッチしなかったところでストップします。例:
+@verbatim
+/r\%[ead]
+@end verbatim
+これは、"r", "re", "rea", "read" にマッチします。1 番長いマッチが使われます。Ex コマンドの "function" は、"fu" が必須で、"nction" は省略可能ですが、次の例は、そのようなものにマッチします:
+@verbatim
+/\<fu\%[nction]\>
+@end verbatim
+"full" の "fu" にマッチするようなことがないように、単語末尾のアトム "\>" が使われています。使う機会はあまりないかもしれませんが、普通の文字以外のアトムを使って、さらに複雑なものも表現できます。例:
+@verbatim
+/\<r\%[[eo]ad]\>
+@end verbatim
+これは、"r", "re", "ro", "rea", "roa", "read", "road" にマッチします。[] の中では \(\), \%(\), \z(\) は使えません。\%[] はネストできません。"[" を含めるには "[[]" を、"]" を含めるには "[]]" を使ってください。例:
+@verbatim
+/index\%[[[]0[]]]
+@end verbatim
+これは "index", "index[", "index[0", "index[0]" にマッチします。
+
+@{|+syntax| が有効な場合のみ利用可能@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				*/\%d* */\%x* */\%o* */\%u* */\%U* *E678*
+
+\%d123	Matches the character specified with a decimal number.  Must be
+	followed by a non-digit.
+\%o40	Matches the character specified with an octal number up to 0377.
+	Numbers below 040 must be followed by a non-octal digit or a non-digit.
+\%x2a	Matches the character specified with up to two hexadecimal characters.
+\%u20AC	Matches the character specified with up to four hexadecimal
+	characters.
+\%U1234abcd	Matches the character specified with up to eight hexadecimal
+	characters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\%d}
+@anchor{/\%x}
+@anchor{/\%o}
+@anchor{/\%u}
+@anchor{/\%U}
+@anchor{E678}
+@cindex /\%d
+@cindex /\%x
+@cindex /\%o
+@cindex /\%u
+@cindex /\%U
+@cindex E678
+@item \%d123
+10 進数で指定した文字にマッチします。このアトムの後ろには数字以外の文字を置いてください。
+@item \%o40
+8 進数で指定した文字にマッチします (最大値 0377)。040 より小さい値を指定するとき、このアトムの後ろには 8 進数字以外の文字か、数字以外の文字を置いてください。
+@item \%x2a
+16 進数で指定した文字にマッチします。2 桁まで。
+@item \%u20AC
+16 進数で指定した文字にマッチします。4 桁まで。
+@item \%U1234abcd
+16 進数で指定した文字にマッチします。8 桁まで。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. Ignoring case in a pattern					*/ignorecase*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/ignorecase}
+@cindex /ignorecase
+@section 7. 大文字と小文字を無視する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the 'ignorecase' option is on, the case of normal letters is ignored.
+'smartcase' can be set to ignore case when the pattern contains lowercase
+letters only.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{ignorecase}' がオンの場合、普通の英字の大文字と小文字の違いは無視されます。'@option{smartcase}' がオンの場合、パターンが大文字を含んでいないときだけ、大文字と小文字が無視されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*/\c* */\C*
+When "\c" appears anywhere in the pattern, the whole pattern is handled like
+'ignorecase' is on.  The actual value of 'ignorecase' and 'smartcase' is
+ignored.  "\C" does the opposite: Force matching case for the whole pattern.
+{only Vim supports \c and \C}
+Note that 'ignorecase', "\c" and "\C" are not used for the character classes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\c}
+@anchor{/\C}
+@cindex /\c
+@cindex /\C
+"\c" はパターン中のどこにでも置くことができ、パターン全体が、'@option{ignorecase}' をオンにした状態で処理されます。実際の '@option{ignorecase}' と '@option{smartcase}' の設定は無視されます。"\C" は "\c" の反対の意味で、大文字と小文字は必ず区別されます。
+
+@{Vim だけが \c と \C をサポートしています@}
+@quotation
+@strong{Note:} @*
+'@option{ignorecase}', "\c", "\C" は文字クラスには作用しません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples:
+      pattern	'ignorecase'  'smartcase'	matches ~
+	foo	  off		-		foo
+	foo	  on		-		foo Foo FOO
+	Foo	  on		off		foo Foo FOO
+	Foo	  on		on		    Foo
+	\cfoo	  -		-		foo Foo FOO
+	foo\C	  -		-		foo
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@multitable columnfractions .25 .25 .25 .25
+@item パターン @tab '@option{ignorecase}' @tab '@option{smartcase}' @tab マッチするもの
+@item foo @tab off @tab - @tab foo
+@item foo @tab on @tab - @tab foo Foo FOO
+@item Foo @tab on @tab off @tab foo Foo FOO
+@item Foo @tab on @tab on @tab Foo
+@item \cfoo @tab - @tab - @tab foo Foo FOO
+@item foo\C @tab - @tab - @tab foo
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Technical detail:				*NL-used-for-Nul*
+<Nul> characters in the file are stored as <NL> in memory.  In the display
+they are shown as "^@".  The translation is done when reading and writing
+files.  To match a <Nul> with a search pattern you can just enter CTRL-@ or
+"CTRL-V 000".  This is probably just what you expect.  Internally the
+character is replaced with a <NL> in the search pattern.  What is unusual is
+that typing CTRL-V CTRL-J also inserts a <NL>, thus also searches for a <Nul>
+in the file.  {Vi cannot handle <Nul> characters in the file at all}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{NL-used-for-Nul}
+@cindex NL-used-for-Nul
+技術的な説明:
+
+ファイル中の <Nul> 文字は、<NL> 文字としてメモリに保存され、ディスプレイには "^@@" と表示されます。これは、ファイルを読み書きする時に変換されます。検索パターンに <Nul> をマッチさせるには、@kbd{CTRL-@@} か "CTRL-V 000" を入力します。この動作はそれほど違和感がないはずです。
+
+検索パターンの <Nul> 文字は内部で <NL> に変換されています。@kbd{CTRL-V} @kbd{CTRL-J} をタイプした場合も <NL> が入力されるので、ファイル中の <Nul> を検索するのに使えますが、この動作は不自然に感じるかもしれません。
+
+@{Vi はファイル中の <Nul> 文字を扱えません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*CR-used-for-NL*
+When 'fileformat' is "mac", <NL> characters in the file are stored as <CR>
+characters internally.  In the text they are shown as "^J".  Otherwise this
+works similar to the usage of <NL> for a <Nul>.
+
+When working with expression evaluation, a <NL> character in the pattern
+matches a <NL> in the string.  The use of "\n" (backslash n) to match a <NL>
+doesn't work there, it only works to match text in the buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CR-used-for-NL}
+@cindex CR-used-for-NL
+'@option{fileformat}' が "@var{mac}" の場合、ファイル中の <NL> は内部では <CR> で保存され、テキストの中では "^J" として表示されます。他では、<NL> と <Nul> の場合と同じように扱われます。
+
+スクリプトでは、パターン中の <NL> は、文字列中の <NL> とマッチします。"\n" (バックスラッシュと n) は <NL> とはマッチしません。バッファ中のテキストとのマッチの場合のみ、"\n" は改行とマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*pattern-multi-byte*
+Patterns will also work with multi-byte characters, mostly as you would
+expect.  But invalid bytes may cause trouble, a pattern with an invalid byte
+will probably never match.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{pattern-multi-byte}
+@cindex pattern-multi-byte
+マルチバイト文字を使ったパターンは、たいていは、ユーザーが期待したとおりに機能します。しかし、不正なバイトでトラブルが起こることもあります。不正なバイトを含むパターンはおそらく、決してマッチしません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+8. Composing characters					*patterns-composing*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{patterns-composing}
+@cindex patterns-composing
+@section 8. 合成文字
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*/\Z*
+When "\Z" appears anywhere in the pattern, all composing characters are
+ignored.  Thus only the base characters need to match, the composing
+characters may be different and the number of composing characters may differ.
+Only relevant when 'encoding' is "utf-8".
+Exception: If the pattern starts with one or more composing characters, these
+must match.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\Z}
+@cindex /\Z
+パターンに "\Z" が含まれている場合、すべての合成文字は無視されます。そのため、どの合成文字が、いくつ結合されていても、基底文字とマッチするだけでマッチします。'@option{encoding}' が "@var{utf-8}" の場合だけ使用します。例外: パターンが 1 つか複数の合成文字で開始している場合は、それらはマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*/\%C*
+Use "\%C" to skip any composing characters.  For example, the pattern "a" does
+not match in "càt" (where the a has the composing character 0x0300), but
+"a\%C" does.  Note that this does not match "cát" (where the á is character
+0xe1, it does not have a compositing character).  It does match "cat" (where
+the a is just an a).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{/\%C}
+@cindex /\%C
+すべての合成文字をスキップするには "\%C" を使います。例えば、パターン "a" は "càt" (a に 0x0300 が合成されている) にはマッチしませんが、"a\%C" にはマッチします。Note: これは "cát" (á は 0xe1 という文字で、合成文字を持っていない) にはマッチしません。"cat" (a のみ) にはマッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When a composing character appears at the start of the pattern of after an
+item that doesn't include the composing character, a match is found at any
+character that includes this composing character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+合成文字と合成されないアイテムの直後に合成文字がある場合、その合成文字を含んでいるすべての文字がマッチします。
+
+@{訳注: x が合成文字として /x/  /\(x\)/  /\zsx/ など@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When using a dot and a composing character, this works the same as the
+composing character by itself, except that it doesn't matter what comes before
+this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ドットと合成文字を使うと、どの文字に合成されていても、その合成文字にマッチします。
+
+@{訳注: x が合成文字として /.x/ と書く@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The order of composing characters does not matter.  Also, the text may have
+more composing characters than the pattern, it still matches.  But all
+composing characters in the pattern must be found in the text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+合成文字の順番は関係ありません。また、指定した以上の合成文字がテキストにあっても、それはマッチします。ただし、パターンで指定したすべての合成文字がテキストに含まれている必要があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Suppose B is a base character and x and y are composing characters:
+	pattern		text		match ~
+	Bxy		Bxy		yes (perfect match)
+	Bxy		Byx		yes (order ignored)
+	Bxy		By		no (x missing)
+	Bxy		Bx		no (y missing)
+	Bx		Bx		yes (perfect match)
+	Bx		By		no (x missing)
+	Bx		Bxy		yes (extra y ignored)
+	Bx		Byx		yes (extra y ignored)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば B が基底文字で x と y が合成文字として:
+@multitable @columnfractions .3 .3 .4
+@item パターン @tab テキスト @tab マッチ
+@item Bxy @tab Bxy @tab yes (完全マッチ)
+@item Bxy @tab Byx @tab yes (順番違い)
+@item Bxy @tab By @tab no (x がない)
+@item Bxy @tab Bx @tab no (y がない)
+@item Bx @tab Bx @tab yes (完全マッチ)
+@item Bx @tab By @tab no (x がない)
+@item Bx @tab Bxy @tab yes (余計な y は無視される)
+@item Bx @tab Byx @tab yes (余計な y は無視される)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+9. Compare with Perl patterns				*perl-patterns*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{perl-patterns}
+@cindex perl-patterns
+@section 9. Perl のパターンとの比較
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim's regexes are most similar to Perl's, in terms of what you can do.  The
+difference between them is mostly just notation;  here's a summary of where
+they differ:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim と Perl の正規表現は、とても似ていて、同じ事ができます。違いは表記だけです。違いの要約を示します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Capability			in Vimspeak	in Perlspeak ~
+----------------------------------------------------------------
+force case insensitivity	\c		(?i)
+force case sensitivity		\C		(?-i)
+backref-less grouping		\%(atom\)	(?:atom)
+conservative quantifiers	\{-n,m}		*?, +?, ??, {}?
+0-width match			atom\@=		(?=atom)
+0-width non-match		atom\@!		(?!atom)
+0-width preceding match		atom\@<=	(?<=atom)
+0-width preceding non-match	atom\@<!	(?<!atom)
+match without retry		atom\@>		(?>atom)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .25 .25
+@headitem 効果 @tab Vim の表記 @tab Perl の表記
+@item 大文字と小文字を区別しない @tab \c @tab (?i)
+@item 大文字と小文字を区別する @tab \C @tab (?-i)
+@item 後方参照しないグループ @tab \%(atom\) @tab (?:atom)
+@item 最短一致の量指定子 @tab \@{-n,m@} @tab *?, +?, ??, @{@}?
+@item 幅ゼロの肯定先読み @tab atom\@@= @tab (?=atom)
+@item 幅ゼロの否定先読み @tab atom\@@! @tab (?!atom)
+@item 幅ゼロの肯定後読み @tab atom\@@<= @tab (?<=atom)
+@item 幅ゼロの否定後読み @tab atom\@@<! @tab (?<!atom)
+@item 強欲な量指定子 @tab atom\@@> @tab (?>atom)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim and Perl handle newline characters inside a string a bit differently:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim と Perl では文字列中の改行の扱いが少し違います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In Perl, ^ and $ only match at the very beginning and end of the text,
+by default, but you can set the 'm' flag, which lets them match at
+embedded newlines as well.  You can also set the 's' flag, which causes
+a . to match newlines as well.  (Both these flags can be changed inside
+a pattern using the same syntax used for the i flag above, BTW.)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Perl では、'^' と '$' はテキストの最先頭と最末尾にマッチしますが、'm' フラグを使うと、テキストの中間の改行にもマッチするようになります。's' フラグを使うと、'.' が改行にもマッチするようなります。'm' と 's' のフラグは、上記の (?i) フラグのように、パターン中で設定することもできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On the other hand, Vim's ^ and $ always match at embedded newlines, and
+you get two separate atoms, \%^ and \%$, which only match at the very
+start and end of the text, respectively.  Vim solves the second problem
+by giving you the \_ "modifier":  put it in front of a . or a character
+class, and they will match newlines as well.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim では、'^' と '$' は常に中間の改行にもマッチします。最先頭と最末尾にはそれぞれ、'\%^' と '\%$' がマッチします。Perl の 's' フラグに対応するのは '\_' 修飾子です。'.' や文字クラスの前に '\_' を付けると、改行にもマッチするようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Finally, these constructs are unique to Perl:
+- execution of arbitrary code in the regex:  (?{perl code})
+- conditional expressions:  (?(condition)true-expr|false-expr)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のものは Perl だけの機能です:
+@itemize @minus
+@item 正規表現中で任意のコードを実行する: (?@{perl code@})
+@item 条件式: (?(condition)true-expr|false-expr)
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+...and these are unique to Vim:
+- changing the magic-ness of a pattern:  \v \V \m \M
+   (very useful for avoiding backslashitis)
+- sequence of optionally matching atoms:  \%[atoms]
+- \& (which is to \| what "and" is to "or";  it forces several branches
+   to match at one spot)
+- matching lines/columns by number:  \%5l \%5c \%5v
+- setting the start and end of the match:  \zs \ze
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のものは Vim だけの機能です:
+@itemize @minus
+@item パターンのマジックを変更する: \v \V \m \M (バックスラッシュだらけになるのを防げます)
+@item 任意にマッチするアトム列: \%[atoms]
+@item \& ("\&" と "\|" は、"and" と "or" の関係です。複数のブランチを同じ場所でマッチさせることができます)
+@item 行や列を指定してマッチングする: \%5l \%5c \%5v
+@item 正規表現にマッチしたものとして返される範囲を設定する: \zs \ze
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+10. Highlighting matches				*match-highlight*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{match-highlight}
+@cindex match-highlight
+@section 10. マッチしたテキストを強調する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:mat* *:match*
+:mat[ch] {group} /{pattern}/
+		Define a pattern to highlight in the current window.  It will
+		be highlighted with {group}.  Example: >
+			:highlight MyGroup ctermbg=green guibg=green
+			:match MyGroup /TODO/
+<		Instead of // any character can be used to mark the start and
+		end of the {pattern}.  Watch out for using special characters,
+		such as '"' and '|'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:mat}
+@anchor{:match}
+@cindex :mat
+@cindex :match
+@table @asis
+@item :mat[ch] @{group@} /@{pattern@}/
+カレントウィンドウ内で強調表示するパターンを定義します。強調には @{group@} が使われます。例:
+@example
+:highlight MyGroup ctermbg=green guibg=green
+:match MyGroup /TODO/
+@end example
+@{pattern@} の区切りには // 以外の文字を使うことができます。'"' や '|' などの特別な文字を使うときは注意してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{group} must exist at the moment this command is executed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{group@} は、コマンドを実行する前に定義しておく必要があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The {group} highlighting still applies when a character is
+		to be highlighted for 'hlsearch', as the highlighting for
+		matches is given higher priority than that of 'hlsearch'.
+		Syntax highlighting (see 'syntax') is also overruled by
+		matches.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{group@} の強調は、'@option{hlsearch}' や構文強調 ('@option{syntax}' 参照) の強調よりも優先されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Note that highlighting the last used search pattern with
+		'hlsearch' is used in all windows, while the pattern defined
+		with ":match" only exists in the current window.  It is kept
+		when switching to another buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+'@option{hlsearch}' の強調はすべてのウィンドウに適用されますが、":match" はカレントウィンドウだけです。ウィンドウのバッファを切り替えても、強調表示は維持されます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		'ignorecase' does not apply, use |/\c| in the pattern to
+		ignore case.  Otherwise case is not ignored.
+
+		'redrawtime' defines the maximum time searched for pattern
+		matches.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{ignorecase}' の設定は使われません。大文字と小文字は区別されます。大文字と小文字の違いを無視するには、|/\c| を使います。
+
+'@option{redrawtime}' を設定すると、検索に費やす時間を制限できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When matching end-of-line and Vim redraws only part of the
+		display you may get unexpected results.  That is because Vim
+		looks for a match in the line where redrawing starts.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+改行にマッチしているときに、Vim がディスプレイの一部だけを再描画すると、予期しない結果になることがありますが、それは、Vim が再描画した行からマッチの検索を開始するからです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Also see |matcharg()| and |getmatches()|. The former returns
+		the highlight group and pattern of a previous |:match|
+		command.  The latter returns a list with highlight groups and
+		patterns defined by both |matchadd()| and |:match|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|matcharg()| は |:match| コマンドで使用されたパターンと強調グループを返します。|getmatches()| は |matchadd()| と |:match| で定義されたマッチのパターンと強調グループのリストを返します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Highlighting matches using |:match| are limited to three
+		matches (aside from |:match|, |:2match| and |:3match| are
+		available). |matchadd()| does not have this limitation and in
+		addition makes it possible to prioritize matches.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:match| コマンドではマッチを 3 つまで定義できます (|:match|, |:2match|, |:3match|)。|matchadd()| にはこのような制限はありません。加えて、優先順位を設定することもできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Another example, which highlights all characters in virtual
+		column 72 and more: >
+			:highlight rightMargin term=bold ctermfg=blue guifg=blue
+			:match rightMargin /.\%>72v/
+<		To highlight all character that are in virtual column 7: >
+			:highlight col8 ctermbg=grey guibg=grey
+			:match col8 /\%<8v.\%>7v/
+<		Note the use of two items to also match a character that
+		occupies more than one virtual column, such as a TAB.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の例は、表示桁で 72 列目以降の文字をすべて強調表示します:
+@example
+:highlight rightMargin term=bold ctermfg=blue guifg=blue
+:match rightMargin /.\%>72v/
+@end example
+表示桁で 7 列目の文字をすべて強調表示するには次のようにします:
+@example
+:highlight col8 ctermbg=grey guibg=grey
+:match col8 /\%<8v.\%>7v/
+@end example
+@quotation
+@strong{Note:} @*
+TAB のような文字は、1 桁を超えて表示されます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:mat[ch]
+:mat[ch] none
+		Clear a previously defined match pattern.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :mat[ch] or :mat[ch] none
+以前に定義したマッチパターンを消去します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+:2mat[ch] {group} /{pattern}/					*:2match*
+:2mat[ch]
+:2mat[ch] none
+:3mat[ch] {group} /{pattern}/					*:3match*
+:3mat[ch]
+:3mat[ch] none
+		Just like |:match| above, but set a separate match.  Thus
+		there can be three matches active at the same time.  The match
+		with the lowest number has priority if several match at the
+		same position.
+		The ":3match" command is used by the |matchparen| plugin.  You
+		are suggested to use ":match" for manual matching and
+		":2match" for another plugin.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:2match}
+@cindex :2match
+@item :2mat[ch] @{group@} /@{pattern@}/ or :2mat[ch] or :2mat[ch] none
+@anchor{:3match}
+@cindex :3match
+@item :3mat[ch] @{group@} /@{pattern@}/ or :3mat[ch] or :3mat[ch] none
+上述の |:match| と同じですが、別々のマッチを設定します。そのため、同時に 3 つのマッチを表示できます。同じ場所でマッチした場合は、数値の低いものが優先されます。
+
+":3match" コマンドは |matchparen| プラグインで使用されています。あなたが手動でマッチを設定するときは ":match" を使ってください。他のプラグインでは ":2match" を使ってください。
+@end table
+@{@strong{訳注:} @*
+訳語:
+@multitable @columnfractions .5 .5
+@item concat @tab 連接
+@item multi @tab >量指定子< 量指定詞 数量子 数量詞
+@item ordinary atom @tab 普通のアトム
+@item a sequence of optionally matched atoms @tab 任意にマッチするアトム列
+@item last search pattern @tab 最終検索パターン
+@end multitable
+@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
