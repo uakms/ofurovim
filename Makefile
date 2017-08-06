@@ -16,7 +16,8 @@ REFMANUALS = \
 	doc/starting.texi doc/editing.texi doc/motion.texi doc/scroll.texi \
 	doc/insert.texi doc/change.texi doc/indent.texi doc/undo.texi \
 	doc/repeat.texi doc/visual.texi doc/various.texi doc/recover.texi \
-	doc/cmdline.texi doc/options.texi doc/pattern.texi
+	doc/cmdline.texi doc/options.texi doc/pattern.texi doc/map.texi \
+	doc/tagsrch.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
@@ -82,13 +83,16 @@ diffja:
 	@iconv -f LATIN1 -t UTF8 $(ORIG)/doc/org_usr_24.txt > $(ORIG)/doc/usr_24.txt
 	@cp $(ORIG)/doc/quotes.txt $(ORIG)/doc/org_quotes.txt
 	@iconv -f LATIN1 -t UTF8 $(ORIG)/doc/org_quotes.txt > $(ORIG)/doc/quotes.txt
+	@cp $(ORIG)/doc/map.txt $(ORIG)/doc/org_map.txt
+	@iconv -f LATIN1 -t UTF8 $(ORIG)/doc/org_map.txt > $(ORIG)/doc/map.txt
 	@ORIG_DOC=$(ORIG) ruby utils/diff_trans.rb $(USRMANUALS) $(REFMANUALS)
 	@mv $(ORIG)/doc/org_usr_24.txt $(ORIG)/doc/usr_24.txt
 	@mv $(ORIG)/doc/org_quotes.txt $(ORIG)/doc/quotes.txt
+	@mv $(ORIG)/doc/org_map.txt $(ORIG)/doc/map.txt
 
 nvcheck:
 	nvcheck doc/*.texi
 
 clean:
-	@rm -r htmls/*
-	@rm -r pdfs/*
+	@find htmls -name "*.html" | xargs rm
+	@find pdfs -name "*.pdf" | xargs rm

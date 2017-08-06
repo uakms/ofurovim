@@ -3,14 +3,14 @@
 @unnumbered 全オプションの説明
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*options.txt*	For Vim version 8.0.  Last change: 2017 Mar 22
+*options.txt*	For Vim version 8.0.  Last change: 2017 Jul 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*options.txt*	For Vim バージョン 8.0.  Last change: 2017 Mar 22
+*options.txt*	For Vim バージョン 8.0.  Last change: 2017 Jul 31
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -1100,7 +1100,7 @@ Setting the filetype
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-:setf[iletype] {filetype}			*:setf* *:setfiletype*
+:setf[iletype] [FALLBACK] {filetype}			*:setf* *:setfiletype*
 			Set the 'filetype' option to {filetype}, but only if
 			not done yet in a sequence of (nested) autocommands.
 			This is short for: >
@@ -1110,6 +1110,13 @@ Setting the filetype
 <			This command is used in a filetype.vim file to avoid
 			setting the 'filetype' option twice, causing different
 			settings and syntax files to be loaded.
+
+			When the optional FALLBACK argument is present, a
+			later :setfiletype command will override the
+			'filetype'.  This is to used for filetype detections
+			that are just a guess.  |did_filetype()| will return
+			false after this command.
+
 			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -1118,7 +1125,7 @@ Setting the filetype
 @cindex :setf
 @cindex :setfiletype
 @table @asis
-@item :setf[iletype] @{filetype@}
+@item :setf[iletype] [FALLBACK] @{filetype@}
 @{filetype@} に対してオプション '@option{filetype}' を設定する。ただし autocommand の中 (入れ子になっているときは、外側も含めて) でまだ実行されていないときのみ有効である。
 
 これは以下のコマンドの略である。
@@ -1128,6 +1135,8 @@ Setting the filetype
 :endif
 @end verbatim
 このコマンドは @file{filetype.vim} の中で使われ、オプション '@option{filetype}' が 2 度設定されて別の設定や構文ファイルが読み込まれることがないようにしている。
+
+任意の引数 FALLBACK が存在すると、後の :setfiletyp コマンドは 'filetype' を上書きする。これはファイルタイプの決定を正確に推測するために使われる。|did_filetype()| はこのコマンドの後では false を返すだろう。
 
 @{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -2468,6 +2477,17 @@ Vim はその値を推測する。GUI 版ならばうまくいくはずだが、
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+	When the t_BG option is set, Vim will use it to request the background
+	color from the terminal.  If the returned RGB value is dark/light and
+	'background' is not dark/light, 'background' will be set and the
+	screen is redrawn.  This may have side effects, make t_BG empty in
+	your .vimrc if you suspect this problem.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@option{t_BG} オプションが設定されると、Vim はターミナルから背景色をリクエストするために使われる。もしも返された RGB の値が dark/light であり、'@option{background}' が dark/light でなかったなら、'@option{background}' が設定されて画面が再描画される。これは副作用があるかもしれない。問題があると疑わしき場合は、@file{.vimrc} の @option{t_BG} を空にしよう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 	When starting the GUI, the default value for 'background' will be
 	"light".  When the value is not set in the .gvimrc, and Vim detects
 	that the background is actually quite dark, 'background' is set to
@@ -3805,6 +3825,8 @@ if has("balloon_multiline")
 			or list of locations |:lwindow|
 	  help		help buffer (you are not supposed to set this
 			manually)
+	  terminal	buffer for a |terminal| (you are not supposed to set
+			this manually)
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .2 .8
@@ -3814,6 +3836,7 @@ if has("balloon_multiline")
 @item acwrite @tab いつも自動コマンド BufWriteCmd で書き込まれる予定のバッファ。@{Vim が |+autocmd| 機能付きでコンパイルされたときのみ有効@}
 @item quickfix @tab エラーリスト／ロケーションリスト用の quickfix バッファ (|:cwindow|, |:lwindow| を参照)
 @item help @tab ヘルプバッファ (ユーザーが手動でこれに設定することはないはずである)
+@item terminal @tab |terminal| のためのバッファ (ユーザーが手動でこれに設定することはないはずである)
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -7387,7 +7410,7 @@ Unix でディレクトリ "/tmp" を使うのはお勧めできない。シス�
 	Makes the 'g' and 'c' flags of the ":substitute" command to be
 	toggled each time the flag is given.  See |complex-change|.  See
 	also 'gdefault' option.
-	Switching this option on is discouraged!
+	Switching this option on may break plugins!
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{'ed'}
@@ -9559,11 +9582,18 @@ This option is set to "" when 'compatible' is set.
 
 @ifset EN
 	NOTE: This option is reset when 'compatible' is set.
+	DEPRECATED: Setting this option may break plugins that are not aware
+	of this option.  Also, many users get confused that adding the /g flag
+	has the opposite effect of that it normally does.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @quotation
 @strong{Note:} @*
 このオプションは、'@option{compatible}' がオンになるとオフになるので注意。
+@end quotation
+@quotation
+@strong{DEPRECATED:} @*
+このオプションを設定すると、このオプションを知らないプラグインを壊すかもしれない。また、多くのユーザーが、標準の /g とは正反対の効果を持っている /g フラグを付けることに混乱する。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -10971,7 +11001,10 @@ GUI のタブページが表示されるときのみ使われる。'@option{guio
 				     D:DiffDelete,T:DiffText,>:SignColumn,
 				     B:SpellBad,P:SpellCap,R:SpellRare,
 				     L:SpellLocal,-:Conceal,+:Pmenu,=:PmenuSel,
-				     x:PmenuSbar,X:PmenuThumb")
+				     x:PmenuSbar,X:PmenuThumb,*:TabLine,
+				     #:TabLineSel,_:TabLineFill,!:CursorColumn,
+				     .:CursorLine,o:ColorColumn,q:QuickFixLine,
+				     $:StatusLineTerm")
 			global
 			{not in Vi}
 @end ifset
@@ -10993,7 +11026,10 @@ GUI のタブページが表示されるときのみ使われる。'@option{guio
 @item @tab D:DiffDelete,T:DiffText,>:SignColumn,
 @item @tab B:SpellBad,P:SpellCap,R:SpellRare,
 @item @tab L:SpellLocal,-:Conceal,+:Pmenu,=:PmenuSel,
-@item @tab x:PmenuSbar,X:PmenuThumb")
+@item @tab x:PmenuSbar,X:PmenuThumb,*:TabLine,
+@item @tab #:TabLineSel,_:TabLineFill,!:CursorColumn,
+@item @tab .:CursorLine,o:ColorColumn,q:QuickFixLine,
+@item @tab $:StatusLineTerm")
 @end multitable
 グローバル
 
@@ -13507,8 +13543,8 @@ list モード: タブ文字を @kbd{CTRL-I} で表示し、行末に $ を表�
 	When on the plugin scripts are loaded when starting up |load-plugins|.
 	This option can be reset in your |vimrc| file to disable the loading
 	of plugins.
-	Note that using the "-u NONE" and "--noplugin" command line arguments
-	reset this option. |-u| |--noplugin|
+	Note that using the "-u NONE", "-u DEFAULTS" and "--noplugin" command
+	line arguments reset this option.  See |-u| and |--noplugin|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{'lpl'}
@@ -13529,7 +13565,7 @@ list モード: タブ文字を @kbd{CTRL-I} で表示し、行末に $ を表�
 オンのときは、Vim が立ち上がるときにプラグインスクリプトが読み込まれる |load-plugins|。このオプションをユーザーのファイル |vimrc| 内でオフにすることで、プラグインの読み込みを無効化できる。
 @quotation
 @strong{Note:} @*
-コマンドライン引数 "-u NONE" または "--noplugin" によってこのオプションをオフにできることに注意 |-u| |--noplugin|。
+コマンドライン引数 "-u NONE", "-u DEFAULTS" または "--noplugin" によってこのオプションをオフにできることに注意。|-u| |--noplugin|。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -16174,10 +16210,14 @@ pyx* 関数とコマンドで使用する python のバージョンを指定す�
 			{only available when compiled with the |+reltime|
 			feature}
 	The time in milliseconds for redrawing the display.  This applies to
-	searching for patterns for 'hlsearch' and |:match| highlighting.
+	searching for patterns for 'hlsearch', |:match| highlighting an syntax
+	highlighting.
 	When redrawing takes more than this many milliseconds no further
-	matches will be highlighted.  This is used to avoid that Vim hangs
-	when using a very complicated pattern.
+	matches will be highlighted.
+	For syntax highlighting the time applies per window.  When over the
+	limit syntax highlighting is disabled until |CTRL-L| is used.
+	This is used to avoid that Vim hangs when using a very complicated
+	pattern.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{'redrawtime'}
@@ -16193,7 +16233,7 @@ pyx* 関数とコマンドで使用する python のバージョンを指定す�
 
 @{|+reltime| 機能付きでコンパイルされたときのみ有効@}
 
-画面を再描画するのにかける時間(ミリ秒)。'@option{hlsearch}' がオンのときのパターン検索や |:match| によるハイライトに対して適用される。再描画にこれで指定したミリ秒以上の時間がかかるとき、それ以上のマッチはハイライトされない。非常に複雑なパターンを検索する際に Vim が応答しなくなるのを避けるためである。
+画面を再描画するのにかける時間(ミリ秒)。これは '@option{hlsearch}' がオンのときのパターン検索や |:match| によるシンタックスハイライトに対して適用される。再描画にこれで指定したミリ秒以上の時間がかかるとき、それ以上のマッチはハイライトされない。シンタックスハイライトはウィンドウ毎に適用される。このリミットを超えると、シンタックスハイライトは |CTRL-L| が使われるまで無効にされる。非常に複雑なパターンを検索する際に Vim が応答しなくなるのを避けるためである。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -19659,12 +19699,12 @@ theribal/terrible
 
 	Watch out for errors in expressions.  They may render Vim unusable!
 	If you are stuck, hold down ':' or 'Q' to get a prompt, then quit and
-	edit your .vimrc or whatever with "vim -u NONE" to get it right.
+	edit your .vimrc or whatever with "vim --clean" to get it right.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 全て数字で返された結果は、表示用の数値と見なされる。それ以外の結果はフラグ列と解釈され、上記の方法が適用される。
 
-ステータス行で expression を使うときはエラーに気をつけること。Vim の描画機構が使い物にならなくなるかもしれない！行き詰まってしまったならば、プロンプトを表示させるために ':' か 'Q' を打ち込む。そして Vim を終了したら "vim -u NONE" として @{訳注: エラーを起こす設定を読み込まないようにして@} ユーザーのファイル @file{.vimrc} か何かを編集し、正常に戻す。
+ステータス行で expression を使うときはエラーに気をつけること。Vim の描画機構が使い物にならなくなるかもしれない！行き詰まってしまったならば、プロンプトを表示させるために ':' か 'Q' を打ち込む。そして Vim を終了したら "vim --clean" として @{訳注: エラーを起こす設定を読み込まないようにして@} ユーザーのファイル @file{.vimrc} か何かを編集し、正常に戻す。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -20727,6 +20767,7 @@ Win32 GUI とコンソールでは '@option{termencoding}' は使用されない
 	compatible terminal.
 	If setting this option does not work (produces a colorless UI)
 	reading |xterm-true-color| might help.
+	Note that the "cterm" attributes are still used, not the "gui" ones.
 	NOTE: This option is reset when 'compatible' is set.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -20748,7 +20789,91 @@ Win32 GUI とコンソールでは '@option{termencoding}' は使用されない
 このオプションを設定しても機能しない (色が UI に付かない) 場合は、|xterm-true-color| を読むと助けになるかもしれない。
 @quotation
 @strong{Note:} @*
+"cterm" の特徴はまだ使われているが、"gui" はそうではない。
+@end quotation
+@quotation
+@strong{Note:} @*
 このオプションは、'@option{compatible}' がオンになるとオフになるので注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*'termkey'* *'tk'*
+'termkey' 'tk'		string	(default "")
+			local to window
+			{not in Vi}
+	The key that starts a CTRL-W command in a terminal window.  Other keys
+	are sent to the job running in the window.
+	The <> notation can be used, e.g.: >
+		:set termkey=<C-L>
+<	The string must be one key stroke but can be multiple bytes.
+	When not set CTRL-W is used, so that CTRL-W : gets you to the command
+	line.  If 'termkey' is set to CTRL-L then CTRL-L : gets you to the
+	command line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'termkey'}
+@anchor{'tk'}
+@cindex 'termkey'
+@cindex 'tk'
+@item 'termkey' 'tk'
+文字列 (既定では "")
+
+ウィンドウについてローカル
+
+@{Vi にはない@}
+
+ターミナルウィンドウ内で CTRL-W で始まるキーはコマンドです。他のキーはウィンドウ内で動作しているジョブに送られる。
+
+<> 表記法を使うことができる。例えば:
+@example
+:set termkey=<C-L>
+@end example
+この文字列は 1 つのキーストロークでなければならないが、マルチバイトでも良い。
+
+何も設定されていない CTRL-W が使われると、 @key{CTRL-W :} はコマンドライン入力になる。もしも '@option{termkey}' が CTRL-L に設定されているなら、@key{CTRL-L :} がコマンドライン入力になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*'termsize'* *'tms'*
+'termsize' 'tms'	string	(default "")
+			local to window
+			{not in Vi}
+	Size of the |terminal| window.  Format: {rows}x{columns}.
+	- When empty the terminal gets the size from the window.
+	- When set (e.g., "24x80") the terminal size is not adjusted to the
+	  window size.  If the window is smaller only the top-left part is
+	  displayed.
+	  When rows is zero then use the height of the window.
+	  When columns is zero then use the width of the window.
+	  For example: "30x0" uses 30 rows with the current window width.
+	  Using "0x0" is the same as empty.
+	Note that the command running in the terminal window may still change
+	the size of the terminal.  In that case the Vim window will be
+	adjusted to that size, if possible.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'termsize'}
+@anchor{'tms'}
+@cindex 'termsize'
+@cindex 'tms'
+@item 'termsize' 'tms'
+文字列 (既定では "")
+
+ウィンドウについてローカル
+
+@{Vi にはない@}
+
+|terminal| ウィンドウのサイズ。書式: @{rows@} x @{columns@}.
+@itemize @minus
+@item 空の場合、ターミナルはウィンドウからサイズを取得する。
+@item 設定されている場合 (例えば "24x80")、ターミナルのサイズはウィンドウサイズに調節されない。もしもウィンドウが上と左の部分のみ小さいのなら表示されない。
+
+行がゼロなら、ウィンドウの高さを使う。列がゼロなら、ウィンドウの幅を使う。例えば、"30x0" の場合、カレントウィンドウの幅として 30 行を使う。"0x0" の場合、空の場合と同じになる。
+@end itemize
+@quotation
+@strong{Note:} @*
+ターミナルウィンドウ中で動作しているコマンドはターミナルのサイズを黙って変更するかもしれない。この場合、Vim のウィンドウは可能ならばそのサイズに調節される。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -22198,13 +22323,14 @@ setlocal ul=-1
 			{not available when compiled without the |+viminfo|
 			feature}
 	When non-empty, the viminfo file is read upon startup and written
-	when exiting Vim (see |viminfo-file|).  The string should be a comma
-	separated list of parameters, each consisting of a single character
-	identifying the particular parameter, followed by a number or string
-	which specifies the value of that parameter.  If a particular
-	character is left out, then the default value is used for that
-	parameter.  The following is a list of the identifying characters and
-	the effect of their value.
+	when exiting Vim (see |viminfo-file|). Except when 'viminfofile' is
+	"NONE".
+	The string should be a comma separated list of parameters, each
+	consisting of a single character identifying the particular parameter,
+	followed by a number or string which specifies the value of that
+	parameter.  If a particular character is left out, then the default
+	value is used for that parameter.  The following is a list of the
+	identifying characters and the effect of their value.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{'viminfo'}
@@ -22234,7 +22360,7 @@ setlocal ul=-1
 
 @{Vim が |+viminfo| 機能付きでコンパイルされたときのみ有効@}
 
-値が空でないとき、viminfo ファイルが起動に先立って読み込まれ、また終了時に書き出される (|viminfo-file| を参照)。値は指定部のコンマ区切りのリストである。指定部には、効果を指定するフラグ1文字の次に、その値を指定する数または文字列を指定する。指定されなかったものについては、既定値が使われる。フラグとその動作の一覧は、以下の通りである。
+値が空でないとき、viminfo ファイルが起動に先立って読み込まれ、また終了時に書き出される (|viminfo-file| を参照)。ただし、'@option{viminfofile}' が "NONE" の時は除く。値は指定部のコンマ区切りのリストである。指定部には、効果を指定するフラグ1文字の次に、その値を指定する数または文字列を指定する。指定されなかったものについては、既定値が使われる。フラグとその動作の一覧は、以下の通りである。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	CHAR	VALUE	~
@@ -22391,16 +22517,16 @@ viminfo ファイルの読み込み時に、'@option{hlsearch}' を無効にす�
 @ifset EN
 							*viminfo-n*
 	n	Name of the viminfo file.  The name must immediately follow
-		the 'n'.  Must be at the end of the option!  If the "-i"
-		argument was given when starting Vim, that file name overrides
-		the one given here with 'viminfo'.  Environment variables are
+		the 'n'.  Must be at the end of the option!  If the
+		'viminfofile' option is set, that file name overrides the one
+		given here with 'viminfo'.  Environment variables are
 		expanded when opening the file, not when setting the option.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{viminfo-n}
 @cindex viminfo-n
 @item n
-これでファイル viminfo の名前を指定する。名前は 'n' のすぐ後に続けて指定する。'@option{viminfo}' の最後に指定しなければならない！Vim の開始時に引数 "-i" が指定されると、それで指定されたファイル名がここで指定されたものを上書きする。環境変数は、オプションの設定時ではなく、ファイルの読み込み時に展開される。
+viminfo の名前。名前は 'n' のすぐ後に続けて指定する。オプションの最後に指定しなければならない！もしも '@option{viminfofile}' オプションが指定されていると、その('@option{viminfofile}' で指定された)名前は、ここの '@option{viminfo}' で指定された名前を上書きする。環境変数は、オプションの設定時ではなく、ファイルの読み込み時に展開される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*viminfo-r*
@@ -22533,6 +22659,38 @@ Kbyte 単位でのフラグの最大値。0のときレジスタは保存され�
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+				*'viminfofile'* *'vif'*
+'viminfofile' 'vif'	string	(default: "")
+			global
+			{not in Vi}
+			{not available when compiled without the |+viminfo|
+			feature}
+	When non-empty, overrides the file name used for viminfo.
+	When equal to "NONE" no viminfo file will be read or written.
+	This option can be set with the |-i| command line flag.  The |--clean|
+	command line flag sets it to "NONE".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'viminfofile'}
+@anchor{'vif'}
+@cindex 'viminfofile'
+@cindex 'vif'
+
+@item 'viminfofile' 'vif'
+文字列 (既定では "")
+
+グローバル
+
+@{Vi にはない@}
+
+@{Vim が |+viminfo| 機能付きでコンパイルされたときのみ有効@}
+
+値が空でないとき、viminfo で使われているファイル名を上書きする。
+"NONE" のとき、viminfo の読み込みも書き込みをしない。
+このオプションはコマンドラインの |-i| フラグで設定することができる。|--clean| フラグはこれを "NONE" に設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 					    *'virtualedit'* *'ve'*
 'virtualedit' 've'	string	(default "")
 			global
@@ -22607,14 +22765,27 @@ Kbyte 単位でのフラグの最大値。0のときレジスタは保存され�
 'visualbell' 'vb'	boolean	(default off)
 			global
 			{not in Vi}
-	Use visual bell instead of beeping.  The terminal code to display the
+	Use a visual bell instead of beeping.  The terminal code to display the
 	visual bell is given with 't_vb'.  When no beep or flash is wanted,
-	use ":set vb t_vb=".
-	Note: When the GUI starts, 't_vb' is reset to its default value.  You
-	might want to set it again in your |gvimrc|.
+	use: >
+		:set vb t_vb=
+<	If you want a short flash, you can use this on many terminals: >
+		:set vb t_vb=[?5h$<100>[?5l
+<	Here $<100> specifies the time, you can use a smaller or bigger value
+	to get a shorter or longer flash.
+
+	Note: Vim will limit the bell to once per half a second.  This avoids
+	having to wait for the flashing to finish when there are lots of
+	bells, e.g. on key repeat.  This also happens without 'visualbell'
+	set.
+
 	In the GUI, 't_vb' defaults to "<Esc>|f", which inverts the display
 	for 20 msec.  If you want to use a different time, use "<Esc>|40f",
 	where 40 is the time in msec.
+
+	Note: When the GUI starts, 't_vb' is reset to its default value.  You
+	might want to set it again in your |gvimrc|.
+
 	Does not work on the Amiga, you always get a screen flash.
 	Also see 'errorbells'.
 @end ifset
@@ -22637,14 +22808,30 @@ Kbyte 単位でのフラグの最大値。0のときレジスタは保存され�
 @{Vi にはない@}
 
 ビープ音に、実際は音でなくビジュアルベル @{訳注: 画面フラッシュ@} を使う。ビジュアルベルに使われるターミナルコードは、ターミナルオプション 't_vb' で指定される。音もフラッシュも使いたくないならば、次のようにすること @{訳注: しかしエラーが分からなくなるという諸刃の剣@}。
+
+次のように使う:
 @example
 :set vb t_vb=
 @end example
+短いフラッシュを望むのなら、多くのターミナルでこれを使うことができる:
+@example
+:set vb t_vb=[?5h$<100>[?5l
+@end example
+ここで、$<100> は時間を特定する。これを小さくまたは大きくすることで、フラッシュを速くしたり遅くしたりすることができる。
+
+@quotation
+@strong{Note:} @*
+Vim はベルを 0.5 秒毎に制限する。これは、例えばキーリピートのような多くのベルがあった時に、フラッシュのためのフラッシュ待ちを回避する。'@option{visualbell}' が設定されていなくても生じる。
+@end quotation
+
+|gvimrc| ファイルで再設定する必要があるだろう。
+
+GUI 版では、't_vb' の既定値は "<Esc>|f" であり、画面の色を 20 ミリ秒だけ反転させる。違った時間を設定したいときは、"<Esc>|40f" とすること。ここで 40 の所にはミリ秒単位で時間を設定する。
+
 @quotation
 @strong{Note:} @*
 GUI が開始するとき、't_vb' は既定値に設定されることに注意。
 @end quotation
-|gvimrc| ファイルで再設定する必要があるだろう。GUI 版では、't_vb' の既定値は "<Esc>|f" であり、画面の色を 20 ミリ秒だけ反転させる。違った時間を設定したいときは、"<Esc>|40f" とすること。ここで 40 の所にはミリ秒単位で時間を設定する。
 
 Amiga ではこのオプションは無効で、常に画面フラッシュが使われる。'@option{errorbells}' も参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------

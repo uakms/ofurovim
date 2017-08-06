@@ -1,0 +1,4044 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node map.txt, , , 目次
+@unnumbered キーマップと短縮入力
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*map.txt*       For Vim version 8.0.  Last change: 2017 May 30
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*map.txt*       For Vim バージョン 8.0.  Last change: 2017 May 30
+
+
+                  VIMリファレンスマニュアル       by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Key mapping, abbreviations and user-defined commands.
+
+This subject is introduced in sections |05.3|, |24.7| and |40.1| of the user
+manual.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+キーマップ、短縮入力、ユーザー定義コマンドについて。
+
+ユーザーマニュアルの |@ref{05.3}|, |@ref{24.7}|, |@ref{40.1}| でこの機能について紹介しています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Key mapping			|key-mapping|
+   1.1 MAP COMMANDS			|:map-commands|
+   1.2 Special arguments		|:map-arguments|
+   1.3 Mapping and modes		|:map-modes|
+   1.4 Listing mappings			|map-listing|
+   1.5 Mapping special keys		|:map-special-keys|
+   1.6 Special characters		|:map-special-chars|
+   1.7 What keys to map			|map-which-keys|
+   1.8 Examples				|map-examples|
+   1.9 Using mappings			|map-typing|
+   1.10 Mapping alt-keys		|:map-alt-keys|
+   1.11 Mapping an operator		|:map-operator|
+2. Abbreviations		|abbreviations|
+3. Local mappings and functions	|script-local|
+4. User-defined commands	|user-commands|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. マップ @tab |@ref{key-mapping, , key-mapping}|
+@item @ @ @ @ 1.1 マップコマンド @tab |@ref{:map-commands, , :map-commands}|
+@item @ @ @ @ 1.2 特別な引数 @tab |@ref{:map-arguments, , :map-arguments}|
+@item @ @ @ @ 1.3 マップとモード @tab |@ref{:map-modes, , :map-modes}|
+@item @ @ @ @ 1.4 マップの一覧表示 @tab |@ref{map-listing, , map-listing}|
+@item @ @ @ @ 1.5 特殊キーのマップ @tab |@ref{:map-special-keys, , :map-listing}|
+@item @ @ @ @ 1.6 特殊文字 @tab |@ref{:map-special-chars, , :map-special-chars}|
+@item @ @ @ @ 1.7 マップに使うキー @tab |@ref{map-which-keys, , map-which-keys}|
+@item @ @ @ @ 1.8 例 @tab |@ref{map-examples, , map-examples}|
+@item @ @ @ @ 1.9 マップを使う @tab |@ref{map-typing, , map-typing}|
+@item @ @ @ @ 1.10 Altキーを使ったマップ @tab |@ref{:map-alt-keys, , :map-alt-keys}|
+@item @ @ @ @ 1.11 オペレータの作成 @tab |@ref{:map-operator, , :map-operator}|
+@item 2. 短縮入力 @tab |@ref{abbreviations, , abbreviations}|
+@item 3. ローカルマップとローカル関数 @tab |@ref{script-local, , script-local}|
+@item 4. ユーザー定義コマンド @tab |@ref{user-commands, , user-commands}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Key mapping				*key-mapping* *mapping* *macro*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{key-mapping}
+@anchor{mapping}
+@anchor{macro}
+@cindex key-mapping
+@cindex mapping
+@cindex macro
+@section 1. マップ (Key mapping)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Key mapping is used to change the meaning of typed keys.  The most common use
+is to define a sequence commands for a function key.  Example: >
+
+	:map <F2> a<C-R>=strftime("%c")<CR><Esc>
+
+This appends the current date and time after the cursor (in <> notation |<>|).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップは入力キーの動作を変更するために使われます。一般的にはファンクションキーにコマンドを割り当てるのに使われます。例:
+@example
+:map <F2> a<C-R>=strftime("%c")<CR><Esc>
+@end example
+このマップはカーソルの位置に現在の日時を挿入します。(<F2> などは |<>| 表記法を参照)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.1 MAP COMMANDS					*:map-commands*
+
+There are commands to enter new mappings, remove mappings and list mappings.
+See |map-overview| for the various forms of "map" and their relationships with
+modes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-commands}
+@cindex :map-commands
+@subsection 1.1 マップコマンド
+
+マップを新しく作成、削除、一覧表示するコマンドがあります。マップコマンドの種類とモードの関係については |map-overview| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{lhs}	means left-hand-side	*{lhs}*
+{rhs}	means right-hand-side	*{rhs}*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@anchor{@{lhs@}}
+@cindex @{lhs@}
+@item @{lhs@} @tab left-hand-side  (左辺値) の略
+@anchor{@{rhs@}}
+@cindex @{rhs@}
+@item @{rhs@} @tab right-hand-side (右辺値) の略
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:map	{lhs} {rhs}		|mapmode-nvo|		*:map*
+:nm[ap]	{lhs} {rhs}		|mapmode-n|		*:nm* *:nmap*
+:vm[ap]	{lhs} {rhs}		|mapmode-v|		*:vm* *:vmap*
+:xm[ap]	{lhs} {rhs}		|mapmode-x|		*:xm* *:xmap*
+:smap	{lhs} {rhs}		|mapmode-s|		    *:smap*
+:om[ap]	{lhs} {rhs}		|mapmode-o|		*:om* *:omap*
+:map!	{lhs} {rhs}		|mapmode-ic|		*:map!*
+:im[ap]	{lhs} {rhs}		|mapmode-i|		*:im* *:imap*
+:lm[ap]	{lhs} {rhs}		|mapmode-l|		*:lm* *:lmap*
+:cm[ap]	{lhs} {rhs}		|mapmode-c|		*:cm* *:cmap*
+			Map the key sequence {lhs} to {rhs} for the modes
+			where the map command applies.  The result, including
+			{rhs}, is then further scanned for mappings.  This
+			allows for nested and recursive use of mappings.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .3 .4
+@anchor{:map}
+@cindex :map
+@item :map @tab @{lhs@} @{rhs@} @tab |mapmode-nvo|
+@anchor{:nm}
+@anchor{:nmap}
+@cindex :nm
+@cindex :nmap
+@item :nm[ap] @tab @{lhs@} @{rhs@} @tab |mapmode-n|
+@anchor{:vm}
+@anchor{:vmap}
+@cindex :vm
+@cindex :vmap
+@item :vm[ap] @tab @{lhs@} @{rhs@} @tab |mapmode-v|
+@anchor{:xm}
+@anchor{:xmap}
+@cindex :xm
+@cindex :xmap
+@item :xm[ap] @tab @{lhs@} @{rhs@} @tab |mapmode-x|
+@anchor{:smap}
+@cindex :smap
+@item :smap @tab @{lhs@} @{rhs@} @tab |mapmode-s|
+@anchor{:om}
+@anchor{:omap}
+@cindex :om
+@cindex :omap
+@item :om[ap] @tab @{lhs@} @{rhs@} @tab |mapmode-o|
+@anchor{:map!}
+@cindex :map!
+@item :map! @tab @{lhs@} @{rhs@} @tab |mapmode-ic|
+@anchor{:im}
+@anchor{:imap}
+@cindex :im
+@cindex :imap
+@item :im[ap] @tab @{lhs@} @{rhs@} @tab |mapmode-i|
+@anchor{:lm}
+@anchor{:lmap}
+@cindex :lm
+@cindex :lmap
+@item :lm[ap] @tab @{lhs@} @{rhs@} @tab |mapmode-l|
+@anchor{:cm}
+@anchor{:cmap}
+@cindex :cm
+@cindex :cmap
+@item :cm[ap] @tab @{lhs@} @{rhs@} @tab |mapmode-c|
+@end multitable
+@multitable @columnfractions .1 .9
+@item @tab キー入力 @{lhs@} を @{rhs@} に割り当てます。作成したマップは、マップコマンドに対応したモードで使用できます。マップが使用されたときに @{rhs@} が調べられ、再マップされます。マップを入れ子にしたり再帰的にすることができます。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:nore* *:norem*
+:no[remap]  {lhs} {rhs}		|mapmode-nvo|	*:no*  *:noremap* *:nor*
+:nn[oremap] {lhs} {rhs}		|mapmode-n|	*:nn*  *:nnoremap*
+:vn[oremap] {lhs} {rhs}		|mapmode-v|	*:vn*  *:vnoremap*
+:xn[oremap] {lhs} {rhs}		|mapmode-x|	*:xn*  *:xnoremap*
+:snor[emap] {lhs} {rhs}		|mapmode-s|	*:snor* *:snoremap*
+:ono[remap] {lhs} {rhs}		|mapmode-o|	*:ono* *:onoremap*
+:no[remap]! {lhs} {rhs}		|mapmode-ic|	*:no!* *:noremap!*
+:ino[remap] {lhs} {rhs}		|mapmode-i|	*:ino* *:inoremap*
+:ln[oremap] {lhs} {rhs}		|mapmode-l|	*:ln*  *:lnoremap*
+:cno[remap] {lhs} {rhs}		|mapmode-c|	*:cno* *:cnoremap*
+			Map the key sequence {lhs} to {rhs} for the modes
+			where the map command applies.  Disallow mapping of
+			{rhs}, to avoid nested and recursive mappings.  Often
+			used to redefine a command.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:nore}
+@anchor{:norem}
+@cindex :nore
+@cindex :norem
+@multitable @columnfractions .3 .3 .4
+@anchor{:no}
+@anchor{:noremap}
+@anchor{:nor}
+@cindex :no
+@cindex :noremap
+@cindex :nor
+@item :no[remap] @tab @{lhs@} @{rhs@} @tab |mapmode-nvo|
+@anchor{:nn}
+@anchor{:nnoremap}
+@cindex :nn
+@cindex :nnoremap
+@item :nn[oremap] @tab @{lhs@} @{rhs@} @tab |mapmode-n|
+@anchor{:vn}
+@anchor{:vnoremap}
+@cindex :vn
+@cindex :vnoremap
+@item :vn[oremap] @tab @{lhs@} @{rhs@} @tab |mapmode-v|
+@anchor{:xn}
+@anchor{:xnoremap}
+@cindex :xn
+@cindex :xnoremap
+@item :xn[oremap] @tab @{lhs@} @{rhs@} @tab |mapmode-x|
+@anchor{:snor}
+@anchor{:snoremap}
+@cindex :snor
+@cindex :snoremap
+@item :snor[emap] @tab @{lhs@} @{rhs@} @tab |mapmode-s|
+@anchor{:ono}
+@anchor{:onoremap}
+@cindex :ono
+@cindex :onoremap
+@item :ono[remap] @tab @{lhs@} @{rhs@} @tab |mapmode-o|
+@anchor{:no!}
+@anchor{:noremap!}
+@cindex :no!
+@cindex :noremap!
+@item :no[remap]! @tab @{lhs@} @{rhs@} @tab |mapmode-ic|
+@anchor{:ino}
+@anchor{:inoremap}
+@cindex :ino
+@cindex :inoremap
+@item :ino[remap] @tab @{lhs@} @{rhs@} @tab |mapmode-i|
+@anchor{:ln}
+@anchor{:lnoremap}
+@cindex :ln
+@cindex :lnoremap
+@item :ln[oremap] @tab @{lhs@} @{rhs@} @tab |mapmode-l|
+@anchor{:cno}
+@anchor{:cnoremap}
+@cindex :cno
+@cindex :cnoremap
+@item :cno[remap] @tab @{lhs@} @{rhs@} @tab |mapmode-c|
+@end multitable
+@multitable @columnfractions .1 .9
+@item @tab キー入力 @{lhs@} を @{rhs@} に割り当てます。作成したマップ、はマップコマンドに対応したモードで使用できます。@{rhs@} は再マップされないので、マップが入れ子になったり再帰的になることはありません。コマンドを再定義するときによく使われます。
+
+@{Vi にはありません@}
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+:unm[ap]  {lhs}			|mapmode-nvo|		*:unm*  *:unmap*
+:nun[map] {lhs}			|mapmode-n|		*:nun*  *:nunmap*
+:vu[nmap] {lhs}			|mapmode-v|		*:vu*   *:vunmap*
+:xu[nmap] {lhs}			|mapmode-x|		*:xu*   *:xunmap*
+:sunm[ap] {lhs}			|mapmode-s|		*:sunm* *:sunmap*
+:ou[nmap] {lhs}			|mapmode-o|		*:ou*   *:ounmap*
+:unm[ap]! {lhs}			|mapmode-ic|		*:unm!* *:unmap!*
+:iu[nmap] {lhs}			|mapmode-i|		*:iu*   *:iunmap*
+:lu[nmap] {lhs}			|mapmode-l|		*:lu*   *:lunmap*
+:cu[nmap] {lhs}			|mapmode-c|		*:cu*   *:cunmap*
+			Remove the mapping of {lhs} for the modes where the
+			map command applies.  The mapping may remain defined
+			for other modes where it applies.
+			Note: Trailing spaces are included in the {lhs}.  This
+			unmap does NOT work: >
+				:map @@ foo
+				:unmap @@ | print
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .2 .5
+@anchor{:unm}
+@anchor{:unmap}
+@cindex :unm
+@cindex :unmap
+@item :unm[ap] @tab @{lhs@} @tab |mapmode-nvo|
+@anchor{:nun}
+@anchor{:nunmap}
+@cindex :nun
+@cindex :nunmap
+@item :nun[map] @tab @{lhs@} @tab |mapmode-n|
+@anchor{:vu}
+@anchor{:vunmap}
+@cindex :vu
+@cindex :vunmap
+@item :vu[nmap] @tab @{lhs@} @tab |mapmode-v|
+@anchor{:xu}
+@anchor{:xunmap}
+@cindex :xu
+@cindex :xunmap
+@item :xu[nmap] @tab @{lhs@} @tab |mapmode-x|
+@anchor{:sunm}
+@anchor{:sunmap}
+@cindex :sunm
+@cindex :sunmap
+@item :sunm[ap] @tab @{lhs@} @tab |mapmode-s|
+@anchor{:ou}
+@anchor{:ounmap}
+@cindex :ou
+@cindex :ounmap
+@item :ou[nmap] @tab @{lhs@} @tab |mapmode-o|
+@anchor{:unm!}
+@anchor{:unmap!}
+@cindex :unm!
+@cindex :unmap!
+@item :unm[ap]! @tab @{lhs@} @tab |mapmode-ic|
+@anchor{:iu}
+@anchor{:iunmap}
+@cindex :iu
+@cindex :iunmap
+@item :iu[nmap] @tab @{lhs@} @tab |mapmode-i|
+@anchor{:lu}
+@anchor{:lunmap}
+@cindex :lu
+@cindex :lunmap
+@item :lu[nmap] @tab @{lhs@} @tab |mapmode-l|
+@anchor{:cu}
+@anchor{:cunmap}
+@cindex :cu
+@cindex :cunmap
+@item :cu[nmap] @tab @{lhs@} @tab |mapmode-c|
+@end multitable
+@multitable @columnfractions .1 .9
+@item @tab マップコマンドに対応したモードの @{lhs@} というマップを削除します。他のモードのマップは残ります。
+@quotation
+@strong{Note:} @*
+末尾の空白は @{lhs@} に含まれます。次の @command{unmap} コマンドは機能しません:
+@example
+:map @@@@ foo
+:unmap @@@@ | print
+@end example
+@end quotation              
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:mapc[lear]			|mapmode-nvo|		*:mapc*   *:mapclear*
+:nmapc[lear]			|mapmode-n|		*:nmapc*  *:nmapclear*
+:vmapc[lear]			|mapmode-v|		*:vmapc*  *:vmapclear*
+:xmapc[lear]			|mapmode-x|		*:xmapc*  *:xmapclear*
+:smapc[lear]			|mapmode-s|		*:smapc*  *:smapclear*
+:omapc[lear]			|mapmode-o|		*:omapc*  *:omapclear*
+:mapc[lear]!			|mapmode-ic|		*:mapc!*  *:mapclear!*
+:imapc[lear]			|mapmode-i|		*:imapc*  *:imapclear*
+:lmapc[lear]			|mapmode-l|		*:lmapc*  *:lmapclear*
+:cmapc[lear]			|mapmode-c|		*:cmapc*  *:cmapclear*
+			Remove ALL mappings for the modes where the map
+			command applies.  {not in Vi}
+			Use the <buffer> argument to remove buffer-local
+			mappings |:map-<buffer>|
+			Warning: This also removes the default mappings.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .2 .5
+@anchor{:mapc}
+@anchor{:mapclear}
+@cindex :mapc
+@cindex :mapclear
+@item :mapc[lear] @tab @tab |mapmode-nvo|
+@anchor{:nmapc}
+@anchor{:nmapclear}
+@cindex :nmapc
+@cindex :nmapclear
+@item :nmapc[lear] @tab @tab |mapmode-n|
+@anchor{:vmapc}
+@anchor{:vmapclear}
+@cindex :vmapc
+@cindex :vmapclear
+@item :vmapc[lear] @tab @tab |mapmode-v|
+@anchor{:xmapc}
+@anchor{:xmapclear}
+@cindex :xmapc
+@cindex :xmapclear
+@item :xmapc[lear] @tab @tab |mapmode-x|
+@anchor{:smapc}
+@anchor{:smapclear}
+@cindex :smapc
+@cindex :smapclear
+@item :smapc[lear] @tab @tab |mapmode-s|
+@anchor{:omapc}
+@anchor{:omapclear}
+@cindex :omapc
+@cindex :omapclear
+@item :omapc[lear] @tab @tab |mapmode-o|
+@anchor{:mapc!}
+@anchor{:mapclear!}
+@cindex :mapc!
+@cindex :mapclear!
+@item :mapc[lear]! @tab @tab |mapmode-ic|
+@anchor{:imapc}
+@anchor{:imapclear}
+@cindex :imapc
+@cindex :imapclear
+@item :imapc[lear] @tab @tab |mapmode-i|
+@anchor{:lmapc}
+@anchor{:lmapclear}
+@cindex :lmapc
+@cindex :lmapclear
+@item :lmapc[lear] @tab @tab |mapmode-l|
+@anchor{:cmapc}
+@anchor{:cmapclear}
+@cindex :cmapc
+@cindex :cmapclear
+@item :cmapc[lear] @tab @tab |mapmode-c|
+@end multitable
+@multitable @columnfractions .1 .9
+@item @tab
+マップコマンドに対応したモードのすべてのマップを削除します。
+
+@{Vi にはありません@}
+
+バッファローカルなマップを削除するには <buffer> 引数を付けてください |:map-<buffer>|。
+@quotation
+@strong{警告:} @*
+標準設定のマップも削除されます。
+@end quotation
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:map				|mapmode-nvo|
+:nm[ap]				|mapmode-n|
+:vm[ap]				|mapmode-v|
+:xm[ap]				|mapmode-x|
+:sm[ap]				|mapmode-s|
+:om[ap]				|mapmode-o|
+:map!				|mapmode-ic|
+:im[ap]				|mapmode-i|
+:lm[ap]				|mapmode-l|
+:cm[ap]				|mapmode-c|
+			List all key mappings for the modes where the map
+			command applies.  Note that ":map" and ":map!" are
+			used most often, because they include the other modes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .2 .5
+@item :map @tab @tab |mapmode-nvo|
+@item :nm[ap] @tab @tab |mapmode-n|
+@item :vm[ap] @tab @tab |mapmode-v|
+@item :xm[ap] @tab @tab |mapmode-x|
+@item :sm[ap] @tab @tab |mapmode-s|
+@item :om[ap] @tab @tab |mapmode-o|
+@item :map! @tab @tab |mapmode-ic|
+@item :im[ap] @tab @tab |mapmode-i|
+@item :lm[ap] @tab @tab |mapmode-l|
+@item :cm[ap] @tab @tab |mapmode-c|
+@end multitable
+@multitable @columnfractions .1 .9
+@item @tab マップコマンドに対応したモードのすべてのマップを一覧表示します。
+@quotation
+@strong{Note:} @*
+"@command{:map}" と "@command{:map!}" は複数のモードを表示できるのでよく使われます。
+@end quotation
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:map    {lhs}			|mapmode-nvo|		*:map_l*
+:nm[ap] {lhs}			|mapmode-n|		*:nmap_l*
+:vm[ap] {lhs}			|mapmode-v|		*:vmap_l*
+:xm[ap] {lhs}			|mapmode-x|		*:xmap_l*
+:sm[ap] {lhs}			|mapmode-s|		*:smap_l*
+:om[ap] {lhs}			|mapmode-o|		*:omap_l*
+:map!   {lhs}			|mapmode-ic|		*:map_l!*
+:im[ap] {lhs}			|mapmode-i|		*:imap_l*
+:lm[ap] {lhs}			|mapmode-l|		*:lmap_l*
+:cm[ap] {lhs}			|mapmode-c|		*:cmap_l*
+			List the key mappings for the key sequences starting
+			with {lhs} in the modes where the map command applies.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .2 .5
+@anchor{:map_l}
+@cindex :map_l
+@item :map @tab @{lhs@} @tab |mapmode-nvo|
+@anchor{:nmap_l}
+@cindex :nmap_l
+@item :nm[ap] @tab @{lhs@} @tab |mapmode-n|
+@anchor{:vmap_l}
+@cindex :vmap_l
+@item :vm[ap] @tab @{lhs@} @tab |mapmode-v|
+@anchor{:xmap_l*}
+@cindex :xmap_l
+@item :xm[ap] @tab @{lhs@} @tab |mapmode-x|
+@anchor{:smap_l}
+@cindex :smap_l
+@item :sm[ap] @tab @{lhs@} @tab |mapmode-s|
+@anchor{:omap_l}
+@cindex :omap_l
+@item :om[ap] @tab @{lhs@} @tab |mapmode-o|
+@anchor{:map_l!}
+@cindex :map_l!
+@item :map! @tab @{lhs@} @tab |mapmode-ic|
+@anchor{:imap_l}
+@cindex :imap_l
+@item :im[ap] @tab @{lhs@} @tab |mapmode-i|
+@anchor{:lmap_l}
+@cindex :lmap_l
+@item :lm[ap] @tab @{lhs@} @tab |mapmode-l|
+@anchor{:cmap_l}
+@cindex :cmap_l
+@item :cm[ap] @tab @{lhs@} @tab |mapmode-c|
+@end multitable
+@multitable @columnfractions .1 .9
+@item @tab マップコマンドに対応したモードの @{lhs@} で始まるマップを一覧表示します。
+
+@{Vi にはありません@}
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These commands are used to map a key or key sequence to a string of
+characters.  You can use this to put command sequences under function keys,
+translate one key into another, etc.  See |:mkexrc| for how to save and
+restore the current mappings.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップコマンドを使うと、単キーまたは複数キーの入力を別の文字列にマップできます。ファンクションキーにコマンド列を割り当てたり、あるキーを別のキーに変換したりできます。マップを保存、復元する方法については |:mkexrc| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*map-ambiguous*
+When two mappings start with the same sequence of characters, they are
+ambiguous.  Example: >
+	:imap aa foo
+	:imap aaa bar
+When Vim has read "aa", it will need to get another character to be able to
+decide if "aa" or "aaa" should be mapped.  This means that after typing "aa"
+that mapping won't get expanded yet, Vim is waiting for another character.
+If you type a space, then "foo" will get inserted, plus the space.  If you
+type "a", then "bar" will get inserted.
+{Vi does not allow ambiguous mappings}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map-ambiguous}
+@cindex map-ambiguous
+二つのマップがあって、両方とも同じ文字で始まっている場合、どちらを使用するかがあいまいになってしまいます。例:
+@example
+:imap aa foo
+:imap aaa bar
+@end example
+"aa" と入力したとき、"aa" と "aaa" のどちらを使用するかを決定するためには、次の文字が必要になります。そのため、"aa" が入力された時点ではまだマップは適用されず、次の入力まで待機状態になります。例えば空白文字を入力すれば "foo" と空白文字が挿入されます。"a" を入力すれば "bar" が挿入されます。
+
+@{Vi はあいまいなマップを許可しません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.2 SPECIAL ARGUMENTS					*:map-arguments*
+
+"<buffer>", "<nowait>", "<silent>", "<special>", "<script>", "<expr>" and
+"<unique>" can be used in any order.  They must appear right after the
+command, before any other arguments.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-arguments}
+@cindex :map-arguments
+@subsection 1.2 特別な引数
+
+引数に "<buffer>", "<nowait>", "<silent>", "<special>", "<script>", "<expr>", "<unique>" を指定できます。マップコマンドの直後 (他の引数の前) に置いてくださ
+い。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				*:map-local* *:map-<buffer>* *E224* *E225*
+If the first argument to one of these commands is "<buffer>" the mapping will
+be effective in the current buffer only.  Example: >
+	:map <buffer>  ,w  /[.,;]<CR>
+Then you can map ",w" to something else in another buffer: >
+	:map <buffer>  ,w  /[#&!]<CR>
+The local buffer mappings are used before the global ones.  See <nowait> below
+to make a short local mapping not taking effect when a longer global one
+exists.
+The "<buffer>" argument can also be used to clear mappings: >
+	:unmap <buffer> ,w
+	:mapclear <buffer>
+Local mappings are also cleared when a buffer is deleted, but not when it is
+unloaded.  Just like local option values.
+Also see |map-precedence|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-local}
+@anchor{:map-<buffer>}
+@anchor{E224}
+@anchor{E225}
+@cindex :map-local
+@cindex :map-<buffer>
+@cindex E224
+@cindex E225
+カレントバッファだけで使用できるマップを作成するには、マップコマンドの引数に "<buffer>" を指定します。例:
+@example
+:map <buffer>  ,w  /[.,;]<CR>
+@end example
+この場合、他のバッファで、",w" に対して別の操作を割り当てることができます:
+@example
+:map <buffer>  ,w  /[#&!]<CR>
+@end example
+バッファローカルなマップは通常のマップよりも優先して使用されます。長いグローバルなマップが存在する場合に短いローカルなマップが影響を受けないようにするには下記の <nowait> を参照して下さい。
+
+"<buffer>" はマップを削除するときにも指定できます:
+@example
+:unmap <buffer> ,w
+:mapclear <buffer>
+@end example
+バッファローカルなマップはそのバッファが削除されるときにいっしょに消去されます。アンロード(|:bunload|)では消去されません。ローカルオプションと同じです。また、|map-precedence| を参照して下さい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:map-<nowait>* *:map-nowait*
+When defining a buffer-local mapping for "," there may be a global mapping
+that starts with ",".  Then you need to type another character for Vim to know
+whether to use the "," mapping or the longer one.  To avoid this add the
+<nowait> argument.  Then the mapping will be used when it matches, Vim does
+not wait for more characters to be typed.  However, if the characters were
+already typed they are used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-<nowait>}
+@anchor{:map-nowait}
+@cindex :map-<nowait>
+@cindex :map-nowait
+"," にバッファローカルなマップを定義する場合に "," から始まるグローバルなマップがあるかもしれません。その場合は Vim が "," のマップか、あるいはより長いマップを使用するかどうか知るために別の文字を入力する必要があります。これを避けるには引数に <nowait> を追加します。そしてそのマップは一致する場合に使用され、Vim はそれ以上入力される文字を待ちません。しかし、既に文字が入力されていた場合はそれが使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:map-<silent>* *:map-silent*
+To define a mapping which will not be echoed on the command line, add
+"<silent>" as the first argument.  Example: >
+	:map <silent> ,h /Header<CR>
+The search string will not be echoed when using this mapping.  Messages from
+the executed command are still given though.  To shut them up too, add a
+":silent" in the executed command: >
+	:map <silent> ,h :exe ":silent normal /Header\r"<CR>
+Prompts will still be given, e.g., for inputdialog().
+Using "<silent>" for an abbreviation is possible, but will cause redrawing of
+the command line to fail.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-<silent>}
+@anchor{:map-silent}
+@cindex :map-<silent>
+@cindex :map-silent
+実行するコマンドがコマンドラインに表示されないようにするには、マップコマンドの引数に "<silent>" を指定します。例:
+@example
+:map <silent> ,h /Header<CR>
+@end example
+このマップを使用するとき、検索文字列はコマンドラインに表示されません。しかし、実行されたコマンドが出力するメッセージは表示されてしまいます。それを静かにさせるには "@command{:silent}" を使います。
+@example
+:map <silent> ,h :exe ":silent normal /Header\r"<CR>
+@end example
+それでもまだ、例えば inputdialog() のプロンプトなどは表示されます。"<silent>" は短縮入力にも使えますが、コマンドラインで使うと正しく表示されなくなります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:map-<special>* *:map-special*
+Define a mapping with <> notation for special keys, even though the "<" flag
+may appear in 'cpoptions'.  This is useful if the side effect of setting
+'cpoptions' is not desired.  Example: >
+	:map <special> <F12> /Header<CR>
+<
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-<special>}
+@anchor{:map-special}
+@cindex :map-<special>
+@cindex :map-special
+'@option{cpoptions}' に "@var{<}" フラグが入っている場合でも、<> 表記を使って特殊キーを記述できます。'cpoptions' を設定することで副作用を発生させたくない場合に使ってください。例:
+@example
+:map <special> <F12> /Header<CR>
+@end example
+@end ifset
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*:map-<script>* *:map-script*
+If the first argument to one of these commands is "<script>" and it is used to
+define a new mapping or abbreviation, the mapping will only remap characters
+in the {rhs} using mappings that were defined local to a script, starting with
+"<SID>".  This can be used to avoid that mappings from outside a script
+interfere (e.g., when CTRL-V is remapped in mswin.vim), but do use other
+mappings defined in the script.
+Note: ":map <script>" and ":noremap <script>" do the same thing.  The
+"<script>" overrules the command name.  Using ":noremap <script>" is
+preferred, because it's clearer that remapping is (mostly) disabled.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-<script>}
+@anchor{:map-script}
+@cindex :map-<script>
+@cindex :map-script
+マップや短縮入力を定義するときに "<script>" 引数を指定すると、@{rhs@} の中の "<SID>" で始まるスクリプトローカルなマップだけが再マップされます。別の場所でマップが定義されていても (例えば mswin.vim で CTRL-V にマップが定義されていても)、その影響を避けることができます。その場合でも同じスクリプトで定義されたマップは使うことができます。
+@quotation
+@strong{Note:} @*
+":map <script>" と ":noremap <script>" の動作は同じです。コマンド名より "<script>" の効果が優先されます。再マップが制限されることが明確になるため ":noremap <script>" を使う方がいいでしょう。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:map-<unique>* *E226* *E227*
+If the first argument to one of these commands is "<unique>" and it is used to
+define a new mapping or abbreviation, the command will fail if the mapping or
+abbreviation already exists.  Example: >
+	:map <unique> ,w  /[#&!]<CR>
+When defining a local mapping, there will also be a check if a global map
+already exists which is equal.
+Example of what will fail: >
+	:map ,w  /[#&!]<CR>
+	:map <buffer> <unique> ,w  /[.,;]<CR>
+If you want to map a key and then have it do what it was originally mapped to,
+have a look at |maparg()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-<unique>}
+@anchor{E226}
+@anchor{E227}
+@cindex :map-<unique>
+@cindex E226
+@cindex E227
+マップや短縮入力を定義するときに "<unique>" 引数を指定すると、同じ名前のものがすでに定義されていた場合に、コマンドは失敗します。例:
+@example
+:map <unique> ,w  /[#&!]<CR>
+@end example
+バッファローカルのマップを定義するときは、通常のマップも検査の対象となります。失敗する例:
+@example
+:map ,w  /[#&!]<CR>
+:map <buffer> <unique> ,w  /[.,;]<CR>
+@end example
+すでにマップされている機能をそのままに、新たにマップを設定したい場合は、|maparg()| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:map-<expr>* *:map-expression*
+If the first argument to one of these commands is "<expr>" and it is used to
+define a new mapping or abbreviation, the argument is an expression.  The
+expression is evaluated to obtain the {rhs} that is used.  Example: >
+	:inoremap <expr> . InsertDot()
+The result of the InsertDot() function will be inserted.  It could check the
+text before the cursor and start omni completion when some condition is met.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-<expr>}
+@anchor{:map-expression}
+@cindex :map-<expr>
+@cindex :map-expression
+マップや短縮入力を定義するときに "<expr>" 引数を指定すると、引数が式 (スクリプト) として扱われます。マップが実行されたときに、式が評価され、その値が @{rhs@} として使われます。例:
+@example
+:inoremap <expr> . InsertDot()
+@end example
+InsertDot() 関数の戻り値が挿入されます。カーソルの前のテキストをチェックして、ある条件に一致するなら omni 補完を開始する、というようなことができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For abbreviations |v:char| is set to the character that was typed to trigger
+the abbreviation.  You can use this to decide how to expand the {lhs}.  You
+should not either insert or change the v:char.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+短縮入力では、入力されて短縮入力展開のトリガーとなった文字が |v:char| にセットされます。これを使って @{lhs@} の展開方法を決めることもできます。自分で v:char を挿入したり変更したりすべきではありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Be very careful about side effects!  The expression is evaluated while
+obtaining characters, you may very well make the command dysfunctional.
+For this reason the following is blocked:
+- Changing the buffer text |textlock|.
+- Editing another buffer.
+- The |:normal| command.
+- Moving the cursor is allowed, but it is restored afterwards.
+If you want the mapping to do any of these let the returned characters do
+that.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+副作用に注意してください。式は文字の取得中に評価されるため、簡単に異常動作を起こせてしまいます。そのため、次のものは制限されます:
+@itemize @minus
+@item バッファのテキストの変更 |textlock|。
+@item 他のバッファの編集。
+@item |:normal| コマンド。
+@item カーソルの移動は可能ですが、後で元に戻されます。
+@end itemize
+以上のことを実現したい場合は、そのためのコマンド文字列を返してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use getchar(), it consumes typeahead if there is any. E.g., if you
+have these mappings: >
+  inoremap <expr> <C-L> nr2char(getchar())
+  inoremap <expr> <C-L>x "foo"
+If you now type CTRL-L nothing happens yet, Vim needs the next character to
+decide what mapping to use.  If you type 'x' the second mapping is used and
+"foo" is inserted.  If you type any other key the first mapping is used,
+getchar() gets the typed key and returns it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+getchar() が使用できます。先行入力があればそれが消費されます。例えば次のようなマップを定義します:
+@example
+inoremap <expr> <C-L> nr2char(getchar())
+inoremap <expr> <C-L>x "foo"
+@end example
+そして @kbd{CTRL-L} を押してみます。すぐには何も起きません。どのマップを使うかを決定するためには文字がもう一つ必要です。次に '@key{x}' を押すと後者のマップが使われ、"foo" が挿入されます。他のキーを押すと前者のマップが使われ、その文字が getchar() によって取得され、返されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here is an example that inserts a list number that increases: >
+	let counter = 0
+	inoremap <expr> <C-L> ListItem()
+	inoremap <expr> <C-R> ListReset()
+
+	func ListItem()
+	  let g:counter += 1
+	  return g:counter . '. '
+	endfunc
+
+	func ListReset()
+	  let g:counter = 0
+	  return ''
+	endfunc
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例を示します。リスト番号を自動的に増加させつつ挿入します:
+@verbatim
+let counter = 0
+inoremap <expr> <C-L> ListItem()
+inoremap <expr> <C-R> ListReset()
+
+func ListItem()
+  let g:counter += 1
+  return g:counter . '. '
+endfunc
+
+func ListReset()
+  let g:counter = 0
+  return ''
+endfunc
+@end verbatim
+
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-L inserts the next number, CTRL-R resets the count.  CTRL-R returns an
+empty string, so that nothing is inserted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@kbd{CTRL-L} で次の番号を挿入し、@kbd{CTRL-R} で番号をリセットします。@kbd{CTRL-R} は空文字列を返すので、何も挿入されません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that there are some tricks to make special keys work and escape CSI bytes
+in the text.  The |:map| command also does this, thus you must avoid that it
+is done twice.  This does not work: >
+	:imap <expr> <F3> "<Char-0x611B>"
+Because the <Char- sequence is escaped for being a |:imap| argument and then
+again for using <expr>.  This does work: >
+	:imap <expr> <F3> "\u611B"
+Using 0x80 as a single byte before other text does not work, it will be seen
+as a special key.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+特殊キーが機能するようにしたり、テキスト中の CSI バイトをエスケープしたりするために、特別な処理が行われています。|:map| コマンドも同様の処理を行うので、それが二重に実行されるのを防ぐ必要があります。次のものは機能しません:
+@example
+:imap <expr> <F3> "<Char-0x611B>"
+@end example
+なぜなら、<Char- で表記した文字 (あるいは本物の文字) のバイト列は |:imap| コマンドが解釈されるときにエスケープされ、<expr> で使われるときにもう一度エスケープされるからです。次のものは機能します:
+@example
+:imap <expr> <F3> "\u611B"
+@end example
+テキストの末尾以外で 0x80 をシングルバイトとして使った場合、それは機能しません。特殊キーとして認識されます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.3 MAPPING AND MODES					*:map-modes*
+			*mapmode-nvo* *mapmode-n* *mapmode-v* *mapmode-o*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-modes}
+@anchor{mapmode-nvo}
+@anchor{mapmode-n}
+@anchor{mapmode-v}
+@anchor{mapmode-o}
+@cindex :map-modes
+@cindex mapmode-nvo
+@cindex mapmode-n
+@cindex mapmode-v
+@cindex mapmode-o
+@subsection 1.3 マップとモード
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are six sets of mappings
+- For Normal mode: When typing commands.
+- For Visual mode: When typing commands while the Visual area is highlighted.
+- For Select mode: like Visual mode but typing text replaces the selection.
+- For Operator-pending mode: When an operator is pending (after "d", "y", "c",
+  etc.).  See below: |omap-info|.
+- For Insert mode.  These are also used in Replace mode.
+- For Command-line mode: When entering a ":" or "/" command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップには 6 つの種類があります。
+@itemize @minus
+@item ノーマルモード:
+ノーマルモードのコマンドを入力するとき。
+@item ビジュアルモード:
+ビジュアルモードのコマンドを入力するとき。
+@item 選択モード:
+ビジュアルモードに似ていますが入力したテキストによって選択範囲が置換されます。
+@item オペレータ待機モード:
+オペレータを待機しているとき。("d"、"y"、"c"、などの後)。|omap-info| 参照。
+@item 挿入モード:
+置換モードでも使われます。
+@item コマンドラインモード:
+":" もしくは "/" コマンドを入力したとき。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Special case: While typing a count for a command in Normal mode, mapping zero
+is disabled.  This makes it possible to map zero without making it impossible
+to type a count with a zero.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例外として、ノーマルモードでカウント(コマンドの繰り返し回数)を入力しているときは、0 (ゼロ)に対するマップは適用されません。これは 0 がマップされていても、カウントの指定でゼロを入力できるようにするためです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*map-overview* *map-modes*
+Overview of which map command works in which mode.  More details below.
+     COMMANDS                    MODES ~
+:map   :noremap  :unmap     Normal, Visual, Select, Operator-pending
+:nmap  :nnoremap :nunmap    Normal
+:vmap  :vnoremap :vunmap    Visual and Select
+:smap  :snoremap :sunmap    Select
+:xmap  :xnoremap :xunmap    Visual
+:omap  :onoremap :ounmap    Operator-pending
+:map!  :noremap! :unmap!    Insert and Command-line
+:imap  :inoremap :iunmap    Insert
+:lmap  :lnoremap :lunmap    Insert, Command-line, Lang-Arg
+:cmap  :cnoremap :cunmap    Command-line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map-overview}
+@anchor{map-modes}
+@cindex map-overview
+@cindex map-modes
+マップコマンドとモードの対応表。詳細は以後に。
+@multitable @columnfractions .45 .55
+@headitem コマンド @tab モード
+@item :map   :noremap  :unmap @tab ノーマル、ビジュアル、選択、オペレータ待機
+@item :nmap  :nnoremap :nunmap @tab ノーマル
+@item :vmap  :vnoremap :vunmap @tab ビジュアル、選択
+@item :smap  :snoremap :sunmap @tab 選択
+@item :xmap  :xnoremap :xunmap @tab ビジュアル
+@item :omap  :onoremap :ounmap @tab オペレータ待機
+@item :map!  :noremap! :unmap! @tab 挿入、コマンドライン
+@item :imap  :inoremap :iunmap @tab 挿入
+@item :lmap  :lnoremap :lunmap @tab 挿入、コマンドライン、Lang-Arg
+@item :cmap  :cnoremap :cunmap @tab コマンドライン
+@end multitable
+@{訳注: Lang-Argについては |language-mapping| を参照@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+    COMMANDS				      MODES ~
+				       Normal  Visual+Select  Operator-pending ~
+:map   :noremap   :unmap   :mapclear	 yes	    yes		   yes
+:nmap  :nnoremap  :nunmap  :nmapclear	 yes	     -		    -
+:vmap  :vnoremap  :vunmap  :vmapclear	  -	    yes		    -
+:omap  :onoremap  :ounmap  :omapclear	  -	     -		   yes
+
+:nunmap can also be used outside of a monastery.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .55 .15 .15 .15
+@headitem コマンド @tab ノーマルモード @tab ビジュアル+選択モード @tab オペレータ待機モード
+@item :map   :noremap   :unmap   :mapclear @tab yes @tab yes @tab yes
+@item :nmap  :nnoremap  :nunmap  :nmapclear @tab yes @tab - @tab -
+@item :vmap  :vnoremap  :vunmap  :vmapclear @tab - @tab yes @tab -
+@item :omap  :onoremap  :ounmap  :omapclear @tab - @tab - @tab yes
+@end multitable
+:nunmap は修道院の外でも使えます。@{訳注: nunは修道女の意@}
+
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*mapmode-x* *mapmode-s*
+Some commands work both in Visual and Select mode, some in only one.  Note
+that quite often "Visual" is mentioned where both Visual and Select mode
+apply. |Select-mode-mapping|
+NOTE: Mapping a printable character in Select mode may confuse the user.  It's
+better to explicitly use :xmap and :smap for printable characters.  Or use
+:sunmap after defining the mapping.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mapmode-x}
+@anchor{mapmode-s}
+@cindex mapmode-x
+@cindex mapmode-s
+いくつかのコマンドはビジュアルモードと選択モードの両方で機能しますが、そうでないコマンドもあります。「ビジュアル」という言葉がビジュアルモードと選択モードの両方を指している場合が多々あるので注意してください。|Select-mode-mapping|
+@quotation
+@strong{Note:} @*
+選択モードで印字可能文字にマップを定義するとユーザーの混乱を招くかもしれません。印字可能文字に対しては明示的に :xmap と :smap を使い分けるのがいいでしょう。マップを定義したあとで :sunmap を使う方法もあります。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    COMMANDS				      MODES ~
+					  Visual    Select ~
+:vmap  :vnoremap  :vunmap  :vmapclear	    yes      yes
+:xmap  :xnoremap  :xunmap  :xmapclear	    yes       -
+:smap  :snoremap  :sunmap  :smapclear	    -	     yes
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .25 .15
+@headitem コマンド @tab ビジュアルモード @tab 選択モード
+@item :vmap  :vnoremap  :vunmap  :vmapclear @tab yes @tab yes
+@item :xmap  :xnoremap  :xunmap  :xmapclear @tab yes @tab -
+@item :smap  :snoremap  :sunmap  :smapclear @tab - @tab yes
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			*mapmode-ic* *mapmode-i* *mapmode-c* *mapmode-l*
+Some commands work both in Insert mode and Command-line mode, some not:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mapmode-ic}
+@anchor{mapmode-i}
+@anchor{mapmode-c}
+@anchor{mapmode-l}
+@cindex mapmode-ic
+@cindex mapmode-i
+@cindex mapmode-c
+@cindex mapmode-l
+一部のコマンドは、挿入モードとコマンドラインモードの両方で使えますが、一部はそうではありません:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    COMMANDS				      MODES ~
+					  Insert  Command-line	Lang-Arg ~
+:map!  :noremap!  :unmap!  :mapclear!	    yes	       yes	   -
+:imap  :inoremap  :iunmap  :imapclear	    yes		-	   -
+:cmap  :cnoremap  :cunmap  :cmapclear	     -	       yes	   -
+:lmap  :lnoremap  :lunmap  :lmapclear	    yes*       yes*	  yes*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .55 .15 .15 .15
+@headitem コマンド @tab 挿入モード @tab コマンドラインモード @tab Lang-Argモード
+@item :map!  :noremap!  :unmap!  :mapclear! @tab yes @tab yes @tab -
+@item :imap  :inoremap  :iunmap  :imapclear @tab yes @tab - @tab -
+@item :cmap  :cnoremap  :cunmap  :cmapclear @tab - @tab yes @tab -
+@item :lmap  :lnoremap  :lunmap  :lmapclear @tab yes* @tab yes* @tab yes*
+@end multitable
+
+@{訳注: Lang-Argについては |language-mapping| を参照@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The original Vi did not have separate mappings for
+Normal/Visual/Operator-pending mode and for Insert/Command-line mode.
+Therefore the ":map" and ":map!" commands enter and display mappings for
+several modes.  In Vim you can use the ":nmap", ":vmap", ":omap", ":cmap" and
+":imap" commands to enter mappings for each mode separately.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オリジナルの Vi はノーマルモード、ビジュアルモード、オペレータ待機モード、でひとまとまり、挿入モード、コマンドラインモード、でさらにひとまとまりのマップを持ち、それぞれ区別されていませんでした。そのため、Vim の ":map" と ":map!" コマンドは複数のモードに対してマップを設定したり表示したりします。Vim では ":nmap", ":vmap", ":omap", ":cmap", ":imap" を使い分けることで、それぞれのモード別にマップを設定することができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*omap-info*
+Operator-pending mappings can be used to define a movement command that can be
+used with any operator.  Simple example: ":omap { w" makes "y{" work like "yw"
+and "d{" like "dw".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{omap-info}
+@cindex omap-info
+オペレータ待機マップを使うと、移動コマンドを定義できます。そして、オペレータと組み合わせて使うことができます。簡単な例: ":omap @{ w" を定義した場合、"y@{" が"yw" として、"d@{" が "dw" として機能するようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To ignore the starting cursor position and select different text, you can have
+the omap start Visual mode to select the text to be operated upon.  Example
+that operates on a function name in the current line: >
+	onoremap <silent> F :<C-U>normal! 0f(hviw<CR>
+The CTRL-U (<C-U>) is used to remove the range that Vim may insert.  The
+Normal mode commands find the first '(' character and select the first word
+before it.  That usually is the function name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップ適用時のカーソル位置を無視し、異なるテキストを選択するには、omap 内でビジュアルモードを開始して対象となるテキストを選択してください。例えば、現在行の関数名を選択するには次のようにします:
+@example
+onoremap <silent> F :<C-U>normal! 0f(hviw<CR>
+@end example
+CTRL-U (<C-U>) を使って (Vim によって挿入される) 範囲指定を削除しています。ノーマルモードコマンドを使って、最初の '(' 文字を探し、その前にある単語を選択します。通常はこれで関数名を選択できるでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To enter a mapping for Normal and Visual mode, but not Operator-pending mode,
+first define it for all three modes, then unmap it for Operator-pending mode:
+	:map    xx something-difficult
+	:ounmap xx
+Likewise for a mapping for Visual and Operator-pending mode or Normal and
+Operator-pending mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+あるマップをノーマルモードとビジュアルモードで使用し、そして、オペレータ待機モードでは使用しないという場合は、3つのモードに対してマップを定義してからオペレータ待機モードのマップだけを削除します:
+@example
+:map	xx something-difficult
+:ounmap xx
+@end example
+ビジュアルモードとオペレータ待機モードの場合や、ノーマルモードとオペレータ待機モードの場合も同様にします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*language-mapping*
+":lmap" defines a mapping that applies to:
+- Insert mode
+- Command-line mode
+- when entering a search pattern
+- the argument of the commands that accept a text character, such as "r" and
+  "f"
+- for the input() line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{language-mapping}
+@cindex language-mapping
+":lmap" で定義したマップ(以下、言語マップ)は次の場面で利用できます:
+@itemize @minus
+@item 挿入モード
+@item コマンドラインモード
+@item 検索パターンを入力するとき
+@item "r" や "f" などのコマンドに続いて文字を入力するとき
+@item input() の入力
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Generally: Whenever a character is to be typed that is part of the text in the
+buffer, not a Vim command character.  "Lang-Arg" isn't really another mode,
+it's just used here for this situation.
+   The simplest way to load a set of related language mappings is by using the
+'keymap' option.  See |45.5|.
+   In Insert mode and in Command-line mode the mappings can be disabled with
+the CTRL-^ command |i_CTRL-^| |c_CTRL-^|. These commands change the value of
+the 'iminsert' option.  When starting to enter a normal command line (not a
+search pattern) the mappings are disabled until a CTRL-^ is typed.  The state
+last used is remembered for Insert mode and Search patterns separately.  The
+state for Insert mode is also used when typing a character as an argument to
+command like "f" or "t".
+   Language mappings will never be applied to already mapped characters.  They
+are only used for typed characters.  This assumes that the language mapping
+was already done when typing the mapping.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+大まかに説明すると、Vim コマンドとしてではなく、テキストの一部として入力するようなときにはいつでも利用できます。"Lang-Arg" は別個のモードではなく、そのような場面の総称です。
+
+ある言語用の言語マップをロードするには、オプション '@option{keymap}' を設定するのが簡単です。|@ref{45.5}|を参照してください。
+
+挿入モードとコマンドラインモードでは @kbd{CTRL-^} で言語マップの使用の有無を切り替えることができます |i_CTRL-^| |c_CTRL-^|。これらのコマンドは '@option{iminsert}' オプションの値を変更します。(検索パターンの入力ではなく)コマンドラインに入力するときには @kbd{CTRL-^} で切り替えるまで言語マップは無効になっています。挿入モードと検索パターンでの使用状態は別々に記録されます。挿入モードの使用状態は "f" や "t" などのコマンドで文字を入力するときにも使用されます。
+
+言語マップは、既にマップが適用された文字には適用されません。言語マップは入力された文字に対してのみ使用されます。これは、言語マップは文字が入力されたときに適用されたはずという想定によるものです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.4 LISTING MAPPINGS					*map-listing*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map-listing}
+@cindex map-listing
+@subsection 1.4 マップの一覧表示
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When listing mappings the characters in the first two columns are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップを一覧表示したときの行頭の2文字は使用できるモードを表しています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+      CHAR	MODE	~
+     <Space>	Normal, Visual, Select and Operator-pending
+	n	Normal
+	v	Visual and Select
+	s	Select
+	x	Visual
+	o	Operator-pending
+	!	Insert and Command-line
+	i	Insert
+	l	":lmap" mappings for Insert, Command-line and Lang-Arg
+	c	Command-line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@headitem 文字 @tab モード
+@item <Space> @tab ノーマル、ビジュアル、選択、オペレータ待機
+@item n @tab ノーマル
+@item v @tab ビジュアル、選択
+@item s @tab 選択
+@item x @tab ビジュアル
+@item o @tab オペレータ待機
+@item ! @tab 挿入、コマンドライン
+@item i @tab 挿入
+@item l @tab 挿入、コマンドライン、Lang-Arg での ":lmap" マップ
+@item c @tab コマンドライン
+@end multitable
+@{訳注: Lang-Arg については |language-mapping| を参照@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Just before the {rhs} a special character can appear:
+	*	indicates that it is not remappable
+	&	indicates that only script-local mappings are remappable
+	@	indicates a buffer-local mapping
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{rhs@} の直前に特殊な文字が表示されているものは次のことを意味します:
+@multitable @columnfractions .2 .8
+@item * @tab 再マップされません
+@item & @tab スクリプトローカルなマップだけが再マップされます
+@item @ @tab バッファローカルなマップです。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Everything from the first non-blank after {lhs} up to the end of the line
+(or '|') is considered to be part of {rhs}.  This allows the {rhs} to end
+with a space.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{lhs@} の後ろの最初の非空白文字から行末 (もしくは '|') までのすべての文字は @{rhs@} の一部です。そのため @{rhs@} の末尾を空白文字にすることができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: When using mappings for Visual mode, you can use the "'<" mark, which
+is the start of the last selected Visual area in the current buffer |'<|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ビジュアルモードのマップでは "'<" マークが使えます。これはカレントバッファで選択されていた範囲の開始位置を示しています |'<|。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The |:filter| command can be used to select what mappings to list.  The
+pattern is matched against the {lhs} and {rhs} in the raw form.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+何がマッピングされているか調べるのに |:filter| コマンドを使うことができます。パターンは @{lhs@} と @{rhs@} に対しては、生の形式で (訳注: 実際のキャラクターコードを用いて)マッチします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:map-verbose*
+When 'verbose' is non-zero, listing a key map will also display where it was
+last defined.  Example: >
+
+	:verbose map <C-W>*
+	n  <C-W>*      * <C-W><C-S>*
+		Last set from /home/abcd/.vimrc
+
+See |:verbose-cmd| for more information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-verbose}
+@cindex :map-verbose
+'verbose' がゼロ以外のときにマップ一覧を表示すると、どこで定義されたのかも表示されます。例:
+@example
+:verbose map <C-W>*
+@end example
+@verbatim
+n  <C-W>*      * <C-W><C-S>*
+        Last set from /home/abcd/.vimrc
+@end verbatim
+詳しくは |:verbose-cmd| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.5 MAPPING SPECIAL KEYS				*:map-special-keys*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-special-keys}
+@cindex :map-special-keys
+@subsection 1.5 特殊キーのマップ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are three ways to map a special key:
+1. The Vi-compatible method: Map the key code.  Often this is a sequence that
+   starts with <Esc>.  To enter a mapping like this you type ":map " and then
+   you have to type CTRL-V before hitting the function key.  Note that when
+   the key code for the key is in the termcap (the t_ options), it will
+   automatically be translated into the internal code and become the second
+   way of mapping (unless the 'k' flag is included in 'cpoptions').
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特殊キーをマップに含めるのには次の 3 つの方法があります:
+@enumerate
+@item
+Vi 互換の方法: 生のキーコードをマップします。それはほとんどの場合 <Esc> で始まるキーコード列です。このようなマップを入力するには、まず ":map " と入力し、@kbd{CTRL-V} を押してからファンクションキーを押します。
+@quotation
+@strong{Note:} @*
+そのキーのキーコードが termcap(t_options) にある場合は、自動的に内部コードの形式に変換され、次の 2. のようなマップになります ('cpoptions' に 'k' フラグが指定されている場合は除く)
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+2. The second method is to use the internal code for the function key.  To
+   enter such a mapping type CTRL-K and then hit the function key, or use
+   the form "#1", "#2", .. "#9", "#0", "<Up>", "<S-Down>", "<S-F7>", etc.
+   (see table of keys |key-notation|, all keys from <Up> can be used).  The
+   first ten function keys can be defined in two ways: Just the number, like
+   "#2", and with "<F>", like "<F2>".  Both stand for function key 2.  "#0"
+   refers to function key 10, defined with option 't_f10', which may be
+   function key zero on some keyboards.  The <> form cannot be used when
+   'cpoptions' includes the '<' flag.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+ファンクションキーの内部コードを使います。そのようなマップを入力するには、@kbd{CTRL-K} を押してからファンクションキーを押します。もしくは、"#1"、"#2"、.. "#9"、"#0"、"<Up>"、"<S-Down>"、"<S-F7>"、などの形式で指定します。(キーの表は |key-notation| 参照。<Up> 以下のすべてのキーを使うことができます)。1 から 10 までのファンクションキーは二つの方法で定義できます:"#2" のような番号だけの方法と、"<F2>" という表記で指定する方法です。この両方がファンクションキー 2 を表します。"#0" はファンクションキー 10 を表し、't_f10' で定義されます。"#0" は、キーボードによってはファンクションキー 0 になることがあります。'cpoptions' に '<' フラグが指定されている場合は、|<>|表記は使えません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+3. Use the termcap entry, with the form <t_xx>, where "xx" is the name of the
+   termcap entry.  Any string entry can be used.  For example: >
+     :map <t_F3> G
+<  Maps function key 13 to "G".  This does not work if 'cpoptions' includes
+   the '<' flag.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+termcap エントリを <t_xx> という形式で指定します。"xx" は termcap エントリの名前です。どんなエントリの文字列も使うことができます。例:
+@example
+:map <t_F3> G
+@end example
+これはファンクションキー 13 を "G" にマップします。'cpoptions' に '<' フラグが指定されている場合は使えません。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The advantage of the second and third method is that the mapping will work on
+different terminals without modification (the function key will be
+translated into the same internal code or the actual key code, no matter what
+terminal you are using.  The termcap must be correct for this to work, and you
+must use the same mappings).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+2. と 3. の方法の利点は、異なる端末でもマップを修正する必要がないことです(ファンクションキーは、同じ意味の内部コード、もしくは実際のキーコードに変換されます。使用している端末に依存しません。termcap が正しく設定されていれば、異なる端末で同じマップを共有できます)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+DETAIL: Vim first checks if a sequence from the keyboard is mapped.  If it
+isn't the terminal key codes are tried (see |terminal-options|).  If a
+terminal code is found it is replaced with the internal code.  Then the check
+for a mapping is done again (so you can map an internal code to something
+else).  What is written into the script file depends on what is recognized.
+If the terminal key code was recognized as a mapping the key code itself is
+written to the script file.  If it was recognized as a terminal code the
+internal code is written to the script file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{詳細:} @*
+まず Vim はキーボードから送られたキーコードがマップされているかどうかを調べます。マップされていなければ、端末のキーコードかどうか調べます(参照 |terminal-options|)。端末コードであれば、内部コードで置き換えます。それからもう一度、マップされているかどうかをチェックします (これにより内部コードをマップできます)。スクリプトファイルに書き込まれる内容は、どのように解釈されたかによります。端末のキーコードがマップとして認識された場合は、キーコードそのものがスクリプトファイルに書き込まれます。端末コードとして認識された場合は、内部コードがスクリプトファイルに書き込まれます。
+
+@{訳注: > スクリプトファイルに書き込まれる...おそらく |-w| の話。@}
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.6 SPECIAL CHARACTERS					*:map-special-chars*
+						*map_backslash* *map-backslash*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-special-chars}
+@anchor{map_backslash}
+@anchor{map-backslash}
+@cindex :map-special-chars
+@cindex map_backslash
+@cindex map-backslash
+@subsection 1.6 特殊文字
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Note that only CTRL-V is mentioned here as a special character for mappings
+and abbreviations.  When 'cpoptions' does not contain 'B', a backslash can
+also be used like CTRL-V.  The <> notation can be fully used then |<>|.  But
+you cannot use "<C-V>" like CTRL-V to escape the special meaning of what
+follows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+このドキュメントでは、マップや短縮入力を定義するときに、@kbd{CTRL-V} だけが特殊な文字として触れられていますが、'@option{cpoptions}' が '@var{B}' を含んでいない場合は、バックスラッシュも @kbd{CTRL-V} と同様の特殊な働きをします。|<>| 表記も問題なく使用できます。しかし、"<C-V>" を @kbd{CTRL-V} と同じように、(マップを入力するときに)次の文字をエスケープする目的で使うことはできません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To map a backslash, or use a backslash literally in the {rhs}, the special
+sequence "<Bslash>" can be used.  This avoids the need to double backslashes
+when using nested mappings.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バックスラッシュにマップしたり、バックスラッシュをそのまま @{rhs@} に使いたい場合は、特別文字 "<Bslash>" を使います。マップを入れ子にした場合などにバックスラッシュを二重にする必要がなくなります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*map_CTRL-C* *map-CTRL-C*
+Using CTRL-C in the {lhs} is possible, but it will only work when Vim is
+waiting for a key, not when Vim is busy with something.  When Vim is busy
+CTRL-C interrupts/breaks the command.
+When using the GUI version on MS-Windows CTRL-C can be mapped to allow a Copy
+command to the clipboard.  Use CTRL-Break to interrupt Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map_CTRL-C}
+@anchor{map-CTRL-C}
+@cindex map_CTRL-C
+@cindex map-CTRL-C
+@kbd{CTRL-C} を @{lhs@} で使うことはできますが、それは Vim がキー入力を待機中のときだけ機能します。Vim がビジー状態 (何かを実行中) のときは機能しません。Vim がビジー状態の場合、@kbd{CTRL-C} は実行中のコマンドを中断します。
+MS-Windows の GUI 環境では、@kbd{CTRL-C} にマップすることができるので、クリップボードにコピーする機能を割り当てることができます。Vim の動作を中断するには @kbd{CTRL-Break} を使います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*map_space_in_lhs* *map-space_in_lhs*
+To include a space in {lhs} precede it with a CTRL-V (type two CTRL-Vs for
+each space).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map_space_in_lhs}
+@anchor{map-space_in_lhs}
+@cindex map_space_in_lhs
+@cindex map-space_in_lhs
+@{lhs@} に空白文字を含めるには @kbd{CTRL-V} を前置してください (空白文字の前で @kbd{CTRL-V} を二度押しで入力)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+					*map_space_in_rhs* *map-space_in_rhs*
+If you want a {rhs} that starts with a space, use "<Space>".  To be fully Vi
+compatible (but unreadable) don't use the |<>| notation, precede {rhs} with a
+single CTRL-V (you have to type CTRL-V two times).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map_space_in_rhs}
+@anchor{map-space_in_rhs}
+@cindex map_space_in_rhs
+@cindex map-space_in_rhs
+@{rhs@} を空白文字で開始するには "<Space>" を使ってください。Vi との互換性を完全に保ちたい場合は |<>| 表記を使わずに、@{rhs@} の直前に @kbd{CTRL-V} (@kbd{CTRL-V} を二度押しで入力)を前置してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*map_empty_rhs* *map-empty-rhs*
+You can create an empty {rhs} by typing nothing after a single CTRL-V (you
+have to type CTRL-V two times).  Unfortunately, you cannot do this in a vimrc
+file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map_empty_rhs}
+@anchor{map-empty-rhs}
+@cindex map_empty_rhs
+@cindex map-empty-rhs
+@kbd{CTRL-V} を 1 つだけ入力した後に (@kbd{CTRL-V} を 2 度押しで入力) 何も入力しないことで空の @{rhs@} を作ることもできます。残念ながら @file{vimrc} ファイル内ではこの方法は使用できません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*<Nop>*
+An easier way to get a mapping that doesn't produce anything, is to use
+"<Nop>" for the {rhs}.  This only works when the |<>| notation is enabled.
+For example, to make sure that function key 8 does nothing at all: >
+	:map  <F8>  <Nop>
+	:map! <F8>  <Nop>
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<Nop>}
+@cindex <Nop>
+空のマップを作るには @{rhs@} に "<Nop>" を指定する方法が簡単です。これは |<>| 表記を使えるようにしていれば動作します。例えば、ファンクションキー 8 は何もしない、としたい場合は次のようにします:
+@example
+:map  <F8>  <Nop>
+:map! <F8>  <Nop>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*map-multibyte*
+It is possible to map multibyte characters, but only the whole character.  You
+cannot map the first byte only.  This was done to prevent problems in this
+scenario: >
+	:set encoding=latin1
+	:imap <M-C> foo
+	:set encoding=utf-8
+The mapping for <M-C> is defined with the latin1 encoding, resulting in a 0xc3
+byte.  If you type the character á (0xe1 <M-a>) in UTF-8 encoding this is the
+two bytes 0xc3 0xa1.  You don't want the 0xc3 byte to be mapped then or
+otherwise it would be impossible to type the á character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map-multibyte}
+@cindex map-multibyte
+マルチバイト文字をマップすることができます。ただし、マルチバイト文字の一部のバイトだけをマップすることはできません。それは次のような問題が起こるのを防ぐためです:
+@example
+:set encoding=latin1
+:imap <M-C> foo
+:set encoding=utf-8
+@end example
+latin1 環境で文字「Ã」(0xc3 または <M-C>) をマップしています。例えば、「á」(0xe1 または <M-a>) は UTF-8 では 0xc3 0xa1 の 2 バイトで表現されるので、0xc3 をマップしてしまうと á が入力できなくなってしまいます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*<Leader>* *mapleader*
+To define a mapping which uses the "mapleader" variable, the special string
+"<Leader>" can be used.  It is replaced with the string value of "mapleader".
+If "mapleader" is not set or empty, a backslash is used instead.  Example: >
+	:map <Leader>A  oanother line<Esc>
+Works like: >
+	:map \A  oanother line<Esc>
+But after: >
+	:let mapleader = ","
+It works like: >
+	:map ,A  oanother line<Esc>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<Leader>}
+@anchor{mapleader}
+@cindex <Leader>
+@cindex mapleader
+マップコマンドで特別な文字列 "<Leader>" を使用すると、その部分が変数 "mapleader" に設定された文字列で置き換わります。"mapleader" が空文字列のときや設定されていない場合にはバックスラッシュが使用されます。例:
+@example
+:map <Leader>A  oanother line<Esc>
+@end example
+これは次のものと同じ意味です: >
+@example
+:map \A  oanother line<Esc>
+@end example
+しかし次のように設定したあとでは:
+@example
+:let mapleader = ","
+@end example
+次のものと同じ意味になります:
+@example
+:map ,A  oanother line<Esc>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the value of "mapleader" is used at the moment the mapping is
+defined.  Changing "mapleader" after that has no effect for already defined
+mappings.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+変数 "mapleader" はマップを定義するときに使用されます。"mapleader" を変更しても、すでに定義されているマップには影響しません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*<LocalLeader>* *maplocalleader*
+<LocalLeader> is just like <Leader>, except that it uses "maplocalleader"
+instead of "mapleader".  <LocalLeader> is to be used for mappings which are
+local to a buffer.  Example: >
+      :map <buffer> <LocalLeader>A  oanother line<Esc>
+<
+In a global plugin <Leader> should be used and in a filetype plugin
+<LocalLeader>.  "mapleader" and "maplocalleader" can be equal.  Although, if
+you make them different, there is a smaller chance of mappings from global
+plugins to clash with mappings for filetype plugins.  For example, you could
+keep "mapleader" at the default backslash, and set "maplocalleader" to an
+underscore.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<LocalLeader>}
+@anchor{maplocalleader}
+@cindex <LocalLeader>
+@cindex maplocalleader
+<LocalLeader> は <Leader> に似ていますが、"mapleader" ではなく "maplocalleader" を使用します。<LocalLeader> はバッファローカルのマップに使用するといいでしょう。例:
+@example
+:map <buffer> <LocalLeader>A  oanother line<Esc>
+@end example
+グローバルプラグインでは <Leader> を使用し、ファイルタイププラグインでは <LocalLeader> を使用するといいでしょう。"mapleader" と "maplocalleader" の設定は同じでも構いませんが、別の値を設定すれば、グローバルプラグインとファイルタイププラグインのマップが重なる可能性が低くなります。設定例としては、"mapleader" をバックスラッシュのままにしておいて、"maplocalleader" をアンダースコア (_) にするなど。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*map-<SID>*
+In a script the special key name "<SID>" can be used to define a mapping
+that's local to the script.  See |<SID>| for details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map-<SID>}
+@cindex map-<SID>
+特別な文字列 "<SID>" を使ってスクリプトローカルなマップを定義できます。詳細は |<SID>| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*<Plug>*
+The special key name "<Plug>" can be used for an internal mapping, which is
+not to be matched with any key sequence.  This is useful in plugins
+|using-<Plug>|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<Plug>}
+@cindex <Plug>
+特別な文字列 "<Plug>" を使ってスクリプトの内部作業用のマップを定義できます。これはどのキー入力にもマッチしません。プラグインを作成するときに便利です |using-<Plug>|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*<Char>* *<Char->*
+To map a character by its decimal, octal or hexadecimal number the <Char>
+construct can be used:
+	<Char-123>	character 123
+	<Char-033>	character 27
+	<Char-0x7f>	character 127
+	<S-Char-114>    character 114 ('r') shifted ('R')
+This is useful to specify a (multi-byte) character in a 'keymap' file.
+Upper and lowercase differences are ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<Char>}
+@anchor{<Char->}
+@cindex <Char>
+@cindex <Char->
+<Char> を使って、文字を 10 進数、8 進数、16 進数の数値指定でマップできます:
+@multitable @columnfractions .5 .5
+@item <Char-123> @tab character 123
+@item <Char-033> @tab character 27
+@item <Char-0x7f> @tab character 127
+@item <S-Char-114> @tab character 114 ('r') shifted ('R')
+@end multitable
+これは 'keymap' ファイルで (マルチバイト) 文字を定義するのに便利です。表記は大文字でも小文字でも構いません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*map-comments*
+It is not possible to put a comment after these commands, because the '"'
+character is considered to be part of the {lhs} or {rhs}. However, one can
+use |", since this starts a new, empty command with a comment.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map-comments}
+@cindex map-comments
+マップコマンドでは '"' (ダブルクォート) も @{lhs@} や @{rhs@} の一部と見なされるため、マップコマンドの後ろにコメントを置くことはできません。しかし、|" を使うことができます。これはコメント付きの空の新しいコマンドを開始するからです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*map_bar* *map-bar*
+Since the '|' character is used to separate a map command from the next
+command, you will have to do something special to include  a '|' in {rhs}.
+There are three methods:
+   use	     works when			   example	~
+   <Bar>     '<' is not in 'cpoptions'	   :map _l :!ls <Bar> more^M
+   \|	     'b' is not in 'cpoptions'	   :map _l :!ls \| more^M
+   ^V|	     always, in Vim and Vi	   :map _l :!ls ^V| more^M
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map_bar}
+@anchor{map-bar}
+@cindex map_bar
+@cindex map-bar
+'|' 文字は、マップコマンドと次のコマンドを分けるために使われるので、'|' 文字を @{rhs@} に含めるには特殊な方法が必要です。次の 3 つの方法があります:
+@multitable @columnfractions .15 .45 .4
+@headitem 方法 @tab 使用できる条件 @tab 例
+@item <Bar> @tab 'cpoptions'に'<'が含まれていない @tab :map _l :!ls <Bar> more^M
+@item \| @tab 'cpoptions'に'b'が含まれていない @tab :map _l :!ls \| more^M
+@item ^V| @tab VimとViで常に使用できる @tab :map _l :!ls ^V| more^M
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+(here ^V stands for CTRL-V; to get one CTRL-V you have to type it twice; you
+cannot use the <> notation "<C-V>" here).
+
+All three work when you use the default setting for 'cpoptions'.
+
+When 'b' is present in 'cpoptions', "\|" will be recognized as a mapping
+ending in a '\' and then another command.  This is Vi compatible, but
+illogical when compared to other commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+(ここで ^V は CTRL-V を表します。一つの CTRL-V を挿入するには CTRL-V を二度押しで入力します。この用途では、|<>| 表記を使って "<C-V>" とすることはできません)。
+
+'@option{cpoptions}' が標準設定のままなら、三つ全ての方法が使用できます。
+
+'@option{cpoptions}' に '@var{b}' が含まれている場合、"\|" は、'\' で終わるマップコマンドの後に、別のコマンドが続いているとみなされます。これは Vi 互換ですが、他のコマンドの場合を考えるとあまり論理的ではありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*map_return* *map-return*
+When you have a mapping that contains an Ex command, you need to put a line
+terminator after it to have it executed.  The use of <CR> is recommended for
+this (see |<>|).  Example: >
+   :map  _ls  :!ls -l %:S<CR>:echo "the end"<CR>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map_return}
+@anchor{map-return}
+@cindex map_return
+@cindex map-return
+マップに Ex コマンドを含める場合、そのコマンドラインを実行するために改行文字を挿入する必要があります。これには <CR> を使うことが推奨されています(参照 |<>|)。例:
+@example
+:map  _ls  :!ls -l %:S<CR>:echo "the end"<CR>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To avoid mapping of the characters you type in insert or Command-line mode,
+type a CTRL-V first.  The mapping in Insert mode is disabled if the 'paste'
+option is on.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+挿入モードやコマンドラインモードで、入力する文字がマップされないようにするには、その文字を入力する前に @kbd{CTRL-V} を (1回) 押してください。'@option{paste}' がオンの場合には、挿入モードでマップを使用できません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*map-error*
+Note that when an error is encountered (that causes an error message or beep)
+the rest of the mapping is not executed.  This is Vi-compatible.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map-error}
+@cindex map-error
+@quotation
+@strong{Note:} @*
+マップを使用したときに、エラーが起きた場合 (エラーメッセージやビープ音が出ます)、マップのまだ実行されていない部分は実行されません。これは Vi 互換です。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the second character (argument) of the commands @zZtTfF[]rm'`"v
+and CTRL-X is not mapped.  This was done to be able to use all the named
+registers and marks, even when the command with the same name has been
+mapped.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+コマンド「@@zZtTfF[]rm'`"v」と @kbd{CTRL-X} の引数にはマップは適用されません。どのようなマップがあっても、レジスタやマークを指定できるようにするためです。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.7 WHAT KEYS TO MAP					*map-which-keys*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map-which-keys}
+@cindex map-which-keys
+@subsection 1.7 マップに使うキー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are going to map something, you will need to choose which key(s) to use
+for the {lhs}.  You will have to avoid keys that are used for Vim commands,
+otherwise you would not be able to use those commands anymore.  Here are a few
+suggestions:
+- Function keys <F2>, <F3>, etc..  Also the shifted function keys <S-F1>,
+  <S-F2>, etc.  Note that <F1> is already used for the help command.
+- Meta-keys (with the ALT key pressed).  Depending on your keyboard accented
+  characters may be used as well. |:map-alt-keys|
+- Use the '_' or ',' character and then any other character.  The "_" and ","
+  commands do exist in Vim (see |_| and |,|), but you probably never use them.
+- Use a key that is a synonym for another command.  For example: CTRL-P and
+  CTRL-N.  Use an extra character to allow more mappings.
+- The key defined by <Leader> and one or more other keys.  This is especially
+  useful in scripts. |mapleader|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップを定義するときに @{lhs@} に指定するキーを選ぶことができますが、Vim のコマンドに使われているキーをマップしてしまうとそれらのコマンドを使用できなくなります。そこで、いくつかの提案があります:
+@itemize @minus
+@item ファンクションキー (@key{<F2>}、@key{<F3>}など) や @key{Shift}+ファンクションキー(@kbd{<S-F1>}、@kbd{<S-F2>} など) を使用する。@key{<F1>} には既にヘルプコマンドが割り当てられています。
+@item Meta キー (@key{ALT}キー) を使用する。あなたのキーボードのアクセント記号付き文字の使用頻度に依存します。|:map-alt-keys|
+@item "_" や "," などの文字と別の文字を組み合わせて使用する。コマンド "_" と"," はすでに存在していますが (|_| と |,| を参照)、使う機会はあまりないでしょう。
+@item 他に類するコマンドがあるキーを使用する。例えば、@kbd{CTRL-P} と @kbd{CTRL-N}。さらに多くのマップを使用するには、複数文字を使用します。
+@item <Leader> と 1 つまたは複数のキーを組み合わせて使用する。これは特にスクリプトで便利です。 |mapleader|
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See the file "index" for keys that are not used and thus can be mapped without
+losing any builtin function.  You can also use ":help {key}^D" to find out if
+a key is used for some command.  ({key} is the specific key you want to find
+out about, ^D is CTRL-D).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+標準のキー操作を損なうことなくマップできるキーや、使われていないキーを探すには |@ref{index.txt, , index.txt}| を参照してください。"@command{:help @{key@}^D}" を使用してそのキーが使われているかどうかを調べることもできます (@{key@} は調べたいキー、^D は @kbd{CTRL-D} の入力)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.8 EXAMPLES						*map-examples*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map-examples}
+@cindex map-examples
+@subsection 1.8 例
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A few examples (given as you type them, for "<CR>" you type four characters;
+the '<' flag must not be present in 'cpoptions' for this to work). >
+
+   :map <F3>  o#include
+   :map <M-g> /foo<CR>cwbar<Esc>
+   :map _x    d/END/e<CR>
+   :map! qq   quadrillion questions
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップの例をいくつか示します (見た通り入力してください。"<CR>" は 4 文字です。このような表記(|<>|)は '@option{cpoptions}' に '<' が含まれていると使用できません)。
+@example
+:map <F3>  o#include
+:map <M-g> /foo<CR>cwbar<Esc>
+:map _x    d/END/e<CR>
+:map! qq   quadrillion questions
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Multiplying a count
+
+When you type a count before triggering a mapping, it's like the count was
+typed before the {lhs}.  For example, with this mapping: >
+   :map <F4>  3w
+Typing 2<F4> will result in "23w". Thus not moving 2 * 3 words but 23 words.
+If you want to multiply counts use the expression register: >
+   :map <F4>  @='3w'<CR>
+The part between quotes is the expression being executed. |@=|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsubsection カウント指定の掛け算
+
+マップの展開前にカウント指定が入力されると、そのカウントは @{lhs@} の前に入力されたものとして扱われます。例えば、次のマップを定義したとき:
+@example
+:map <F4>  3w
+@end example
+2<F4> は "23w" となります。つまり、2 * 3 単語移動するのではなく、23 単語の移動になります。カウントを掛けたい場合は式レジスタを使ってください:
+@example
+:map <F4>  @='3w'<CR>
+@end example
+クォートで囲まれた部分が実行される式です。|@@=|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.9 USING MAPPINGS					*map-typing*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map-typing}
+@cindex map-typing
+@subsection 1.9 マップを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will compare what you type with the start of a mapped sequence.  If there
+is an incomplete match, it will get more characters until there either is a
+complete match or until there is no match at all.  Example: If you map! "qq",
+the first 'q' will not appear on the screen until you type another
+character.  This is because Vim cannot know if the next character will be a
+'q' or not.  If the 'timeout' option is on (which is the default) Vim will
+only wait for one second (or as long as specified with the 'timeoutlen'
+option).  After that it assumes that the 'q' is to be interpreted as such.  If
+you type slowly, or your system is slow, reset the 'timeout' option.  Then you
+might want to set the 'ttimeout' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は、入力されたキーで始まるマップがあるかどうかを調べ、そのようなマップがある場合は、入力とマップが完全に一致するか一致しないと判断できるまで、次の入力を待ちます。例えば、"qq" というマップがあるとして、最初に入力した 'q' は、次の文字を入力するまで実際に入力されません。なぜなら、Vim には次に入力される文字が 'q' であるかそうでないかを知ることができないからです。'@option{timeout}' がオンになっていると (標準設定はオンです)、Vim は一秒間 (または '@option{timeoutlen}' で指定されている時間) だけ待機します。待機した後に、'@samp{q}' という文字が入力されたのだと判断します。ゆっくり入力したい場合や、遅いシステムを使用している場合は、'@option{timeout}' をオフにしてください。'@option{ttimeout}' を設定するのもいいでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+                            				*map-precedence*
+Buffer-local mappings (defined using |:map-<buffer>|) take precedence over
+global mappings.  When a buffer-local mapping is the same as a global mapping,
+Vim will use the buffer-local mapping.  In addition, Vim will use a complete
+mapping immediately if it was defined with <nowait>, even if a longer mapping
+has the same prefix.  For example, given the following two mappings: >
+    :map <buffer> <nowait> \a   :echo "Local \a"<CR>
+    :map                   \abc :echo "Global \abc"<CR>
+When typing \a the buffer-local mapping will be used immediately.  Vim will
+not wait for more characters to see if the user might be typing \abc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map-precedence}
+@cindex map-precedence
+バッファローカルなマップ(|:map-<buffer>| を使用して定義された)はどのグローバルなマップよりも優先されます。バッファローカルなマップがグローバルなマップと同じ場合、Vim はバッファローカルなマップを使用します。加えて、<nowait> で定義された場合はより長いマップが同じ接頭辞を持っているとしても、直ちに完了したマップを使用します。例えば、次の 2 つのマップがあるとします:
+@example
+:map <buffer> <nowait> \a   :echo "Local \a"<CR>
+:map                   \abc :echo "Global \abc"<CR>
+@end example
+\a を入力するとバッファローカルなマップが直ちに使用されます。Vim はユーザーが \abc を入力するかどうかを知るためにそれ以上の文字を待つことはしません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*map-keys-fails*
+There are situations where key codes might not be recognized:
+- Vim can only read part of the key code.  Mostly this is only the first
+  character.  This happens on some Unix versions in an xterm.
+- The key code is after character(s) that are mapped.  E.g., "<F1><F1>" or
+  "g<F1>".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{map-keys-fails}
+@cindex map-keys-fails
+次のような状況では、キーコードが認識されないことがあります:
+@itemize @minus
+@item Vim がキーコードを部分的にしか読めない。これは最初の文字だけ読める場合が多いです。特定の Unix 版と xterm の組み合わせで起こります。
+@item 文字(列)の後にキーコードがあるマップ。例、"<F1><F1>" や "g<F1>"。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The result is that the key code is not recognized in this situation, and the
+mapping fails.  There are two actions needed to avoid this problem:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このように、キーコードが認識されない状況では、そのようなマップを使用することができません。対処方が 2 つあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Remove the 'K' flag from 'cpoptions'.  This will make Vim wait for the rest
+  of the characters of the function key.
+- When using <F1> to <F4> the actual key code generated may correspond to
+  <xF1> to <xF4>.  There are mappings from <xF1> to <F1>, <xF2> to <F2>, etc.,
+  but these are not recognized after another half a mapping.  Make sure the
+  key codes for <F1> to <F4> are correct: >
+	:set <F1>=<type CTRL-V><type F1>
+< Type the <F1> as four characters.  The part after the "=" must be done with
+  the actual keys, not the literal text.
+Another solution is to use the actual key code in the mapping for the second
+special key: >
+	:map <F1><Esc>OP :echo "yes"<CR>
+Don't type a real <Esc>, Vim will recognize the key code and replace it with
+<F1> anyway.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item '@option{cpoptions}' から '@var{K}' フラグを除く。そうすると Vim はファンクションキーの残りのコードを待つようになります。
+@item <F1> から <F4> のキーによって生成される実際のキーコードが <xF1> から <xF4> と同じ場合があります。<xF1> を <F1> へ、<xF2> を <F2> へ、といったマップが存在しますが、これはマップの後半では認識されません。<F1> から <F4> のキーのキーコードを正しく設定してください:
+@example
+:set <F1>=<type CTRL-V><type F1>
+@end example
+<F1> を四文字として入力してください。"=" の後の部分は文字通りにではなく、実際のキーを入力してください。
+
+マップを定義するときに二番目の特殊キーを実際のキーコードで指定することでも解決
+できます:
+@example
+:map <F1><Esc>OP :echo "yes"<CR>
+@end example
+本物の @key{<Esc>} を入力しないでください。Vim がキーコードを認識し、<F1> に置き換えてしまいます。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Another problem may be that when keeping ALT or Meta pressed the terminal
+prepends ESC instead of setting the 8th bit.  See |:map-alt-keys|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他にも、@kbd{ALT} や @kbd{Meta} キーを押しながらキーを入力したときに、コードの 8 ビット目をセットする代わりにそのキーに ESC を前置するような端末で問題が起こることがあります。|:map-alt-keys| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*recursive_mapping*
+If you include the {lhs} in the {rhs} you have a recursive mapping.  When
+{lhs} is typed, it will be replaced with {rhs}.  When the {lhs} which is
+included in {rhs} is encountered it will be replaced with {rhs}, and so on.
+This makes it possible to repeat a command an infinite number of times.  The
+only problem is that the only way to stop this is by causing an error.  The
+macros to solve a maze uses this, look there for an example.  There is one
+exception: If the {rhs} starts with {lhs}, the first character is not mapped
+again (this is Vi compatible).
+For example: >
+   :map ab abcd
+will execute the "a" command and insert "bcd" in the text.  The "ab" in the
+{rhs} will not be mapped again.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{recursive_mapping}
+@cindex recursive_mapping
+@{rhs@} の中に @{lhs@} を含めて、再帰マップを作成できます。@{lhs@} を入力すると @{rhs@} に置き換えられ、@{rhs@} の中に @{lhs@} があるとその @{lhs@} がさらに @{rhs@} に置き換えられ、さらに @{rhs@} の中の @{lhs@} が置き換えられ...。というようにコマンドを無限に繰り返すことができます。エラーを生じさせないと止めることができないのが唯一の問題です。
+
+例外として、@{rhs@} が @{lhs@} で始まっている場合は、その文字は再帰的にマップされません (これは Vi 互換です)。
+
+例えば次のマップは:
+@example
+:map ab abcd
+@end example
+"a" コマンドを実行して "bcd" を挿入します。@{rhs@} の中の "ab" は再帰的にマップされません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to exchange the meaning of two keys you should use the :noremap
+command.  For example: >
+   :noremap k j
+   :noremap j k
+This will exchange the cursor up and down commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+二つのキーの意味を入れ換えるような場合は :noremap を使ってください。例えば:
+@example
+:noremap k j
+:noremap j k
+@end example
+これは、カーソルの上下移動のコマンドを入れ換えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+With the normal :map command, when the 'remap' option is on, mapping takes
+place until the text is found not to be a part of a {lhs}.  For example, if
+you use: >
+   :map x y
+   :map y x
+Vim will replace x with y, and then y with x, etc.  When this has happened
+'maxmapdepth' times (default 1000), Vim will give the error message
+"recursive mapping".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+普通の :map コマンドでマップを定義した場合、'@option{remap}' オプションがオンになっていると、そのマップが使用された後のテキスト (@{rhs@}) に @{lhs@} が含まれている限り、マップが再帰的に繰り返されます。例えば、次のようなマップを使用する場合:
+@example
+:map x y
+:map y x
+@end example
+Vim はまず、x を y で置き換え、それから y を x で置き換え、...。これを '@option{maxmapdepth}' に設定された回数だけ (標準設定は1000回) 繰り返し、"recursive mapping" というエラーメッセージを表示します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:map-undo*
+If you include an undo command inside a mapped sequence, this will bring the
+text back in the state before executing the macro.  This is compatible with
+the original Vi, as long as there is only one undo command in the mapped
+sequence (having two undo commands in a mapped sequence did not make sense
+in the original Vi, you would get back the text before the first undo).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-undo}
+@cindex :map-undo
+マップされたもの(@{rhs@})がアンドゥコマンドを含んでいると、その操作を実行する前の状態に戻すことになります。アンドゥが1回だけなら、その動作はオリジナルの Vi 互換です(オリジナルの Vi では、2 回アンドゥしても意味がなく、最初のアンドゥを実行する前の状態に戻るだけです)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.10 MAPPING ALT-KEYS					*:map-alt-keys*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-alt-keys}
+@cindex :map-alt-keys
+@subsection 1.10 ALT キーを使ったマップ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the GUI Vim handles the Alt key itself, thus mapping keys with ALT should
+always work.  But in a terminal Vim gets a sequence of bytes and has to figure
+out whether ALT was pressed or not.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GUI では、Vim は @kbd{Alt} キーを直接取り扱うので、@kbd{ALT} キーを使ったマップは常に機能します。CUI 端末では、Vim は受け取ったバイト列から、@kbd{ALT} キーが押されているかどうかを割り出さなければなりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+By default Vim assumes that pressing the ALT key sets the 8th bit of a typed
+character.  Most decent terminals can work that way, such as xterm, aterm and
+rxvt.  If your <A-k> mappings don't work it might be that the terminal is
+prefixing the character with an ESC character.  But you can just as well type
+ESC before a character, thus Vim doesn't know what happened (except for
+checking the delay between characters, which is not reliable).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+初期設定では、@kbd{ALT} キーが押されているときは、文字の 8 ビット目が設定されるものと仮定しています。xterm、aterm、rxvt など、ほとんどの端末はこの方法で問題ありません。<A-k> のようなマップが動作しない場合は、その端末が、文字の前に ESC を付けているのかもしれません。ユーザーが文字の前に ESC を入力することもできますから、Vim は何が起きたか知ることはできません (ただし、ESC と文字の間に延滞があるかどうかをチェックする方法はあります。確実な方法ではありませんが)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+As of this writing, some mainstream terminals like gnome-terminal and konsole
+use the ESC prefix.  There doesn't appear a way to have them use the 8th bit
+instead.  Xterm should work well by default.  Aterm and rxvt should work well
+when started with the "--meta8" argument.  You can also tweak resources like
+"metaSendsEscape", "eightBitInput" and "eightBitOutput".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在、gnome-terminal や konsole などの主要な端末が ESC を前置します。代わりに 8 ビット目を使うように設定する方法はないようです。Xterm では設定なしで機能します。Aterm と rxvt では "--meta8" 引数を使えば機能します。"metaSendsEscape"、"eightBitInput"、eightBitOutput" のようなリソースを設定することでも動作を変更できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On the Linux console, this behavior can be toggled with the "setmetamode"
+command.  Bear in mind that not using an ESC prefix could get you in trouble
+with other programs.  You should make sure that bash has the "convert-meta"
+option set to "on" in order for your Meta keybindings to still work on it
+(it's the default readline behavior, unless changed by specific system
+configuration).  For that, you can add the line: >
+
+	set convert-meta on
+
+to your ~/.inputrc file. If you're creating the file, you might want to use: >
+
+	$include /etc/inputrc
+
+as the first line, if that file exists on your system, to keep global options.
+This may cause a problem for entering special characters, such as the umlaut.
+Then you should use CTRL-V before that character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Linux コンソールでは、"setmetamode" コマンドで動作を切り替えることができます。ESC の前置を使わないようにすると、他のプログラムで問題が起こる可能性があるので注意してください。bash の "@option{convert-meta}" が "@var{on}" になっていることを確認し、Meta キーバインディングが動作するようにしてください。(システム固有の設定変更をしていなければ、これは readline の標準の動作です)次の行を ~/@file{.inputrc} に追加すると、その設定をすることができます:
+@example
+set convert-meta on
+@end example
+ファイルをはじめて作成した場合は、システム全体の設定を維持するために、次の行を最初に加える必要があるかもしれません(そのファイルがシステムにある場合):
+@example
+$include /etc/inputrc
+@end example
+このように設定すると、ウムラウトのような特殊な文字を入力できなくなるかもしれません。その場合は、文字の前に @kbd{CTRL-V} を入力してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Bear in mind that convert-meta has been reported to have troubles when used in
+UTF-8 locales.  On terminals like xterm, the "metaSendsEscape" resource can be
+toggled on the fly through the "Main Options" menu, by pressing Ctrl-LeftClick
+on the terminal; that's a good last resource in case you want to send ESC when
+using other applications but not when inside Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@option{convert-meta} は UTF-8 ロケールでは問題を起こすことがすでに報告されています。xterm のような端末では、起動しているときに、メニューの "Main Options" から "metaSendsEscape" リソースを設定できます。メニューは端末を Ctrl-LeftClick すると表示できます。他のアプリケーションでは ESC を使い、Vim では使いたくない、という場合にこのリソースを使うと便利です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.11 MAPPING AN OPERATOR				*:map-operator*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:map-operator}
+@cindex :map-operator
+@subsection 1.11 オペレータの作成
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An operator is used before a {motion} command.  To define your own operator
+you must create mapping that first sets the 'operatorfunc' option and then
+invoke the |g@| operator.  After the user types the {motion} command the
+specified function will be called.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オペレータは @{motion@} コマンドと合わせて使われます。独自のオペレータを定義するには、最初に '@option{operatorfunc}' を設定し、そして、|g@@| オペレータを呼びます。ユーザーが @{motion@} コマンドを実行した後、設定した関数が実行されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*g@* *E774* *E775*
+g@{motion}		Call the function set by the 'operatorfunc' option.
+			The '[ mark is positioned at the start of the text
+			moved over by {motion}, the '] mark on the last
+			character of the text.
+			The function is called with one String argument:
+			    "line"	{motion} was |linewise|
+			    "char"	{motion} was |characterwise|
+			    "block"	{motion} was |blockwise-visual|
+			Although "block" would rarely appear, since it can
+			only result from Visual mode where "g@" is not useful.
+			{not available when compiled without the |+eval|
+			feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@ifnottex
+@anchor{g@@}
+@cindex g@@
+@end ifnottex
+@anchor{E774}
+@anchor{E775}
+@cindex E774
+@cindex E775
+@table @asis
+@item g@@@{motion@}
+'@option{operatorfunc}' に設定された関数を実行します。'[ マークに @{motion@} で選択された範囲の最初の位置が設定されます。'] マークには選択範囲の最後の位置が設定されます。関数の引数には、文字列が一つ渡されます:
+@multitable @columnfractions .5 .5
+@item "line"  @{motion@} @tab は行単位 |linewise|
+@item "char"  @{motion@} @tab は文字単位 |characterwise|
+@item "block" @{motion@} @tab は矩形 |blockwise-visual|
+@end multitable
+"block" はたまにしか使われません。ビジュアルモードの場合だけ渡されるのですが、"g@@" と合わせてもそれほど便利ではないからです。
+
+@{|+eval| が有効な場合のみ利用できます@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here is an example that counts the number of spaces with <F4>: >
+
+	nmap <silent> <F4> :set opfunc=CountSpaces<CR>g@
+	vmap <silent> <F4> :<C-U>call CountSpaces(visualmode(), 1)<CR>
+
+	function! CountSpaces(type, ...)
+	  let sel_save = &selection
+	  let &selection = "inclusive"
+	  let reg_save = @@
+
+	  if a:0  " Invoked from Visual mode, use gv command.
+	    silent exe "normal! gvy"
+	  elseif a:type == 'line'
+	    silent exe "normal! '[V']y"
+	  else
+	    silent exe "normal! `[v`]y"
+	  endif
+
+	  echomsg strlen(substitute(@@, '[^ ]', '', 'g'))
+
+	  let &selection = sel_save
+	  let @@ = reg_save
+	endfunction
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例を示します。これは @key{<F4>} を使ってスペースの数を数えます:
+@example
+nmap <silent> <F4> :set opfunc=CountSpaces<CR>g@@
+vmap <silent> <F4> :<C-U>call CountSpaces(visualmode(), 1)<CR>
+@end example
+@verbatim
+function! CountSpaces(type, ...)
+  let sel_save = &selection
+  let &selection = "inclusive"
+  let reg_save = @@
+
+  if a:0  " ビジュアルモードから呼び出すのに、gv コマンドを使用します。
+    silent exe "normal! gvy"
+  elseif a:type == 'line'
+    silent exe "normal! '[V']y"
+  else
+    silent exe "normal! `[v`]y"
+  endif
+
+  echomsg strlen(substitute(@@, '[^ ]', '', 'g'))
+
+  let &selection = sel_save
+  let @@ = reg_save
+endfunction
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the 'selection' option is temporarily set to "inclusive" to be able
+to yank exactly the right text by using Visual mode from the '[ to the ']
+mark.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+一時的に '@option{selection}' を "@var{inclusive}" に設定し、'[ から '] まで選択した範囲を正しくヤンクできるようにしています。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Also note that there is a separate mapping for Visual mode.  It removes the
+"'<,'>" range that ":" inserts in Visual mode and invokes the function with
+visualmode() and an extra argument.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ビジュアルモードのために別のマップを定義しています。ビジュアルモードで ":" を押した場合に挿入される "'<,'>" を削除し、関数に visualmode() の値と追加の引数を渡しています。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Abbreviations			*abbreviations* *Abbreviations*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{abbreviations}
+@anchor{Abbreviations}
+@cindex abbreviations
+@cindex Abbreviations
+@section 2. 短縮入力 (Abbreviations)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Abbreviations are used in Insert mode, Replace mode and Command-line mode.
+If you enter a word that is an abbreviation, it is replaced with the word it
+stands for.  This can be used to save typing for often used long words.  And
+you can use it to automatically correct obvious spelling errors.
+Examples:
+
+	:iab ms Microsoft
+	:iab tihs this
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+短縮入力は、挿入モード、置換モード、コマンドラインモードで使えます。短縮入力として登録されている単語を入力すると、それが表す単語に置き換えられます。よく使う長い単語を打ち込むときのタイプ数を減らしたり、明確なスペルミスを自動的に修正するのに使えます。
+
+例:
+@example
+:iab ms Microsoft
+:iab tihs this
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are three types of abbreviations:
+
+full-id	  The "full-id" type consists entirely of keyword characters (letters
+	  and characters from 'iskeyword' option).  This is the most common
+	  abbreviation.
+
+	  Examples: "foo", "g3", "-1"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+短縮入力には三つの種類があります:
+@table @asis
+@item full-id
+"full-id" タイプは完全なキーワード文字から構成されます('@option{iskeyword}' オプションに含まれる文字です)。最も一般的な短縮入力です。
+@example
+例: "foo", "g3", "-1"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+end-id	  The "end-id" type ends in a keyword character, but all the other
+	  characters are not keyword characters.
+
+	  Examples: "#i", "..f", "$/7"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item end-id
+"end-id" タイプはキーワード文字で終わりますが、他の文字はキーワード文字ではありません。
+@example
+例: "#i", "..f", "$/7"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+non-id	  The "non-id" type ends in a non-keyword character, the other
+	  characters may be of any type, excluding space and tab.  {this type
+	  is not supported by Vi}
+
+	  Examples: "def#", "4/7$"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item non-id
+"non-id" タイプは非キーワード文字で終わります。他の文字はスペースとタブ文字以外のどんな文字でもよいです。
+
+@{Vi では、このタイプはサポートされていません@}
+@example
+例: "def#", "4/7$"
+@end example
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples of strings that cannot be abbreviations: "a.b", "#def", "a b", "_$r"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+短縮入力にできない文字列の例: "a.b", "#def", "a b", "_$r"
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An abbreviation is only recognized when you type a non-keyword character.
+This can also be the <Esc> that ends insert mode or the <CR> that ends a
+command.  The non-keyword character which ends the abbreviation is inserted
+after the expanded abbreviation.  An exception to this is the character <C-]>,
+which is used to expand an abbreviation without inserting any extra
+characters.
+
+Example: >
+   :ab hh	hello
+<	    "hh<Space>" is expanded to "hello<Space>"
+	    "hh<C-]>" is expanded to "hello"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+短縮入力は非キーワード文字を入力したときに展開されます。これは、挿入モードを終わらせる<Esc>を入力したり、コマンドを終わらせる<CR>を入力したときにも起こります。短縮入力を終わらせる非キーワード文字は、短縮入力を展開した後に挿入されます。<C-]>文字は例外で、短縮入力だけが展開され挿入されます。
+
+例:
+@example
+:ab hh	hello
+@end example
+@multitable @columnfractions .1 .9
+@item @tab "hh<Space>" で "hello<Space>" に展開されます。
+@item @tab "hh<C-]>"   で "hello" に展開されます。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The characters before the cursor must match the abbreviation.  Each type has
+an additional rule:
+
+full-id	  In front of the match is a non-keyword character, or this is where
+	  the line or insertion starts.  Exception: When the abbreviation is
+	  only one character, it is not recognized if there is a non-keyword
+	  character in front of it, other than a space or a tab.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カーソルの前の文字が短縮入力とマッチする場合のみ機能します。短縮入力の種類によって、さらに条件があります:
+@table @asis
+@item full-id
+マッチした場所の前が非キーワード文字、行頭、挿入を開始した場所、であること。例外: 短縮入力が1文字の場合、その前の文字がスペース、タブ、以外の非キーワード文字なら短縮入力は展開されません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+end-id	  In front of the match is a keyword character, or a space or a tab,
+	  or this is where the line or insertion starts.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item end-id
+マッチした場所の前が非キーワード文字、スペース、タブ、行頭、挿入を開始した場所、であること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+non-id	  In front of the match is a space, tab or the start of the line or
+	  the insertion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item non-id
+マッチした場所の前がタブ、行頭、挿入を開始した場所、であること。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples: ({CURSOR} is where you type a non-keyword character) >
+   :ab foo   four old otters
+<		" foo{CURSOR}"	  is expanded to " four old otters"
+		" foobar{CURSOR}" is not expanded
+		"barfoo{CURSOR}"  is not expanded
+>
+   :ab #i #include
+<		"#i{CURSOR}"	  is expanded to "#include"
+		">#i{CURSOR}"	  is not expanded
+>
+   :ab ;; <endofline>
+<		"test;;"	  is not expanded
+		"test ;;"	  is expanded to "test <endofline>"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例: (@{CURSOR@} は非キーワード文字を入力する場所です)
+@example
+:ab foo   four old otters
+@end example
+@multitable @columnfractions .1 .9
+@item @tab " foo@{CURSOR@}"    は " four old otters" に展開されます
+@item @tab " foobar@{CURSOR@}" は展開されません
+@item @tab "barfoo@{CURSOR@}"  は展開されません
+@end multitable
+@example
+:ab #i #include
+@end example
+@multitable @columnfractions .1 .9
+@item @tab "#i@{CURSOR@}"    は "#include" に展開されます
+@item @tab ">#i@{CURSOR@}"   は展開されません
+@end multitable
+@example
+:ab ;; <endofline>
+@end example
+@multitable @columnfractions .1 .9
+@item @tab "test;;"    は展開されません
+@item @tab "test ;;"   は "test <endofline>" に展開されます
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To avoid the abbreviation in Insert mode: Type CTRL-V before the character
+that would trigger the abbreviation.  E.g. CTRL-V <Space>.  Or type part of
+the abbreviation, exit insert mode with <Esc>, re-enter insert mode with "a"
+and type the rest.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+挿入モードで短縮入力の展開を避けるには、短縮入力を発動する可能性のある文字を入力する前に @kbd{CTRL-V} を押します。 例: @kbd{CTRL-V} @key{<Space>} もしくは短縮入力の一部を入力してから挿入モードを <Esc> で抜け、再度挿入モードに "a" で入って残りを入力します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To avoid the abbreviation in Command-line mode: Type CTRL-V twice somewhere in
+the abbreviation to avoid it to be replaced.  A CTRL-V in front of a normal
+character is mostly ignored otherwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドラインモードで短縮入力の展開を避けるには、短縮入力の文字の途中で @kbd{CTRL-V} を入力します (@kbd{CTRL-V} を 2 度押し)。展開されなかった場合、普通の文字の前の @kbd{CTRL-V} は普通は無視されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is possible to move the cursor after an abbreviation: >
+   :iab if if ()<Left>
+This does not work if 'cpoptions' includes the '<' flag. |<>|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+短縮入力の後で、カーソルを動かすこともできます:
+@example
+:iab if if ()<Left>
+@end example
+これは、'@option{cpoptions}' に '@var{<}' フラグが含まれていると、うまく動作しません。|<>|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can even do more complicated things.  For example, to consume the space
+typed after an abbreviation: >
+   func Eatchar(pat)
+      let c = nr2char(getchar(0))
+      return (c =~ a:pat) ? '' : c
+   endfunc
+   iabbr <silent> if if ()<Left><C-R>=Eatchar('\s')<CR>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さらに手の込んだこともできます。例えば、短縮入力を展開するときに入力したスペースを消してしまうには:
+@verbatim
+func Eatchar(pat)
+   let c = nr2char(getchar(0))
+   return (c =~ a:pat) ? '' : c
+endfunc
+iabbr <silent> if if ()<Left><C-R>=Eatchar('\s')<CR>
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are no default abbreviations.
+
+Abbreviations are never recursive.  You can use ":ab f f-o-o" without any
+problem.  But abbreviations can be mapped.  {some versions of Vi support
+recursive abbreviations, for no apparent reason}
+
+Abbreviations are disabled if the 'paste' option is on.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+標準設定されている短縮入力はありません。
+
+短縮入力の展開は再帰的には行われません。"@command{:ab f f-o-o}" という短縮入力を問題なく使うことができます。しかし、展開された文字にはマップが適用されます。@{Vi のいくつかのバージョンで再帰的な短縮入力をサポートしていますが、そこになんら明確な理由はありません@}
+
+'@option{paste}' オプションがオンの場合、短縮入力は使用できません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				*:abbreviate-local* *:abbreviate-<buffer>*
+Just like mappings, abbreviations can be local to a buffer.  This is mostly
+used in a |filetype-plugin| file.  Example for a C plugin file: >
+	:abb <buffer> FF  for (i = 0; i < ; ++i)
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:abbreviate-local}
+@anchor{:abbreviate-<buffer>}
+@cindex :abbreviate-local
+@cindex :abbreviate-<buffer>
+マップと同じように、バッファローカルな短縮入力を作成できます。これは主に |filetype-plugin| などで使用されます。C 言語用プラグインの例:
+@example
+:abb <buffer> FF  for (i = 0; i < ; ++i)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*:ab* *:abbreviate*
+:ab[breviate]		list all abbreviations.  The character in the first
+			column indicates the mode where the abbreviation is
+			used: 'i' for insert mode, 'c' for Command-line
+			mode, '!' for both.  These are the same as for
+			mappings, see |map-listing|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ab}
+@anchor{:abbreviate}
+@cindex :ab
+@cindex :abbreviate
+@table @asis
+@item :ab[breviate]
+すべての短縮入力を一覧表示します。行頭の文字は、その短縮入力を使用できるモードを示しています: 'i' は挿入モード、'c' はコマンドラインモード、'!' はその両方。マップの一覧表示と同じです。|map-listing| を参照。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:abbreviate-verbose*
+When 'verbose' is non-zero, listing an abbreviation will also display where it
+was last defined.  Example: >
+
+	:verbose abbreviate
+	!  teh		 the
+		Last set from /home/abcd/vim/abbr.vim
+
+See |:verbose-cmd| for more information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:abbreviate-verbose}
+@cindex :abbreviate-verbose
+'@option{verbose}' がゼロ以外のときに短縮入力一覧を表示すると、どこで定義されたのかも表示されます。例:
+@example
+:verbose abbreviate
+@end example
+@verbatim
+!  teh           the
+        Last set from /home/abcd/vim/abbr.vim
+@end verbatim
+詳しくは |:verbose-cmd| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:ab[breviate] {lhs}	list the abbreviations that start with {lhs}
+			You may need to insert a CTRL-V (type it twice) to
+			avoid that a typed {lhs} is expanded, since
+			command-line abbreviations apply here.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :ab[breviate] @{lhs@}
+@{lhs@} で始まる短縮入力を一覧表示します。@{lhs@} に入力した文字が短縮入力として展開されないようにするには @kbd{CTRL-V} (2 度押しで入力する) を挿入します。そうしないとコマンドライン用の短縮入力があった場合にそれが展開されてしまいます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:ab[breviate] [<expr>] [<buffer>] {lhs} {rhs}
+			add abbreviation for {lhs} to {rhs}.  If {lhs} already
+			existed it is replaced with the new {rhs}.  {rhs} may
+			contain spaces.
+			See |:map-<expr>| for the optional <expr> argument.
+			See |:map-<buffer>| for the optional <buffer> argument.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :ab[breviate] [<expr>] [<buffer>] @{lhs@} @{rhs@}
+@{rhs@} の短縮入力を @{lhs@} として定義します。既に @{lhs@} が定義されていると、新しい @{rhs@} で置き換えられます。@{rhs@} はスペースを含んでいてもかまいません。
+
+<expr> 引数については |:map-<expr>| を参照してください。
+
+<buffer> 引数については |:map-<buffer>| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:una* *:unabbreviate*
+:una[bbreviate] {lhs}	Remove abbreviation for {lhs} from the list.  If none
+			is found, remove abbreviations in which {lhs} matches
+			with the {rhs}.  This is done so that you can even
+			remove abbreviations after expansion.  To avoid
+			expansion insert a CTRL-V (type it twice).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:una}
+@anchor{:unabbreviate}
+@cindex :una
+@cindex :unabbreviate
+@item :una[bbreviate] @{lhs@}
+@{lhs@} という短縮入力を全て削除します。見つからなかった場合は、@{lhs@} に入力した文字を各短縮入力の @{rhs@} から探して見つかったものを削除します。これは短縮入力が展開されてしまった状態でも削除できるようにするためです。短縮入力の展開を防ぐには @kbd{CTRL-V} (2 度押しで入力する) を挿入します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:norea* *:noreabbrev*
+:norea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
+			same as ":ab", but no remapping for this {rhs} {not
+			in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:norea}
+@anchor{:noreabbrev}
+@cindex :norea
+@cindex :noreabbrev
+@item :norea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
+":ab" と同じですが、展開後にマップを適用しません。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:ca* *:cabbrev*
+:ca[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
+			same as ":ab", but for Command-line mode only.  {not
+			in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ca}
+@anchor{:cabbrev}
+@cindex :ca
+@cindex :cabbrev
+@item :ca[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
+":ab" と同じですが、コマンドラインモード用の短縮入力のみ対象です。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:cuna* *:cunabbrev*
+:cuna[bbrev] {lhs}	same as ":una", but for Command-line mode only.  {not
+			in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cuna}
+@anchor{:cunabbrev}
+@cindex :cuna
+@cindex :cunabbrev
+@item :cuna[bbrev] @{lhs@}
+":una" と同じですが、コマンドラインモード用の短縮入力のみ対象です。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:cnorea* *:cnoreabbrev*
+:cnorea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
+			same as ":ab", but for Command-line mode only and no
+			remapping for this {rhs} {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cnorea}
+@anchor{:cnoreabbrev}
+@cindex :cnorea
+@cindex :cnoreabbrev
+@item :cnorea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
+":ab" と同じですが、コマンドラインモード用の短縮入力のみ対象で、展開後にマップを適用しません。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:ia* *:iabbrev*
+:ia[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
+			same as ":ab", but for Insert mode only.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ia}
+@anchor{:iabbrev}
+@cindex :ia
+@cindex :iabbrev
+@item :ia[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
+":ab" と同じですが、挿入モード用の短縮入力のみ対象です。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:iuna* *:iunabbrev*
+:iuna[bbrev] {lhs}	same as ":una", but for insert mode only.  {not in
+			Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:iuna}
+@anchor{:iunabbrev}
+@cindex :iuna
+@cindex :iunabbrev
+@item :iuna[bbrev] @{lhs@}
+":una" と同じですが、挿入モード用の短縮入力のみ対象です。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:inorea* *:inoreabbrev*
+:inorea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
+			same as ":ab", but for Insert mode only and no
+			remapping for this {rhs} {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:inorea}
+@anchor{:inoreabbrev}
+@cindex :inorea
+@cindex :inoreabbrev
+@item :inorea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
+":ab" と同じですが、挿入モード用の短縮入力のみ対象で、展開後にマップを適用しません。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:abc* *:abclear*
+:abc[lear] [<buffer>]	Remove all abbreviations.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:abc}
+@anchor{:abclear}
+@cindex :abc
+@cindex :abclear
+@item :abc[lear] [<buffer>]
+すべての短縮入力を削除します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:iabc* *:iabclear*
+:iabc[lear] [<buffer>]	Remove all abbreviations for Insert mode.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:iabc}
+@anchor{:iabclear}
+@cindex :iabc
+@cindex :iabclear
+@item :iabc[lear] [<buffer>]
+挿入モード用の短縮入力を削除します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cabc* *:cabclear*
+:cabc[lear] [<buffer>]	Remove all abbreviations for Command-line mode.  {not
+			in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cabc}
+@anchor{:cabclear}
+@cindex :cabc
+@cindex :cabclear
+@item :cabc[lear] [<buffer>]
+コマンドラインモード用の短縮入力を削除します。
+
+@{Vi にはありません@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*using_CTRL-V*
+It is possible to use special characters in the rhs of an abbreviation.
+CTRL-V has to be used to avoid the special meaning of most non printable
+characters.  How many CTRL-Vs need to be typed depends on how you enter the
+abbreviation.  This also applies to mappings.  Let's use an example here.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{using_CTRL-V}
+@cindex using_CTRL-V
+特殊な文字を短縮入力の @{rhs@} で使うことができます。非印字可能文字の特殊な意味を打ち消す(クォートする)には、@kbd{CTRL-V} を使用します。必要な @kbd{CTRL-V} の数は、どのような短縮入力を作成するかによります。これはマップでも同様です。例を示します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Suppose you want to abbreviate "esc" to enter an <Esc> character.  When you
+type the ":ab" command in Vim, you have to enter this: (here ^V is a CTRL-V
+and ^[ is <Esc>)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"esc" を実際の <Esc> 文字を挿入する短縮入力にしたいとしましょう。Vim で ":ab" コマンドを使うときには、次のようにしなければなりません: (ここで ^V は @kbd{CTRL-V} で、^[ は <Esc> です)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You type:   ab esc ^V^V^V^V^V^[
+
+	All keyboard input is subjected to ^V quote interpretation, so
+	the first, third, and fifth ^V  characters simply allow the second,
+	and fourth ^Vs, and the ^[, to be entered into the command-line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item 入力:   ab esc ^V^V^V^V^V^[
+キー入力はすべて ^V によるクォートが適用されます。つまり、1 番目、3 番目、5 番目の ^V は、2 番目と 4 番目の ^V と、^[ がコマンドラインに入力されるようにしています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You see:    ab esc ^V^V^[
+
+	The command-line contains two actual ^Vs before the ^[.  This is
+	how it should appear in your .exrc file, if you choose to go that
+	route.  The first ^V is there to quote the second ^V; the :ab
+	command uses ^V as its own quote character, so you can include quoted
+	whitespace or the | character in the abbreviation.  The :ab command
+	doesn't do anything special with the ^[ character, so it doesn't need
+	to be quoted.  (Although quoting isn't harmful; that's why typing 7
+	[but not 8!] ^Vs works.)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 見え方:   ab esc ^V^V^[
+コマンドラインには実際には 2 つの ^V と ^[ が表示されています。もしそうするつもりがあれば、これは @file{.exrc} ファイルでの見え方になるはずです。始めの ^V は 2 番目の ^V をクォートするためにあります。:ab コマンドは ^V をクォート文字として扱いますので、短縮入力の中で、クォートされた空白文字や '|' 文字を使うことができます。:ab コマンドは ^[ に対しては何も特殊な処理は行いません。だからクォートする必要もないです。(クォートしても問題はありません。上の例は 7 ( 8 はだめです!) 個の ^V を入力しても動作します)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Stored as:  esc     ^V^[
+
+	After parsing, the abbreviation's short form ("esc") and long form
+	(the two characters "^V^[") are stored in the abbreviation table.
+	If you give the :ab command with no arguments, this is how the
+	abbreviation will be displayed.
+
+	Later, when the abbreviation is expanded because the user typed in
+	the word "esc", the long form is subjected to the same type of
+	^V interpretation as keyboard input.  So the ^V protects the ^[
+	character from being interpreted as the "exit Insert mode" character.
+	Instead, the ^[ is inserted into the text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 格納:   esc     ^V^[
+コマンドが解析された後、短い形式 ("esc") と長い形式 ("^V^[" の 2 文字) として、短縮入力の一覧に加えられます。:ab コマンドを引数なしで実行したときに、この形の短縮入力が表示されます。
+
+
+あとで、ユーザーが "esc" を入力し、短縮入力が展開されたとき、長い形式は実際のキー入力と同様に ^V によるクォートが適用されます。つまり、^V が ^[ をクォートし、"挿入モードから抜ける" 文字として解釈されることを防ぐのです。その代わりに、^[ がテキストに挿入されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Expands to: ^[
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 展開: ^[
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+[example given by Steve Kirkendall]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[例は Steve Kirkendall によって提供されました]
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Local mappings and functions				*script-local*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{script-local}
+@cindex script-local
+@section 3. ローカルマップとローカル関数(Local mappings and functions)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When using several Vim script files, there is the danger that mappings and
+functions used in one script use the same name as in other scripts.  To avoid
+this, they can be made local to the script.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+いくつかの Vim script を併用すると、あるスクリプトで使われているマップや関数と同じ名前のものが別のスクリプトでも使用される恐れがあります。それを避けるには、スクリプトローカルなマップや関数を使用します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*<SID>* *<SNR>* *E81*
+The string "<SID>" can be used in a mapping or menu.  This requires that the
+'<' flag is not present in 'cpoptions'.
+   When executing the map command, Vim will replace "<SID>" with the special
+key code <SNR>, followed by a number that's unique for the script, and an
+underscore.  Example: >
+	:map <SID>Add
+could define a mapping "<SNR>23_Add".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<SID>}
+@anchor{<SNR>}
+@anchor{E81}
+@cindex <SID>
+@cindex <SNR>
+@cindex E81
+マップやメニューに "<SID>" という特別な文字列を使用できます。これは '@option{cpoptions}'にフラグ '@var{<}' が含まれていると利用できません。マップコマンドを実行すると、"<SID>" は、<SNR> という特別なキーコードとスクリプト固有の番号、そしてアンダースコアに置換されます。例:
+@example
+:map <SID>Add
+@end example
+これは "<SNR>23_Add" といったマップを定義します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When defining a function in a script, "s:" can be prepended to the name to
+make it local to the script.  But when a mapping is executed from outside of
+the script, it doesn't know in which script the function was defined.  To
+avoid this problem, use "<SID>" instead of "s:".  The same translation is done
+as for mappings.  This makes it possible to define a call to the function in
+a mapping.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スクリプトで関数を作成するときに、関数名の前に "s:" を付けると、ローカル関数を作成できます。しかし、その関数をマップで使用する場合、そのマップをスクリプト以外の場所で実行すると、その関数がどのスクリプトで定義されたのか分かりません。これを解決するには、マップ中で "s:" ではなく "<SID>" を使用します。この場合も "<SID>" は上記の例と同じように置換されます。これでローカル関数の呼び出しを含むマップを定義できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When a local function is executed, it runs in the context of the script it was
+defined in.  This means that new functions and mappings it defines can also
+use "s:" or "<SID>" and it will use the same unique number as when the
+function itself was defined.  Also, the "s:var" local script variables can be
+used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ローカル関数は、その関数を定義したスクリプトのコンテキストで実行されます。そのため、その関数内で新たに定義した関数やマップにも "s:" や "<SID>" を使用できます。その場合、その関数自身と同じスクリプト番号が使用されます。"s:var" といったスクリプトローカル変数も同様です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When executing an autocommand or a user command, it will run in the context of
+the script it was defined in.  This makes it possible that the command calls a
+local function or uses a local mapping.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オートコマンドやユーザー定義コマンドもそれを定義したスクリプトのコンテキストで実行されます。そのコマンドからローカル関数を呼び出したり、ローカルマップを使用することができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Otherwise, using "<SID>" outside of a script context is an error.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スクリプト以外の場所で "<SID>" を使うとエラーになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you need to get the script number to use in a complicated script, you can
+use this function: >
+	function s:SID()
+	  return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$')
+	endfun
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+複雑な処理をするスクリプトで、スクリプト番号が必要な場合は、次の関数で番号を得られます:
+@verbatim
+function s:SID()
+  return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$')
+endfun
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "<SNR>" will be shown when listing functions and mappings.  This is useful
+to find out what they are defined to.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+関数やマップを一覧表示するときには "<SNR>" も表示されます。それらがどのように定義されているのか調べるときに便利です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The |:scriptnames| command can be used to see which scripts have been sourced
+and what their <SNR> number is.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンド|:scriptnames|を使って、それまでに実行されたスクリプトとそのスクリプト番号を確認できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is all {not in Vi} and {not available when compiled without the |+eval|
+feature}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらはすべて @{Vi にはありません@}。
+
+@{|+eval| が有効な場合のみ利用できます@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. User-defined commands				*user-commands*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{user-commands}
+@cindex user-commands
+@section 4. ユーザー定義コマンド (User-defined command)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is possible to define your own Ex commands.  A user-defined command can act
+just like a built-in command (it can have a range or arguments, arguments can
+be completed as filenames or buffer names, etc), except that when the command
+is executed, it is transformed into a normal Ex command and then executed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザー独自の Ex コマンドを定義することできます。ユーザー定義コマンドはビルトインコマンドと同様に振る舞うことができます (範囲指定や、引数を取ることができます。引数の入力では、ファイル名、バッファ名などを補完できます)。違いは、コマンドが実行されると、通常の Ex コマンドに変換してから実行されるということです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For starters: See section |40.2| in the user manual.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+まずはユーザーマニュアルの |@ref{40.2}| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*E183* *E841* *user-cmd-ambiguous*
+All user defined commands must start with an uppercase letter, to avoid
+confusion with builtin commands.  Exceptions are these builtin commands:
+	:Next
+	:X
+They cannot be used for a user defined command.  ":Print" is also an existing
+command, but it is deprecated and can be overruled.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E183}
+@anchor{E841}
+@anchor{user-cmd-ambiguous}
+@cindex E183
+@cindex E841
+@cindex user-cmd-ambiguous
+すべてのユーザー定義コマンドは大文字で開始する必要があります。これはビルトインコマンドと混同しないようにするためです。特例として次のようなビルトインコマンドもありますが:
+@example
+:Next
+:X
+@end example
+これらの名前もユーザー定義コマンドには使えません。"@command{:Print}" コマンドも存在しますがこれは非推奨 (deprecated) になっており、上書きすることができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The other characters of the user command can be uppercase letters, lowercase
+letters or digits.  When using digits, note that other commands that take a
+numeric argument may become ambiguous.  For example, the command ":Cc2" could
+be the user command ":Cc2" without an argument, or the command ":Cc" with
+argument "2".  It is advised to put a space between the command name and the
+argument to avoid these problems.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザーコマンドの開始文字以外は、大文字であっても小文字であっても、数字であってもかまいません。数字を使う場合、数字を引数に取る他のコマンドが曖昧になるかもしれないので注意してください。例えば、"Cc2" コマンドは ":Cc2" という引数なしのユーザーコマンドとしても、"2" という引数を取った ":Cc" コマンドとしても解釈できます。これらの問題を避けるため、コマンド名と引数の間にスペースを挿入することを勧めます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When using a user-defined command, the command can be abbreviated.  However, if
+an abbreviation is not unique, an error will be issued.  Furthermore, a
+built-in command will always take precedence.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザー定義コマンドを使うときに、コマンドの省略形を使うこともできます。しかしながら、その省略形が唯一でなければエラーが起きます。加えて、ビルトインコマンドが常に優先されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example: >
+	:command Rename ...
+	:command Renumber ...
+	:Rena				" Means "Rename"
+	:Renu				" Means "Renumber"
+	:Ren				" Error - ambiguous
+	:command Paste ...
+	:P				" The built-in :Print
+
+It is recommended that full names for user-defined commands are used in
+scripts.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:command Rename ...
+:command Renumber ...
+:Rena                           " "Rename" を意味します
+:Renu                           " "Renumber" を意味します
+:Ren                            " エラー - 曖昧
+:command Paste ...
+:P                              " ビルトインコマンドの:Print です
+@end example
+スクリプトの中で使うときは、ユーザー定義コマンドの完全な名前を使うようにしましょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:com[mand]						*:com* *:command*
+			List all user-defined commands.  When listing commands,
+			the characters in the first two columns are
+			    !	Command has the -bang attribute
+			    "	Command has the -register attribute
+			    b	Command is local to current buffer
+			(see below for details on attributes)
+			The list can be filtered on command name with
+			|:filter|, e.g., to list all commands with "Pyth" in
+			the name: >
+				filter Pyth command
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:com}
+@anchor{:command}
+@cindex :com
+@cindex :command
+@item :com[mand]
+すべてのユーザー定義コマンドを一覧表示します。表示中の行頭の 2 文字は次の意味です
+@multitable @columnfractions .1 .9
+@item ! @tab -bang 属性を持つコマンド
+@item " @tab -register 属性を持つコマンド
+@item b @tab カレントバッファのローカルコマンド
+@end multitable
+(属性に関する詳細は下記参照)
+一覧は |:filter| を用いてコマンド名でフィルタできます。例えば名前に "Pyth" を含む全コマンドを一覧するならば次のようにします:
+@verbatim
+filter Pyth command
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:com[mand] {cmd}	List the user-defined commands that start with {cmd}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :com[mand] @{cmd@}
+@{cmd@} で始まるユーザー定義コマンドを一覧表示します。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:command-verbose*
+When 'verbose' is non-zero, listing a command will also display where it was
+last defined. Example: >
+
+    :verbose command TOhtml
+<	Name	    Args Range Complete  Definition ~
+	TOhtml	    0	 %		 :call Convert2HTML(<line1>, <line2>) ~
+	    Last set from /usr/share/vim/vim-7.0/plugin/tohtml.vim ~
+
+See |:verbose-cmd| for more information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:command-verbose}
+@cindex :command-verbose
+'@option{verbose}' がゼロ以外のときにコマンド一覧を表示すると、どこで定義されたのかも表示されます。例:
+@example
+:verbose command TOhtml
+@end example
+@verbatim
+Name        Args Range Complete  Definition
+TOhtml      0    %               :call Convert2HTML(<line1>, <line2>)
+    Last set from /usr/share/vim/vim-7.0/plugin/tohtml.vim
+@end verbatim
+詳しくは |:verbose-cmd| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E174* *E182*
+:com[mand][!] [{attr}...] {cmd} {rep}
+			Define a user command.  The name of the command is
+			{cmd} and its replacement text is {rep}.  The command's
+			attributes (see below) are {attr}.  If the command
+			already exists, an error is reported, unless a ! is
+			specified, in which case the command is redefined.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{E174}
+@anchor{E182}
+@cindex E174
+@cindex E182
+@item :com[mand][!] [@{attr@}...] @{cmd@} @{rep@}
+ユーザー定義コマンドを定義します。コマンド名は @{cmd@} でそれを置き換えるテキストが @{rep@} です。@{attr@} はコマンド属性(下記参照)です。既にコマンドが存在している場合はエラーになります。! を指定した場合は再定義されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:delc[ommand] {cmd}				*:delc* *:delcommand* *E184*
+			Delete the user-defined command {cmd}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:delc}
+@anchor{:delcommand}
+@anchor{E184}
+@cindex :delc
+@cindex :delcommand
+@cindex E184
+@item :delc[ommand] @{cmd@}
+ユーザー定義コマンド @{cmd@} を削除します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:comc[lear]						*:comc* *:comclear*
+			Delete all user-defined commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:comc}
+@anchor{:comclear}
+@cindex :comc
+@cindex :comclear
+@item :comc[lear]
+すべてのユーザー定義コマンドを削除します。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Command attributes
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsection コマンド属性
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+User-defined commands are treated by Vim just like any other Ex commands.  They
+can have arguments, or have a range specified.  Arguments are subject to
+completion as filenames, buffers, etc.  Exactly how this works depends upon the
+command's attributes, which are specified when the command is defined.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザー定義コマンドは、他のビルトインコマンドと同様に扱われます。引数や範囲も指定できます。引数の入力時にはファイル名やバッファ名などを補完することができます。どのように動作するかはコマンドを定義するときに指定したコマンド属性に依存します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are a number of attributes, split into four categories: argument
+handling, completion behavior, range handling, and special cases.  The
+attributes are described below, by category.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+たくさんの属性がありますが、それらは、引数の扱い方、補完の種類、範囲指定の仕方、特殊なケース、の 4 つの分野に分けることができます。以下、分野別に説明します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Argument handling				*E175* *E176* *:command-nargs*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E175}
+@anchor{E176}
+@anchor{:command-nargs}
+@cindex E175
+@cindex E176
+@cindex :command-nargs
+@subsection 引数の扱い方
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+By default, a user defined command will take no arguments (and an error is
+reported if any are supplied).  However, it is possible to specify that the
+command can take arguments, using the -nargs attribute.  Valid cases are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+属性を指定しなかった場合、ユーザー定義コマンドは引数を取りません(引数が与えられた場合はエラーになります)。-nargs 属性を指定すると、ユーザー定義コマンドが引数指定できるようになります。次の属性が指定できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	-nargs=0    No arguments are allowed (the default)
+	-nargs=1    Exactly one argument is required, it includes spaces 
+	-nargs=*    Any number of arguments are allowed (0, 1, or many),
+		    separated by white space
+	-nargs=?    0 or 1 arguments are allowed
+	-nargs=+    Arguments must be supplied, but any number are allowed
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item -nargs=0 @tab 引数を取らない (デフォルト)
+@item -nargs=1 @tab 1個の引数が必要 (空白で区切られない)
+@item -nargs=* @tab いくつでも引数を取れる (0個以上)、空白で区切られる
+@item -nargs=? @tab 0 もしくは 1 個の引数が取れる
+@item -nargs=+ @tab 引数が必ず必要。数はいくつでもよい
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Arguments are considered to be separated by (unescaped) spaces or tabs in this
+context, except when there is one argument, then the white space is part of
+the argument.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数は (エスケープされていない) スペースやタブ文字で区切られます。ただし、引数を 1 つだけ取る場合は空白は引数の一部として解釈されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that arguments are used as text, not as expressions.  Specifically,
+"s:var" will use the script-local variable in the script where the command was
+defined, not where it is invoked!  Example:
+    script1.vim: >
+	:let s:error = "None"
+	:command -nargs=1 Error echoerr <args>
+<   script2.vim: >
+	:source script1.vim
+	:let s:error = "Wrong!"
+	:Error s:error
+Executing script2.vim will result in "None" being echoed.  Not what you
+intended!  Calling a function may be an alternative.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+引数は Vim script の式としてではなく、テキストとして解釈されることに注意してください。具体的な例を上げると、"s:var" を引数として渡すと、そのコマンドを実行したスクリプトのローカル変数ではなく、そのコマンドを定義したスクリプトのローカル変数が使用されます。例:
+@verbatim
+script1.vim:
+    :let s:error = "None"
+    :command -nargs=1 Error echoerr <args>
+script2.vim:
+    :source script1.vim
+    :let s:error = "Wrong!"
+    :Error s:error
+@end verbatim
+script2.vim を実行すると "None" が表示されます。期待した結果とは違うでしょう。代わりに関数呼び出しを使ってください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Completion behavior				*:command-completion* *E179*
+					*E180* *E181* *:command-complete*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:command-completion}
+@anchor{E179}
+@anchor{E180}
+@anchor{E181}
+@anchor{:command-complete}
+@cindex :command-completion
+@cindex E179
+@cindex E180
+@cindex E181
+@cindex :command-complete
+@subsection 補完の種類
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+By default, the arguments of user defined commands do not undergo completion.
+However, by specifying one or the other of the following attributes, argument
+completion can be enabled:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+属性を指定しない場合、ユーザー定義コマンドの入力時に引数は補完されません。下記の属性のうちいずれか 1 つを指定することで、引数が補完されるようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	-complete=augroup	autocmd groups
+	-complete=buffer	buffer names
+	-complete=behave	:behave suboptions
+	-complete=color		color schemes
+	-complete=command	Ex command (and arguments)
+	-complete=compiler	compilers
+	-complete=cscope	|:cscope| suboptions
+	-complete=dir		directory names
+	-complete=environment	environment variable names
+	-complete=event		autocommand events
+	-complete=expression	Vim expression
+	-complete=file		file and directory names
+	-complete=file_in_path	file and directory names in |'path'|
+	-complete=filetype	filetype names |'filetype'|
+	-complete=function	function name
+	-complete=help		help subjects
+	-complete=highlight	highlight groups
+	-complete=history	:history suboptions
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item -complete=augroup @tab オートコマンドのグループ
+@item -complete=buffer @tab バッファ
+@item -complete=behave @tab |:behave| サブオプション
+@item -complete=color @tab カラースキーム
+@item -complete=command @tab Ex コマンド(と、引数)
+@item -complete=compiler @tab コンパイラ
+@item -complete=cscope @tab |:cscope| サブオプション
+@item -complete=dir @tab ディレクトリ
+@item -complete=environment @tab 環境変数
+@item -complete=event @tab オートコマンドのイベント
+@item -complete=expression @tab Vim の式
+@item -complete=file @tab ファイルとディレクトリ
+@item -complete=file_in_path @tab |'path'| 内のファイルとディレクトリ
+@item -complete=filetype @tab ファイルタイプ名 |'filetype'|
+@item -complete=function @tab 関数
+@item -complete=help @tab ヘルプの主題
+@item -complete=highlight @tab 強調グループ
+@item -complete=history @tab |:history| サブオプション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	-complete=locale	locale names (as output of locale -a)
+	-complete=mapping	mapping name
+	-complete=menu		menus
+	-complete=messages	|:messages| suboptions
+	-complete=option	options
+	-complete=packadd	optional package |pack-add| names
+	-complete=shellcmd	Shell command
+	-complete=sign		|:sign| suboptions
+	-complete=syntax	syntax file names |'syntax'|
+	-complete=syntime	|:syntime| suboptions
+	-complete=tag		tags
+	-complete=tag_listfiles	tags, file names are shown when CTRL-D is hit
+	-complete=user		user names
+	-complete=var		user variables
+	-complete=custom,{func} custom completion, defined via {func}
+	-complete=customlist,{func} custom completion, defined via {func}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item -complete=locale @tab ロケール名 (locale -a の出力)
+@item -complete=mapping @tab マップ
+@item -complete=menu @tab メニュー
+@item -complete=messages @tab |:messages| サブオプション
+@item -complete=option @tab オプション
+@item -complete=packadd @tab オプショナルパッケージの |pack-add| 名
+@item -complete=shellcmd @tab シェルコマンド
+@item -complete=sign @tab |:sign| サブオプション
+@item -complete=syntax @tab シンタックスファイル名 |'syntax'|
+@item -complete=syntime @tab |:syntime| サブオプション
+@item -complete=tag @tab タグ
+@item -complete=tag_listfiles @tab @kbd{CTRL-D} を押した時にタグ、ファイル名を表示
+@item -complete=user @tab ユーザー名
+@item -complete=var @tab ユーザー変数
+@item -complete=custom,@{func@} @tab @{func@} によるユーザー定義の補完
+@item -complete=customlist,@{func@} @tab @{func@} によるユーザー定義の補完
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: That some completion methods might expand environment variables.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+いくつかの補完方法は環境変数を展開します。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Custom completion			*:command-completion-custom*
+					*:command-completion-customlist*
+					*E467* *E468*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:command-completion-custom}
+@anchor{:command-completion-customlist}
+@anchor{E467}
+@anchor{E468}
+@cindex :command-completion-custom
+@cindex :command-completion-customlist
+@cindex E467
+@cindex E468
+@subsection ユーザー定義の補完
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+It is possible to define customized completion schemes via the "custom,{func}"
+or the "customlist,{func}" completion argument.  The {func} part should be a
+function with the following signature: >
+
+	:function {func}(ArgLead, CmdLine, CursorPos)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+補完方法に "custom,@{func@}"、"customlist,@{func@}" を指定すると独自の補完を使用できます。@{func@}には次のような関数を指定します。
+@example
+:function @{func@}(ArgLead, CmdLine, CursorPos)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The function need not use all these arguments. The function should provide the
+completion candidates as the return value.
+
+For the "custom" argument, the function should return the completion
+candidates one per line in a newline separated string.
+
+For the "customlist" argument, the function should return the completion
+candidates as a Vim List.  Non-string items in the list are ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべての引数を使う必要はありません。関数の戻り値として、補完候補のリストを返してください。
+
+"custom" を使った場合は、補完候補のリストを一つずつ改行で区切ってください。
+
+"customlist" を使った場合は、補完候補のリストを |List| で返してください。リスト中の文字列以外の変数は無視されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The function arguments are:
+	ArgLead		the leading portion of the argument currently being
+			completed on
+	CmdLine		the entire command line
+	CursorPos	the cursor position in it (byte index)
+The function may use these for determining context.  For the "custom"
+argument, it is not necessary to filter candidates against the (implicit
+pattern in) ArgLead.  Vim will filter the candidates with its regexp engine
+after function return, and this is probably more efficient in most cases. For
+the "customlist" argument, Vim will not filter the returned completion
+candidates and the user supplied function should filter the candidates.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数には次の意味があります:
+@multitable @columnfractions .3 .7
+@item ArgLead @tab すでに入力されている補完対象の文字列
+@item CmdLine @tab コマンドライン全体
+@item CursorPos @tab カーソル位置 (バイト単位のインデックス)
+@end multitable
+これらの引数を使えば文脈を判断することができるでしょう。"custom" を使った場合、補完候補のリストから ArgLead にそぐわない候補(ArgLead で始まらない文字)を取り除く必要はありません。Vim は補完関数を実行した後にふさわしくない候補を取り除きます。おそらくその方がほとんどの場面で有用です。"customlist" を使った場合、Vim は補完候補のリストをフィルタしません。補完候補のリストを自分でフィルタしてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The following example lists user names to a Finger command >
+    :com -complete=custom,ListUsers -nargs=1 Finger !finger <args>
+    :fun ListUsers(A,L,P)
+    :    return system("cut -d: -f1 /etc/passwd")
+    :endfun
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の例はFingerコマンドでユーザー名を補完します
+@example
+:com -complete=custom,ListUsers -nargs=1 Finger !finger <args>
+:fun ListUsers(A,L,P)
+:    return system("cut -d: -f1 /etc/passwd")
+:endfun
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The following example completes filenames from the directories specified in
+the 'path' option: >
+    :com -nargs=1 -bang -complete=customlist,EditFileComplete
+			\ EditFile edit<bang> <args>
+    :fun EditFileComplete(A,L,P)
+    :    return split(globpath(&path, a:A), "\n")
+    :endfun
+<
+This example does not work for file names with spaces!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の例では、'path' に指定されたディレクトリのファイル名を補完しています:
+@example
+:com -nargs=1 -bang -complete=customlist,EditFileComplete
+\ EditFile edit<bang> <args>
+:fun EditFileComplete(A,L,P)
+:    return split(globpath(&path, a:A), "\n")
+:endfun
+@end example
+この例はファイル名にスペースが含まれていると機能しません！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Range handling				*E177* *E178* *:command-range*
+							*:command-count*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E177}
+@anchor{E178}
+@anchor{:command-range}
+@anchor{:command-count}
+@cindex E177
+@cindex E178
+@cindex :command-range
+@cindex :command-count
+@subsection 範囲指定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+By default, user-defined commands do not accept a line number range.  However,
+it is possible to specify that the command does take a range (the -range
+attribute), or that it takes an arbitrary count value, either in the line
+number position (-range=N, like the |:split| command) or as a "count"
+argument (-count=N, like the |:Next| command).  The count will then be
+available in the argument with |<count>|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+属性を指定しない場合、ユーザー定義コマンドは行番号による範囲指定を受け付けません。-range 属性を指定して、コマンドが範囲指定を受け付けるようにできます。任意のカウント値を取るようにすることもできます。この場合、行番号の位置(|:split| コマンドのように -range=N)で指定するか、"count" 引数(|:Next| コマンドのように -count=N)で指定します。カウント指定は |<count>| で取得できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Possible attributes are:
+
+	-range	    Range allowed, default is current line
+	-range=%    Range allowed, default is whole file (1,$)
+	-range=N    A count (default N) which is specified in the line
+		    number position (like |:split|); allows for zero line
+		    number.
+	-count=N    A count (default N) which is specified either in the line
+		    number position, or as an initial argument (like |:Next|).
+		    Specifying -count (without a default) acts like -count=0
+
+Note that -range=N and -count=N are mutually exclusive - only one should be
+specified.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の属性が利用できます:
+@multitable @columnfractions .2 .8
+@item -range @tab 範囲指定が可能になります、無指定時は現在行
+@item -range=% @tab 範囲指定が可能になります、無指定時はファイル全体(1,$)
+@item -range=N @tab カウント(無指定時はN)を行番号位置に指定できます (例 |:split|)。行番号に 0 を指定可能になる。
+@item -count=N @tab カウント(無指定時は N)を行番号位置か、初期化引数に指定できます (例 |:Next|)。-count (無指定時の値なし)とした場合は -count=0 と同じです。
+@end multitable
+@quotation
+@strong{Note:} @*
+-range=N と -count=N は相互に排他的であるということに注意してください。どちらか一方のみを指定することができます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*:command-addr*
+It is possible that the special characters in the range like ., $ or % which
+by default correspond to the current line, last line and the whole buffer,
+relate to arguments, (loaded) buffers, windows or tab pages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:command-addr}
+@cindex :command-addr
+範囲指定には .、$、% といった特殊文字を含むことができ、それぞれ現在行、最終行、バッファ全体を表します。これらは引数、(ロードされた)バッファ、ウィンドウ及びタブページに関連付けすることができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Possible values are:
+	-addr=lines		Range of lines (this is the default)
+	-addr=arguments		Range for arguments
+	-addr=buffers		Range for buffers (also not loaded buffers)
+	-addr=loaded_buffers	Range for loaded buffers
+	-addr=windows		Range for windows
+	-addr=tabs		Range for tab pages
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の値を利用できます:
+@multitable @columnfractions .4 .6
+@item -addr=lines @tab 行 (デフォルト)
+@item -addr=arguments @tab 引数
+@item -addr=buffers @tab バッファ (ロードされていないバッファも)
+@item -addr=loaded_buffers @tab ロードされたバッファ
+@item -addr=windows @tab ウィンドウ
+@item -addr=tabs @tab タブページ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Special cases				*:command-bang* *:command-bar*
+					*:command-register* *:command-buffer*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:command-bang}
+@anchor{:command-bar}
+@anchor{:command-register}
+@anchor{:command-buffer}
+@cindex :command-bang
+@cindex :command-bar
+@cindex :command-register
+@cindex :command-buffer
+@subsection 特殊なケース
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+There are some special cases as well:
+
+	-bang	    The command can take a ! modifier (like :q or :w)
+	-bar	    The command can be followed by a "|" and another command.
+		    A "|" inside the command argument is not allowed then.
+		    Also checks for a " to start a comment.
+	-register   The first argument to the command can be an optional
+		    register name (like :del, :put, :yank).
+	-buffer	    The command will only be available in the current buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特殊なケースがいくつかあります:
+@multitable @columnfractions .2 .8
+@item -bang @tab コマンドは ! 修飾子を取ることができます(:q や :w のように)
+@item -bar @tab コマンドは "|" を使用して別のコマンドを続けて実行することができます。引数に "|" を含めることはできなくなります。" がコメントの開始になってしまうことにも注意してください。
+@item -register @tab コマンドの1つ目の引数にレジスタ名を指定することができます(:del, :put, :yank のように)。
+@item -buffer @tab コマンドはカレントバッファでのみ利用できます。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the cases of the -count and -register attributes, if the optional argument
+is supplied, it is removed from the argument list and is available to the
+replacement text separately.
+Note that these arguments can be abbreviated, but that is a deprecated
+feature.  Use the full name for new scripts.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザー定義コマンドの定義に-countや-registerが指定された場合に、その省略可能な引数が与えられた場合、それは引数リストから削除され、それぞれの引数に対応する特別な文字列が利用できるようになります。
+@quotation
+@strong{Note:} @*
+これらの引数は省略できますが、これは廃止される機能です。新しいスクリプトでは完全な名前を使用して下さい。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Replacement text
+
+The replacement text for a user defined command is scanned for special escape
+sequences, using <...> notation.  Escape sequences are replaced with values
+from the entered command line, and all other text is copied unchanged.  The
+resulting string is executed as an Ex command.  To avoid the replacement use
+<lt> in place of the initial <.  Thus to include "<bang>" literally use
+"<lt>bang>".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsection 置き換えテキスト
+
+ユーザー定義コマンドでは、<...> 表記を使った特別な文字列を使用できます。その文字列はコマンドラインに入力された実際の引数に置き換えられます。その他のテキストは変更されません。そして特別な文字列を実際の引数で置換したものが Ex コマンドとして実行されます。<> 表記が置き換えられないようにするには、最初の < の代わりに <lt> を使ってください。例えば、"<bang>" をリテラル文字として使うには "<lt>bang>" とします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The valid escape sequences are
+
+						*<line1>*
+	<line1>	The starting line of the command range.
+						*<line2>*
+	<line2>	The final line of the command range.
+						*<count>*
+	<count>	Any count supplied (as described for the '-range'
+		and '-count' attributes).
+						*<bang>*
+	<bang>	(See the '-bang' attribute) Expands to a ! if the
+		command was executed with a ! modifier, otherwise
+		expands to nothing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のものを使用できます
+@table @asis
+@anchor{<line1>}
+@cindex <line1>
+@item <line1>
+コマンド範囲の最初の行
+@anchor{<line2>}
+@cindex <line2>
+@item <line2>
+コマンド範囲の最後の行
+@anchor{<count>}
+@cindex <count>
+@item <count>
+与えられたカウント('-range' と '-count' 属性で記述されている)
+@anchor{<bang>}
+@cindex <bang>
+@item <bang>
+('-bang' 属性を参照) コマンドが ! 修飾子付きで実行された場合に ! に置換されます。指定なしの場合は空文字列になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*<mods>*
+	<mods>  The command modifiers, if specified. Otherwise, expands to
+		nothing. Supported modifiers are |:aboveleft|, |:belowright|,
+		|:botright|, |:browse|, |:confirm|, |:hide|, |:keepalt|,
+		|:keepjumps|, |:keepmarks|, |:keeppatterns|, |:leftabove|,
+		|:lockmarks|, |:noswapfile| |:rightbelow|, |:silent|, |:tab|,
+		|:topleft|, |:verbose|, and |:vertical|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<mods>}
+@cindex <mods>
+@item <mods>
+指定されている場合はコマンド修飾子。されていない場合は何も展開しません。対応している修飾子は次の通り: |:aboveleft|, |:belowright|, |:botright|, |:browse|, |:confirm|, |:hide|, |:keepalt|, |:keepjumps|, |:keepmarks|, |:keeppatterns|, |:leftabove|, |:lockmarks|, |:noswapfile| |:rightbelow|, |:silent|, |:tab|, |:topleft|, |:verbose| そして |:vertical|.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Note that these are not yet supported: |:noautocmd|,
+		|:sandbox| and |:unsilent|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+次のコマンド修飾子には対応していないことに注意してください: |:noautocmd|, |:sandbox| そして |:unsilent|.
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Examples: >
+		    command! -nargs=+ -complete=file MyEdit
+				\ for f in expand(<q-args>, 0, 1) |
+				\ exe '<mods> split ' . f |
+				\ endfor
+
+		    function! SpecialEdit(files, mods)
+			for f in expand(a:files, 0, 1)
+			    exe a:mods . ' split ' . f
+			endfor
+		    endfunction
+		    command! -nargs=+ -complete=file Sedit
+				\ call SpecialEdit(<q-args>, <q-mods>)
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+command! -nargs=+ -complete=file MyEdit
+            \ for f in expand(<q-args>, 0, 1) |
+            \ exe '<mods> split ' . f |
+            \ endfor
+
+function! SpecialEdit(files, mods)
+    for f in expand(a:files, 0, 1)
+        exe a:mods . ' split ' . f
+    endfor
+endfunction
+command! -nargs=+ -complete=file Sedit
+            \ call SpecialEdit(<q-args>, <q-mods>)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*<reg>* *<register>*
+	<reg>	(See the '-register' attribute) The optional register,
+		if specified.  Otherwise, expands to nothing.  <register>
+		is a synonym for this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<reg>}
+@anchor{<register>}
+@cindex <reg>
+@cindex <register>
+@item <reg>
+('-register' 属性を参照) レジスタ名に置換されます。指定なしの場合は空文字列になります。<register> も同義です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*<args>*
+	<args>	The command arguments, exactly as supplied (but as
+		noted above, any count or register can consume some
+		of the arguments, which are then not part of <args>).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<args>}
+@cindex <args>
+@item <args>
+与えられた通りのコマンド引数(上記の通り、カウントやレジスタが指定された場合は <args> に含まれません)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	<lt>	A single '<' (Less-Than) character.  This is needed if you
+		want to get a literal copy of one of these escape sequences
+		into the expansion - for example, to get <bang>, use
+		<lt>bang>.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item <lt>
+1 つの '<' (小なり)文字。特別な文字列を文字どおりに使用したい場合に必要となります。例えば <bang> を得るには <lt>bang> とします。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*<q-args>*
+If the first two characters of an escape sequence are "q-" (for example,
+<q-args>) then the value is quoted in such a way as to make it a valid value
+for use in an expression.  This uses the argument as one single value.
+When there is no argument <q-args> is an empty string.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<q-args>}
+@cindex <q-args>
+特別な文字列の始めの2文字が "q-" なら(例えば <q-args>)、引数は式で使えるようにクォートされます("で囲まれる)。これは引数を 1 つの値として扱います。引数がない場合は <q-args> は空文字列になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*<f-args>*
+To allow commands to pass their arguments on to a user-defined function, there
+is a special form <f-args> ("function args").  This splits the command
+arguments at spaces and tabs, quotes each argument individually, and the
+<f-args> sequence is replaced by the comma-separated list of quoted arguments.
+See the Mycmd example below.  If no arguments are given <f-args> is removed.
+   To embed whitespace into an argument of <f-args>, prepend a backslash.
+<f-args> replaces every pair of backslashes (\\) with one backslash.  A
+backslash followed by a character other than white space or a backslash
+remains unmodified.  Overview:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<f-args>}
+@cindex <f-args>
+ユーザー定義コマンドの引数を関数に渡すには、<f-args>("function args") が利用できます。これはコマンドの引数をスペースやタブ文字で区切り、それぞれの引数を別々にクォート("で囲む)し、コンマで区切ったリストにして <f-args> と置き換えます。下の Mycmd の例をご覧下さい。引数がない場合は <f-args> は取り除かれます。
+
+<f-args> の引数にスペースを含めるには、バックスラッシュを前置します。<f-args> では二つのバックスラッシュ (\\) は一つのバックスラッシュに置換されます。スペースとバックスラッシュ以外の文字に付いているバックスラッシュはそのまま使われます。
+
+要約:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	command		   <f-args> ~
+	XX ab		   'ab'
+	XX a\b		   'a\b'
+	XX a\ b		   'a b'
+	XX a\  b	   'a ', 'b'
+	XX a\\b		   'a\b'
+	XX a\\ b	   'a\', 'b'
+	XX a\\\b	   'a\\b'
+	XX a\\\ b	   'a\ b'
+	XX a\\\\b	   'a\\b'
+	XX a\\\\ b	   'a\\', 'b'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@headitem コマンド @tab <f-args>
+@item XX ab @tab 'ab'
+@item XX a\b @tab 'a\b'
+@item XX a\ b @tab 'a b'
+@item XX a\  b @tab 'a ', 'b'
+@item XX a\\b @tab 'a\b'
+@item XX a\\ b @tab 'a\', 'b'
+@item XX a\\\b @tab 'a\\b'
+@item XX a\\\ b @tab 'a\ b'
+@item XX a\\\\b @tab 'a\\b'
+@item XX a\\\\ b @tab 'a\\', 'b'
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples >
+
+   " Delete everything after here to the end
+   :com Ddel +,$d
+
+   " Rename the current buffer
+   :com -nargs=1 -bang -complete=file Ren f <args>|w<bang>
+
+   " Replace a range with the contents of a file
+   " (Enter this all as one line)
+   :com -range -nargs=1 -complete=file
+	 Replace <line1>-pu_|<line1>,<line2>d|r <args>|<line1>d
+
+   " Count the number of lines in the range
+   :com! -range -nargs=0 Lines  echo <line2> - <line1> + 1 "lines"
+
+   " Call a user function (example of <f-args>)
+   :com -nargs=* Mycmd call Myfunc(<f-args>)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例
+@verbatim
+" 現在行から最後行までを削除します
+:com Ddel +,$d
+
+" 現在のバッファ名を変更します
+:com -nargs=1 -bang -complete=file Ren f <args>|w<bang>
+
+" 指定された範囲をあるファイルの内容に置き換えます
+" (1行に書きます)
+:com -range -nargs=1 -complete=file
+      Replace <line1>-pu_|<line1>,<line2>d|r <args>|<line1>d
+
+" 指定された範囲の行数を数える
+:com! -range -nargs=0 Lines  echo <line2> - <line1> + 1 "lines"
+
+" ユーザー関数を呼びます(<f-args>の例)
+:com -nargs=* Mycmd call Myfunc(<f-args>)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When executed as: >
+	:Mycmd arg1 arg2
+This will invoke: >
+	:call Myfunc("arg1","arg2")
+
+   :" A more substantial example
+   :function Allargs(command)
+   :   let i = 0
+   :   while i < argc()
+   :	  if filereadable(argv(i))
+   :	     execute "e " . argv(i)
+   :	     execute a:command
+   :      endif
+   :      let i = i + 1
+   :   endwhile
+   :endfunction
+   :command -nargs=+ -complete=command Allargs call Allargs(<q-args>)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のように実行された場合は:
+@example
+:Mycmd arg1 arg2
+@end example
+次のものを実行します:
+@example
+:call Myfunc("arg1","arg2")
+@end example
+@verbatim
+" より現実的な例
+:function Allargs(command)
+:   let i = 0
+:   while i < argc()
+:      if filereadable(argv(i))
+:         execute "e " . argv(i)
+:         execute a:command
+:       endif
+:       let i = i + 1
+:    endwhile
+:endfunction
+:command -nargs=+ -complete=command Allargs call Allargs(<q-args>)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The command Allargs takes any Vim command(s) as argument and executes it on all
+files in the argument list.  Usage example (note use of the "e" flag to ignore
+errors and the "update" command to write modified buffers): >
+	:Allargs %s/foo/bar/ge|update
+This will invoke: >
+	:call Allargs("%s/foo/bar/ge|update")
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Allargs コマンドは、引数としてどのVimコマンドでも取ることができ、引数リスト |argument-list|のすべてのファイルに対して与えられたコマンドを実行します。使い方の例 ("e" フラグをつけてエラーを無視しており、また "update" コマンドで変更されたバッファを書き込んでいるので注意してください):
+@example
+:Allargs %s/foo/bar/ge|update
+@end example
+これは、次のものを起動します:
+@example
+:call Allargs("%s/foo/bar/ge|update")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When defining a user command in a script, it will be able to call functions
+local to the script and use mappings local to the script.  When the user
+invokes the user command, it will run in the context of the script it was
+defined in.  This matters if |<SID>| is used in a command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スクリプトでユーザー定義コマンドを定義するとき、そのスクリプトのローカル関数やローカルマップを使用できます。ユーザー定義コマンドはユーザー定義コマンドを定義したスクリプトのコンテキストで実行されます。これはユーザー定義コマンドで |<SID>| を使用するときに重要です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
