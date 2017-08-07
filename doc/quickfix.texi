@@ -1,0 +1,4162 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node quickfix.txt, , , 目次
+@unnumbered 編集、コンパイル、修正、の流れを早くするコマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*quickfix.txt*  For Vim version 8.0.  Last change: 2017 Jun 13
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*quickfix.txt*  For Vim バージョン 8.0.  Last change: 2017 Jun 13
+
+
+		VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+This subject is introduced in section |30.1| of the user manual.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この話題に関してはユーザーマニュアルの |@ref{30.1}| でも紹介されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Using QuickFix commands		|quickfix|
+2. The error window			|quickfix-window|
+3. Using more than one list of errors	|quickfix-error-lists|
+4. Using :make				|:make_makeprg|
+5. Using :grep				|grep|
+6. Selecting a compiler			|compiler-select|
+7. The error format			|error-file-format|
+8. The directory stack			|quickfix-directory-stack|
+9. Specific error file formats		|errorformats|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. QuickFix コマンドの使い方 @tab |@ref{quickfix, , quickfix}|
+@item 2. エラーウィンドウ @tab |@ref{quickfix-window, , quickfix-window}|
+@item 3. 複数のエラーリストを使う @tab |@ref{quickfix-error-lists, , quickfix-error-lists}|
+@item 4. :make の使い方 @tab |@ref{:make_makeprg, , :make_makeprg}|
+@item 5. :grep の使い方 @tab |@ref{grep, , grep}|
+@item 6. コンパイラを選択する @tab |@ref{compiler-select, , compiler-select}|
+@item 7. エラーフォーマット @tab |@ref{error-file-format, , error-file-format}|
+@item 8. ディレクトリスタック @tab |@ref{quickfix-directory-stack, , quickfix-directory-stack}|
+@item 9. 具体的なエラーファイルフォーマット @tab |@ref{errorformats, , errorformats}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these commands}
+
+The quickfix commands are not available when the |+quickfix| feature was
+disabled at compile time.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらのコマンドはない@}
+
+コンパイル時に |+quickfix| 機能が無効にされた場合は、QuickFix コマンドは使えない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+=============================================================================
+1. Using QuickFix commands			*quickfix* *Quickfix* *E42*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{quickfix}
+@anchor{Quickfix}
+@anchor{E42}
+@cindex quickfix
+@cindex Quickfix
+@cindex E42
+@section 1. QuickFix コマンドの使い方
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim has a special mode to speedup the edit-compile-edit cycle.  This is
+inspired by the quickfix option of the Manx's Aztec C compiler on the Amiga.
+The idea is to save the error messages from the compiler in a file and use Vim
+to jump to the errors one by one.  You can examine each problem and fix it,
+without having to remember all the error messages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim には編集-コンパイル-編集のサイクルを加速するための特別なモードがある。これは Amiga の Manx's Aztec C compiler の quickfix オプションにインスパイアされた。C コンパイラから出力されたエラーメッセージをファイルに保存し、Vim でそのエラーにジャンプするというアイデアである。エラーメッセージを全部覚えておかなくても、それぞれの問題を検証し、修正することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In Vim the quickfix commands are used more generally to find a list of
+positions in files.  For example, |:vimgrep| finds pattern matches.  You can
+use the positions in a script with the |getqflist()| function.  Thus you can
+do a lot more than the edit/compile/fix cycle!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+QuickFix コマンドはより一般的に、ファイル中の位置のリストを作成し、ジャンプするために使うことができる。例えば、|:vimgrep| はパターンにマッチした位置をリストする。スクリプト中で |getqflist()| を使ってこれらの位置を参照することができる。そのため、編集・コンパイル・修正のサイクル以外にも多くの事に利用できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you have the error messages in a file you can start Vim with: >
+	vim -q filename
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルにエラーメッセージがあるなら "vim -q filename" で起動する:
+@example
+vim -q filename
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+From inside Vim an easy way to run a command and handle the output is with the
+|:make| command (see below).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の中でコマンドを実行し結果を得る方法の一つに |:make| コマンドがある (後述)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'errorformat' option should be set to match the error messages from your
+compiler (see |errorformat| below).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+各コンパイラからのエラーメッセージを解釈させるためには、オプション '@option{errorformat}' をセットする (下の |errorformat| を参照)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*location-list* *E776*
+A location list is a window-local quickfix list. You get one after commands
+like `:lvimgrep`, `:lgrep`, `:lhelpgrep`, `:lmake`, etc., which create a
+location list instead of a quickfix list as the corresponding `:vimgrep`,
+`:grep`, `:helpgrep`, `:make` do.
+A location list is associated with a window and each window can have a
+separate location list.  A location list can be associated with only one
+window.  The location list is independent of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{location-list}
+@anchor{E776}
+@cindex location-list
+@cindex E776
+ロケーションリストはウィンドウローカルな QuickFix リストである。`:vimgrep`, `:grep`, `:helpgrep`, `:make` などのコマンドは QuickFix リストを作成するが、それらに対応する `:lvimgrep`, `:lgrep`, `:lhelpgrep`, `:lmake` などのコマンドを使うことでロケーションリストを得ることができる。
+
+ロケーションリストはウィンドウに関連付けられていて、各ウィンドウが別々のロケーションリストを持つことができる。ロケーションリストは1個のウィンドウにだけ関連付けることができる。ロケーションリストは QuickFix リストとは独立している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When a window with a location list is split, the new window gets a copy of the
+location list.  When there are no longer any references to a location list,
+the location list is destroyed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ロケーションリストを持つウィンドウが分割されると、新しいウィンドウはロケーションリストのコピーを得る。ロケーションリストへの参照が全てなくなると、そのロケーションリストは破棄される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The following quickfix commands can be used.  The location list commands are
+similar to the quickfix commands, replacing the 'c' prefix in the quickfix
+command with 'l'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下の QuickFix コマンドが利用できる。ロケーションリストコマンドは QuickFix コマンドに似ていて、QuickFix コマンドのプリフィックス 'c' が 'l' に置き換わっている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E924*
+If the current window was closed by an |autocommand| while processing a
+location list command, it will be aborted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E924}
+@cindex E924
+ロケーションリストコマンドで処理されているにも関わらず現在のウィンドウが |autocommand| により閉じられる場合、それは中断される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E925* *E926*
+If the current quickfix or location list was changed by an |autocommand| while
+processing a quickfix or location list command, it will be aborted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E925}
+@anchor{E926}
+@cindex E925
+@cindex E926
+ロケーションリストコマンドで処理されているにも関わらず現在の QuickFix またはロケーションリストが |autocommand| に変更される場合、それは中断される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cc*
+:cc[!] [nr]		Display error [nr].  If [nr] is omitted, the same
+			error is displayed again.  Without [!] this doesn't
+			work when jumping to another buffer, the current buffer
+			has been changed, there is the only window for the
+			buffer and both 'hidden' and 'autowrite' are off.
+			When jumping to another buffer with [!] any changes to
+			the current buffer are lost, unless 'hidden' is set or
+			there is another window for this buffer.
+			The 'switchbuf' settings are respected when jumping
+			to a buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:cc}
+@cindex :cc
+@item :cc[!] [nr]
+エラー [nr]を表示する。 [nr] が省略されると同じエラーが再度表示される。[!] が無く、現在のバッファに変更が有りウィンドウが1つしか無く、'@option{hidden}' も '@option{autowrite}' も off である場合には、他のバッファへジャンプする事は無い。
+
+[!] を使用して他のバッファに移る時、現在のバッファへの変更点は、'@option{hidden}' がセットされているか別のウィンドウが開いているかしない場合、破棄されてしまう。バッファ移動の際は設定 '@option{switchbuf}' が関係してくる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:ll*
+:ll[!] [nr]		Same as ":cc", except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ll}
+@cindex :ll
+@item :ll[!] [nr]
+":cc" と同様だが、QuickFix リストでなくカレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cn* *:cnext* *E553*
+:[count]cn[ext][!]	Display the [count] next error in the list that
+			includes a file name.  If there are no file names at
+			all, go to the [count] next error.  See |:cc| for
+			[!] and 'switchbuf'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cn}
+@anchor{:cnext}
+@anchor{E553}
+@cindex :cn
+@cindex :cnext
+@cindex E553
+@item :[count]cn[ext][!]
+ファイル名を含むエラーリストで [count] 個後のエラーを表示する。ファイル名が無かった場合 [count] 個後のエラーに移動する。[!] と '@option{switchbuf}' については |:cc| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lne* *:lnext*
+:[count]lne[xt][!]	Same as ":cnext", except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lne}
+@anchor{:lnext}
+@cindex :lne
+@cindex :lnext
+@item :[count]lne[xt][!]
+":cnext" と同様だが、QuickFix リストでなくカレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]cN[ext][!]			*:cp* *:cprevious* *:cN* *:cNext*
+:[count]cp[revious][!]	Display the [count] previous error in the list that
+			includes a file name.  If there are no file names at
+			all, go to the [count] previous error.  See |:cc| for
+			[!] and 'switchbuf'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cp}
+@anchor{:cprevious}
+@anchor{:cN}
+@anchor{:cNext}
+@cindex :cp
+@cindex :cprevious
+@cindex :cN
+@cindex :cNext
+@item :[count]cN[ext][!], @* :[count]cp[revious][!]
+ファイル名を含むエラーリストで [count] 個前のエラーを表示する。ファイル名が無かった場合 [count] 個前のエラーに移動する。[!] と '@option{switchbuf}' については |:cc| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+:[count]lN[ext][!]			*:lp* *:lprevious* *:lN* *:lNext*
+:[count]lp[revious][!]	Same as ":cNext" and ":cprevious", except the location
+			list for the current window is used instead of the
+			quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lp}
+@anchor{:lprevious}
+@anchor{:lN}
+@anchor{:lNext}
+@cindex :lp
+@cindex :lprevious
+@cindex :lN
+@cindex :lNext
+@item :[count]lN[ext][!], @* :[count]lp[revious][!]
+":cNext" と ":cprevious" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cnf* *:cnfile*
+:[count]cnf[ile][!]	Display the first error in the [count] next file in
+			the list that includes a file name.  If there are no
+			file names at all or if there is no next file, go to
+			the [count] next error.  See |:cc| for [!] and
+			'switchbuf'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cnf}
+@anchor{:cnfile}
+@cindex :cnf
+@cindex :cnfile
+@item :[count]cnf[ile][!]
+ファイル名を含むエラーリストで [count] 個後のファイルの最初のエラーを表示する。ファイル名が無いか後のファイルが無い場合には、[count] 後のエラーに移動する。[!] と '@option{switchbuf}' については |:cc| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lnf* *:lnfile*
+:[count]lnf[ile][!]	Same as ":cnfile", except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lnf}
+@anchor{:lnfile}
+@cindex :lnf
+@cindex :lnfile
+@item :[count]lnf[ile][!]
+":cnfile" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]cNf[ile][!]			*:cpf* *:cpfile* *:cNf* *:cNfile*
+:[count]cpf[ile][!]	Display the last error in the [count] previous file in
+			the list that includes a file name.  If there are no
+			file names at all or if there is no next file, go to
+			the [count] previous error.  See |:cc| for [!] and
+			'switchbuf'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cpf}
+@anchor{:cpfile}
+@anchor{:cNf}
+@anchor{:cNfile}
+@cindex :cpf
+@cindex :cpfile
+@cindex :cNf
+@cindex :cNfile
+@item :[count]cNf[ile][!], @* :[count]cpf[ile][!]
+ファイル名を含むエラーリストで [count] 個前のファイルの最後のエラーを表示する。ファイル名が無いか後のファイルが無い場合には、[count] 個前のエラーに移動する。[!] と '@option{switchbuf}' については |:cc| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+:[count]lNf[ile][!]			*:lpf* *:lpfile* *:lNf* *:lNfile*
+:[count]lpf[ile][!]	Same as ":cNfile" and ":cpfile", except the location
+			list for the current window is used instead of the
+			quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lpf}
+@anchor{:lpfile}
+@anchor{:lNf}
+@anchor{:lNfile}
+@cindex :lpf
+@cindex :lpfile
+@cindex :lNf
+@cindex :lNfile
+@item :[count]lNf[ile][!], :[count]lpf[ile][!]
+":cNfile" と ":cpfile" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:crewind* *:cr*
+:cr[ewind][!] [nr]	Display error [nr].  If [nr] is omitted, the FIRST
+			error is displayed.  See |:cc|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:crewind}
+@anchor{:cr}
+@cindex :crewind
+@cindex :cr
+@item :cr[ewind][!] [nr]
+[nr] のエラーを表示する。 [nr] が省略されると一番最初のエラーが表示される。|:cc| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lrewind* *:lr*
+:lr[ewind][!] [nr]	Same as ":crewind", except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lrewind}
+@anchor{:lr}
+@cindex :lrewind
+@cindex :lr
+@item :lr[ewind][!] [nr]
+":crewind" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cfirst* *:cfir*
+:cfir[st][!] [nr]	Same as ":crewind".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cfirst}
+@anchor{:cfir}
+@cindex :cfirst
+@cindex :cfir
+@item :cfir[st][!] [nr]
+":crewind" と同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lfirst* *:lfir*
+:lfir[st][!] [nr]	Same as ":lrewind".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lfirst}
+@anchor{:lfir}
+@cindex :lfirst
+@cindex :lfir
+@item :lfir[st][!] [nr]
+":lrewind" と同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:clast* *:cla*
+:cla[st][!] [nr]	Display error [nr].  If [nr] is omitted, the LAST
+			error is displayed.  See |:cc|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:clast}
+@anchor{:cla}
+@cindex :clast
+@cindex :cla
+@item :cla[st][!] [nr]
+[nr] のエラーを表示する。 [nr] が省略されると一番最後のエラーが表示される。|:cc| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:llast* *:lla*
+:lla[st][!] [nr]	Same as ":clast", except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:llast}
+@anchor{:lla}
+@cindex :llast
+@cindex :lla
+@item :lla[st][!] [nr]
+":clast" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cq* *:cquit*
+:cq[uit][!]		Quit Vim with an error code, so that the compiler
+			will not compile the same file again.
+			WARNING: All changes in files are lost!  Also when the
+			[!] is not used.  It works like ":qall!" |:qall|,
+			except that Vim returns a non-zero exit code.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cq}
+@anchor{:cquit}
+@cindex :cq
+@cindex :cquit
+@item :cq[uit][!]
+Vim をエラーとして終了することで、コンパイラが同じファイルをコンパイルする事が無くなる。
+@quotation
+@strong{警告:} @*
+ファイルに対する変更はすべて失われる ([!] を指定しなくても)！ このコマンドは、システムへの戻り値が非零であるということ以外 ":qall!" |:qall| と同じである。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cf* *:cfile*
+:cf[ile][!] [errorfile]	Read the error file and jump to the first error.
+			This is done automatically when Vim is started with
+			the -q option.  You can use this command when you
+			keep Vim running while compiling.  If you give the
+			name of the errorfile, the 'errorfile' option will
+			be set to [errorfile].  See |:cc| for [!].
+			If the encoding of the error file differs from the
+			'encoding' option, you can use the 'makeencoding'
+			option to specify the encoding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cf}
+@anchor{:cfile}
+@cindex :cf
+@cindex :cfile
+@item :cf[ile][!] [errorfile]
+エラーファイルを読みこみ最初のエラーへ移動する。Vim がオプション -q で起動された時には自動的に行われる。コンパイルの間 Vim を実行したままにしたい時に使うことができる。エラーファイルの名前を与えればオプション '@option{errorfile}' に [errorfile] が設定される。[!] については |:cc| を参照。
+
+エラーファイルのエンコーディングが '@option{encoding}' と異なる場合には、'@option{makeencoding}' オプションでエンコーディングを指定できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lf* *:lfile*
+:lf[ile][!] [errorfile]	Same as ":cfile", except the location list for the
+			current window is used instead of the quickfix list.
+			You can not use the -q command-line option to set
+			the location list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lf}
+@anchor{:lfile}
+@cindex :lf
+@cindex :lfile
+@item :lf[ile][!] [errorfile]
+":cfile" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。コマンドラインオプション -q を使ってロケーションリストを設定することはできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+:cg[etfile] [errorfile]					*:cg* *:cgetfile*
+			Read the error file.  Just like ":cfile" but don't
+			jump to the first error.
+			If the encoding of the error file differs from the
+			'encoding' option, you can use the 'makeencoding'
+			option to specify the encoding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cg}
+@anchor{:cgetfile}
+@cindex :cg
+@cindex :cgetfile
+@item :cg[etfile] [errorfile]
+エラーファイルを読み込む。":cfile" に似ているが、最初のエラーに移動しない。
+
+エラーファイルのエンコーディングが '@option{encoding}' と異なる場合には、'@option{makeencoding}' オプションでエンコーディングを指定できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+:lg[etfile] [errorfile]					*:lg* *:lgetfile*
+			Same as ":cgetfile", except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lg}
+@anchor{:lgetfile}
+@cindex :lg
+@cindex :lgetfile
+@item :lg[etfile] [errorfile]
+":cgetfile" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:caddf* *:caddfile*
+:caddf[ile] [errorfile]	Read the error file and add the errors from the
+			errorfile to the current quickfix list. If a quickfix
+			list is not present, then a new list is created.
+			If the encoding of the error file differs from the
+			'encoding' option, you can use the 'makeencoding'
+			option to specify the encoding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:caddf}
+@anchor{:caddfile}
+@cindex :caddf
+@cindex :caddfile
+@item :caddf[ile] [errorfile]
+エラーファイルを読み込み、現在の QuickFix リストにエラーを追加する。QuickFix リストがまだない場合は、新しいリストが作成される。
+
+エラーファイルのエンコーディングが '@option{encoding}' と異なる場合には、'@option{makeencoding}' オプションでエンコーディングを指定できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:laddf* *:laddfile*
+:laddf[ile] [errorfile]	Same as ":caddfile", except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:laddf}
+@anchor{:laddfile}
+@cindex :laddf
+@cindex :laddfile
+@item :laddf[ile] [errorfile]
+":caddfile" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:cb* *:cbuffer* *E681*
+:cb[uffer][!] [bufnr]	Read the error list from the current buffer.
+			When [bufnr] is given it must be the number of a
+			loaded buffer.  That buffer will then be used instead
+			of the current buffer.
+			A range can be specified for the lines to be used.
+			Otherwise all lines in the buffer are used.
+			See |:cc| for [!].
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cb}
+@anchor{:cbuffer}
+@anchor{E681}
+@cindex :cb
+@cindex :cbuffer
+@cindex E681
+@item :cb[uffer][!] [bufnr]
+カレントバッファからエラーリストを読み込む。 [bufnr] を指定すると、カレントバッファの代わりにそのバッファが使われる。bufnr には読み込まれているバッファ番号を指定しなければならない。
+
+範囲を指定すると、読み込む行を指定することができる。範囲指定がないとバッファ全体が使われる。[!] については |:cc| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:lb* *:lbuffer*
+:lb[uffer][!] [bufnr]	Same as ":cbuffer", except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lb}
+@anchor{:lbuffer}
+@cindex :lb
+@cindex :lbuffer
+@item :lb[uffer][!] [bufnr]
+":cbuffer" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:cgetb* *:cgetbuffer*
+:cgetb[uffer] [bufnr]	Read the error list from the current buffer.  Just
+			like ":cbuffer" but don't jump to the first error.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cgetb}
+@anchor{:cgetbuffer}
+@cindex :cgetb
+@cindex :cgetbuffer
+@item :cgetb[uffer] [bufnr]
+カレントバッファからエラーリストを読み込む。":cbuffer" と同じだが、最初のエラーにジャンプしない点が異なる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:lgetb* *:lgetbuffer*
+:lgetb[uffer] [bufnr]	Same as ":cgetbuffer", except the location list for
+			the current window is used instead of the quickfix
+			list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lgetb}
+@anchor{:lgetbuffer}
+@cindex :lgetb
+@cindex :lgetbuffer
+@item :lgetb[uffer] [bufnr]
+":cgetbuffer" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cad* *:caddbuffer*
+:cad[dbuffer] [bufnr]	Read the error list from the current buffer and add
+			the errors to the current quickfix list.  If a
+			quickfix list is not present, then a new list is
+			created. Otherwise, same as ":cbuffer".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cad}
+@anchor{:caddbuffer}
+@cindex :cad
+@cindex :caddbuffer
+@item :cad[dbuffer] [bufnr]
+カレントバッファからエラーリストを読み込み、現在の QuickFix リストにエラーを追加する。QuickFix リストがまだ存在しない場合は、新しいリストが作成される。それ以外は ":cbuffer" と同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:laddb* *:laddbuffer*
+:laddb[uffer] [bufnr]	Same as ":caddbuffer", except the location list for
+			the current window is used instead of the quickfix
+			list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:laddb}
+@anchor{:laddbuffer}
+@cindex :laddb
+@cindex :laddbuffer
+@item :laddb[uffer] [bufnr]
+":caddbuffer" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cex* *:cexpr* *E777*
+:cex[pr][!] {expr}	Create a quickfix list using the result of {expr} and
+			jump to the first error.
+			If {expr} is a String, then each new-line terminated
+			line in the String is processed using the global value
+			of 'errorformat' and the result is added to the
+			quickfix list.
+			If {expr} is a List, then each String item in the list
+			is processed and added to the quickfix list.  Non
+			String items in the List are ignored.
+			See |:cc| for [!].
+			Examples: >
+				:cexpr system('grep -n xyz *')
+				:cexpr getline(1, '$')
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cex}
+@anchor{:cexpr}
+@anchor{E777}
+@cindex :cex
+@cindex :cexpr
+@cindex E777
+@item :cex[pr][!] @{expr@}
+@{expr@} の結果を使って QuickFix リストを作成し、最初のエラーにジャンプする。
+
+@{expr@} が文字列のときは、その文字列を改行コードで区切り、各行を '@option{errorformat}' のグローバル値に従って解釈し、結果を QuickFix リストに追加する。
+
+@{expr@} がリストのときはリストの各文字列要素を解釈し、QuickFix リストに追加する。リスト中の文字列でない要素は無視される。[!] については |:cc| を参照。
+
+例:
+@example
+:cexpr system('grep -n xyz *')
+:cexpr getline(1, '$')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:lex* *:lexpr*
+:lex[pr][!] {expr}	Same as |:cexpr|, except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lex}
+@anchor{:lexpr}
+@cindex :lex
+@cindex :lexpr
+@item :lex[pr][!] @{expr@}
+|:cexpr| と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cgete* *:cgetexpr*
+:cgete[xpr] {expr}	Create a quickfix list using the result of {expr}.
+			Just like |:cexpr|, but don't jump to the first error.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cgete}
+@anchor{:cgetexpr}
+@cindex :cgete
+@cindex :cgetexpr
+@item :cgete[xpr] @{expr@}
+@{expr@} の結果を使って QuickFix リストを作成する。|:cexpr| と同様だが、最初のエラーにジャンプしない点が異なる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lgete* *:lgetexpr*
+:lgete[xpr] {expr}	Same as |:cgetexpr|, except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lgete}
+@anchor{:lgetexpr}
+@cindex :lgete
+@cindex :lgetexpr
+@item :lgete[xpr] @{expr@}
+|:cgetexpr| と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cadde* *:caddexpr*
+:cadde[xpr] {expr}	Evaluate {expr} and add the resulting lines to the
+			current quickfix list. If a quickfix list is not
+			present, then a new list is created. The current
+			cursor position will not be changed. See |:cexpr| for
+			more information.
+			Example: >
+    :g/mypattern/caddexpr expand("%") . ":" . line(".") .  ":" . getline(".")
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cadde}
+@anchor{:caddexpr}
+@cindex :cadde
+@cindex :caddexpr
+@item :cadde[xpr] @{expr@}
+@{expr@} を評価し、結果の行を現在のQuickFixリストに追加する。QuickFix リストがまだ無い場合は、新しいリストが作成される。現在のカーソル位置は変わらない。より詳しくは |:cexpr| を参照。
+
+例:
+@example
+:g/mypattern/caddexpr expand("%") . ":" . line(".") .  ":" . getline(".")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:lad* *:laddexpr*
+:lad[dexpr] {expr}	Same as ":caddexpr", except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lad}
+@anchor{:laddexpr}
+@cindex :lad
+@cindex :laddexpr
+@item :lad[dexpr] @{expr@}
+":caddexpr" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cl* *:clist*
+:cl[ist] [from] [, [to]]
+			List all errors that are valid |quickfix-valid|.
+			If numbers [from] and/or [to] are given, the respective
+			range of errors is listed.  A negative number counts
+			from the last error backwards, -1 being the last error.
+			The 'switchbuf' settings are respected when jumping
+			to a buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cl}
+@anchor{:clist}
+@cindex :cl
+@cindex :clist
+@item :cl[ist] [from] [, [to]]
+有効なエラーを全て列挙する |quickfix-valid|。 [from] 及び／もしくは [to] で行数を指定された場合、その範囲のエラーが表示される。負であった場合最後のエラーから数える。-1 が最後のエラーとなる。設定 '@option{switchbuf}' がバッファの移動に関係する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:cl[ist] +{count}	List the current and next {count} valid errors.  This
+			is similar to ":clist from from+count", where "from"
+			is the current error position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :cl[ist] +@{count@}
+現在と次の @{count@} 個の有効なエラーを列挙する。これは ":clist from from+count" と似ている。ここで "from" はエラーの現在の場所である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:cl[ist]! [from] [, [to]]
+			List all errors.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :cl[ist]! [from] [, [to]]
+全てのエラーを表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:cl[ist]! +{count}	List the current and next {count} error lines.  This
+                        is useful to see unrecognized lines after the current
+			one.  For example, if ":clist" shows:
+        8384 testje.java:252: error: cannot find symbol ~
+                        Then using ":cl! +3" shows the reason:
+        8384 testje.java:252: error: cannot find symbol ~
+        8385:   ZexitCode = Fmainx(); ~
+        8386:               ^ ~
+        8387:   symbol:   method Fmainx() ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :cl[ist]! +@{count@}
+現在と次の @{count@} 個のエラー行を列挙する。これは現在の評価されていない行の後にある評価されていない行を見るのに便利である。例えば ":clist" は次のように表示する:
+@verbatim
+8384 testje.java:252: error: cannot find symbol
+@end verbatim
+それから ":cl! +3" を使うと、結果はこうだ:
+@verbatim
+8384 testje.java:252: error: cannot find symbol
+8385:   ZexitCode = Fmainx();
+8386:               ^
+8387:   symbol:   method Fmainx()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:lli[st] [from] [, [to]]				*:lli* *:llist*
+			Same as ":clist", except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lli}
+@anchor{:llist}
+@cindex :lli
+@cindex :llist
+@item :lli[st] [from] [, [to]]
+":clist" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:lli[st]! [from] [, [to]]
+			List all the entries in the location list for the
+			current window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :lli[st]! [from] [, [to]]
+カレントウィンドウのロケーションリストの中身を全部表示する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you insert or delete lines, mostly the correct error location is still
+found because hidden marks are used.  Sometimes, when the mark has been
+deleted for some reason, the message "line changed" is shown to warn you that
+the error location may not be correct.  If you quit Vim and start again the
+marks are lost and the error locations may not be correct anymore.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+正しいエラーの位置は隠されたマークによって示されているので、例え行を挿入したり削除したとしても問題はない (Manx's Z editor ではそうではない)。時々マークが幾つかの理由で消されてしまう事があり、メッセージ "line changed" がその警告となる。一度 Vim を終了し再起動した場合マークは失われ正しいエラー位置は把握できない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If vim is built with |+autocmd| support, two autocommands are available for
+running commands before and after a quickfix command (':make', ':grep' and so
+on) is executed. See |QuickFixCmdPre| and |QuickFixCmdPost| for details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が |+autocmd| 機能つきでビルドされている場合、QuickFix コマンド (':make', ':grep' など) を実行する前後に 2 つの自動コマンドが利用できる。詳しくは |QuickFixCmdPre| と |QuickFixCmdPost| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*QuickFixCmdPost-example*
+When 'encoding' differs from the locale, the error messages may have a
+different encoding from what Vim is using.  To convert the messages you can
+use this code: >
+	function QfMakeConv()
+	   let qflist = getqflist()
+	   for i in qflist
+	      let i.text = iconv(i.text, "cp936", "utf-8")
+	   endfor
+	   call setqflist(qflist)
+	endfunction
+
+	au QuickfixCmdPost make call QfMakeConv()
+Another option is using 'makeencoding'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{QuickFixCmdPost-example}
+@cindex QuickFixCmdPost-example
+'@option{encoding}' とロケールが異なる場合、コンパイラのエラーメッセージと Vim 内部のエンコーディングが異なる場合がある。次のようにすれば、このメッセージを変換できる:
+@verbatim
+function QfMakeConv()
+   let qflist = getqflist()
+   for i in qflist
+      let i.text = iconv(i.text, "cp936", "utf-8")
+   endfor
+   call setqflist(qflist)
+endfunction
+
+au QuickfixCmdPost make call QfMakeConv()
+@end verbatim
+代わりに '@option{makeencoding}' オプションを使うこともできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+EXECUTE A COMMAND IN ALL THE BUFFERS IN QUICKFIX OR LOCATION LIST:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsection QuickFix リストやロケーションリスト中のバッファに対してコマンドを実行:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:cdo*
+:cdo[!] {cmd}		Execute {cmd} in each valid entry in the quickfix list.
+			It works like doing this: >
+				:cfirst
+				:{cmd}
+				:cnext
+				:{cmd}
+				etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:cdo}
+@cindex :cdo
+@item :cdo[!] @{cmd@}
+QuickFix リスト中の有効な各項目に対して @{cmd@} を実行する。以下の操作と同様に動作する:
+@example
+:cfirst
+:@{cmd@}
+:cnext
+:@{cmd@}
+etc.
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<			When the current file can't be |abandon|ed and the [!]
+			is not present, the command fails.
+			When an error is detected execution stops.
+			The last buffer (or where an error occurred) becomes
+			the current buffer.
+			{cmd} can contain '|' to concatenate several commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カレントファイルが破棄できず(|abandon|)、かつ [!] が与えられない場合、このコマンドは失敗する。1 つのバッファに対してエラーが検出されると、それ以降のバッファに対しては実行されない。最後のバッファ (またはエラーが起こったバッファ) がカレントウィンドウになる。@{cmd@} の中では '|' で複数のコマンドを連結できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Only valid entries in the quickfix list are used.
+			A range can be used to select entries, e.g.: >
+				:10,$cdo cmd
+<			To skip entries 1 to 9.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+QuickFix リスト中の有効な項目のみが使われる。「範囲」を指定して項目を選択することができる。例:
+@example
+:10,$cdo cmd
+@end example
+こうすることで 1 番目から 9 番目までをスキップできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Note: While this command is executing, the Syntax
+			autocommand event is disabled by adding it to
+			'eventignore'.  This considerably speeds up editing
+			each buffer.
+			{not in Vi} {not available when compiled without the
+			|+listcmds| feature}
+			Also see |:bufdo|, |:tabdo|, |:argdo|, |:windo|,
+			|:ldo|, |:cfdo| and |:lfdo|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+このコマンドを実行している間、Syntax 自動コマンドイベントが '@option{eventignore}' に追加され、無効化される。これは各バッファの編集を大幅にスピードアップさせる。
+@end quotation
+@{Vi にはない@}
+
+@{|+listcmds| 機能なしでコンパイルされた場合は使用できない@}
+
+|:bufdo|, |:tabdo|, |:argdo|, |:windo|, |:ldo|, |:cfdo|, |:lfdo| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cfdo*
+:cfdo[!] {cmd}		Execute {cmd} in each file in the quickfix list.
+			It works like doing this: >
+				:cfirst
+				:{cmd}
+				:cnfile
+				:{cmd}
+				etc.
+<			Otherwise it works the same as `:cdo`.
+			{not in Vi} {not available when compiled without the
+			|+listcmds| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cfdo}
+@cindex :cfdo
+@item :cfdo[!] @{cmd@}
+QuickFix リスト中の各ファイルに対して @{cmd@} を実行する。以下の操作と同様に動作する:
+@example
+:cfirst
+:@{cmd@}
+:cnfile
+:@{cmd@}
+etc.
+@end example
+それ以外は `:cdo` の場合と同様である。
+
+@{Vi にはない@}
+
+@{|+listcmds| 機能なしでコンパイルされた場合は使用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:ldo*
+:ld[o][!] {cmd}		Execute {cmd} in each valid entry in the location list
+			for the current window.
+			It works like doing this: >
+				:lfirst
+				:{cmd}
+				:lnext
+				:{cmd}
+				etc.
+<			Only valid entries in the location list are used.
+			Otherwise it works the same as `:cdo`.
+			{not in Vi} {not available when compiled without the
+			|+listcmds| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ldo}
+@cindex :ldo
+@item :ld[o][!] @{cmd@}
+カレントウィンドウのロケーションリスト中の有効な各項目に対して @{cmd@} を実行する。以下の操作と同様に動作する:
+@example
+:lfirst
+:@{cmd@}
+:lnext
+:@{cmd@}
+etc.
+@end example
+ロケーションリスト中の有効な項目のみが使われる。それ以外は `:cdo` の場合と同様である。
+
+@{Vi にはない@}
+
+@{|+listcmds| 機能なしでコンパイルされた場合は使用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lfdo*
+:lfdo[!] {cmd}		Execute {cmd} in each file in the location list for
+			the current window.
+			It works like doing this: >
+				:lfirst
+				:{cmd}
+				:lnfile
+				:{cmd}
+				etc.
+<			Otherwise it works the same as `:ldo`.
+			{not in Vi} {not available when compiled without the
+			|+listcmds| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lfdo}
+@cindex :lfdo
+@item :lfdo[!] @{cmd@}
+カレントウィンドウのロケーションリスト中の各ファイルに対して @{cmd@} を実行する。以下の操作と同様に動作する:
+@example
+:lfirst
+:@{cmd@}
+:lnfile
+:@{cmd@}
+etc.
+@end example
+それ以外は `:cdo` の場合と同様である。
+
+@{Vi にはない@}
+
+@{|+listcmds| 機能なしでコンパイルされた場合は使用できない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+=============================================================================
+2. The error window					*quickfix-window*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{quickfix-window}
+@cindex quickfix-window
+@section 2. エラーウィンドウ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					    *:cope* *:copen* *w:quickfix_title*
+:cope[n] [height]	Open a window to show the current list of errors.
+
+			When [height] is given, the window becomes that high
+			(if there is room).  When [height] is omitted the
+			window is made ten lines high.
+
+			If there already is a quickfix window, it will be made
+			the current window.  It is not possible to open a
+			second quickfix window.  If [height] is given the
+			existing window will be resized to it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:cope}
+@anchor{:copen}
+@anchor{w:quickfix_title}
+@cindex :cope
+@cindex :copen
+@cindex w:quickfix_title
+@item :cope[n] [height]
+現在のエラーリストを表示するウィンドウを開く。
+
+[height] が与えられたとき、(余地があれば) ウィンドウの高さがその値になる。[height] を省略したときはウィンドウの高さは 10 行になる。
+
+すでに QuickFix ウィンドウがある場合はそれがカレントウィンドウになる。2 個目の QuickFix ウィンドウを開くことはできない。[height] が指定されたとき、既存のウィンドウはその高さにリサイズされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			The window will contain a special buffer, with
+			'buftype' equal to "quickfix".  Don't change this!
+			The window will have the w:quickfix_title variable set
+			which will indicate the command that produced the
+			quickfix list. This can be used to compose a custom
+			status line if the value of 'statusline' is adjusted
+			properly. Whenever this buffer is modified by a
+			quickfix command or function, the |b:changedtick|
+			variable is incremented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウは '@option{buftype}' の値が "@var{quickfix}" である特別なバッファを含んでいる。これを変更してはならない！ウィンドウは w:quickfix_title 変数を持っている。この変数はクイックフィックスリストを生成したコマンドを示している。変数の値は '@option{statusline}' が適切に調整されていればステータスラインに表示される。
+しかしながら、このバッファは quickfix のコマンドや関数によって変更さ、|b:changedtick| 変数は増加されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lop* *:lopen*
+:lop[en] [height]	Open a window to show the location list for the
+			current window. Works only when the location list for
+			the current window is present.  You can have more than
+			one location window opened at a time.  Otherwise, it
+			acts the same as ":copen".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lop}
+@anchor{:lopen}
+@cindex :lop
+@cindex :lopen
+@item :lop[en] [height]
+カレントウィンドウのロケーションリストを表示するウィンドウを開く。カレントウィンドウにロケーションリストが存在するときだけ動作する。一度に 2 個以上のロケーションリストを開くことができる。それ以外は ":copen" と同様。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:ccl* *:cclose*
+:ccl[ose]		Close the quickfix window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ccl}
+@anchor{:cclose}
+@cindex :ccl
+@cindex :cclose
+@item :ccl[ose]
+QuickFix ウィンドウを閉じる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lcl* *:lclose*
+:lcl[ose]		Close the window showing the location list for the
+			current window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lcl}
+@anchor{:lclose}
+@cindex :lcl
+@cindex :lclose
+@item :lcl[ose]
+カレントウィンドウのロケーションリストを表示しているウィンドウを閉じる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cw* *:cwindow*
+:cw[indow] [height]	Open the quickfix window when there are recognized
+			errors.  If the window is already open and there are
+			no recognized errors, close the window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cw}
+@anchor{:cwindow}
+@cindex :cw
+@cindex :cwindow
+@item :cw[indow] [height]
+認識されたエラーがあるとき QuickFix ウィンドウを開く。ウィンドウがすでに開いていて認識されたエラーがない場合はウィンドウを閉じる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lw* *:lwindow*
+:lw[indow] [height]	Same as ":cwindow", except use the window showing the
+			location list for the current window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lw}
+@anchor{:lwindow}
+@cindex :lw
+@cindex :lwindow
+@item :lw[indow] [height]
+":cwindow" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cbo* *:cbottom*
+:cbo[ttom]		Put the cursor in the last line of the quickfix window
+			and scroll to make it visible.  This is useful for
+			when errors are added by an asynchronous callback.
+			Only call it once in a while if there are many
+			updates to avoid a lot of redrawing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cbo}
+@anchor{:cbottom}
+@cindex :cbo
+@cindex :cbottom
+@item :cbo[ttom]
+QuickFix ウィンドウの最後の行にカーソルを移動し、見える様にスクロールする。これは非同期コールバックでエラーを追加するのに便利である。大量の更新に伴う多くの再描画を避けるには一度限り呼び出すこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lbo* *:lbottom*
+:lbo[ttom]		Same as ":cbottom", except use the window showing the
+			location list for the current window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lbo}
+@anchor{:lbottom}
+@cindex :lbo
+@cindex :lbottom
+@item :lbo[ttom]
+現在のウィンドウに関するロケーションリストが表示されているウィンドウである事を除いて ":cbottom" と同じ。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Normally the quickfix window is at the bottom of the screen.  If there are
+vertical splits, it's at the bottom of the rightmost column of windows.  To
+make it always occupy the full width: >
+	:botright cwindow
+You can move the window around with |window-moving| commands.
+For example, to move it to the top: CTRL-W K
+The 'winfixheight' option will be set, which means that the window will mostly
+keep its height, ignoring 'winheight' and 'equalalways'.  You can change the
+height manually (e.g., by dragging the status line above it with the mouse).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+通常、QuickFixウィンドウはスクリーンの一番下に現れる。垂直分割したウィンドウがある場合は、一番右下に現れる。常に最大幅を占めるようにさせたい場合は
+@example
+:botright cwindow
+@end example
+とする。このウィンドウを |window-moving| コマンドで移動させることもできる。例えば、一番上に移動させたければ @kbd{CTRL-W K} とする。'@option{winfixheight}' オプションが設定されれば、'@option{winheight}' と '@option{equalalways}' を無視し、たいていその高さを維持する。高さを手動で変更することもできる (例えばステータスラインをマウスで上へドラッグするなど)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the quickfix window, each line is one error.  The line number is equal to
+the error number.  The current entry is highlighted with the QuickFixLine
+highlighting.  You can change it to your liking, e.g.: >
+	:hi QuickFixLine ctermbg=Yellow guibg=Yellow
+
+You can use ":.cc" to jump to the error under the cursor.
+Hitting the <Enter> key or double-clicking the mouse on a line has the same
+effect.  The file containing the error is opened in the window above the
+quickfix window.  If there already is a window for that file, it is used
+instead.  If the buffer in the used window has changed, and the error is in
+another file, jumping to the error will fail.  You will first have to make
+sure the window contains a buffer which can be abandoned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+QuickFix ウィンドウには各行に 1 個ずつエラーが表示される。その行数はエラー番号に等しい。現在のエントリーは QuickFixLine ハイライトによってハイライトされている。これは好きなように変えることができる。例:
+@example
+:hi QuickFixLine ctermbg=Yellow guibg=Yellow
+@end example
+
+":.cc" でカーソル下のエラーに移動できる。@key{<Enter>} キーを押すのと行をダブルクリックするのは同じ効果がある。そのエラーを含むファイルが QuickFix ウィンドウの上に開かれる。そのファイルがすでにウィンドウに開かれていたらそのウィンドウがアクティブになる。そのウィンドウにあるバッファが変更されていて、そのエラーが別のファイルにある場合はエラーへの移動は失敗する。まず、そのウィンドウが破棄してもよいバッファを含んでいることを確かめなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+					*CTRL-W_<Enter>* *CTRL-W_<CR>*
+You can use CTRL-W <Enter> to open a new window and jump to the error there.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_<Enter>}
+@anchor{CTRL-W_<CR>}
+@cindex CTRL-W_<Enter>
+@cindex CTRL-W_<CR>
+@kbd{CTRL-W} @key{<Enter>}を使うと、新しいウィンドウを開いてそこでエラーにジャンプできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the quickfix window has been filled, two autocommand events are
+triggered.  First the 'filetype' option is set to "qf", which triggers the
+FileType event.  Then the BufReadPost event is triggered, using "quickfix" for
+the buffer name.  This can be used to perform some action on the listed
+errors.  Example: >
+	au BufReadPost quickfix  setlocal modifiable
+		\ | silent exe 'g/^/s//\=line(".")." "/'
+		\ | setlocal nomodifiable
+This prepends the line number to each line.  Note the use of "\=" in the
+substitute string of the ":s" command, which is used to evaluate an
+expression.
+The BufWinEnter event is also triggered, again using "quickfix" for the buffer
+name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+QuickFix ウィンドウが一杯になったとき、2 つの自動コマンドイベントが発生する。第一は '@option{filetype}' オプションが "@var{qf}" にセットされ、FileType イベントが発生する。それから BufReadPost イベントが発生する。そのときのバッファ名は "quickfix" となる。これを使ってエラーリストに対して操作を行うことができる。例:
+@verbatim
+au BufReadPost quickfix  setlocal modifiable
+        \ | silent exe 'g/^/s//\=line(".")." "/'
+        \ | setlocal nomodifiable
+@end verbatim
+これは各行に行番号を追加する。文字列の置換 "@command{:s}" コマンドの中で使われている "\=" に注目。これは式を評価するのに使われる。BufWinEnter イベントも発生する。ここでもバッファ名は "quickfix" になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: When adding to an existing quickfix list the autocommand are not
+triggered.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+存在する QuickFix リストに追加される場合、autocommand イベントは発生しません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: Making changes in the quickfix window has no effect on the list of
+errors.  'modifiable' is off to avoid making changes.  If you delete or insert
+lines anyway, the relation between the text and the error number is messed up.
+If you really want to do this, you could write the contents of the quickfix
+window to a file and use ":cfile" to have it parsed and used as the new error
+list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+QuickFix ウィンドウ内で変更を加えてもエラーのリストには何の影響もない。変更を防ぐために '@option{modifiable}' がオフになっている。それでも行を削除や挿入した場合は、テキストとエラー番号の関係がめちゃくちゃになる。本当にエラーリストを変更したいのなら、QuickFix ウィンドウの内容をファイルに保存し、":cfile" を実行、ファイルをパースさせ、新しいエラーリストとして使うこと。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*location-list-window*
+The location list window displays the entries in a location list.  When you
+open a location list window, it is created below the current window and
+displays the location list for the current window.  The location list window
+is similar to the quickfix window, except that you can have more than one
+location list window open at a time. When you use a location list command in
+this window, the displayed location list is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{location-list-window}
+@cindex location-list-window
+ロケーションリストウィンドウはロケーションリストの中身を表示する。ロケーションウィンドウを開くと、カレントウィンドウの下に開かれ、カレントウィンドウのロケーションリストが表示される。ロケーションリストは QuickFix ウィンドウに似ているが、一度に 2 個以上のロケーションリストウィンドウを開ける点が異なる。このウィンドウ内でロケーションリストコマンドを使うと、表示されているロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you select a file from the location list window, the following steps are
+used to find a window to edit the file:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ロケーションリストウィンドウからファイルを選択すると、以下のステップによって、そのファイルを編集するウィンドウが探される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. If a window with the location list displayed in the location list window is
+   present, then the file is opened in that window.
+2. If the above step fails and if the file is already opened in another
+   window, then that window is used.
+3. If the above step fails then an existing window showing a buffer with
+   'buftype' not set is used.
+4. If the above step fails, then the file is edited in a new window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item ロケーションリストウィンドウに表示されているロケーションリストに関連付けられているウィンドウがあるなら、そのウィンドウが使われる。
+@item 上のステップが失敗した場合、そのファイルが既に他のウィンドウで開かれているなら、そのウィンドウが使われる。
+@item 上のステップが失敗した場合、'@option{buftype}' がセットされていないバッファを表示しているウィンドウが存在するなら、そのウィンドウが使われる。
+@item 上のステップが失敗した場合、新しいウィンドウでファイルが開かれる。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In all of the above cases, if the location list for the selected window is not
+yet set, then it is set to the location list displayed in the location list
+window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上の全ての場合において、選択されたウィンドウに対してまだロケーションリストが関連付けられていなかった場合、ロケーションリストウィンドウに表示されているロケーションリストが関連づけられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+=============================================================================
+3. Using more than one list of errors			*quickfix-error-lists*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{quickfix-error-lists}
+@cindex quickfix-error-lists
+@section 3.複数のエラーリストを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+So far has been assumed that there is only one list of errors.  Actually the
+ten last used lists are remembered.  When starting a new list, the previous
+ones are automatically kept.  Two commands can be used to access older error
+lists.  They set one of the existing error lists as the current one.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これまでは 1 つだけのエラーリストがあると仮定してきた。実際は最後に使った 10 個迄のエラーリストが記憶される。新しいリストではじめた時には、以前のリストは自動的に保存される。古いエラーリストにアクセスするために、2 つのコマンドが用意されている。これらは存在するエラーリストの内 1 つを現在のエラーリストに設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:colder* *:col* *E380*
+:col[der] [count]	Go to older error list.  When [count] is given, do
+			this [count] times.  When already at the oldest error
+			list, an error message is given.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:colder}
+@anchor{:col}
+@anchor{E380}
+@cindex :colder
+@cindex :col
+@cindex E380
+@item :col[der] [count]
+古いエラーリストへ移動する。[count] が与えられると、その回数繰り返し移動する。既に一番古いエラーリストにいる場合、エラーメッセージが表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:lolder* *:lol*
+:lol[der] [count]	Same as `:colder`, except use the location list for
+			the current window instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lolder}
+@anchor{:lol}
+@cindex :lolder
+@cindex :lol
+@item :lol[der] [count]
+`:colder` と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:cnewer* *:cnew* *E381*
+:cnew[er] [count]	Go to newer error list.  When [count] is given, do
+			this [count] times.  When already at the newest error
+			list, an error message is given.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cnewer}
+@anchor{:cnew}
+@anchor{E381}
+@cindex :cnewer
+@cindex :cnew
+@cindex E381
+@item :cnew[er] [count]
+新しいエラーリストへ移動する。[count] が与えられると、その回数繰り返し移動する。既に一番新しいエラーリストにいる場合、エラーメッセージが表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:lnewer* *:lnew*
+:lnew[er] [count]	Same as `:cnewer`, except use the location list for
+			the current window instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lnewer}
+@anchor{:lnew}
+@cindex :lnewer
+@cindex :lnew
+@item :lnew[er] [count]
+`:cnewer` と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:chistory* *:chi*
+:chi[story]		Show the list of error lists.  The current list is
+			marked with ">".  The output looks like:
+				  error list 1 of 3; 43 errors ~
+				> error list 2 of 3; 0 errors ~
+				  error list 3 of 3; 15 errors ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:chistory}
+@anchor{:chi}
+@cindex :chistory
+@cindex :chi
+@item :chi[story]
+エラーリストの一覧を表示する。現在のリストは ">" でマークされる。出力は以下の様になる:
+@verbatim
+  error list 1 of 3; 43 errors
+> error list 2 of 3; 0 errors
+  error list 3 of 3; 15 errors
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:lhistory* *:lhi*
+:lhi[story]		Show the list of location lists, otherwise like
+			`:chistory`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lhistory}
+@anchor{:lhi}
+@cindex :lhistory
+@cindex :lhi
+@item :lhi[story]
+ロケーションリストの一覧を表示する。`:chistory` の様に。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When adding a new error list, it becomes the current list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しいエラーリストが追加された時には、それがカレントリストとなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When ":colder" has been used and ":make" or ":grep" is used to add a new error
+list, one newer list is overwritten.  This is especially useful if you are
+browsing with ":grep" |grep|.  If you want to keep the more recent error
+lists, use ":cnewer 99" first.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+":colder" が実行された後で ":make" や ":grep" が実行され新しいエラーリストが追加されたときは 1 個新しいリストが上書きされる。これは ":grep" |grep| でブラウジングしているときに特に便利である。もっと最近のエラーリストを残しておきたい場合は初めに ":cnewer 99" を行うこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+=============================================================================
+4. Using :make						*:make_makeprg*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:make_makeprg}
+@cindex :make_makeprg
+@section 4. :makeの使い方
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:mak* *:make*
+:mak[e][!] [arguments]	1. If vim was built with |+autocmd|, all relevant
+			   |QuickFixCmdPre| autocommands are executed.
+			2. If the 'autowrite' option is on, write any changed
+			   buffers
+			3. An errorfile name is made from 'makeef'.  If
+			   'makeef' doesn't contain "##", and a file with this
+			   name already exists, it is deleted.
+			4. The program given with the 'makeprg' option is
+			   started (default "make") with the optional
+			   [arguments] and the output is saved in the
+			   errorfile (for Unix it is also echoed on the
+			   screen).
+			5. The errorfile is read using 'errorformat'.
+			6. If vim was built with |+autocmd|, all relevant
+			   |QuickFixCmdPost| autocommands are executed.
+			   See example below.
+			7. If [!] is not given the first error is jumped to.
+			8. The errorfile is deleted.
+			9. You can now move through the errors with commands
+			   like |:cnext| and |:cprevious|, see above.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:mak}
+@anchor{:make}
+@cindex :mak
+@cindex :make
+@item :mak[e][!] [arguments]
+@enumerate
+@item vim が |+autocmd| つきでビルドされているならば、|QuickFixCmdPre| に関連付けられた自動コマンドが全て実行される。
+@item オプション '@option{autowrite}' が on ならば変更のあるバッファは保存される。
+@item '@option{makeef}' からエラーファイルの名前が生成される。'@option{makeef}' が "@var{##}" を含まずかつ既に名前が存在する場合それは削除される。
+
+@item オプション '@option{makeprg}' で与えられたプログラム (省略時 "make") が [argument] をオプションにして実行され、出力が errorfile に保存される (Unix ではそれも画面に echo される)。
+@item '@option{errorformat}' を使って errorfile が読みこまれる。
+@item vim が |+autocmd| つきでビルドされているならば、|QuickFixCmdPost| に関連付けられた自動コマンドが全て実行される。後述のサンプルを参照。
+@item [!] が与えられていないときは最初のエラーに移動する。
+@item エラーファイルが削除される。
+@item |:cnext| や |:cprevious| などのコマンドでエラー間を移動できる。上を参照。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			This command does not accept a comment, any "
+			characters are considered part of the arguments.
+			If the encoding of the program output differs from the
+			'encoding' option, you can use the 'makeencoding'
+			option to specify the encoding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドは如何なるコメントも受けつけず、どんな " という文字も argument の一部とみなされる。プログラム出力のエンコーディングが '@option{encoding}' と異なる場合には、'@option{makeencoding}' オプションでエンコーディングを指定できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lmak* *:lmake*
+:lmak[e][!] [arguments]
+			Same as ":make", except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lmak}
+@anchor{:lmake}
+@cindex :lmak
+@cindex :lmake
+@item :lmak[e][!] [arguments]
+":make" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ":make" command executes the command given with the 'makeprg' option.
+This is done by passing the command to the shell given with the 'shell'
+option.  This works almost like typing
+
+	":!{makeprg} [arguments] {shellpipe} {errorfile}".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンド ":make" はオプション '@option{makeprg}' で与えられるコマンドを実行する。これはオプション '@option{shell}' で与えられたシェルにコマンドを渡す事で実行されている。以下をタイピングするのとほぼ同じである。
+@example
+":!@{makeprg@} [arguments] @{shellpipe@} @{errorfile@}".
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{makeprg} is the string given with the 'makeprg' option.  Any command can be
+used, not just "make".  Characters '%' and '#' are expanded as usual on a
+command-line.  You can use "%<" to insert the current file name without
+extension, or "#<" to insert the alternate file name without extension, for
+example: >
+   :set makeprg=make\ #<.o
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{makeprg@}は '@option{makeprg}' オプションで指定された文字列である。"make" に限らず、どんなコマンドでも使用できる。'%' と '#' の文字は通常通りコマンドライン中で展開される。拡張子無しの現在ファイル名を表すのに "%<"、拡張子無しの代替ファイル名を表すのに "#<" が使える。例えば:
+@example
+:set makeprg=make\ #<.o
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+[arguments] is anything that is typed after ":make".
+{shellpipe} is the 'shellpipe' option.
+{errorfile} is the 'makeef' option, with ## replaced to make it unique.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1
+@item [arguments] ":make" より後に入力した全て。
+@item @{shellpipe@} オプション '@option{shellpipe}'
+@item @{errorfile@} オプション '@option{makeef}'。"##" は一意な名前にする
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The placeholder "$*" can be used for the argument list in {makeprg} if the
+command needs some additional characters after its arguments.  The $* is
+replaced then by all arguments.  Example: >
+   :set makeprg=latex\ \\\\nonstopmode\ \\\\input\\{$*}
+or simpler >
+   :let &mp = 'latex \\nonstopmode \\input\{$*}'
+"$*" can be given multiple times, for example: >
+   :set makeprg=gcc\ -o\ $*\ $*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドが arguments の後にオプションを必要とするならば、@{makeprg@} の中で引数リストに展開される置換子 "$*" が使用できる。$* は引数全てに置換えられる。例:
+@example
+:set makeprg=latex\ \\\\nonstopmode\ \\\\input\\@{$*@}
+@end example
+またはより単純に
+@example
+:let &mp = 'latex \\nonstopmode \\input\@{$*@}'
+@end example
+"$*" は次の例のように何度でも与える事ができる:
+@example
+:set makeprg=gcc\ -o\ $*\ $*
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'shellpipe' option defaults to ">" for the Amiga, MS-DOS and Win32.  This
+means that the output of the compiler is saved in a file and not shown on the
+screen directly.  For Unix "| tee" is used.  The compiler output is shown on
+the screen and saved in a file the same time.  Depending on the shell used
+"|& tee" or "2>&1| tee" is the default, so stderr output will be included.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{shellpipe}' の省略値は Amiga, MS-DOS と Win32 では ">" である。これはコンパイラの出力が直接ファイルに出力されスクリーンには出力されないことを意味する。Unix では "| tee" が使用される。コンパイラがファイルに出力すると同時にスクリーンにも表示される。使っているシェルに応じて標準エラーへの出力も含めるために "|& tee" や "2>&1| tee" が省略値となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If 'shellpipe' is empty, the {errorfile} part will be omitted.  This is useful
+for compilers that write to an errorfile themselves (e.g., Manx's Amiga C).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{shellpipe}' が空の場合、@{errorfile@} が省略される。これはコンパイラ自身がエラーファイルを作成する場合 (Manx's Amiga C) に便利である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Using QuickFixCmdPost to fix the encoding ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsection QuickFixCmdPost を使ってエンコーディングを修正する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It may be that 'encoding' is set to an encoding that differs from the messages
+your build program produces.  This example shows how to fix this after Vim has
+read the error messages: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビルドプログラムが出力するメッセージと '@option{encoding}' の値が異なる場合がある。この例は、Vim がそのエラーメッセージを読み込んだ後でエンコーディングを変換する方法を示している:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	function QfMakeConv()
+	   let qflist = getqflist()
+	   for i in qflist
+	      let i.text = iconv(i.text, "cp936", "utf-8")
+	   endfor
+	   call setqflist(qflist)
+	endfunction
+
+	au QuickfixCmdPost make call QfMakeConv()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+function QfMakeConv()
+   let qflist = getqflist()
+   for i in qflist
+      let i.text = iconv(i.text, "cp936", "utf-8")
+   endfor
+   call setqflist(qflist)
+endfunction
+
+au QuickfixCmdPost make call QfMakeConv()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+(Example by Faque Cheng)
+Another option is using 'makeencoding'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+(Faque Cheng による例)
+
+代わりに '@option{makeencoding}' オプションを使うこともできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Using :vimgrep and :grep				*grep* *lid*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{grep}
+@anchor{lid}
+@cindex grep
+@cindex lid
+@section 5. :vimgrepと:grepの使い方
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim has two ways to find matches for a pattern: Internal and external.  The
+advantage of the internal grep is that it works on all systems and uses the
+powerful Vim search patterns.  An external grep program can be used when the
+Vim grep does not do what you want.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim にはパターンを検索する方法が 2 つある: 内部 grep と外部 grep である。内部 grep の利点は、全てのシステム上で動作し、Vim の強力な検索パターンを使えることである。内部 grep が目的に合わない場合は外部 grep を使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The internal method will be slower, because files are read into memory.  The
+advantages are:
+- Line separators and encoding are automatically recognized, as if a file is
+  being edited.
+- Uses Vim search patterns.  Multi-line patterns can be used.
+- When plugins are enabled: compressed and remote files can be searched.
+	|gzip| |netrw|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+内部 grep はファイルをメモリに読み込むため、より遅い。利点は:
+@itemize @minus
+@item ファイルを開くときと同様に改行コードとエンコーディングが自動的に認識される。
+@item Vim の検索パターンを使う。複数行にわたるパターンが使える。
+@item プラグインが有効になっていれば、圧縮ファイル、リモートファイルを検索できる。|gzip| |netrw|
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To be able to do this Vim loads each file as if it is being edited.  When
+there is no match in the file the associated buffer is wiped out again.  The
+'hidden' option is ignored here to avoid running out of memory or file
+descriptors when searching many files.  However, when the |:hide| command
+modifier is used the buffers are kept loaded.  This makes following searches
+in the same files a lot faster.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これを行うために、Vim は各ファイルを編集するときと同じように読み込む。そのファイルにマッチがなかったら、そのバッファは消去 (wiped out) される。多数のファイルを扱うときのメモリ不足やファイル記述子不足を避けるために、ここではオプション '@option{hidden}' は無視される。しかし、コマンド修飾子 |:hide| が使われたときは、バッファが読み込まれたままになる。これによって、同じファイルを続けて検索するのがとても高速になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that |:copen| (or |:lopen| for |:lgrep|) may be used to open a buffer
+containing the search results in linked form.  The |:silent| command may be
+used to suppress the default full screen grep output.  The ":grep!" form of
+the |:grep| command doesn't jump to the first match automatically.  These
+commands can be combined to create a NewGrep command: >
+
+        command! -nargs=+ NewGrep execute 'silent grep! <args>' | copen 42
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+検索結果へのリンク一覧を開くには |:copen| (|:lgrep| なら |:lopen|) が使われる。|:silent| コマンドを使うことで grep の出力が画面いっぱいに表示されるのを防ぐことができる。|:grep| コマンドを ":grep!" 形式で使うと最初のマッチに自動的にジャンプしなくなる。これらのコマンドを組み合わせて NewGrep コマンドを作ると次のようになる:
+@example
+command! -nargs=+ NewGrep execute 'silent grep! <args>' | copen 42
+@end example
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+5.1 using Vim's internal grep
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsection 5.1 Vimの内部grepの使い方
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*:vim* *:vimgrep* *E682* *E683*
+:vim[grep][!] /{pattern}/[g][j] {file} ...
+			Search for {pattern} in the files {file} ... and set
+			the error list to the matches.  Files matching
+			'wildignore' are ignored; files in 'suffixes' are
+			searched last.
+			Without the 'g' flag each line is added only once.
+			With 'g' every match is added.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:vim}
+@anchor{:vimgrep}
+@anchor{E682}
+@anchor{E683}
+@cindex :vim
+@cindex :vimgrep
+@cindex E682
+@cindex E683
+@item :vim[grep][!] /@{pattern@}/[g][j] @{file@} ...
+ファイル @{file@} から @{pattern@} を検索し、マッチ位置をエラーリストに追加する。'@option{wildignore}' にマッチしたファイルは無視される。'@option{suffixes}' にマッチしたファイルは最後に検索される。
+
+フラグ '@var{g}' がない場合、各行は 1 度だけ追加される。'@var{g}' がある場合、マッチ位置が毎回追加される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			{pattern} is a Vim search pattern.  Instead of
+			enclosing it in / any non-ID character (see
+			|'isident'|) can be used, so long as it does not
+			appear in {pattern}.
+			'ignorecase' applies.  To overrule it put |/\c| in the
+			pattern to ignore case or |/\C| to match case.
+			'smartcase' is not used.
+			If {pattern} is empty (e.g. // is specified), the last
+			used search pattern is used. |last-pattern|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{pattern@} は Vim の検索パターンである。/ で囲まない場合、それが @{pattern@} 中に現れない限り、どんな非 ID 文字 (|'isident'| を参照) でも使える。'@option{ignorecase}' が適用される。パターン中に |/\c| を含めると大文字小文字を区別しなくなり、|/\C| を含めると区別するようになる。これは '@option{ignorecase}' より優先される。'@option{smartcase}' は適用されない。@{pattern@} が空のときは (つまり // が指定されたときは)、最後に使われた検索パターンが使用される。|last-pattern|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			When a number is put before the command this is used
+			as the maximum number of matches to find.  Use
+			":1vimgrep pattern file" to find only the first.
+			Useful if you only want to check if there is a match
+			and quit quickly when it's found.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドの前に数字が置かれると、その数が検索するマッチの最大数となる。":1vimgrep pattern file" とすると最初のマッチだけを検索する。マッチが存在するかどうかだけをチェックしたく、それが見つかったらすぐに終了してほしい場合に便利である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Without the 'j' flag Vim jumps to the first match.
+			With 'j' only the quickfix list is updated.
+			With the [!] any changes in the current buffer are
+			abandoned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+フラグ '@var{j}' がない場合、最初のマッチへジャンプする。'@var{j}' がある場合は QuickFix リストが更新されるだけである。[!] がついた場合、カレントバッファに対する変更は全て失われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Every second or so the searched file name is displayed
+			to give you an idea of the progress made.
+			Examples: >
+				:vimgrep /an error/ *.c
+				:vimgrep /\<FileName\>/ *.h include/*
+				:vimgrep /myfunc/ **/*.c
+<			For the use of "**" see |starstar-wildcard|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+進行状況を示すため、1 秒程度ごとに検索されたファイル名が表示される。
+
+例:
+@example
+:vimgrep /an error/ *.c
+:vimgrep /\<FileName\>/ *.h include/*
+:vimgrep /myfunc/ **/*.c
+@end example
+"**" の使い方については |starstar-wildcard| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:vim[grep][!] {pattern} {file} ...
+			Like above, but instead of enclosing the pattern in a
+			non-ID character use a white-separated pattern.  The
+			pattern must start with an ID character.
+			Example: >
+				:vimgrep Error *.c
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :vim[grep][!] @{pattern@} @{file@} ...
+上と同様だが、パターンを非 ID 文字で囲むのでなく、空白でパターンを区切る。パターンは ID 文字で始まらねばならない。
+
+例:
+@example
+:vimgrep Error *.c
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:lv* *:lvimgrep*
+:lv[imgrep][!] /{pattern}/[g][j] {file} ...
+:lv[imgrep][!] {pattern} {file} ...
+			Same as ":vimgrep", except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lv}
+@anchor{:lvimgrep}
+@cindex :lv
+@cindex :lvimgrep
+@item :lv[imgrep][!] /@{pattern@}/[g][j] @{file@} ..., @* :lv[imgrep][!] @{pattern@} @{file@} ...
+":vimgrep" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:vimgrepa* *:vimgrepadd*
+:vimgrepa[dd][!] /{pattern}/[g][j] {file} ...
+:vimgrepa[dd][!] {pattern} {file} ...
+			Just like ":vimgrep", but instead of making a new list
+			of errors the matches are appended to the current
+			list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:vimgrepa}
+@anchor{:vimgrepadd}
+@cindex :vimgrepa
+@cindex :vimgrepadd
+@item :vimgrepa[dd][!] /@{pattern@}/[g][j] @{file@} ..., @* :vimgrepa[dd][!] @{pattern@} @{file@} ...
+":vimgrep" と同様だが、新しくエラーリストを作る代わりに、現在のリストに追加する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:lvimgrepa* *:lvimgrepadd*
+:lvimgrepa[dd][!] /{pattern}/[g][j] {file} ...
+:lvimgrepa[dd][!] {pattern} {file} ...
+			Same as ":vimgrepadd", except the location list for
+			the current window is used instead of the quickfix
+			list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lvimgrepa}
+@anchor{:lvimgrepadd}
+@cindex :lvimgrepa
+@cindex :lvimgrepadd
+@item :lvimgrepa[dd][!] /@{pattern@}/[g][j] @{file@} ..., @* :lvimgrepa[dd][!] @{pattern@} @{file@} ...
+":vimgrepadd" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+5.2 External grep
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsection 5.2 外部 grep
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim can interface with "grep" and grep-like programs (such as the GNU
+id-utils) in a similar way to its compiler integration (see |:make| above).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はコンパイラに対するのと同じ方法 (|:make| 参照) で "grep" や GNU id-utils などの grep ライクなプログラムと連携できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+[Unix trivia: The name for the Unix "grep" command comes from ":g/re/p", where
+"re" stands for Regular Expression.]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[Unix 豆知識: Unix のコマンド "grep" の名前は ":g/re/p" に由来している。"re" は Regular Expression (正規表現) を意味する。]
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							    *:gr* *:grep*
+:gr[ep][!] [arguments]	Just like ":make", but use 'grepprg' instead of
+			'makeprg' and 'grepformat' instead of 'errorformat'.
+			When 'grepprg' is "internal" this works like
+			|:vimgrep|.  Note that the pattern needs to be
+			enclosed in separator characters then.
+			If the encoding of the program output differs from the
+			'encoding' option, you can use the 'makeencoding'
+			option to specify the encoding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:gr}
+@anchor{:grep}
+@cindex :gr
+@cindex :grep
+@item :gr[ep][!] [arguments]
+":make" と同じようにしかし '@option{makeprg}' の代わりに '@option{grepprg}' が、'@option{errorformat}' の代わりに '@option{grepformat}' が使われる。'@option{grepprg}' が "@var{internal}" の場合、|:vimgrep| と同様に機能する。その場合、パターンが区切り文字で囲まれていなければならないことに注意。
+
+プログラム出力のエンコーディングが '@option{encoding}' と異なる場合には、'@option{makeencoding}' オプションでエンコーディングを指定できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							    *:lgr* *:lgrep*
+:lgr[ep][!] [arguments]	Same as ":grep", except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lgr}
+@anchor{:lgrep}
+@cindex :lgr
+@cindex :lgrep
+@item :lgr[ep][!] [arguments]
+":grep" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:grepa* *:grepadd*
+:grepa[dd][!] [arguments]
+			Just like ":grep", but instead of making a new list of
+			errors the matches are appended to the current list.
+			Example: >
+				:call setqflist([])
+				:bufdo grepadd! something %
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:grepa}
+@anchor{:grepadd}
+@cindex :grepa
+@cindex :grepadd
+@item :grepa[dd][!] [arguments]
+":grep" と似ているが、新しいエラーリストを作らず、解釈されたエラーが現在のリストに追加される。
+
+例:
+@example
+:call setqflist([])
+:bufdo grepadd! something %
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<			The first command makes a new error list which is
+			empty.  The second command executes "grepadd" for each
+			listed buffer.  Note the use of ! to avoid that
+			":grepadd" jumps to the first error, which is not
+			allowed with |:bufdo|.
+			An example that uses the argument list and avoids
+			errors for files without matches: >
+                                :silent argdo try 
+				  \ | grepadd! something %
+				  \ | catch /E480:/
+				  \ | endtry"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+1 番目のコマンドは新しい空のエラーリストを作成する。2 番目のコマンドはバッファリスト内の各バッファに対し "grepadd" を実行する。最初のエラーへジャンプするのを避けるために ! を使っていることに注意。|:bufdo| でジャンプすることはできない。
+
+引数リスト内のファイルに対して実行し、マッチがないファイルでのエラーを回避する例:
+@example
+:silent argdo try 
+  \ | grepadd! something %
+  \ | catch /E480:/
+  \ | endtry"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<
+			If the encoding of the program output differs from the
+			'encoding' option, you can use the 'makeencoding'
+			option to specify the encoding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プログラム出力のエンコーディングが '@option{encoding}' と異なる場合には、'@option{makeencoding}' オプションでエンコーディングを指定できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lgrepa* *:lgrepadd*
+:lgrepa[dd][!] [arguments]
+			Same as ":grepadd", except the location list for the
+			current window is used instead of the quickfix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lgrepa}
+@anchor{:lgrepadd}
+@cindex :lgrepa
+@cindex :lgrepadd
+@item :lgrepa[dd][!] [arguments]
+":grepadd" と同様だが、QuickFix リストでなく、カレントウィンドウのロケーションリストが使われる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+5.3 Setting up external grep
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsection 5.3 grep をセットアップする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you have a standard "grep" program installed, the :grep command may work
+well with the defaults.  The syntax is very similar to the standard command: >
+
+	:grep foo *.c
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+標準的な "grep" プログラムがインストールされていれば :grep コマンドはデフォルトのままで動くだろう。使い方は標準的なコマンドにとてもよく似ている:
+@example
+:grep foo *.c
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Will search all files with the .c extension for the substring "foo".  The
+arguments to :grep are passed straight to the "grep" program, so you can use
+whatever options your "grep" supports.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは拡張子.c の全てのファイルの中から部分文字列 "foo" を検索する。:grep への引数はそのまま "grep" プログラムに渡されるので、その "grep" がサポートするオプションはなんでも使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+By default, :grep invokes grep with the -n option (show file and line
+numbers).  You can change this with the 'grepprg' option.  You will need to set
+'grepprg' if:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトでは :grep は grep を -n オプションつきで呼び出す (これはファイル名と行番号を出力させる)。これは '@option{grepprg}' オプションで変更できる。次のような場合に '@option{grepprg}' を変更する必要があるだろう:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+a)	You are using a program that isn't called "grep"
+b)	You have to call grep with a full path
+c)	You want to pass other options automatically (e.g. case insensitive
+	search.)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .9
+@item a) @tab "grep" 以外の名前のプログラムを使っているとき
+@item b) @tab grepをフルパスで呼ばなければならないとき
+@item c) @tab 他のオプションを自動的に渡したいとき (例: 大文字・小文字の無視)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Once "grep" has executed, Vim parses the results using the 'grepformat'
+option.  This option works in the same way as the 'errorformat' option - see
+that for details.  You may need to change 'grepformat' from the default if
+your grep outputs in a non-standard format, or you are using some other
+program with a special format.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"grep" が実行されると、Vim はその結果を '@option{grepformat}' オプションに従って解釈する。このオプションは '@option{errorformat}' オプションと同様に働くので詳細はそちらを参照すること。あなたの grep が標準的でない書式で出力したり、あるいは特別な書式を持つ他のプログラムを使っている場合は '@option{grepformat}' をデフォルト値から変更する必要があるだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Once the results are parsed, Vim loads the first file containing a match and
+jumps to the appropriate line, in the same way that it jumps to a compiler
+error in |quickfix| mode.  You can then use the |:cnext|, |:clist|, etc.
+commands to see the other matches.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+結果が解釈されると、|quickfix| モードにおけるコンパイルエラーと同様に、Vim はマッチした部分を含む最初のファイルを読み込み、対応した行へジャンプする。その後は |:cnext|, |:clist| などのコマンドを使って他のマッチにジャンプすることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+5.4 Using :grep with id-utils
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsection 5.4 id-utils と共に :grep を使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can set up :grep to work with the GNU id-utils like this: >
+
+	:set grepprg=lid\ -Rgrep\ -s
+	:set grepformat=%f:%l:%m
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+:grep を GNU id-utils と共に使うにはこのようにする:
+@example
+:set grepprg=lid\ -Rgrep\ -s
+:set grepformat=%f:%l:%m
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+then >
+	:grep (regexp)
+
+works just as you'd expect.
+(provided you remembered to mkid first :)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そして
+@example
+:grep (regexp)
+@end example
+これで期待通りの動作をする。
+
+(最初に mkid をするのを忘れていなければ)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+5.5 Browsing source code with :vimgrep or :grep
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsection 5.5 :vimgrep や :grep を使ってソースコードをわたり歩く
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Using the stack of error lists that Vim keeps, you can browse your files to
+look for functions and the functions they call.  For example, suppose that you
+have to add an argument to the read_file() function.  You enter this command: >
+
+	:vimgrep /\<read_file\>/ *.c
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が保存するエラーリストのスタックを使うことによって、ファイルをわたり歩き、関数とその関数が呼んでいる関数を探すことができる。例えば、read_file() 関数に引数を加えたいとする。次のようにコマンドを打てばよい:
+@example
+:vimgrep /\<read_file\>/ *.c
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You use ":cn" to go along the list of matches and add the argument.  At one
+place you have to get the new argument from a higher level function msg(), and
+need to change that one too.  Thus you use: >
+
+	:vimgrep /\<msg\>/ *.c
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+:cn でマッチのリストを巡り、引数を加えることができる。またあるとき上位の関数 msg() から新しい引数を得て、それを変更しなければならないとする。ならばこうするとよい:
+@example
+:vimgrep /\<msg\>/ *.c
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+While changing the msg() functions, you find another function that needs to
+get the argument from a higher level.  You can again use ":vimgrep" to find
+these functions.  Once you are finished with one function, you can use >
+
+	:colder
+
+to go back to the previous one.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+msg() 関数を変更しているときに、上位から引数を得なければならない関数をもう 1 個見つけたとする。ならばその関数を見つけるのにまた ":vimgrep" を使えばよい。1 つの関数が終わったら、
+@example
+:colder
+@end example
+とすれば 1 つ前に戻ることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This works like browsing a tree: ":vimgrep" goes one level deeper, creating a
+list of branches.  ":colder" goes back to the previous level.  You can mix
+this use of ":vimgrep" and "colder" to browse all the locations in a tree-like
+way.  If you do this consistently, you will find all locations without the
+need to write down a "todo" list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはツリーをわたるのに似ている: ":vimgrep" が 1 レベル深く進むにつれて、分岐のリストが 1 つ作られる。":colder" は 1 つ上に戻る。":vimgrep" と ":colder" を使ってツリーに似た方法ですべての場所をわたることができる。これを一貫して行えば、"todo" のリストを書き留めることなく、すべての場所に行くことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+=============================================================================
+6. Selecting a compiler					*compiler-select*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{compiler-select}
+@cindex compiler-select
+@section 6. コンパイラを選ぶ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:comp* *:compiler* *E666*
+:comp[iler][!] {name}		Set options to work with compiler {name}.
+				Without the "!" options are set for the
+				current buffer.  With "!" global options are
+				set.
+				If you use ":compiler foo" in "file.foo" and
+				then ":compiler! bar" in another buffer, Vim
+				will keep on using "foo" in "file.foo".
+				{not available when compiled without the
+				|+eval| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:comp}
+@anchor{:compiler}
+@anchor{E666}
+@cindex :comp
+@cindex :compiler
+@cindex E666
+@item :comp[iler][!] @{name@}
+コンパイラ @{name@} を使うときに機能するオプションを設定する。"!" オプションがない場合は現在のバッファに対して設定される。"!" がある場合はグローバルオプションが設定される。
+
+"file.foo" で ":compiler foo" とし、その後別のバッファで ":compiler! bar" としたとき、Vim は "file.faoo" では "foo" を使い続ける。
+
+@{|+eval| 機能なしでコンパイルされた場合には使用できない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The Vim plugins in the "compiler" directory will set options to use the
+selected compiler.  For `:compiler` local options are set, for `:compiler!`
+global options.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"compiler" ディレクトリ内にある Vim プラグインによって、選択されたコンパイラを使うためのオプションが設定される。`:compiler` はローカルオプションを設定し、`:compiler!` はグローバルオプションを設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*current_compiler*
+To support older Vim versions, the plugins always use "current_compiler" and
+not "b:current_compiler".  What the command actually does is the following:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{current_compiler}
+@cindex current_compiler
+Vim の古いバージョンをサポートするために、それらのプラグインは常に "b:current_compiler" でなく "current_compiler" を使う。このコマンドが実際に行うことは次の通り:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Delete the "current_compiler" and "b:current_compiler" variables.
+- Define the "CompilerSet" user command.  With "!" it does ":set", without "!"
+  it does ":setlocal".
+- Execute ":runtime! compiler/{name}.vim".  The plugins are expected to set
+  options with "CompilerSet" and set the "current_compiler" variable to the
+  name of the compiler.
+- Delete the "CompilerSet" user command.
+- Set "b:current_compiler" to the value of "current_compiler".
+- Without "!" the old value of "current_compiler" is restored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 変数 "current_compiler" と "b:current_compiler" を削除する
+@item ユーザーコマンド "CompilerSet" を定義する。"!" がついた場合は ":set" を行い、"!" が無い場合は ":setlocal" を実行する。
+@item ":runtime! compiler/@{name@}.vim" を実行する。このプラグインは "CompilerSet"に伴うオプションを設定し、変数 "current_compiler" をそのコンパイラの名前に設定すると期待される。
+@item ユーザーコマンド "CompilerSet" を削除する。
+@item "b:current_compiler" を "current_compiler" の値に設定する。
+@item "!" が無い場合は "current_compiler" の元の値を復元する。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+For writing a compiler plugin, see |write-compiler-plugin|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コンパイラプラグインを書くためには |write-compiler-plugin| を参照せよ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+GCC					*quickfix-gcc*	*compiler-gcc*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{quickfix-gcc}
+@anchor{compiler-gcc}
+@cindex quickfix-gcc
+@cindex compiler-gcc
+@subsection GCC
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There's one variable you can set for the GCC compiler:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GCC 用に設定できる変数は 1 つある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+g:compiler_gcc_ignore_unmatched_lines
+				Ignore lines that don't match any patterns
+				defined for GCC.  Useful if output from
+				commands run from make are generating false
+				positives.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item g:compiler_gcc_ignore_unmatched_lines
+GCC 用に定義されたどのパターンにもマッチしない行を無視する。make から起動されたコマンドの出力のせいで誤検出 (false positive) が発生してしまうときに有用である。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MANX AZTEC C				*quickfix-manx* *compiler-manx*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{quickfix-manx}
+@anchor{compiler-manx}
+@cindex quickfix-manx
+@cindex compiler-manx
+@subsection MANX AZTEC C
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To use Vim with Manx's Aztec C compiler on the Amiga you should do the
+following:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Amiga 上で Manx's Aztec C compiler とともに Vim を使うには次のようにする:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Set the CCEDIT environment variable with the command: >
+	mset "CCEDIT=vim -q"
+- Compile with the -qf option.  If the compiler finds any errors, Vim is
+  started and the cursor is positioned on the first error.  The error message
+  will be displayed on the last line.  You can go to other errors with the
+  commands mentioned above.  You can fix the errors and write the file(s).
+- If you exit Vim normally the compiler will re-compile the same file.  If you
+  exit with the :cq command, the compiler will terminate.  Do this if you
+  cannot fix the error, or if another file needs to be compiled first.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 環境変数 CCEDIT を次のコマンドで設定する:
+@example
+mset "CCEDIT=vim -q"
+@end example
+@item -qf オプションをつけてコンパイルする。もしコンパイラがエラーを見つけたら Vim がカーソルを最初のエラーの上に置いた状態で起動する。エラーメッセージは最後の行に表示される。上で述べたコマンドを使って他のエラーへ移動することができる。エラーを修正し、ファイルを保存できる。
+@item Vim を普通に終了するとコンパイラが同じファイルを再コンパイルする。:cq コマンドで終了した場合はコンパイラは終了する。エラーを修正できないときや、まず他のファイルをコンパイルする必要があるときはそうするとよい。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are some restrictions to the Quickfix mode on the Amiga.  The
+compiler only writes the first 25 errors to the errorfile (Manx's
+documentation does not say how to get more).  If you want to find the others,
+you will have to fix a few errors and exit the editor.  After recompiling,
+up to 25 remaining errors will be found.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Amiga における Quickfix モードには他にも制限がある。コンパイラは最初の 25 個のエラーしか出力しない (Manx's のドキュメントにはそれ以上出力する方法が書かれていない)。それ以上のエラーを探したいのならば、幾つかのエラーを修正しエディタを抜ける必要がある。再コンパイルの後残り 25 個のエラーが出てくる
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If Vim was started from the compiler, the :sh and some :!  commands will not
+work, because Vim is then running in the same process as the compiler and
+stdin (standard input) will not be interactive.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim がコンパイラから起動された場合、:sh やいくつかの :! コマンドは機能しない。Vim がコンパイラと同じプロセスの中で動いているため、標準出力が利用できないからである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+PERL					*quickfix-perl* *compiler-perl*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{quickfix-perl}
+@anchor{compiler-perl}
+@cindex quickfix-perl
+@cindex compiler-perl
+@subsection PERL
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Perl compiler plugin doesn't actually compile, but invokes Perl's internal
+syntax checking feature and parses the output for possible errors so you can
+correct them in quick-fix mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Perl コンパイラプラグインはコンパイルはしないが、Perl 内部の構文チェック機能を呼び出し、その出力を解析してエラーを QuickFix モードで修正できるようにする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Warnings are forced regardless of "no warnings" or "$^W = 0" within the file
+being checked.  To disable this set g:perl_compiler_force_warnings to a zero
+value.  For example: >
+	let g:perl_compiler_force_warnings = 0
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+チェックするファイルの中に "no warnings" または "$^W = 0" と書いてあっても関係なく警告が表示される。これを無効にするには g:perl_compiler_force_warnings に 0 を代入する。例:
+@example
+let g:perl_compiler_force_warnings = 0
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+PYUNIT COMPILER						*compiler-pyunit*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{compiler-pyunit}
+@cindex compiler-pyunit
+@subsection PYUNIT COMPILER
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is not actually a compiler, but a unit testing framework for the
+Python language.  It is included into standard Python distribution
+starting from version 2.0.  For older versions, you can get it from
+http://pyunit.sourceforge.net.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは実際にはコンパイラではなく、Python 言語用のユニットテストフレームワークである。PYUNIT はバージョン 2.0 から Python 標準ディストリビューションに含まれるようになった。それより古いバージョンは @url{http://pyunit.sourceforge.net} で入手できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you run your tests with the help of the framework, possible errors
+are parsed by Vim and presented for you in quick-fix mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+フレームワークの助けを借りてテストを走らせるとき、エラーがあれば Vim によって解釈され、QuickFix モードで表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Unfortunately, there is no standard way to run the tests.
+The alltests.py script seems to be used quite often, that's all.
+Useful values for the 'makeprg' options therefore are:
+ setlocal makeprg=./alltests.py " Run a testsuite
+ setlocal makeprg=python\ %:S   " Run a single testcase
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+残念ながら、テストを走らせる標準的な方法はない。alltests.py スクリプトがよく使われると思われるが、それだけである。よって、'@option{makeprg}' に対する実用的な値は
+@example
+setlocal makeprg=./alltests.py " テストスイートを走らせる
+setlocal makeprg=python\ %:S   " １つのテストケースを走らせる
+@end example
+となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Also see http://vim.sourceforge.net/tip_view.php?tip_id=280.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次も参照。@url{http://vim.sourceforge.net/tip_view.php?tip_id=280.}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+TEX COMPILER						*compiler-tex*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{compiler-tex}
+@cindex compiler-tex
+@subsection TEX COMPILER
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Included in the distribution compiler for TeX ($VIMRUNTIME/compiler/tex.vim)
+uses make command if possible.  If the compiler finds a file named "Makefile"
+or "makefile" in the current directory, it supposes that you want to process
+your *TeX files with make, and the makefile does the right work.  In this case
+compiler sets 'errorformat' for *TeX output and leaves 'makeprg' untouched.  If
+neither "Makefile" nor "makefile" is found, the compiler will not use make.
+You can force the compiler to ignore makefiles by defining
+b:tex_ignore_makefile or g:tex_ignore_makefile variable (they are checked for
+existence only).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ディストリビューションに含まれている TeX 用のコンパイラスクリプト ($VIMRUNTIME/compiler/tex.vim) は、可能なら make コマンドを使う。コンパイラがカレントディレクトリに "Makefile" または "makefile" というファイルを見つけたら、*TeX ファイルを make を使って処理しようとし、その makefile 通りの動作をする。この場合コンパイラは '@option{errorformat}' を *TeX 出力用にセットし、'@option{makeprg}' は触らずにそのままにしておく。"Makefie" も "makefile" も見つからない場合はコンパイラは make を使わない。makefile を無視するように指定することもできる。変数 b:tex_ignore_makefile か g:tex_ignore_makefile を設定すればよい (これらは存在するかのみチェックされる)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the compiler chose not to use make, it need to choose a right program for
+processing your input.  If b:tex_flavor or g:tex_flavor (in this precedence)
+variable exists, it defines TeX flavor for :make (actually, this is the name
+of executed command), and if both variables do not exist, it defaults to
+"latex".  For example, while editing chapter2.tex \input-ed from mypaper.tex
+written in AMS-TeX: >
+
+	:let b:tex_flavor = 'amstex'
+	:compiler tex
+<	[editing...] >
+	:make mypaper
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コンパイラが make を使わないことになったら、コンパイラは入力を処理するプログラムを選択する。変数 b:tex_flavorかg:tex_flavor (この順で探される) が存在すれば、それが :make コマンドのためのオプションを定義する。もし両方とも存在しなければ、既定値 "latex" になる。例えば、AMS-TeX で書かれた mypaper.tex から \input された @file{chapter2.tex} を編集中に
+@example
+:let b:tex_flavor = 'amstex'
+:compiler tex
+@end example
+[editing...]
+@example
+:make mypaper
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that you must specify a name of the file to process as an argument (to
+process the right file when editing \input-ed or \include-ed file; portable
+solution for substituting % for no arguments is welcome).  This is not in the
+semantics of make, where you specify a target, not source, but you may specify
+filename without extension ".tex" and mean this as "make filename.dvi or
+filename.pdf or filename.some_result_extension according to compiler".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+処理するファイルの名前を引数に指定しなければならないことに注意 (\input か \include されたファイルを編集中に正しいファイルを処理するため; % を引数なしに置換するポータブルな方法もよい)。これはソースではなく、ターゲットを指定するという make の意味論ではないが、拡張子 ".tex" を除いたファイル名を指定してもよい。その場合、「@file{filename.dvi} または @file{filename.pdf} または filename.[コンパイラに応じた何らかの結果の拡張子] をメイクしろ」ということを意味する。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: tex command line syntax is set to usable both for MikTeX (suggestion
+by Srinath Avadhanula) and teTeX (checked by Artem Chuprina).  Suggestion
+from |errorformat-LaTeX| is too complex to keep it working for different
+shells and OSes and also does not allow to use other available TeX options,
+if any.  If your TeX doesn't support "-interaction=nonstopmode", please
+report it with different means to express \nonstopmode from the command line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+tex コマンドライン文法は MikTex (Srinath Avadhanula によって提案された) と teTeX (Artem Chuprina によってチェックされた) の両方で使えるように設定されている。|errorformat-LaTeX| からの提案は他のシェルや OS で動かせるようにするには複雑すぎるし、他の TeX オプションを使うことも許さない。もしあなたの TeX が "-interaction=nonstopmode" をサポートしていなければ、コマンドラインから \nonstopmode を表現する他の方法とともにその旨を報告してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+=============================================================================
+7. The error format					*error-file-format*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{error-file-format}
+@cindex error-file-format
+@section 7. エラーフォーマット
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*errorformat* *E372* *E373* *E374*
+						*E375* *E376* *E377* *E378*
+The 'errorformat' option specifies a list of formats that are recognized.  The
+first format that matches with an error message is used.  You can add several
+formats for different messages your compiler produces, or even entries for
+multiple compilers.  See |efm-entries|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{errorformat}
+@anchor{E372}
+@anchor{E373}
+@anchor{E374}
+@anchor{E375}
+@anchor{E376}
+@anchor{E377}
+@anchor{E378}
+@cindex errorformat
+@cindex E372
+@cindex E373
+@cindex E374
+@cindex E375
+@cindex E376
+@cindex E377
+@cindex E378
+'@option{errorformat}' オプションは認識されるエラーフォーマットのリストを指定する。その中からエラーメッセージにマッチした最初のフォーマットが使われる。複数のフォーマットを指定して、数種類のメッセージに対応したり、複数のコンパイラに対応したりすることができる。|efm-entries| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Each entry in 'errorformat' is a scanf-like string that describes the format.
+First, you need to know how scanf works.  Look in the documentation of your
+C compiler.  Below you find the % items that Vim understands.  Others are
+invalid.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{errorformat}' の各要素は、scanf に似たフォーマットを記述する文字列である。はじめに、scanf がどのように働くか知る必要がある。C コンパイラのドキュメントを読むこと。以下は Vim が理解する % の項目である。他は無効になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Special characters in 'errorformat' are comma and backslash.  See
+|efm-entries| for how to deal with them.  Note that a literal "%" is matched
+by "%%", thus it is not escaped with a backslash.
+Keep in mind that in the `:make` and `:grep` output all NUL characters are
+replaced with SOH (0x01).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{errorformat}' 中の特別な文字はコンマとバックスラッシュである。それがどう扱われるかは |efm-entries| を参照。"%%" はリテラル "%" にマッチする。よってこれはバックスラッシュでエスケープしない。
+
+`:make`と `:grep` の出力のすべての NUL 文字は SOH (0x01) に置換されるので注意。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: By default the difference between upper and lowercase is ignored.  If
+you want to match case, add "\C" to the pattern |/\C|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+デフォルトでは大文字と小文字の違いは無視される。もし大文字・小文字の区別をしたいなら "\C" をパターンに付け加える |/\C|。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Basic items
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsection 基本要素
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	%f		file name (finds a string)
+	%l		line number (finds a number)
+	%c		column number (finds a number representing character
+			column of the error, (1 <tab> == 1 character column))
+	%v		virtual column number (finds a number representing
+			screen column of the error (1 <tab> == 8 screen
+			columns))
+	%t		error type (finds a single character)
+	%n		error number (finds a number)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item %f @tab ファイル名 (文字列を検索)
+@item %l @tab 行番号 (数字を検索)
+@item %c @tab 桁番号 (エラーの桁を表す数字 (<Tab> 1 個は 1 桁と数える))
+@item %v @tab 画面上の桁番号 (エラーの画面上の桁を表す番号 (<Tab> 1 個はスクリーン上 8 桁と数える))
+@item %t @tab エラーの種類 (1 文字を検索)
+@item %n @tab エラー番号 (数字を検索)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	%m		error message (finds a string)
+	%r		matches the "rest" of a single-line file message %O/P/Q
+	%p		pointer line (finds a sequence of '-', '.', ' ' or
+			tabs and uses the length for the column number)
+	%*{conv}	any scanf non-assignable conversion
+	%%		the single '%' character
+	%s		search text (finds a string)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item %m @tab エラーメッセージ (文字列を検索)
+@item %r @tab その行の残り全部 %O/%P/%Q
+@item %p @tab ポインタ行 ('-', '.', ' ' またはタブの列を検索し、その長さを桁番号とする)
+@item %*@{conv@} @tab scanf に割り当てられない変換
+@item %% @tab 1 個のリテラル '%'
+@item %s @tab テキスト検索 (文字列を検索)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "%f" conversion may depend on the current 'isfname' setting.  "~/" is
+expanded to the home directory and environment variables are expanded.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"%f" の変換は現在の '@option{isfname}' の設定に依存する。"~/" はホームディレクトリ名に展開され、環境変数も展開される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "%f" and "%m" conversions have to detect the end of the string.  This
+normally happens by matching following characters and items.  When nothing is
+following the rest of the line is matched.  If "%f" is followed by a '%' or a
+backslash, it will look for a sequence of 'isfname' characters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+変換 "%f" と "%m" はその文字列の終端を検出しなければならない。通常は、後に続く文字と要素がマッチすれば、そこが終端になる。もし後に続く要素がなかったら、その行の残りの部分がマッチする。"%f" の後に '%' かバックスラッシュが続いているなら、それは '@option{isfname}' 文字の列を検索する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On MS-DOS, MS-Windows and OS/2 a leading "C:" will be included in "%f", even
+when using "%f:".  This means that a file name which is a single alphabetical
+letter will not be detected.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-DOS, MS-Windows そして OS/2 では、"C:" で始まる部分は "%f" に含まれる。"%f:" と指定したときでもそうなる。これはアルファベット 1 文字の名前のファイルは検出されないことを意味する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "%p" conversion is normally followed by a "^".  It's used for compilers
+that output a line like: >
+	    ^
+or >
+   ---------^
+to indicate the column of the error.  This is to be used in a multi-line error
+message.  See |errorformat-javac| for a  useful example.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"%p" の後には通常 "^" をつける。これは、以下のような出力によってエラーの桁を示すコンパイラ用に使える:
+@verbatim
+            ^
+または >
+   ---------^
+@end verbatim
+これは複数行のエラーメッセージでも使える。実用的なサンプルとしては |errorformat-javac| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "%s" conversion specifies the text to search for to locate the error line.
+The text is used as a literal string.  The anchors "^" and "$" are added to
+the text to locate the error line exactly matching the search text and the
+text is prefixed with the "\V" atom to make it "very nomagic".  The "%s"
+conversion can be used to locate lines without a line number in the error
+output.  Like the output of the "grep" shell command.
+When the pattern is present the line number will not be used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"%s" はエラー行の位置を探すためのテキストを指定する。そのテキストは文字列リテラルして使われる。検索テキストに正確にマッチするエラー行を探すために、"^" と"$" がテキストに加えられる。また、テキストの先頭に "\V" が追加され、"very nomagic" とされる。"%s" はエラー出力中の行番号がない行を探すために使うことができる。シェルコマンド "grep" の出力のように。
+
+パターンがある場合は行番号は使われない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Changing directory
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsection ディレクトリを変更する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The following uppercase conversion characters specify the type of special
+format strings.  At most one of them may be given as a prefix at the begin
+of a single comma-separated format pattern.
+Some compilers produce messages that consist of directory names that have to
+be prepended to each file name read by %f (example: GNU make).  The following
+codes can be used to scan these directory names; they will be stored in an
+internal directory stack.					*E379*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の大文字の変換文字は、特別なフォーマット文字列のタイプを指定する。これらのうち高々 1 つをコンマ区切りのフォーマットパターンの先頭につけることができる。
+
+"%f" によって読まれるファイル名の前につけたす必要があるディレクトリ名を出力するコンパイラがある (例: GNU make)。以下のコードはそれらのディレクトリ名を解釈するのに使われる。そのディレクトリ名は内部のディレクトリスタックに保存される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	%D		"enter directory" format string; expects a following
+			  %f that finds the directory name
+	%X		"leave directory" format string; expects following %f
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E379}
+@cindex E379
+@multitable @columnfractions .1 .9
+@item %D @tab "enter directory" フォーマット文字列。これ以下の %f はそのディレクトリ名を検索する。
+@item %X @tab "leave directory" フォーマット文字列。これ以下の %f はディレクトリスタックの1つ前のディレクトリを検索する。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When defining an "enter directory" or "leave directory" format, the "%D" or
+"%X" has to be given at the start of that substring.  Vim tracks the directory
+changes and prepends the current directory to each erroneous file found with a
+relative path.  See |quickfix-directory-stack| for details, tips and
+limitations.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"enter directory" や "leave directory" フォーマットを定義する場合、"%D" や "%X" は部分文字列の最初に置かれなけれならない。Vimはディレクトリ変更を追跡し相対パスによって指定されたファイル名の前にカレントディレクトリ名をつけたす。Tips や制限など詳細は |quickfix-directory-stack| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Multi-line messages				*errorformat-multi-line*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{errorformat-multi-line}
+@cindex errorformat-multi-line
+@subsection 複数行にわたるメッセージ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is possible to read the output of programs that produce multi-line
+messages, i.e. error strings that consume more than one line.  Possible
+prefixes are:
+	%E		start of a multi-line error message
+	%W		start of a multi-line warning message
+	%I		start of a multi-line informational message
+	%A		start of a multi-line message (unspecified type)
+	%>		for next line start with current pattern again |efm-%>|
+	%C		continuation of a multi-line message
+	%Z		end of a multi-line message
+These can be used with '+' and '-', see |efm-ignore| below.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+複数行メッセージにわたるメッセージを解釈することも可能である。取りうるプリフィックスは:
+@multitable @columnfractions .1 .9
+@item %E @tab 複数行エラーメッセージの開始
+@item %W @tab 複数行警告メッセージの開始
+@item %I @tab 複数行情報メッセージの開始
+@item %A @tab 複数行メッセージの開始 (種類指定なし)
+@item %> @tab 現在と同じパターンで始まっている次行 |efm-%>|
+@item %C @tab 複数行メッセージの継続
+@item %Z @tab 複数行メッセージの終了
+@end multitable
+これらに対して '+' と '-' をつけることもできる。|efm-ignore| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Using "\n" in the pattern won't work to match multi-line messages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パターンに "\n" を含めても、複数行のメッセージにはマッチしない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example: Your compiler happens to write out errors in the following format
+(leading line numbers not being part of the actual output):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例: コンパイラが次のフォーマットでエラーを出力したとする。
+
+(行頭の行番号は実際の出力の一部ではない):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+     1	Error 275 ~
+     2	line 42 ~
+     3	column 3 ~
+     4	' ' expected after '--' ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+1  Error 275
+2  line 42
+3  column 3
+4  ' ' expected after '--'
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The appropriate error format string has to look like this: >
+   :set efm=%EError\ %n,%Cline\ %l,%Ccolumn\ %c,%Z%m
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+適切なエラーフォーマット文字列はこのようになる:
+@example
+:set efm=%EError\ %n,%Cline\ %l,%Ccolumn\ %c,%Z%m
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+And the |:clist| error message generated for this error is:
+
+ 1:42 col 3 error 275:  ' ' expected after '--'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すると、このエラーに対し |:clist| が表示するエラーメッセージはこのようになる:
+@verbatim
+1:42 col 3 error 275:  ' ' expected after '--'
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Another example: Think of a Python interpreter that produces the following
+error message (line numbers are not part of the actual output):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+別の例: 次のエラーメッセージを出力する Python インタープリターを考える。
+
+(行頭の行番号は実際の出力の一部ではない):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+     1	==============================================================
+     2	FAIL: testGetTypeIdCachesResult (dbfacadeTest.DjsDBFacadeTest)
+     3	--------------------------------------------------------------
+     4	Traceback (most recent call last):
+     5	  File "unittests/dbfacadeTest.py", line 89, in testFoo
+     6	    self.assertEquals(34, dtid)
+     7	  File "/usr/lib/python2.2/unittest.py", line 286, in
+     8	 failUnlessEqual
+     9	    raise self.failureException, \
+    10	AssertionError: 34 != 33
+    11
+    12	--------------------------------------------------------------
+    13	Ran 27 tests in 0.063s
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+ 1  ==============================================================
+ 2  FAIL: testGetTypeIdCachesResult (dbfacadeTest.DjsDBFacadeTest)
+ 3  --------------------------------------------------------------
+ 4  Traceback (most recent call last):
+ 5    File "unittests/dbfacadeTest.py", line 89, in testFoo
+ 6      self.assertEquals(34, dtid)
+ 7    File "/usr/lib/python2.2/unittest.py", line 286, in
+ 8   failUnlessEqual
+ 9      raise self.failureException, \
+10  AssertionError: 34 != 33
+11
+12  --------------------------------------------------------------
+13  Ran 27 tests in 0.063s
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Say you want |:clist| write the relevant information of this message only,
+namely:
+ 5 unittests/dbfacadeTest.py:89:  AssertionError: 34 != 33
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このメッセージに関する情報だけを |:clist| で表示させたいところだろう。
+
+このように:
+@verbatim
+5 unittests/dbfacadeTest.py:89:  AssertionError: 34 != 33
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Then the error format string could be defined as follows: >
+  :set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そのためにはエラーフォーマット文字列を次のように定義する:
+@example
+:set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@@=%m
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the %C string is given before the %A here: since the expression
+' %.%#' (which stands for the regular expression ' .*') matches every line
+starting with a space, followed by any characters to the end of the line,
+it also hides line 7 which would trigger a separate error message otherwise.
+Error format strings are always parsed pattern by pattern until the first
+match occurs.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"%C" を "%A" の前に置いていることに注意: ' %.%#' (これは正規表現 ' .*' を意味する) がスペースで始まるすべての行にマッチするので、それが7行目を以降を隠してくれる。そうでないと7行目は別のエラーメッセージの始まりと解釈されてしまう。エラーフォーマットは常に、リストの中から 1 つ 1 つ、最初のマッチが起こるまで試されていく。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*efm-%>*
+The %> item can be used to avoid trying patterns that appear earlier in
+'errorformat'.  This is useful for patterns that match just about anything.
+For example, if the error looks like this:
+
+	Error in line 123 of foo.c: ~
+	unknown variable "i" ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{efm-%>}
+@cindex efm-%>
+要素 %> は '@option{errorformat}' の最初の方に出てくるパターンを試すのを避けるために使える。これはほとんど何にでもマッチするパターンに便利である。例えば、エラーがこのようなら:
+@verbatim
+Error in line 123 of foo.c:
+unknown variable "i"
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This can be found with: >
+	:set efm=xxx,%E%>Error in line %l of %f:,%Z%m
+Where "xxx" has a pattern that would also match the second line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは以下でマッチできる:
+@example
+:set efm=xxx,%E%>Error in line %l of %f:,%Z%m
+@end example
+ここで "xxx" には 2 番目の行にもマッチするパターンが入るとする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Important: There is no memory of what part of the errorformat matched before;
+every line in the error file gets a complete new run through the error format
+lines.  For example, if one has: >
+  setlocal efm=aa,bb,cc,dd,ee
+Where aa, bb, etc. are error format strings.  Each line of the error file will
+be matched to the pattern aa, then bb, then cc, etc.  Just because cc matched
+the previous error line does _not_ mean that dd will be tried first on the
+current line, even if cc and dd are multi-line errorformat strings.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{重要:} @*
+エラーフォーマットのどの部分が以前にマッチしたかは記憶されていない。すなわち、エラーファイルの各行が毎回エラーフォーマットの各行に対してテストされる。例えば、次のようになっているとする:
+@example
+setlocal efm=aa,bb,cc,dd,ee
+@end example
+ここで aa, bb などはエラーフォーマット文字列とする。エラーファイルの各行がパターン aa, 次に bb, 次に cc… とテストされる。cc がエラーの 1 つ前の行にマッチしたからといって、dd が現在行に対して最初にテストされるということにはならない。cc と dd が複数行エラーフォーマット文字列だったとしても、である。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+
+@ifset EN
+Separate file name			*errorformat-separate-filename*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{errorformat-separate-filename}
+@cindex errorformat-separate-filename
+@subsection ファイル名を分割する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These prefixes are useful if the file name is given once and multiple messages
+follow that refer to this file name.
+	%O		single-line file message: overread the matched part
+	%P		single-line file message: push file %f onto the stack
+	%Q		single-line file message: pop the last file from stack
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+1 度現れたファイル名を複数のメッセージが参照する場合には、これらのプリフィックスが有効である。
+@multitable @columnfractions .1 .9
+@item %O @tab 1 行ファイルメッセージ: マッチ部分を読み込む (それ以前に記憶されていたものは消去される)
+@item %P @tab 1 行ファイルメッセージ: ファイル%fをスタックにプッシュする。
+@item %Q @tab 1 行ファイルメッセージ: スタックから最後のファイル名をポップする。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example: Given a compiler that produces the following error logfile (without
+leading line numbers):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例: 次のエラーログファイルを出力するコンパイラがあるとする (行番号は実際の出力ではない)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+     1	[a1.tt]
+     2	(1,17)  error: ';' missing
+     3	(21,2)  warning: variable 'z' not defined
+     4	(67,3)  error: end of file found before string ended
+     5
+     6	[a2.tt]
+     7
+     8	[a3.tt]
+     9	NEW compiler v1.1
+    10	(2,2)   warning: variable 'x' not defined
+    11	(67,3)  warning: 's' already defined
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+ 1  [a1.tt]
+ 2  (1,17)  error: ';' missing
+ 3  (21,2)  warning: variable 'z' not defined
+ 4  (67,3)  error: end of file found before string ended
+ 5
+ 6  [a2.tt]
+ 7
+ 8  [a3.tt]
+ 9  NEW compiler v1.1
+10  (2,2)   warning: variable 'x' not defined
+11  (67,3)  warning: 's' already defined
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This logfile lists several messages for each file enclosed in [...] which are
+properly parsed by an error format like this: >
+  :set efm=%+P[%f],(%l\\,%c)%*[\ ]%t%*[^:]:\ %m,%-Q
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このログファイルは [...] で囲まれたファイルに対し複数のメッセージを示している。これは次のエラーフォーマットで適切に解釈できる:
+@example
+:set efm=%+P[%f],(%l\\,%c)%*[\ ]%t%*[^:]:\ %m,%-Q
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A call of |:clist| writes them accordingly with their correct filenames:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:clist| を呼ぶとこれらをファイル名とともに適切に表示してくれる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  2 a1.tt:1 col 17 error: ';' missing
+  3 a1.tt:21 col 2 warning: variable 'z' not defined
+  4 a1.tt:67 col 3 error: end of file found before string ended
+  8 a3.tt:2 col 2 warning: variable 'x' not defined
+  9 a3.tt:67 col 3 warning: 's' already defined
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+2 a1.tt:1 col 17 error: ';' missing
+3 a1.tt:21 col 2 warning: variable 'z' not defined
+4 a1.tt:67 col 3 error: end of file found before string ended
+8 a3.tt:2 col 2 warning: variable 'x' not defined
+9 a3.tt:67 col 3 warning: 's' already defined
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Unlike the other prefixes that all match against whole lines, %P, %Q and %O
+can be used to match several patterns in the same line.  Thus it is possible
+to parse even nested files like in the following line:
+  {"file1" {"file2" error1} error2 {"file3" error3 {"file4" error4 error5}}}
+The %O then parses over strings that do not contain any push/pop file name
+information.  See |errorformat-LaTeX| for an extended example.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+行全体にマッチする他のプリフィックスとは違い、%P, %Q, %Oは同一行の複数のパターンにマッチさせるのに使える。それゆえ、次のようにファイルがネストした場合を解釈することもできる:
+@example
+@{"file1" @{"file2" error1@} error2 @{"file3" error3 @{"file4" error4 error5@}@}@}
+@end example
+%O はファイル名情報のプッシュ・ポップを含まない文字列を解釈する。発展例については |errorformat-LaTeX| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Ignoring and using whole messages			*efm-ignore*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{efm-ignore}
+@cindex efm-ignore
+@subsection メッセージ全体を無視する・使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The codes '+' or '-' can be combined with the uppercase codes above; in that
+case they have to precede the letter, e.g. '%+A' or '%-G':
+	%-		do not include the matching multi-line in any output
+	%+		include the whole matching line in the %m error string
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'+', '-' は大文字の指定文字と組み合わせて使う。'%+A' や '%-G' のように指定文字の前につける。
+@multitable @columnfractions .1 .9
+@item %- @tab 複数行のマッチを含まない。
+@item %+ @tab エラー文字列%m中でマッチした行全体
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+One prefix is only useful in combination with '+' or '-', namely %G.  It parses
+over lines containing general information like compiler version strings or
+other headers that can be skipped.
+	%-G		ignore this message
+	%+G		general message
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プリフィックス %G だけは '+' か '-' と組み合わせたときのみ意味を持つ。これはコンパイラバージョンのような一般的な情報を含む行か、無視するべきヘッダーを読み込む。
+@multitable @columnfractions .1 .9
+@item %-G @tab このメッセージを無視する
+@item %+G @tab 一般的なメッセージ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Pattern matching
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsection パターンマッチング
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The scanf()-like "%*[]" notation is supported for backward-compatibility
+with previous versions of Vim.  However, it is also possible to specify
+(nearly) any Vim supported regular expression in format strings.
+Since meta characters of the regular expression language can be part of
+ordinary matching strings or file names (and therefore internally have to
+be escaped), meta symbols have to be written with leading '%':
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+古いバージョンの Vim との下位互換性の為に scanf() と同じ "%*[]" という記法がサポートされている。しかし、フォーマット文字列に Vim がサポートするほぼ全ての正規表現を用いる事も可能である。正規表現言語のメタ文字は普通の文字列やファイル検索の一部と重なってしまうから (従って内部的にはエスケープされる必要がある)、メタシンボルは '%' を付加して表記される必要がある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	%\		The single '\' character.  Note that this has to be
+			escaped ("%\\") in ":set errorformat=" definitions.
+	%.		The single '.' character.
+	%#		The single '*'(!) character.
+	%^		The single '^' character.  Note that this is not
+			useful, the pattern already matches start of line.
+	%$		The single '$' character.  Note that this is not
+			useful, the pattern already matches end of line.
+	%[		The single '[' character for a [] character range.
+	%~		The single '~' character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .9
+@item %\ @tab 単体の '\' という文字。これは ":set errorformat=" の定義の中ではエスケープされて ("%\\") 書かれなければならない。
+@item %. @tab 単体の '.' という文字。
+@item %# @tab 単体の '*' (!) という文字。
+@item %^ @tab 単体の '^' という文字。注意: これなしでも行頭にはマッチするので、これは特に便利ではない。
+@item %$ @tab 単体の '$' という文字。注意: これなしでも行末にはマッチするので、これは特に便利ではない。
+@item %[ @tab 単体の '[' という文字。文字の範囲 [] のために使われる。
+@item %~ @tab 単体の '~' という文字。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When using character classes in expressions (see |/\i| for an overview),
+terms containing the "\+" quantifier can be written in the scanf() "%*"
+notation.  Example: "%\\d%\\+" ("\d\+", "any number") is equivalent to "%*\\d".
+Important note: The \(...\) grouping of sub-matches can not be used in format
+specifications because it is reserved for internal conversions.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+表現の中でキャラクタクラスを使用する場合 (概要は |/\i| を参照)、数量子 "\+" を含む語は scanf() の中に "%*" という記法で書くことができる。例: "%\\d%\\+" ("\d\+","どんな数字でも") は "%*\\d" と等価である。
+@quotation
+@strong{重要:} @*
+\(...\) のグループ表現は、内部変換に使うため予約されているからフォーマット指定内では使用することができない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Multiple entries in 'errorformat'			*efm-entries*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{efm-entries}
+@cindex efm-entries
+@subsection '@option{errorformat}' 内の複数の要素
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To be able to detect output from several compilers, several format patterns
+may be put in 'errorformat', separated by commas (note: blanks after the comma
+are ignored).  The first pattern that has a complete match is used.  If no
+match is found, matching parts from the last one will be used, although the
+file name is removed and the error message is set to the whole message.  If
+there is a pattern that may match output from several compilers (but not in a
+right way), put it after one that is more restrictive.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+複数のコンパイラからの出力を見つけることを可能にするために、コンマで区切って複数のフォーマットパターンを '@option{errorformat}' に設定することができるだろう (@strong{Note:} コンマ直後の空白は無視される)。完全にマッチした最初のパターンが採択される。マッチするものが無い場合、最後にマッチした部分が使われるが、ファイルネームは除外されエラーメッセージは全体のメッセージとして設定される。複数のコンパイラからの出力メッセージにマッチしてしまうパターンがあった (しかし正確には一致しない) 時には、より制限されたもの @{訳注: 他のメッセージにマッチし難いもの@} の後に置く。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To include a comma in a pattern precede it with a backslash (you have to type
+two in a ":set" command).  To include a backslash itself give two backslashes
+(you have to type four in a ":set" command).  You also need to put a backslash
+before a space for ":set".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パターンの先頭にコンマを含めるにはバックスラッシュ (":set" コマンド中では 2 度タイプするべきだ) を添える。バックスラッシュを含めるためには 2 つ与える (つまり ":set" コマンドの中では 4 つタイプする)。また、":set" コマンド内のスペースの前にはバックスラッシュを置く必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Valid matches						*quickfix-valid*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{quickfix-valid}
+@cindex quickfix-valid
+@subsection 有効なマッチ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If a line does not completely match one of the entries in 'errorformat', the
+whole line is put in the error message and the entry is marked "not valid"
+These lines are skipped with the ":cn" and ":cp" commands (unless there is
+no valid line at all).  You can use ":cl!" to display all the error messages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もし '@option{errorformat}' に完全には一致しない行が現れた場合、エラーメッセージ全体が表示され、エントリは無効とされコマンド ":cn" や ":cp" 使用時にはスキップされる (有効なエントリが全く無い場合で無い限り)。エラーメッセージの全てはコマンド ":cl!" で表示する事ができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the error format does not contain a file name Vim cannot switch to the
+correct file.  You will have to do this by hand.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+エラーフォーマットがファイル名を含んでいないと Vim は正しいファイルへジャンプすることができない。手動でやる必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Examples
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The format of the file from the Amiga Aztec compiler is:
+
+	filename>linenumber:columnnumber:errortype:errornumber:errormessage
+
+	filename	name of the file in which the error was detected
+	linenumber	line number where the error was detected
+	columnnumber	column number where the error was detected
+	errortype	type of the error, normally a single 'E' or 'W'
+	errornumber	number of the error (for lookup in the manual)
+	errormessage	description of the error
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Aztec compiler のファイルの書式は:
+@example
+ファイル名>行:列:エラータイプ:識別番号:メッセージ
+@end example
+@multitable @columnfractions .3 .7
+@item ファイル名 @tab エラーが見つかったファイルの名前
+@item 行 @tab エラーが見つかった行の通し番号
+@item 列 @tab エラーが見つかった場所の列数 (行先頭からの文字数)
+@item タイプ @tab エラーの種類、通常は一文字で 'E' か 'W'
+@item 識別番号 @tab エラーの番号 (マニュアルの検索用)
+@item メッセージ @tab エラーの説明
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This can be matched with this 'errorformat' entry:
+	%f>%l:%c:%t:%n:%m
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは '@option{errorformat}' をこのように設定すればマッチできる:
+@example
+%f>%l:%c:%t:%n:%m
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some examples for C compilers that produce single-line error outputs:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsubsection 単行エラーを出力する C コンパイラのための幾つかの例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+%f:%l:\ %t%*[^0123456789]%n:\ %m	for Manx/Aztec C error messages
+					(scanf() doesn't understand [0-9])
+%f\ %l\ %t%*[^0-9]%n:\ %m		for SAS C
+\"%f\"\\,%*[^0-9]%l:\ %m		for generic C compilers
+%f:%l:\ %m				for GCC
+%f:%l:\ %m,%Dgmake[%*\\d]:\ Entering\ directory\ `%f',
+%Dgmake[%*\\d]:\ Leaving\ directory\ `%f'
+					for GCC with gmake (concat the lines!)
+%f(%l)\ :\ %*[^:]:\ %m			old SCO C compiler (pre-OS5)
+%f(%l)\ :\ %t%*[^0-9]%n:\ %m		idem, with error type and number
+%f:%l:\ %m,In\ file\ included\ from\ %f:%l:,\^I\^Ifrom\ %f:%l%m
+					for GCC, with some extras
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .7 .3
+@item %f:%l:\ %t%*[^0123456789]%n:\ %m @tab Manx/Aztec C エラーメッセージ (scanf() は [0-9] を理解しない)
+@item %f\ %l\ %t%*[^0-9]%n:\ %m @tab SAS C 用
+@item \"%f\"\\,%*[^0-9]%l:\ %m @tab generic C compilers 用
+@item %f:%l:\ %m @tab GCC 用
+@item %f:%l:\ %m,%Dgmake[%*\\d]:\ Entering\ directory\ `%f', @* %Dgmake[%*\\d]:\ Leaving\ directory\ `%f' @tab GCC with gmake 用 (行を連結すること！)
+@item %f(%l)\ :\ %*[^:]:\ %m @tab old SCO C compiler (pre-OS5)
+@item %f(%l)\ :\ %t%*[^0-9]%n:\ %m @tab idem, エラーの種類と番号つき
+@item %f:%l:\ %m,In\ file\ included\ from\ %f:%l:,\^I\^Ifrom\ %f:%l%m @tab いくつかの拡張つき GCC
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Extended examples for the handling of multi-line messages are given below,
+see |errorformat-Jikes| and |errorformat-LaTeX|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+複数行メッセージを扱うために拡張した例が次の所で与えられる。|errorformat-Jikes| と |errorformat-LaTeX| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note the backslash in front of a space and double quote.  It is required for
+the :set command.  There are two backslashes in front of a comma, one for the
+:set command and one to avoid recognizing the comma as a separator of error
+formats.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+:set コマンドで使うときにはスペースとダブルクォートの前にバックスラッシュが必要なことに注意。コンマの前には 2 つのバックスラッシュを置く。1 つは :set コマンドのため、もう 1 つはコンマがエラーフォーマットの区切りと認識されるのを避けるためである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Filtering messages
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsubsection メッセージをフィルタリングする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you have a compiler that produces error messages that do not fit in the
+format string, you could write a program that translates the error messages
+into this format.  You can use this program with the ":make" command by
+changing the 'makeprg' option.  For example: >
+   :set mp=make\ \\\|&\ error_filter
+The backslashes before the pipe character are required to avoid it to be
+recognized as a command separator.  The backslash before each space is
+required for the set command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしコンパイラがフォーマットに合わないエラーメッセージを作成する場合、エラーメッセージをこのフォーマットに変換するプログラムを書く方法もある。その時はコマンド ":make" によって起動されるプログラムオプション '@option{makeprg}' を変更することで指定できる。例:
+@example
+:set mp=make\ \\\|&\ error_filter
+@end example
+パイプ (|) の前のバックスラッシュはコマンドセパレータとして認識されないために必要。コマンド "set" では空白の前にバックスラッシュが必要。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+=============================================================================
+8. The directory stack				*quickfix-directory-stack*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{quickfix-directory-stack}
+@cindex quickfix-directory-stack
+@section 8. ディレクトリスタック
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Quickfix maintains a stack for saving all used directories parsed from the
+make output.  For GNU-make this is rather simple, as it always prints the
+absolute path of all directories it enters and leaves.  Regardless if this is
+done via a 'cd' command in the makefile or with the parameter "-C dir" (change
+to directory before reading the makefile).  It may be useful to use the switch
+"-w" to force GNU-make to print out the working directory before and after
+processing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Quickfix は make の出力を解釈し、使われたディレクトリ全てをスタックで保持する。GNU-Make ではディレクトリに入ったり出たりすると常に絶対パスで表示されるので、これはむしろシンプルである。これは makefile 中の cd コマンドか、起動パラメーター "-C dir" (makefile の読みこみ前にディレクトリを変更) なのかには因らない。GNU-Make に強制的に処理の前後にワーキングディレクトリを表示されるためにスイッチ "-w" を使用するのは便利かもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Maintaining the correct directory is more complicated if you don't use
+GNU-make.  AIX-make for example doesn't print any information about its
+working directory.  Then you need to enhance the makefile.  In the makefile of
+LessTif there is a command which echoes "Making {target} in {dir}".  The
+special problem here is that it doesn't print information on leaving the
+directory and that it doesn't print the absolute path.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GNU-make を使用しない場合、正しいディレクトリを管理する事はもっと複雑になる。例えば AIX-make はワーキングディレクトリに関してなんの情報も表示しない。よって makefile に細工が必要となる。LessTif の makefile には "Making @{target@} in @{dir@}" と表示するコマンドがある。ここにはディレクトリを出る時の情報とその相対パスが表示されないという重要な問題もある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To solve the problem with relative paths and missing "leave directory"
+messages Vim uses following algorithm:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パスの関係とメッセージ "leave directory" が現れない問題のために Vim では次のアルゴリズムで対処している:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1) Check if the given directory is a subdirectory of the current directory.
+   If this is true, store it as the current directory.
+2) If it is not a subdir of the current directory, try if this is a
+   subdirectory of one of the upper directories.
+3) If the directory still isn't found, it is assumed to be a subdirectory
+   of Vim's current directory.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .9
+@item 1) @tab 与えられたディレクトリがカレントディレクトリの子か調べる。真ならばそれをカレントディレクトリとする。
+@item 2) @tab カレントディレクトリの子ディレクトリでなかった場合、上のディレクトリの子ディレクトリか (つまり兄弟ディレクトリ) を調べる。
+@item 3) @tab まだディレクトリが見つからない場合、これは Vim のカレントディレクトリの子ディレクトリだと仮定される。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Additionally it is checked for every file, if it really exists in the
+identified directory.  If not, it is searched in all other directories of the
+directory stack (NOT the directory subtree!).  If it is still not found, it is
+assumed that it is in Vim's current directory.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+付け加えて、全てのファイルについて認識されたディレクトリに実際に存在するのか調べられる。もしもなければディレクトリスタックの中の全てのディレクトリ (サブディレクトリではない) について探す。これでも見つからなければ Vim のカレントディレクトリにあるものと仮定される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are limitations in this algorithm.  These examples assume that make just
+prints information about entering a directory in the form "Making all in dir".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このアルゴリズムには制限がある。この例は make がディレクトリに入った時に "Making all in dir" の形で情報を表示すると仮定している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1) Assume you have following directories and files:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsection 1) 次のようなディレクトリとファイルがあったとする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   ./dir1
+   ./dir1/file1.c
+   ./file1.c
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+./dir1
+./dir1/file1.c
+./file1.c
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   If make processes the directory "./dir1" before the current directory and
+   there is an error in the file "./file1.c", you will end up with the file
+   "./dir1/file.c" loaded by Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カレントディレクトリの前に make が "./dir1" を処理し "./file1.c" にエラーがあると Vimは "./dir1/file.c" をロードしてしまう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   This can only be solved with a "leave directory" message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはメッセージ "leave directory" があれば解決する事ができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+2) Assume you have following directories and files:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@subsection 2) 次のようなディレクトリとファイルがあったとする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   ./dir1
+   ./dir1/dir2
+   ./dir2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+./dir1
+./dir1/dir2
+./dir2
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   You get the following:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のようになる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   Make output			  Directory interpreted by Vim
+   ------------------------	  ----------------------------
+   Making all in dir1		  ./dir1
+   Making all in dir2		  ./dir1/dir2
+   Making all in dir2		  ./dir1/dir2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Make の出力                    Vim が解釈するディレクトリ
+------------------------       ----------------------------
+Making all in dir1             ./dir1
+Making all in dir2             ./dir1/dir2
+Making all in dir2             ./dir1/dir2
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   This can be solved by printing absolute directories in the "enter directory"
+   message or by printing "leave directory" messages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはメッセージ "enter directory" に絶対パスが記述されるか、メッセージ "leave directory" が表示されれば解決される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To avoid this problem, ensure to print absolute directory names and "leave
+directory" messages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この問題を避けるため、ディレクトリの絶対パスとメッセージ "leave directory" が表示されるようにすればよい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples for Makefiles:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Makefile の例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Unix:
+    libs:
+	    for dn in $(LIBDIRS); do				\
+		(cd $$dn; echo "Entering dir '$$(pwd)'"; make); \
+		echo "Leaving dir";				\
+	    done
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Unix:
+    libs:
+            for dn in $(LIBDIRS); do                            \
+                (cd $$dn; echo "Entering dir '$$(pwd)'"; make); \
+                echo "Leaving dir";                             \
+            done
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Add
+    %DEntering\ dir\ '%f',%XLeaving\ dir
+to your 'errorformat' to handle the above output.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上の出力を取り扱うために
+@example
+%DEntering\ dir\ '%f',%XLeaving\ dir
+@end example
+を '@option{errorformat}' につけ加える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that Vim doesn't check if the directory name in a "leave directory"
+messages is the current directory.  This is why you could just use the message
+"Leaving dir".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Vim はメッセージ "leave directory" の中のディレクトリ名がカレントディレクトリかどうかはチェックしない。これが何故メッセージ "Leaveing dir" だけで良いかの理由だ。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+=============================================================================
+9. Specific error file formats			*errorformats*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{errorformats}
+@cindex errorformats
+@section 9. 具体的なエラーファイルフォーマット
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*errorformat-Jikes*
+Jikes(TM), a source-to-bytecode Java compiler published by IBM Research,
+produces simple multi-line error messages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{errorformat-Jikes}
+@cindex errorformat-Jikes
+IBM Research によって公開されている Java コンパイラ Jikes(TM) はシンプルなマルチラインエラーメッセージを出力する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An 'errorformat' string matching the produced messages is shown below.
+The following lines can be placed in the user's |vimrc| to overwrite Vim's
+recognized default formats, or see |:set+=| how to install this format
+additionally to the default. >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このメッセージにマッチする '@option{errorformat}' の文字列を下に示す。これをユーザーの |vimrc| に書くことで Vim がデフォルトで認識するフォーマットを上書きする事ができる。またデフォルトに追加インストールする方法は |:set+=| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  :set efm=%A%f:%l:%c:%*\\d:%*\\d:,
+	\%C%*\\s%trror:%m,
+	\%+C%*[^:]%trror:%m,
+	\%C%*\\s%tarning:%m,
+	\%C%m
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set efm=%A%f:%l:%c:%*\\d:%*\\d:,
+      \%C%*\\s%trror:%m,
+      \%+C%*[^:]%trror:%m,
+      \%C%*\\s%tarning:%m,
+      \%C%m
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Jikes(TM) produces a single-line error message when invoked with the option
+"+E", and can be matched with the following: >
+
+  :setl efm=%f:%l:%v:%*\\d:%*\\d:%*\\s%m
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Jikes(TM) はオプション "+E" とともに起動されたときは 1 行エラーメッセージを出力する。これは次によってマッチできる。
+@example
+:setl efm=%f:%l:%v:%*\\d:%*\\d:%*\\s%m
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*errorformat-javac*
+This 'errorformat' has been reported to work well for javac, which outputs a
+line with "^" to indicate the column of the error: >
+  :setl efm=%A%f:%l:\ %m,%-Z%p^,%-C%.%#
+or: >
+  :setl efm=%A%f:%l:\ %m,%+Z%p^,%+C%.%#,%-G%.%#
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{errorformat-javac}
+@cindex errorformat-javac
+この '@option{errorformat}' は、エラーの桁を示すのに "^" の行を出力する javac 用にうまく動作すると報告されている:
+@example
+:setl efm=%A%f:%l:\ %m,%-Z%p^,%-C%.%#
+@end example
+または:
+@example
+:setl efm=%A%f:%l:\ %m,%+Z%p^,%+C%.%#,%-G%.%#
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Here is an alternative from Michael F. Lamb for Unix that filters the errors
+first: >
+  :setl errorformat=%Z%f:%l:\ %m,%A%p^,%-G%*[^sl]%.%#
+  :setl makeprg=javac\ %:S\ 2>&1\ \\\|\ vim-javac-filter
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Michael F. Lamb が考案した別の方法を以下に示す。これは Unix 用で、最初にエラーをフィルタリングする:
+@example
+:setl errorformat=%Z%f:%l:\ %m,%A%p^,%-G%*[^sl]%.%#
+:setl makeprg=javac\ %:S\ 2>&1\ \\\|\ vim-javac-filter
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You need to put the following in "vim-javac-filter" somewhere in your path
+(e.g., in ~/bin) and make it executable: >
+   #!/bin/sed -f
+   /\^$/s/\t/\ /g;/:[0-9]\+:/{h;d};/^[ \t]*\^/G;
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下の行を "vim-javac-filter" というファイルに書いて、PATH の通ったディレクトリ (例えば~/bin) に置き、実行可能にしておく必要がある:
+@example
+#!/bin/sed -f
+/\^$/s/\t/\ /g;/:[0-9]\+:/@{h;d@};/^[ \t]*\^/G;
+@end example
+@{訳注: BSD sed では動作しないようです。GNU sed では動作します。@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In English, that sed script:
+- Changes single tabs to single spaces and
+- Moves the line with the filename, line number, error message to just after
+  the pointer line. That way, the unused error text between doesn't break
+  vim's notion of a "multi-line message" and also doesn't force us to include
+  it as a "continuation of a multi-line message."
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この sed スクリプトを言葉で説明すると次のようになる:
+@itemize @minus
+@item  1 つのタブを1つのスペースに置換し、
+@item ファイル名・行番号・エラーメッセージを含む行をポインタ行 ("^" の行のこと) の直後に移動する。これによって、エラーメッセージ行とポインタ行の間の使われないテキストが無視され、vim の「複数行メッセージ」の記法にマッチするようになり、また、それを「複数行メッセージの継続」として含めなくてもよいようになる。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*errorformat-ant*
+For ant (http://jakarta.apache.org/) the above errorformat has to be modified
+to honour the leading [javac] in front of each javac output line: >
+  :set efm=%A\ %#[javac]\ %f:%l:\ %m,%-Z\ %#[javac]\ %p^,%-C%.%#
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{errorformat-ant}
+@cindex errorformat-ant
+ant (@url{http://jakarta.apache.org/}) 用には、各 javac の出力行の前につく [javac] を受け取るために、上のエラーフォーマットを修正しなければならない:
+@example
+:set efm=%A\ %#[javac]\ %f:%l:\ %m,%-Z\ %#[javac]\ %p^,%-C%.%#
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'errorformat' can also be configured to handle ant together with either
+javac or jikes.  If you're using jikes, you should tell ant to use jikes' +E
+command line switch which forces jikes to generate one-line error messages.
+This is what the second line (of a build.xml file) below does: >
+  <property name = "build.compiler"       value = "jikes"/>
+  <property name = "build.compiler.emacs" value = "true"/>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+javac や jikes と ant をともに扱うためにこの '@option{errorformat}' を調整することができる。jikes を使っているなら、jikes の +E コマンドラインスイッチを使うことを ant に教えなければならない (このスイッチは jikes に 1 行エラーメッセージを生成させる)。これが @file{build.xml} ファイルの 2 行目が行っていることである:
+@example
+<property name = "build.compiler"       value = "jikes"/>
+<property name = "build.compiler.emacs" value = "true"/>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'errorformat' which handles ant with both javac and jikes is: >
+  :set efm=\ %#[javac]\ %#%f:%l:%c:%*\\d:%*\\d:\ %t%[%^:]%#:%m,
+	   \%A\ %#[javac]\ %f:%l:\ %m,%-Z\ %#[javac]\ %p^,%-C%.%#
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+javac, jikes と組み合わせた ant を扱う '@option{errorformat}' はこうである:
+@example
+:set efm=\ %#[javac]\ %#%f:%l:%c:%*\\d:%*\\d:\ %t%[%^:]%#:%m,
+         \%A\ %#[javac]\ %f:%l:\ %m,%-Z\ %#[javac]\ %p^,%-C%.%#
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*errorformat-jade*
+parsing jade (see http://www.jclark.com/) errors is simple: >
+  :set efm=jade:%f:%l:%c:%t:%m
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{errorformat-jade}
+@cindex errorformat-jade
+jade (@url{http://www.jclark.com/} 参照) のエラーを解釈するのは簡単である:
+@example
+:set efm=jade:%f:%l:%c:%t:%m
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*errorformat-LaTeX*
+The following is an example how an 'errorformat' string can be specified
+for the (La)TeX typesetting system which displays error messages over
+multiple lines.  The output of ":clist" and ":cc" etc. commands displays
+multi-lines in a single line, leading white space is removed.
+It should be easy to adopt the above LaTeX errorformat to any compiler output
+consisting of multi-line errors.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{errorformat-LaTeX}
+@cindex errorformat-LaTeX
+次のは複数行に渡ってエラーメッセージを表示する (La)TeX タイプセッティングシステム用の '@option{errorformat}' 文字列を指定する一つの例である。":clist" や ":cc" 等々のコマンドは先行する空白を削除して複数行のものを一行にまとめて表示する。
+
+以下の LaTeX 用 errorformat はマルチラインエラーを出力する他のコンパイラへ応用するのは簡単だろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The commands can be placed in a |vimrc| file or some other Vim script file,
+e.g. a script containing LaTeX related stuff which is loaded only when editing
+LaTeX sources.
+Make sure to copy all lines of the example (in the given order), afterwards
+remove the comment lines.  For the '\' notation at the start of some lines see
+|line-continuation|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドは |vimrc| ファイルか別の Vim script ファイルに書ける。例えば LaTeX に関連した内容を含むスクリプトを LaTeX ソースの編集時にだけ読みこまれるようにする。
+
+サンプルの全行をコピーしたことを確認する (順番もそのまま)。行の始まりに見ることのできる '\' の表記は |line-continuation| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		First prepare 'makeprg' such that LaTeX will report multiple
+		errors; do not stop when the first error has occurred: >
+ :set makeprg=latex\ \\\\nonstopmode\ \\\\input\\{$*}
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+まず '@option{makeprg}' を LaTeX が最初のエラーで止まることなく複数のエラーを返すように準備する。
+@example
+:set makeprg=latex\ \\\\nonstopmode\ \\\\input\\@{$*@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Start of multi-line error messages: >
+ :set efm=%E!\ LaTeX\ %trror:\ %m,
+	\%E!\ %m,
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マルチラインエラーメッセージの始まり:
+@example
+:set efm=%E!\ LaTeX\ %trror:\ %m,
+       \%E!\ %m,
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		Start of multi-line warning messages; the first two also
+		include the line number.  Meaning of some regular expressions:
+		  - "%.%#"  (".*")   matches a (possibly empty) string
+		  - "%*\\d" ("\d\+") matches a number >
+	\%+WLaTeX\ %.%#Warning:\ %.%#line\ %l%.%#,
+	\%+W%.%#\ at\ lines\ %l--%*\\d,
+	\%WLaTeX\ %.%#Warning:\ %m,
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マルチライン警告メッセージの始まり; 最初の 2 つは行番号も含んでいる。幾つかの正規表現の意味:
+@itemize @minus
+@item "%.%#"  (".*")   文字列 (空文字列も含む) にマッチ
+@item "%*\\d" ("\d\+") 数字にマッチ
+@end itemize
+@example
+       \%+WLaTeX\ %.%#Warning:\ %.%#line\ %l%.%#,
+       \%+W%.%#\ at\ lines\ %l--%*\\d,
+       \%WLaTeX\ %.%#Warning:\ %m,
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		Possible continuations of error/warning messages; the first
+		one also includes the line number: >
+	\%Cl.%l\ %m,
+	\%+C\ \ %m.,
+	\%+C%.%#-%.%#,
+	\%+C%.%#[]%.%#,
+	\%+C[]%.%#,
+	\%+C%.%#%[{}\\]%.%#,
+	\%+C<%.%#>%.%#,
+	\%C\ \ %m,
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+エラー/警告メッセージが続く可能性; 最初の 1 つは行番号も含んでいる:
+@example
+       \%Cl.%l\ %m,
+       \%+C\ \ %m.,
+       \%+C%.%#-%.%#,
+       \%+C%.%#[]%.%#,
+       \%+C[]%.%#,
+       \%+C%.%#%[@{@}\\]%.%#,
+       \%+C<%.%#>%.%#,
+       \%C\ \ %m,
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		Lines that match the following patterns do not contain any
+		important information; do not include them in messages: >
+	\%-GSee\ the\ LaTeX%m,
+	\%-GType\ \ H\ <return>%m,
+	\%-G\ ...%.%#,
+	\%-G%.%#\ (C)\ %.%#,
+	\%-G(see\ the\ transcript%.%#),
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のパターンにマッチする行には重要な情報は含まれていない; よってメッセージに含まないようにする。
+@example
+       \%-GSee\ the\ LaTeX%m,
+       \%-GType\ \ H\ <return>%m,
+       \%-G\ ...%.%#,
+       \%-G%.%#\ (C)\ %.%#,
+       \%-G(see\ the\ transcript%.%#),
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		Generally exclude any empty or whitespace-only line from
+		being displayed: >
+	\%-G\\s%#,
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+通常、空白文字だけの行は表示しない:
+@example
+       \%-G%*\\s,
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		The LaTeX output log does not specify the names of erroneous
+		source files per line; rather they are given globally,
+		enclosed in parentheses.
+		The following patterns try to match these names and store
+		them in an internal stack.  The patterns possibly scan over
+		the same input line (one after another), the trailing "%r"
+		conversion indicates the "rest" of the line that will be
+		parsed in the next go until the end of line is reached.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+LaTeX の出力ログには個々のライン毎にエラーのあったファイル名が特定(記述)されているわけではない; ログのあらゆる所で与えられ、括弧にくくられている。続くパターンはそれらの名前を取り出し内部スタックに保存しようと試みる。パターンは時として一つの行を複数回走査 (一つ目を見つけた後、同じ行に次のを発見しようと) するので、パターンの末尾の "%r" が行の残りの部分が次の試行で解釈の対象になることと、行の末尾に達するまでそれが繰り返されることを示す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Overread a file name enclosed in '('...')'; do not push it
+		on a stack since the file apparently does not contain any
+		error: >
+	\%+O(%f)%r,
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'('...')' でくくられたファイル名を読み飛ばす;明らかにエラーを含まないファイルはスタックに積まない:
+@example
+       \%+O(%f)%r,
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		Push a file name onto the stack.  The name is given after '(': >
+	\%+P(%f%r,
+	\%+P\ %\\=(%f%r,
+	\%+P%*[^()](%f%r,
+	\%+P[%\\d%[^()]%#(%f%r,
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル名をスタックに積む。名前は '(' の後に与えられる。
+@example
+       \%+P(%f%r,
+       \%+P\ %\\=(%f%r,
+       \%+P%*[^()](%f%r,
+       \%+P[%\\d%[^()]%#(%f%r,
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		Pop the last stored file name when a ')' is scanned: >
+	\%+Q)%r,
+	\%+Q%*[^()])%r,
+	\%+Q[%\\d%*[^()])%r
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+')' が見つかったらファイル名をスタックから取り崩す。
+@example
+       \%+Q)%r,
+       \%+Q%*[^()])%r,
+       \%+Q[%\\d%*[^()])%r
+@end example
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that in some cases file names in the LaTeX output log cannot be parsed
+properly.  The parser might have been messed up by unbalanced parentheses
+then.  The above example tries to catch the most relevant cases only.
+You can customize the given setting to suit your own purposes, for example,
+all the annoying "Overfull ..." warnings could be excluded from being
+recognized as an error.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+幾つかのケースにおいて LaTeX の出力したログの中のファイル名を正確に取り出す事ができないことに注意。括弧の対応が正しくつかない時パーサーは混乱してしまう。上記のサンプルはもっとも一般的なケースだけ検出できるようにしてある。目的に合わせてこのサンプルを変える事はできる。例えば全てのいまいましい "Overfull ..." という警告メッセージがエラーとして認識されてしまう事を防ぐ事ができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Alternatively to filtering the LaTeX compiler output, it is also possible
+to directly read the *.log file that is produced by the [La]TeX compiler.
+This contains even more useful information about possible error causes.
+However, to properly parse such a complex file, an external filter should
+be used.  See the description further above how to make such a filter known
+by Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+付け加えて LaTeX コンパイラの出力をフィルタリングするには、[La]TeX コンパイラによって生成されるファイル @file{*.log} を直接読むことも可能である。これは起こる可能性のあるエラーについてより便利な情報を沢山含んでいる。しかしそのように複雑なファイルを正確に解釈するには、外部フィルタを使うほうが良い。そのような Vim に識別されるフィルタの作り方はずっと以前に述べたので参照。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*errorformat-Perl*
+In $VIMRUNTIME/tools you can find the efm_perl.pl script, which filters Perl
+error messages into a format that quickfix mode will understand.  See the
+start of the file about how to use it.  (This script is deprecated, see
+|compiler-perl|.)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{errorformat-Perl}
+@cindex errorformat-Perl
+$VIMRUNTIME/tools に efm_perl.pl スクリプトがある。これは Perl のエラーメッセージをフィルタし、QuickFix モードが理解できるフォーマットに変換する。使い方はファイルの先頭を参照。(このスクリプトはもう非推奨で、今は |compiler-perl| を参照のこと)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
