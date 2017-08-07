@@ -17,7 +17,7 @@ REFMANUALS = \
 	doc/insert.texi doc/change.texi doc/indent.texi doc/undo.texi \
 	doc/repeat.texi doc/visual.texi doc/various.texi doc/recover.texi \
 	doc/cmdline.texi doc/options.texi doc/pattern.texi doc/map.texi \
-	doc/tagsrch.texi
+	doc/tagsrch.texi doc/quickfix.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
@@ -67,10 +67,10 @@ htmls/refman: $(REFMANUALS) $(USRMANUALS)
 	sh utils/trick_for_mobile.sh htmls/refman/usr_005ftoc_002etxt.html
 
 pdfs/userman.pdf: $(USRMANUALS)
-	PDFTEX=luatex texi2pdf -c -o $@ $<
+	PDFTEX=xetex texi2pdf -c -o $@ $<
 
 pdfs/refrman.pdf: $(REFMANUALS)
-	PDFTEX=luatex texi2pdf -c -o $@ $<
+	PDFTEX=xetex texi2pdf -c -o $@ $<
 
 htmls/tk-usrman.html: htmls/usrman.html
 	python3 $(PRG_MTO) tradkana $< > $@
