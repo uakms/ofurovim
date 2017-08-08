@@ -17,7 +17,7 @@ REFMANUALS = \
 	doc/insert.texi doc/change.texi doc/indent.texi doc/undo.texi \
 	doc/repeat.texi doc/visual.texi doc/various.texi doc/recover.texi \
 	doc/cmdline.texi doc/options.texi doc/pattern.texi doc/map.texi \
-	doc/tagsrch.texi doc/quickfix.texi
+	doc/tagsrch.texi doc/quickfix.texi doc/windows.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
@@ -55,7 +55,7 @@ kyukana: htmls/tk-ok-usrman.html ;
 htmls/usrman.html: $(USRMANUALS)
 	sh utils/change_oum.sh doc/usr_toc.texi
 	${PRG} ${HTML_OPT_NS} -o $@ $<
-	sh utils/trick_for_mobile.sh $@
+	sh utils/trick_for_mobile_usr.sh $@
 	mv doc/org_usr_toc.texi doc/usr_toc.texi
 
 htmls/refman.html: $(REFMANUALS) $(USRMANUALS)
@@ -64,7 +64,8 @@ htmls/refman.html: $(REFMANUALS) $(USRMANUALS)
 htmls/refman: $(REFMANUALS) $(USRMANUALS)
 	cp style.css htmls/refman/
 	${PRG} ${HTML_OPT_S} -o $@ $<
-	sh utils/trick_for_mobile.sh htmls/refman/usr_005ftoc_002etxt.html
+	sh utils/trick_for_mobile_usr.sh htmls/refman/usr_005ftoc_002etxt.html
+	sh utils/trick_for_mobile_ref.sh htmls/refman/Mu-Ci-.html
 
 pdfs/userman.pdf: $(USRMANUALS)
 	PDFTEX=xetex texi2pdf -c -o $@ $<
