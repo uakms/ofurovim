@@ -66,6 +66,7 @@ htmls/refman: $(REFMANUALS) $(USRMANUALS)
 	${PRG} ${HTML_OPT_S} -o $@ $<
 	sh utils/trick_for_mobile_usr.sh htmls/refman/usr_005ftoc_002etxt.html
 	sh utils/trick_for_mobile_ref.sh htmls/refman/Mu-Ci-.html
+	sh utils/trick_for_mobile.sh
 
 pdfs/userman.pdf: $(USRMANUALS)
 	PDFTEX=xetex texi2pdf -c -o $@ $<
