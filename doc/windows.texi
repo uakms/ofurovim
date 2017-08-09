@@ -1,0 +1,3511 @@
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@node windows.txt, , , 目次
+@unnumbered マルチウィンドウとマルチバッファのコマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*windows.txt*   For Vim version 8.0.  Last change: 2017 Jul 23
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*windows.txt*   For Vim バージョン 8.0.  Last change: 2017 Jul 23
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Editing with multiple windows and buffers.		*windows* *buffers*
+
+The commands which have been added to use multiple windows and buffers are
+explained here.  Additionally, there are explanations for commands that work
+differently when used in combination with more than one window.
+
+The basics are explained in chapter 7 and 8 of the user manual |usr_07.txt|
+|usr_08.txt|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{windows}
+@anchor{buffers}
+@cindex windows
+@cindex buffers
+@section マルチウィンドウ、マルチバッファを使った編集
+
+ここではマルチウィンドウやマルチバッファを使用するために追加したコマンドについて説明する。さらに、2 つ以上のウィンドウを組合せて使用するときに異なる動作をするコマンドについての説明もする。
+
+基本についてはユーザーマニュアルの 7 章と 8 章で説明されている。|@ref{usr_07.txt}| |@ref{usr_08.txt}|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1.  Introduction				|windows-intro|
+2.  Starting Vim				|windows-starting|
+3.  Opening and closing a window		|opening-window|
+4.  Moving cursor to other windows		|window-move-cursor|
+5.  Moving windows around			|window-moving|
+6.  Window resizing				|window-resize|
+7.  Argument and buffer list commands		|buffer-list|
+8.  Do a command in all buffers or windows	|list-repeat|
+9.  Tag or file name under the cursor		|window-tag|
+10. The preview window				|preview-window|
+11. Using hidden buffers			|buffer-hidden|
+12. Special kinds of buffers			|special-buffers|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item 1. はじめに @tab |@ref{windows-intro, , windows-intro}|
+@item 2. Vim の起動 @tab |@ref{windows-starting, , windows-starting}|
+@item 3. ウィンドウのオープンとクローズ @tab |@ref{opening-window, , opening-window}|
+@item 4. ウィンドウ間のカーソル移動 @tab |@ref{window-move-cursor, , window-move-cursor}|
+@item 5. ウィンドウの移動 @tab |@ref{window-moving, , window-moving}|
+@item 6. ウィンドウのサイズ変更 @tab |@ref{window-resize, , window-resize}|
+@item 7. コマンド引数とバッファリスト @tab |@ref{buffer-list, , buffer-list}|
+@item 8. 全てのバッファ／ウィンドウに対してコマンド実行 @tab |@ref{list-repeat, , list-repeat}|
+@item 9. カーソル位置のタグ名／ファイル名 @tab |@ref{window-tag, , window-tag}|
+@item 10.プレビューウィンドウ @tab |@ref{preview-window, , preview-window}|
+@item 11. 隠れ(hidden)バッファを使う @tab |@ref{buffer-hidden, , buffer-hidden}|
+@item 12. 特殊なバッファ @tab |@ref{special-buffers, , special-buffers}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these commands}
+{not able to use multiple windows when the |+windows| feature was disabled at
+compile time}
+{not able to use vertically split windows when the |+vertsplit| feature was
+disabled at compile time}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらのコマンドはない@}
+
+@{|+windows| 機能なしでコンパイルされた場合は複数のウィンドウを使うことはできない@}
+
+@{|+vertsplit| 機能なしでコンパイルされた場合は垂直分割ウィンドウを使うことはできない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Introduction					*windows-intro* *window*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{windows-intro}
+@anchor{window}
+@cindex windows-intro
+@cindex window
+@section 1. はじめに
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Summary:
+   A buffer is the in-memory text of a file.
+   A window is a viewport on a buffer.
+   A tab page is a collection of windows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+要約:
+@itemize @minus
+@item バッファとはメモリに保持しているファイルの内容である。
+@item ウィンドウとはバッファの表示領域である。
+@item タブページとはウィンドウを集めたものである。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A window is a viewport onto a buffer.  You can use multiple windows on one
+buffer, or several windows on different buffers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウはバッファの表示領域である。1 つのバッファに対して複数のウィンドウを開くことができるし、異なる複数のバッファに対して複数のウィンドウを開くこともできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A buffer is a file loaded into memory for editing.  The original file remains
+unchanged until you write the buffer to the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファは編集時にメモリ上にロードされたファイルのことを言う。オリジナルのファイルはバッファ内容をそのファイルに上書きするまで変更されずにいる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A buffer can be in one of three states:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファは以下の 3 つの状態のうちのどれか 1 つの状態にある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*active-buffer*
+active:   The buffer is displayed in a window.  If there is a file for this
+	  buffer, it has been read into the buffer.  The buffer may have been
+	  modified since then and thus be different from the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{active-buffer}
+@cindex active-buffer
+@item アクティブ:
+バッファ内容はウィンドウに表示されている。このバッファに対応するファイルが存在する場合、ファイルがバッファに読み込まれている。バッファはそれ以降編集されていて、ファイルと異なっているかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*hidden-buffer*
+hidden:   The buffer is not displayed.  If there is a file for this buffer, it
+	  has been read into the buffer.  Otherwise it's the same as an active
+	  buffer, you just can't see it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{hidden-buffer}
+@cindex hidden-buffer
+@item 隠れ(hidden):
+バッファ内容はウィンドウに表示されていない。このバッファに対応するファイルが存在する場合、ファイルはバッファに読み込まれている。見ることができないが、それ以外はアクティブなバッファと同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*inactive-buffer*
+inactive: The buffer is not displayed and does not contain anything.  Options
+	  for the buffer are remembered if the file was once loaded.  It can
+	  contain marks from the |viminfo| file.  But the buffer doesn't
+	  contain text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{inactive-buffer}
+@cindex inactive-buffer
+@item 非アクティブ:
+バッファ内容はウィンドウに表示されていない。バッファには何もロードされていない。ファイルが一度でもメモリにロードされていたなら、そのバッファのオプションは記憶されている。|viminfo| ファイルによりマークを含んでいるかもしれない。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In a table:
+
+state		displayed	loaded		":buffers"  ~
+		in window			shows	    ~
+active		  yes		 yes		  'a'
+hidden		  no		 yes		  'h'
+inactive	  no		 no		  ' '
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+状態表:
+@multitable @columnfractions .3 .25 .25 .2
+@headitem 状態表示 @tab ウィンドウロード @tab メモリ上に表示 @tab ":buffers"
+@item アクティブ @tab ○ @tab ○ @tab 'a'
+@item 隠れ(hidden) @tab × @tab ○ @tab 'h'
+@item 非アクティブ @tab × @tab × @tab ' '
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: All CTRL-W commands can also be executed with |:wincmd|, for those
+places where a Normal mode command can't be used or is inconvenient.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ノーマルコマンドが利用できない、あるいは使い勝手が悪い状況のために、全ての @kbd{CTRL-W} コマンドは |:wincmd| によっても実行できる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The main Vim window can hold several split windows.  There are also tab pages
+|tab-page|, each of which can hold multiple windows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim ではウィンドウを複数に分割することができる。タブページ |tab-page| というものもあり、タブページは複数のウィンドウを保持することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+					*window-ID* *winid* *windowid*
+Each window has a unique identifier called the window ID.  This identifier
+will not change within a Vim session. The |win_getid()| and |win_id2tabwin()|
+functions can be used to convert between the window/tab number and the
+identifier.  There is also the window number, which may change whenever
+windows are opened or closed, see |winnr()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{window-ID}
+@anchor{winid}
+@anchor{windowid}
+@cindex window-ID
+@cindex winid
+@cindex windowid
+個々のウィンドウにはウィンドウ ID と呼ばれる一意な識別が与えられる。この識別子は Vim のセッション中は決して変わらない。|win_getid()| と |win_id2tabwin()| 関数は、ウィンドウ/タブ番号を識別子に変換するのに利用できる。似たようなものとしてウィンドウ番号があるが、こちらはウィンドウを開いたり閉じたりするたびに変わる可能性がある。 |winnr()| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Each buffer has a unique number and the number will not change within a Vim
+session.  The |bufnr()| and |bufname()| functions can be used to convert
+between a buffer name and the buffer number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+個々のバッファには一意な番号が割り振られており、Vim のセッション中は決して変わらない。バッファ名とバッファ番号を相互に変換するのには、|bufnr()| と |bufname()| 関数を使える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Starting Vim						*windows-starting*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{windows-starting}
+@cindex windows-starting
+@section 2. Vim の起動
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+By default, Vim starts with one window, just like Vi.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトでは、Vim は Vi のように 1 つのウィンドウで起動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "-o" and "-O" arguments to Vim can be used to open a window for each file
+in the argument list.  The "-o" argument will split the windows horizontally;
+the "-O" argument will split the windows vertically.  If both "-o" and "-O"
+are given, the last one encountered will be used to determine the split
+orientation.  For example, this will open three windows, split horizontally: >
+	vim -o file1 file2 file3
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim のオプション引数に "-o" と "-O" を使うと、引数で指定した各ファイルのウィンドウがオープンする。オプション "-o" はウィンドウを水平分割し、"-O" オプションはウィンドウを垂直分割する。"-o" と "-O" の両方が与えられた場合は、後に現れた方が分割方向を決めるのに使われる。例えば、これは 3 つのウィンドウが垂直分割して開かれる:
+@example
+vim -o file1 file2 file3
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"-oN", where N is a decimal number, opens N windows split horizontally.  If
+there are more file names than windows, only N windows are opened and some
+files do not get a window.  If there are more windows than file names, the
+last few windows will be editing empty buffers.  Similarly, "-ON" opens N
+windows split vertically, with the same restrictions.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"-oN" (N は 10 進数)の場合は、N個のウィンドウが水平に分割して開く。ウィンドウの数(N)より引数で指定したファイルの数が多い場合、N個のウィンドウが開き、残りのファイルはウィンドウに表示されない。逆にウィンドウの数より引数で指定したファイルの数が少ない場合、残りのウィンドウは空のバッファを表示する。同様に "-ON" はN個のウィンドウを垂直分割して開く。制限も同じである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If there are many file names, the windows will become very small.  You might
+want to set the 'winheight' and/or 'winwidth' options to create a workable
+situation.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数にたくさんのファイル名を指定した場合、ウィンドウは非常に小さくなる。もしかしたら、作業のできる環境にするために '@option{winheight}' または '@option{winwidth}'  オプションを設定したくなるかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Buf/Win Enter/Leave |autocommand|s are not executed when opening the new
+windows and reading the files, that's only done when they are really entered.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Buf/Win Enter/Leave 時のオートコマンド |autocommand| は、新しいウィンドウを開いたりファイルを読み込んだりしても実行されない。そのオートコマンドは バッファ/ウィンドウ へ入った時にのみ実行される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*status-line*
+A status line will be used to separate windows.  The 'laststatus' option tells
+when the last window also has a status line:
+	'laststatus' = 0	never a status line
+	'laststatus' = 1	status line if there is more than one window
+	'laststatus' = 2	always a status line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{status-line}
+@cindex status-line
+ステータス行はウィンドウの分割に使われる。'@option{laststatus}' オプションは一番下のウィンドウにステータス行を表示するかを設定する:
+@multitable @columnfractions .4 .6
+@item 'laststatus' = 0 @tab 常にステータス行を表示しない。
+@item 'laststatus' = 1 @tab ウィンドウが 2 つ以上ある場合に表示する。
+@item 'laststatus' = 2 @tab 常にステータス行を表示する。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can change the contents of the status line with the 'statusline' option.
+This option can be local to the window, so that you can have a different
+status line in each window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ステータス行の内容は '@option{statusline}' オプションで変更できる。このオプションはウィンドウについてローカルにすることもでき、そうすると各ウィンドウごとに異なるステータスラインを表示することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Normally, inversion is used to display the status line.  This can be changed
+with the 's' character in the 'highlight' option.  For example, "sb" sets it to
+bold characters.  If no highlighting is used for the status line ("sn"), the
+'^' character is used for the current window, and '=' for other windows.  If
+the mouse is supported and enabled with the 'mouse' option, a status line can
+be dragged to resize windows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+通常、ステータス行は反転表示される。これは '@option{highlight}' オプションの 's' キャラクタで変更できる。例えば、"sb" は太文字に設定する。ステータス行にハイライトを使用しない場合("sn")、'^' がカレントウィンドウに使われ、'=' が他のウィンドウに使われる。マウスがサポートされていて '@option{mouse}' オプションでマウスが使用可能になっている場合は、ステータス行をドラッグすることでウィンドウのリサイズを行える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: If you expect your status line to be in reverse video and it isn't,
+check if the 'highlight' option contains "si".  In version 3.0, this meant to
+invert the status line.  Now it should be "sr", reverse the status line, as
+"si" now stands for italic!  If italic is not available on your terminal, the
+status line is inverted anyway; you will only see this problem on terminals
+that have termcap codes for italics.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ステータス行が反転表示されるはずが反転表示されなければ、'@option{highlight}' オプションに '@var{si}' が含まれているか確認すること。version 3.0 では、'@var{si}' がステータス行の反転表示を意味していた。今は反転表示には '@var{sr}' を使用し、'si' はイタリック表示を意味している！イタリックを表示できない端末では、ステータス行は反転表示となる。イタリック表示のための termcap コードがある場合にのみ、この問題が見られる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Opening and closing a window				*opening-window* *E36*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{opening-window}
+@anchor{E36}
+@cindex opening-window
+@cindex E36
+@section 3. ウィンドウのオープンとクローズ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W s						*CTRL-W_s*
+CTRL-W S						*CTRL-W_S*
+CTRL-W CTRL-S						*CTRL-W_CTRL-S*
+:[N]sp[lit] [++opt] [+cmd] [file]			*:sp* *:split*
+		Split current window in two.  The result is two viewports on
+		the same file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{CTRL-W_s}
+@anchor{CTRL-W_S}
+@anchor{CTRL-W_CTRL-S}
+@anchor{:sp}
+@anchor{:split}
+@cindex CTRL-W_s
+@cindex CTRL-W_S
+@cindex CTRL-W_CTRL-S
+@cindex :sp
+@cindex :split
+@item @kbd{CTRL-W} s または
+@itemx @kbd{CTRL-W} S または
+@itemx @kbd{CTRL-W} @kbd{CTRL-S} または
+@itemx :[N]sp[lit] [++opt] [+cmd] [file]
+カレントウィンドウを2つに分割する。その結果、2 つの表示領域に同じファイルが表示されるようになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+		
+@ifset EN
+		Make the new window N high (default is to use half the height
+		of the current window).  Reduces the current window height to
+		create room (and others, if the 'equalalways' option is set,
+		'eadirection' isn't "hor", and one of them is higher than the
+		current or the new window).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しいウィンドウの高さは N になる(デフォルトの高さはカレントウィンドウの高さの半分)。新しいウィンドウの場所を確保するため、カレントウィンドウの高さは低くなる ('@option{equalalways}' オプションがセットされていて、かつ '@option{eadirection}' の値が "@var{hor}" でない場合、他のウィンドウの中でカレントウィンドウか新しいウィンドウより大きいものがあれば、そのウィンドウも小さくなる)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If [file] is given it will be edited in the new window.  If it
+		is not loaded in any buffer, it will be read.  Else the new
+		window will use the already loaded buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[file] が与えられている場合は新しいウィンドウで編集される。どのバッファでもロードされていない場合、読み込まれる。そうでなれければ新しいウィンドウは既にロードされたバッファを使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Note: CTRL-S does not work on all terminals and might block
+		further input, use CTRL-Q to get going again.
+		Also see |++opt| and |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+@kbd{CTRL-S} は端末によっては使用できない。また、それ以上の入力をブロックしてしまうかもしれない。続けるためには @kbd{CTRL-Q} を使うこと。
+
+|++opt| と |+cmd| も参照のこと。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W CTRL-V						*CTRL-W_CTRL-V*
+CTRL-W v						*CTRL-W_v*
+:[N]vs[plit] [++opt] [+cmd] [file]			*:vs* *:vsplit*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_CTRL-V}
+@anchor{CTRL-W_v}
+@anchor{:vs}
+@anchor{:vsplit}
+@cindex CTRL-W_CTRL-V
+@cindex CTRL-W_v
+@cindex :vs
+@cindex :vsplit
+@item @kbd{CTRL-W} @kbd{CTRL-V} または
+@itemx @kbd{CTRL-W} v または
+@itemx :[N]vs[plit] [++opt] [+cmd] [file]
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Like |:split|, but split vertically.  The windows will be
+		spread out horizontally if
+		1. a width was not specified,
+		2. 'equalalways' is set,
+		3. 'eadirection' isn't "ver", and
+		4. one of the other windows is wider than the current or new
+		   window.
+		Note: In other places CTRL-Q does the same as CTRL-V, but here
+		it doesn't!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:split| と同様、ただし垂直分割する。次のすべてに当てはまる場合、ウィンドウは水平に広げられる:
+@enumerate
+@item 幅が指定されていない。
+@item '@option{equalalways}' がセットされている。
+@item '@option{eadirection}' が "@var{ver}" でない。
+@item 他のウィンドウの中でカレントウィンドウか新しいウィンドウより幅が広いものがある。
+@end enumerate
+@quotation
+@strong{Note:} @*
+他の局面では @kbd{CTRL-Q} は @kbd{CTRL-V} と同じだが、ここではそうでない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W n						*CTRL-W_n*
+CTRL-W CTRL_N						*CTRL-W_CTRL-N*
+:[N]new [++opt] [+cmd]					*:new*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_n}
+@anchor{CTRL-W_CTRL-N}
+@anchor{:new}
+@cindex CTRL-W_n
+@cindex CTRL-W_CTRL-N
+@cindex :new
+@item @kbd{CTRL-W} n または
+@itemx @kbd{CTRL-W} @kbd{CTRL_N} または
+@itemx :[N]new [++opt] [+cmd]
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Create a new window and start editing an empty file in it.
+		Make new window N high (default is to use half the existing
+		height).  Reduces the current window height to create room (and
+		others, if the 'equalalways' option is set and 'eadirection'
+		isn't "hor").
+		Also see |++opt| and |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しいウィンドウを作成して空のファイルの編集が始まる。新しいウィンドウの高さは N になる(デフォルトの高さはカレントウィンドウの高さの半分)。新しいウィンドウの場所を確保するため、カレントウィンドウの高さは低くなる。('@option{equalalways}' オプションがセットされていてかつ '@option{equalalways}' オプションが "@var{hor}" でない場合、他のウィンドウの高さも低くなる)。
+
+|++opt| と |+cmd| も参照のこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		If 'fileformats' is not empty, the first format given will be
+		used for the new buffer.  If 'fileformats' is empty, the
+		'fileformat' of the current buffer is used.  This can be
+		overridden with the |++opt| argument.
+		Autocommands are executed in this order:
+		1. WinLeave for the current window
+		2. WinEnter for the new window
+		3. BufLeave for the current buffer
+		4. BufEnter for the new buffer
+		This behaves like a ":split" first, and then an ":enew"
+		command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{fileformats}' オプションが空でない場合は、与えられた最初のフォーマットが新しいバッファにも使用される。'@option{fileformats}' オプションが空の場合は、カレントバッファの '@option{fileformat}' が使用される。これは引数 |++opt| によって上書きされうる。
+
+オートコマンドはこの順で実行される:
+@enumerate
+@item カレントウィンドウに対する WinLeave
+@item 新しいウィンドウに対する WinEnter
+@item カレントバッファに対する BufLeave
+@item 新しいバッファに対する BufEnter
+@end enumerate
+この動作は、はじめに "@command{:split}"、次に "@command{:enew}" コマンドを実行した場合と同じ動作である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]vne[w] [++opt] [+cmd] [file]			*:vne* *:vnew*
+		Like |:new|, but split vertically.  If 'equalalways' is set
+		and 'eadirection' isn't "ver" the windows will be spread out
+		horizontally, unless a width was specified.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:vne}
+@anchor{:vnew}
+@cindex :vne
+@cindex :vnew
+@item :[N]vne[w] [++opt] [+cmd] [file]
+|:new| と同様だが、垂直分割する。'@option{equalalways}' がセットされ、'@option{eadirection}' が "@var{ver}" でないならば、幅が指定されない限りウィンドウは水平に広げられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]new [++opt] [+cmd] {file}
+:[N]sp[lit] [++opt] [+cmd] {file}			*:split_f*
+		Create a new window and start editing file {file} in it.  This
+		behaves like a ":split" first, and then an ":e" command.
+		If [+cmd] is given, execute the command when the file has been
+		loaded |+cmd|.
+		Also see |++opt|.
+		Make new window N high (default is to use half the existing
+		height).  Reduces the current window height to create room
+		(and others, if the 'equalalways' option is set).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:split_f}
+@cindex :split_f
+@item :[N]new [++opt] [+cmd] @{file@} または
+@item :[N]sp[lit] [++opt] [+cmd] @{file@}
+新しいウィンドウを作成し、そのウィンドウでファイル @{file@} の編集が始まる。この動作は、はじめに "@command{:split}"、次に "@command{:e}" コマンドを実行した場合と同じ動作である。
+
+[+cmd] が指定された場合は、ファイルをロードしコマンドを実行する |+cmd|。
+
+|++opt| も参照のこと。
+
+新しいウィンドウの高さは N になる(デフォルトの高さはカレントウィンドウの高さの半分)。新しいウィンドウの場所を確保するため、カレントウィンドウの高さは低くなる。('@option{equalalways}' オプションがセットされていれば他のウィンドウも低くなる)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]sv[iew] [++opt] [+cmd] {file}		*:sv* *:sview* *splitview*
+		Same as ":split", but set 'readonly' option for this buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sv}
+@anchor{:sview}
+@anchor{splitview}
+@cindex :sv
+@cindex :sview
+@cindex splitview
+@item :[N]sv[iew] [++opt] [+cmd] @{file@}
+"@command{:split}" と同じ。ただし、バッファに対して '@option{readonly}' オプションがセットされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]sf[ind] [++opt] [+cmd] {file}		*:sf* *:sfind* *splitfind*
+		Same as ":split", but search for {file} in 'path' like in
+		|:find|.  Doesn't split if {file} is not found.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sf}
+@anchor{:sfind}
+@anchor{splitfind}
+@cindex :sf
+@cindex :sfind
+@cindex splitfind
+@item :[N]sf[ind] [++opt] [+cmd] @{file@}
+"@command{:split}" と同じ。ただし、|:find| と同様に '@option{path}' から @{file@} を検索する。@{file@} が見つからなければ、ウィンドウは分割されない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W CTRL-^					*CTRL-W_CTRL-^* *CTRL-W_^*
+CTRL-W ^	Does ":split #", split window in two and edit alternate file.
+		When a count is given, it becomes ":split #N", split window
+		and edit buffer N.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_CTRL-^}
+@anchor{CTRL-W_^}
+@cindex CTRL-W_CTRL-^
+@cindex CTRL-W_^
+@item @kbd{CTRL-W} @kbd{CTRL-^} または
+@itemx @kbd{CTRL-W} ^
+"@command{:split #}" と同じ。つまり、ウィンドウを 2 つに分割してもう一方のファイルを編集する。カウントが指定された場合は "@command{:split #N}" と同じ。つまり、ウィンドウを分割してバッファ N を編集する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*CTRL-W_:*
+CTRL-W :	Does the same as typing |:| : edit a command line.  Useful in a
+		terminal window, where all Vim commands must be preceded with
+		CTRL-W or 'termkey'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_:}
+@cindex CTRL-W_:
+@item @kbd{CTRL-W :}
+コマンドライン |:| を入力するのと同じ。ターミナルウィンドウ中で便利。ここではすべての Vim コマンドは @kbd{CTRL-W} か 'termkey' が前置きされなければならない。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the 'splitbelow' and 'splitright' options influence where a new
+window will appear.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+オプション '@option{splitbelow}' と '@option{splitright}' が新しいウィンドウが現れる場所に影響を及ぼすことに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:vert* *:vertical*
+:vert[ical] {cmd}
+		Execute {cmd}.  If it contains a command that splits a window,
+		it will be split vertically.
+		Doesn't work for |:execute| and |:normal|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:vert}
+@anchor{:vertical}
+@cindex :vert
+@cindex :vertical
+@item :vert[ical] @{cmd@}
+@{cmd@} を実行する。@{cmd@} がウィンドウを分割させるコマンドを含んでいれば、垂直分割させる。
+
+cmd として |:execute| または |:normal| を指定しても効果がない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:lefta[bove] {cmd}				*:lefta* *:leftabove*
+:abo[veleft] {cmd}				*:abo* *:aboveleft*
+		Execute {cmd}.  If it contains a command that splits a window,
+		it will be opened left (vertical split) or above (horizontal
+		split) the current window.  Overrules 'splitbelow' and
+		'splitright'.
+		Doesn't work for |:execute| and |:normal|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lefta}
+@anchor{:leftabove}
+@anchor{:abo}
+@anchor{:aboveleft}
+@cindex :lefta
+@cindex :leftabove
+@cindex :abo
+@cindex :aboveleft
+@item :lefta[bove] @{cmd@} または
+@itemx :abo[veleft] @{cmd@}
+@{cmd@} を実行する。@{cmd@} がウィンドウを分割させるコマンドを含んでいる場合は、垂直分割ならば左側に、水平分割ならば上側にカレントウィンドウを出現させる。'@option{splitbelow}' と '@option{splitright}' を無視する。
+
+cmd として |:execute| または |:normal| を指定しても効果がない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:rightb[elow] {cmd}				*:rightb* *:rightbelow*
+:bel[owright] {cmd}				*:bel* *:belowright*
+		Execute {cmd}.  If it contains a command that splits a window,
+		it will be opened right (vertical split) or below (horizontal
+		split) the current window.  Overrules 'splitbelow' and
+		'splitright'.
+		Doesn't work for |:execute| and |:normal|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:rightb}
+@anchor{:rightbelow}
+@anchor{:bel}
+@anchor{:belowright}
+@cindex :rightb
+@cindex :rightbelow
+@cindex :bel
+@cindex :belowright
+@item :rightb[elow] @{cmd@} または
+@itemx :bel[owright] @{cmd@}
+@{cmd@} を実行する。@{cmd@} がウィンドウを分割させるコマンドを含んでいる場合は、垂直分割ならば右側に、水平分割ならば下側にカレントウィンドウを出現させる。'@option{splitbelow}' と '@option{splitright}' を無視する。
+
+cmd として |:execute| または |:normal| を指定しても効果がない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:topleft* *E442*
+:to[pleft] {cmd}
+		Execute {cmd}.  If it contains a command that splits a window,
+		it will appear at the top and occupy the full width of the Vim
+		window.  When the split is vertical the window appears at the
+		far left and occupies the full height of the Vim window.
+		Doesn't work for |:execute| and |:normal|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:topleft}
+@anchor{E442}
+@cindex :topleft
+@cindex E442
+@item :to[pleft] @{cmd@}
+@{cmd@} を実行する。@{cmd@} がウィンドウを分割させるコマンドを含んでいる場合は、最上段に現れ、Vim のウィンドウの中で幅を最大にする。垂直分割のときはウィンドウは最も左側に現れ、Vim ウィンドウの中で高さを最大にする。
+
+cmd として |:execute| または |:normal| を指定しても効果がない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:bo* *:botright*
+:bo[tright] {cmd}
+		Execute {cmd}.  If it contains a command that splits a window,
+		it will appear at the bottom and occupy the full width of the
+		Vim window.  When the split is vertical the window appears at
+		the far right and occupies the full height of the Vim window.
+		Doesn't work for |:execute| and |:normal|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:bo}
+@anchor{:botright}
+@cindex :bo
+@cindex :botright
+@item :bo[tright] @{cmd@}
+@{cmd@} を実行する。@{cmd@} がウィンドウを分割させるコマンドを含んでいる場合は、最下段に現れ、Vim のウィンドウの中で幅を最大にする。垂直分割のときはウィンドウは最も右側に現れ、Vim ウィンドウの中で高さを最大にする。
+
+cmd として |:execute| または |:normal| を指定しても効果がない。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These command modifiers can be combined to make a vertically split window
+occupy the full height.  Example: >
+	:vertical topleft split tags
+Opens a vertically split, full-height window on the "tags" file at the far
+left of the Vim window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのコマンドモディファイヤを組み合わせて、最大高さの垂直分割したウィンドウを作ることができる。例:
+@example
+:vertical topleft split tags
+@end example
+ウィンドウを垂直分割し、"tags" ファイルのウィンドウを最大の高さで最も左に開く。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Closing a window
+----------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec ウィンドウを閉じる
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:q[uit]
+:{count}q[uit]
+CTRL-W q						*CTRL-W_q*
+CTRL-W CTRL-Q						*CTRL-W_CTRL-Q*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{CTRL-W_q}
+@anchor{CTRL-W_CTRL-Q}
+@cindex CTRL-W_q
+@cindex CTRL-W_CTRL-Q
+@item :q[uit] または
+@itemx :@{count@}q[uit] または
+@itemx @kbd{CTRL-W} q または
+@itemx @kbd{CTRL-W} @kbd{CTRL-Q}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Without {count}: Quit the current window.  If {count} is
+		given quit the {count} window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{count@} なしの場合、カレントウィンドウを終了する。もし @{count@} が与えられた場合、@{count@} ウィンドウを終了する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When quitting the last window (not counting a help window),
+		exit Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最後のウィンドウ(ヘルプウィンドウを除く)を終了すると Vim が終了する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+		
+@ifset EN
+		When 'hidden' is set, and there is only one window for the
+		current buffer, it becomes hidden.  When 'hidden' is not set,
+		and there is only one window for the current buffer, and the
+		buffer was changed, the command fails.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{hidden}' オプションがセットされていて、かつカレントバッファを表示しているウィンドウが 1 つしかない場合は、そのバッファは隠れ状態 (hidden) となる。'@option{hidden}' オプションがセットされていなくて、カレントバッファを表示しているウィンドウが 1 つしかなくて、かつ、そのバッファが編集中の場合は、このコマンドは失敗する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+		
+@ifset EN
+		(Note: CTRL-Q does not work on all terminals).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+@kbd{CTRL-Q} は全ての端末で動作するわけではない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+		
+@ifset EN
+		If [count] is greater than the last window number the last
+		window will be closed: >
+		    :1quit  " quit the first window
+		    :$quit  " quit the last window
+		    :9quit  " quit the last window
+			    " if there are fewer than 9 windows opened
+		    :-quit  " quit the previous window
+		    :+quit  " quit the next window
+		    :+2quit " quit the second next window
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もし [count] が最後のウィンドウ番号よりも大きいとき、最後のウィンドウが閉じられる:
+@multitable @columnfractions .2 .8
+@item :1quit @tab 最初のウィンドウを終了する
+@item :$quit @tab 最後のウィンドウを終了する
+@item :9quit @tab 最後のウィンドウを終了する。もし 9 個より少ないウィンドウが開かれていれば
+@item :-quit @tab 前のウィンドウを終了する
+@item :+quit @tab 次のウィンドウを終了する
+@item :+2quit @tab 2 個先のウィンドウを終了する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:q[uit]!
+:{count}q[uit]!
+		Without {count}: Quit the current window.  If {count} is
+		given quit the {count} window.
+
+		If this was the last window for a buffer, any changes to that
+		buffer are lost.  When quitting the last window (not counting
+		help windows), exit Vim.  The contents of the buffer are lost,
+		even when 'hidden' is set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :q[uit]! または
+@itemx :@{count@}q[uit]!
+@{count@} なしの場合、カレントウィンドウを終了する。もし @{count@} が与えられた場合、@{count@} ウィンドウを終了する。
+
+このウィンドウがバッファを表示している最後のウィンドウの場合、このバッファに対する変更は全て失われる。最後のウィンドウ (ヘルプウィンドウを除く) を終了すると Vim が終了する。たとえ '@option{hidden}' オプションがセットされていたとしても、バッファ内容は失われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:clo[se][!]
+:{count}clo[se][!]
+CTRL-W c					*CTRL-W_c* *:clo* *:close*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_c}
+@anchor{:clo}
+@anchor{:close}
+@cindex CTRL-W_c
+@cindex :clo
+@cindex :close
+@item :clo[se][!] または
+@itemx :@{count@}clo[se][!] または
+@itemx @kbd{CTRL-W} c
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Without {count}: Close the current window.  If {count} is
+		given close the {count} window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{count@} なしの場合、カレントウィンドウを閉じる。もし @{count@} が与えられた場合、@{count@} ウィンドウを閉じる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When the 'hidden' option is set, or when the buffer was
+		changed and the [!] is used, the buffer becomes hidden (unless
+		there is another window editing it).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{hidden}' オプションがセットされている時、または、バッファが変更されていて [!] を使用した時は、(バッファが他のウィンドウで編集中でなければ) バッファは隠れ状態 (hidden) になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+		
+@ifset EN
+		When there is only one window in the current tab page and
+		there is another tab page, this closes the current tab page.
+		|tab-page|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カレントタブページにウィンドウが1つしかなく、他にタブページがあるとき、このコマンドを実行するとカレントタブページが閉じる。|tab-page|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		This command fails when:			*E444*
+		- There is only one window on the screen.
+		- When 'hidden' is not set, [!] is not used, the buffer has
+		  changes, and there is no other window on this buffer.
+		Changes to the buffer are not written and won't get lost, so
+		this is a "safe" command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E444}
+@cindex E444
+このコマンドは以下の場合に失敗する:
+@itemize @minus
+@item スクリーン上に1つのウィンドウしかない時
+@item '@option{hidden}' がセットされていなくて、[!] を使用せず、バッファが変更されていて、かつ、このバッファが他のウィンドウで表示されていない場合
+@end itemize
+バッファへの変更は保存されず、失われることもないため、このコマンドは「安全な」コマンドである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W CTRL-C						*CTRL-W_CTRL-C*
+		You might have expected that CTRL-W CTRL-C closes the current
+		window, but that does not work, because the CTRL-C cancels the
+		command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_CTRL-C}
+@cindex CTRL-W_CTRL-C
+@item @kbd{CTRL-W} @kbd{CTRL-C}
+@kbd{CTRL-W} @kbd{CTRL-C} はカレントウィンドウを閉じると期待するかもしれないが、@kbd{CTRL-C} はコマンドをキャンセルするために期待通りには動作しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:hide*
+:hid[e]
+:{count}hid[e]
+		Quit the current window, unless it is the last window on the
+		screen.  For {count} see |:quit| command.
+		
+		The buffer becomes hidden (unless there is another window
+		editing it or 'bufhidden' is "unload", "delete" or "wipe").
+		If the window is the last one in the current tab page the tab
+		page is closed.  |tab-page| 
+		
+		The value of 'hidden' is irrelevant for this command.  Changes
+		to the buffer are not written and won't get lost, so this is a
+		"safe" command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:hide}
+@cindex :hide
+@item :hid[e] または
+@itemx :@{count@}hid[e]
+カレントウィンドウがスクリーン上の最後のウィンドウでなければ、カレントウィンドウを終了する。@{count@} については |:quit| コマンドを参照。
+		
+
+(他のウィンドウがバッファを編集していなく、かつ '@option{bufhidden}' の値が "@var{unload}", "@var{delete}", "@var{wipe}" のいずれでもないならば) そのバッファは隠れ状態 (hidden) となる。そのウィンドウがカレントタブページで最後のウィンドウであるならばタブページも閉じる。|tab-page|
+
+'@option{hidden}' の値はこのコマンドには無関係である。バッファへの変更は保存されず、失われることもないため、このコマンドは「安全な」コマンドである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:hid[e] {cmd}	Execute {cmd} with 'hidden' is set.  The previous value of
+		'hidden' is restored after {cmd} has been executed.
+		Example: >
+		    :hide edit Makefile
+<		This will edit "Makefile", and hide the current buffer if it
+		has any changes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :hid[e] @{cmd@}
+@{cmd@} を実行し、同時に '@option{hidden}' をセットする。@{cmd@} が実行された後に '@option{hidden}' の以前の値が復旧される。
+
+例:
+@example
+:hide edit Makefile
+@end example
+これはカレントバッファに変更があっても、それを隠しバッファにし、"Makefile" を編集する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:on[ly][!]
+:{count}on[ly][!]
+CTRL-W o						*CTRL-W_o* *E445*
+CTRL-W CTRL-O					*CTRL-W_CTRL-O* *:on* *:only*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_o}
+@anchor{E445}
+@anchor{CTRL-W_CTRL-O}
+@anchor{:on}
+@anchor{:only}
+@cindex CTRL-W_o
+@cindex E445
+@cindex CTRL-W_CTRL-O
+@cindex :on
+@cindex :only
+@item :on[ly][!] または
+@itemx :@{count@}on[ly][!] または
+@itemx @kbd{CTRL-W} o または
+@itemx @kbd{CTRL-W} @kbd{CTRL-O}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Make the current window the only one on the screen.  All other
+		windows are closed.  For {count} see |:quit| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カレントウィンドウをスクリーン上にある唯一のウィンドウにする。他の全てのウィンドウは閉じられる。@{count@} については |:quit| コマンドを参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+		
+@ifset EN
+		When the 'hidden' option is set, all buffers in closed windows
+		become hidden.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{hidden}' オプションがセットされていれば、閉じられた全てのバッファは隠れ状態 (hidden) となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+		
+@ifset EN
+		When 'hidden' is not set, and the 'autowrite' option is set,
+		modified buffers are written.  Otherwise, windows that have
+		buffers that are modified are not removed, unless the [!] is
+		given, then they become hidden.  But modified buffers are
+		never abandoned, so changes cannot get lost.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{hidden}' オプションがセットされておらず、'@option{autowrite}' オプションがセットされている場合は、編集中のバッファは保存される。さもなければ、編集中のバッファを表示しているウィンドウは閉じられることはない。ただし [!] が与えられていれば、それらのバッファは隠れ状態 (hidden) となる。しかし、編集中のバッファは決して削除されないので、変更は失われない。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Moving cursor to other windows			*window-move-cursor*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{window-move-cursor}
+@cindex window-move-cursor
+@section 4. ウィンドウ間のカーソル移動
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W <Down>					*CTRL-W_<Down>*
+CTRL-W CTRL-J					*CTRL-W_CTRL-J* *CTRL-W_j*
+CTRL-W j	Move cursor to Nth window below current one.  Uses the cursor
+		position to select between alternatives.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{CTRL-W_<Down>}
+@anchor{CTRL-W_CTRL-J}
+@anchor{CTRL-W_j}
+@cindex CTRL-W_<Down>
+@cindex CTRL-W_CTRL-J
+@cindex CTRL-W_j
+@item @kbd{CTRL-W} @key{<Down>} または
+@itemx @kbd{CTRL-W} @kbd{CTRL-J} または
+@itemx @kbd{CTRL-W} j
+カーソルをカレントウィンドウの N 個下のウィンドウに移動。候補が複数ある場合は、現在のカーソル位置によって選択される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W <Up>					*CTRL-W_<Up>*
+CTRL-W CTRL-K					*CTRL-W_CTRL-K* *CTRL-W_k*
+CTRL-W k	Move cursor to Nth window above current one.  Uses the cursor
+		position to select between alternatives.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_<Up>}
+@anchor{CTRL-W_CTRL-K}
+@anchor{CTRL-W_k}
+@cindex CTRL-W_<Up>
+@cindex CTRL-W_CTRL-K
+@cindex CTRL-W_k
+@item @kbd{CTRL-W} @key{<Up>} または
+@itemx @kbd{CTRL-W} @kbd{CTRL-K} または
+@itemx @kbd{CTRL-W} k
+カーソルをカレントウィンドウの N 個上のウィンドウに移動。候補が複数ある場合は、現在のカーソル位置によって選択される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W <Left>					*CTRL-W_<Left>*
+CTRL-W CTRL-H					*CTRL-W_CTRL-H*
+CTRL-W <BS>					*CTRL-W_<BS>* *CTRL-W_h*
+CTRL-W h	Move cursor to Nth window left of current one.  Uses the
+		cursor position to select between alternatives.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_<Left>}
+@anchor{CTRL-W_CTRL-H}
+@anchor{CTRL-W_<BS>}
+@anchor{CTRL-W_h}
+@cindex CTRL-W_<Left>
+@cindex CTRL-W_CTRL-H
+@cindex CTRL-W_<BS>
+@cindex CTRL-W_h
+@item @kbd{CTRL-W} @key{<Left>} または
+@itemx @kbd{CTRL-W} @kbd{CTRL-H} または
+@itemx @kbd{CTRL-W} @key{<BS>} または
+@itemx @kbd{CTRL-W} h
+カーソルをカレントウィンドウの N 個左のウィンドウに移動。候補が複数ある場合は、現在のカーソル位置によって選択される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W <Right>					*CTRL-W_<Right>*
+CTRL-W CTRL-L					*CTRL-W_CTRL-L* *CTRL-W_l*
+CTRL-W l	Move cursor to Nth window right of current one.  Uses the
+		cursor position to select between alternatives.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_<Right>}
+@anchor{CTRL-W_CTRL-L}
+@anchor{CTRL-W_l}
+@cindex CTRL-W_<Right>
+@cindex CTRL-W_CTRL-L
+@cindex CTRL-W_l
+@item @kbd{CTRL-W} @key{<Right>} または
+@itemx @kbd{CTRL-W} @kbd{CTRL-L} または
+@itemx @kbd{CTRL-W} l
+カーソルをカレントウィンドウの N 個右のウィンドウに移動。候補が複数ある場合は、現在のカーソル位置によって選択される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W w					*CTRL-W_w* *CTRL-W_CTRL-W*
+CTRL-W CTRL-W	Without count: move cursor to window below/right of the
+		current one.  If there is no window below or right, go to
+		top-left window.
+		With count: go to Nth window (windows are numbered from
+		top-left to bottom-right).  To obtain the window number see
+		|bufwinnr()| and |winnr()|.  When N is larger than the number
+		of windows go to the last window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_w}
+@anchor{CTRL-W_CTRL-W}
+@cindex CTRL-W_w
+@cindex CTRL-W_CTRL-W
+@item @kbd{CTRL-W} w または
+@itemx @kbd{CTRL-W} @kbd{CTRL-W}
+カウント指定なし: カーソルをカレントウィンドウの下／右のウィンドウに移動。下／右にウィンドウがなければ、一番上／左のウィンドウに移動。
+
+カウント指定有り: N 番目のウィンドウに移動 (ウィンドウは左上から右下へと番号が振られる)。ウィンドウの番号を知るには |bufwinnr()| と |winnr()| を参照。N がウィンドウの個数より大きい場合、最後のウィンドウへ移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*CTRL-W_W*
+CTRL-W W	Without count: move cursor to window above/left of current
+		one.  If there is no window above or left, go to bottom-right
+		window.  With count: go to Nth window, like with CTRL-W w.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_W}
+@cindex CTRL-W_W
+@item @kbd{CTRL-W} W
+カウント指定なし: カーソルをカレントウィンドウの上／左のウィンドウに移動。上／左にウィンドウがなければ、一番下／右のウィンドウに移動。
+
+カウント指定有り: N 番目のウィンドウに移動 (CTRL-W w と同様)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W t					*CTRL-W_t* *CTRL-W_CTRL-T*
+CTRL-W CTRL-T	Move cursor to top-left window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v ----------
+@anchor{CTRL-W_t}
+@anchor{CTRL-W_CTRL-T}
+@cindex CTRL-W_t
+@cindex CTRL-W_CTRL-T
+@item @kbd{CTRL-W} t または
+@itemx @kbd{CTRL-W} @kbd{CTRL-T}
+カーソルを一番左上のウィンドウに移動。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W b					*CTRL-W_b* *CTRL-W_CTRL-B*
+CTRL-W CTRL-B	Move cursor to bottom-right window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_b}
+@anchor{CTRL-W_CTRL-B}
+@cindex CTRL-W_b
+@cindex CTRL-W_CTRL-B
+@item @kbd{CTRL-W} b または
+@itemx @kbd{CTRL-W} @kbd{CTRL-B}
+カーソルを一番右下のウィンドウに移動。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W p					*CTRL-W_p* *CTRL-W_CTRL-P*
+CTRL-W CTRL-P	Go to previous (last accessed) window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_p}
+@anchor{CTRL-W_CTRL-P}
+@cindex CTRL-W_p
+@cindex CTRL-W_CTRL-P
+@item @kbd{CTRL-W} p または
+@itemx @kbd{CTRL-W} @kbd{CTRL-P}
+カーソルを直前の (最後にアクセスしていた) ウィンドウに移動。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*CTRL-W_P* *E441*
+CTRL-W P	Go to preview window.  When there is no preview window this is
+		an error.
+		{not available when compiled without the |+quickfix| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_P}
+@anchor{E441}
+@cindex CTRL-W_P
+@cindex E441
+@item @kbd{CTRL-W} P
+プレビューウィンドウに移動。プレビューウィンドウがない場合にはエラーになる。
+
+@{|+quickfix| 機能なしでコンパイルされた場合には使用できない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If Visual mode is active and the new window is not for the same buffer, the
+Visual mode is ended.  If the window is on the same buffer, the cursor
+position is set to keep the same Visual area selected.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビジュアルモードがアクティブで移動先のウィンドウがカレントバッファと同じバッファを表示していない場合、ビジュアルモードは終了する。ウィンドウが同じバッファを表示している場合、カーソル位置は選択領域が保たれるようにセットされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:winc* *:wincmd*
+These commands can also be executed with ":wincmd":
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:winc}
+@anchor{:wincmd}
+@cindex :winc
+@cindex :wincmd
+以上のコマンドは ":wincmd" によっても実行することができる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]winc[md] {arg}
+		Like executing CTRL-W [count] {arg}.  Example: >
+			:wincmd j
+<		Moves to the window below the current one.
+		This command is useful when a Normal mode cannot be used (for
+		the |CursorHold| autocommand event).  Or when a Normal mode
+		command is inconvenient.
+		The count can also be a window number.  Example: >
+			:exe nr . "wincmd w"
+<		This goes to window "nr".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :[count]winc[md] @{arg@}
+@kbd{CTRL-W} [count] @{arg@} を実行するのと同じ。例:
+@example
+:wincmd j
+@end example
+下のウィンドウに移動する。
+
+このコマンドは (|CursorHold| 自動コマンドイベントのため) ノーマルモードが利用できないときやノーマルコマンドが不便なときに有効である。
+
+count はウィンドウ番号であってもよい。例:
+@example
+:exe nr . "wincmd w"
+@end example
+これは "nr" 番のウィンドウへ移動する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Moving windows around				*window-moving*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{window-moving}
+@cindex window-moving
+@section 5. ウィンドウの移動
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W r				*CTRL-W_r* *CTRL-W_CTRL-R* *E443*
+CTRL-W CTRL-R	Rotate windows downwards/rightwards.  The first window becomes
+		the second one, the second one becomes the third one, etc.
+		The last window becomes the first window.  The cursor remains
+		in the same window.
+		This only works within the row or column of windows that the
+		current window is in.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{CTRL-W_r}
+@anchor{CTRL-W_CTRL-R}
+@anchor{E443}
+@cindex CTRL-W_r
+@cindex CTRL-W_CTRL-R
+@cindex E443
+@item @kbd{CTRL-W} r または
+@itemx @kbd{CTRL-W} @kbd{CTRL-R}
+ウィンドウ位置を下／右へ回転させる。1 番のウィンドウは 2 番目に、2 番目のウィンドウは 3 番目になる。最後のウィンドウは 1 番になる。カーソルは同じウィンドウにとどまる。
+
+この移動はカレントウィンドウと同じ段／列の中だけで行われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*CTRL-W_R*
+CTRL-W R	Rotate windows upwards/leftwards.  The second window becomes
+		the first one, the third one becomes the second one, etc.  The
+		first window becomes the last window.  The cursor remains in
+		the same window.
+		This only works within the row or column of windows that the
+		current window is in.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_R}
+@cindex CTRL-W_R
+@item @kbd{CTRL-W} R
+ウィンドウ位置を上／左へ回転させる。1 番のウィンドウは2番目に、2 番目のウィンドウは 3 番目になる。最後のウィンドウは 1 番になる。カーソルは同じウィンドウにとどまる。
+
+この移動はカレントウィンドウと同じ段／列の中だけで行われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W x					*CTRL-W_x* *CTRL-W_CTRL-X*
+CTRL-W CTRL-X	Without count: Exchange current window with next one.  If there
+		is no next window, exchange with previous window.
+		With count: Exchange current window with Nth window (first
+		window is 1).  The cursor is put in the other window.
+		When vertical and horizontal window splits are mixed, the
+		exchange is only done in the row or column of windows that the
+		current window is in.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_x}
+@anchor{CTRL-W_CTRL-X}
+@cindex CTRL-W_x
+@cindex CTRL-W_CTRL-X
+@item @kbd{CTRL-W} x または
+@itemx @kbd{CTRL-W} @kbd{CTRL-X}
+カウント指定なし: カレントウィンドウと次 (1 つ下) のウィンドウを入れ替える。次のウィンドウがない (カレントウィンドウが一番下の) 場合は、前 (1 つ上) のウィンドウと入れ替える。
+
+カウント指定有り: カレントウィンドウと上から N 番目のウィンドウ (一番上は 1 番目)を入れ替える。カーソルは入れ替えた相手のウィンドウに移動する。
+
+水平分割と垂直分割が混ざっている場合には、カレントウィンドウと同じ段／列の中だけで入れ替えが行われる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The following commands can be used to change the window layout.  For example,
+when there are two vertically split windows, CTRL-W K will change that in
+horizontally split windows.  CTRL-W H does it the other way around.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下のコマンドはウィンドウのレイアウトを変更するために使える。例えば、2 つの垂直分割されたウィンドウがある場合、@kbd{CTRL-W} K はそれらを水平分割に変更する。@kbd{CTRL-W} H はその逆を行う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*CTRL-W_K*
+CTRL-W K	Move the current window to be at the very top, using the full
+		width of the screen.  This works like closing the current
+		window and then creating another one with ":topleft split",
+		except that the current window contents is used for the new
+		window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{CTRL-W_K}
+@cindex CTRL-W_K
+@item @kbd{CTRL-W} K
+カレントウィンドウを最上段に移動し、幅を最大にする。これは、カレントウィンドウを閉じ、それから "@command{:topleft split}" で別のウィンドウを作るのと同様で、違いは新しいウィンドウにカレントウィンドウの内容が表示されるということだけである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*CTRL-W_J*
+CTRL-W J	Move the current window to be at the very bottom, using the
+		full width of the screen.  This works like closing the current
+		window and then creating another one with ":botright split",
+		except that the current window contents is used for the new
+		window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_J}
+@cindex CTRL-W_J
+@item @kbd{CTRL-W} J
+カレントウィンドウを最下段に移動し、幅を最大にする。これは、カレントウィンドウを閉じ、それから "@command{:botright split}" で別のウィンドウを作るのと同様で、違いは新しいウィンドウにカレントウィンドウの内容が表示されるということだけである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*CTRL-W_H*
+CTRL-W H	Move the current window to be at the far left, using the
+		full height of the screen.  This works like closing the
+		current window and then creating another one with
+		":vert topleft split", except that the current window contents
+		is used for the new window.
+		{not available when compiled without the |+vertsplit| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_H}
+@cindex CTRL-W_H
+@item @kbd{CTRL-W} H
+カレントウィンドウを最左列に移動し、高さを最大にする。これは、カレントウィンドウを閉じ、それから "@command{:vert topleft split}" で別のウィンドウを作るのと同様で、違いは新しいウィンドウにカレントウィンドウの中身が使われるということだけである。
+
+@{|+vertsplit| 機能なしでコンパイルされた場合は使用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*CTRL-W_L*
+CTRL-W L	Move the current window to be at the far right, using the full
+		height of the screen.  This works like closing the
+		current window and then creating another one with
+		":vert botright split", except that the current window
+		contents is used for the new window.
+		{not available when compiled without the |+vertsplit| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_L}
+@item @kbd{CTRL-W} L
+カレントウィンドウを最右列に移動し、高さを最大にする。これは、カレントウィンドウを閉じ、それから "@command{:vert botright split}" で別のウィンドウを作るのと同様で、違いは新しいウィンドウにカレントウィンドウの中身が使われるということだけである。
+
+@{|+vertsplit| 機能なしでコンパイルされた場合は使用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*CTRL-W_T*
+CTRL-W T	Move the current window to a new tab page.  This fails if
+		there is only one window in the current tab page.
+		When a count is specified the new tab page will be opened
+		before the tab page with this index.  Otherwise it comes after
+		the current tab page.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_T}
+@cindex CTRL-W_T
+@item @kbd{CTRL-W} T
+カレントウィンドウを新しいタブページへ移動する。カレントタブページにウィンドウが1つしかないときは、このコマンドは失敗する。
+
+カウントが指定されると、その番号のタブページの前に新しいタブページが開く。指定されないときはカレントタブページの後ろに開く。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Window resizing					*window-resize*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{window-resize}
+@cindex window-resize
+@section 6. ウィンドウのサイズ変更
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*CTRL-W_=*
+CTRL-W =	Make all windows (almost) equally high and wide, but use
+		'winheight' and 'winwidth' for the current window.
+		Windows with 'winfixheight' set keep their height and windows
+		with 'winfixwidth' set keep their width.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{CTRL-W_=}
+@cindex CTRL-W_=
+@item @kbd{CTRL-W} =
+全てのウィンドウの高さ・幅を (ほとんど) 同じにする。ただしカレントウィンドウに対しては '@option{winheight}' と '@option{winwidth}' が適用される。'@option{winfixheight}' がセットされたウィンドウの高さはそのままにし、'@option{winfixwidth}' がセットされたウィンドウの幅はそのままにする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:res[ize] -N					*:res* *:resize* *CTRL-W_-*
+CTRL-W -	Decrease current window height by N (default 1).
+		If used after |:vertical|: decrease width by N.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:res}
+@anchor{:resize}
+@anchor{CTRL-W_-}
+@cindex :res
+@cindex :resize
+@cindex CTRL-W_-
+@item :res[ize] -N または
+@itemx @kbd{CTRL-W} -
+カレントウィンドウの高さを N (デフォルトは 1) 行分低くする。|:vertical| の後に置かれたときは、幅を N 桁分減らす。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:res[ize] +N					*CTRL-W_+*
+CTRL-W +	Increase current window height by N (default 1).
+		If used after |:vertical|: increase width by N.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_+}
+@cindex CTRL-W_+
+@item :res[ize] +N または
+@itemx @kbd{CTRL-W} +
+カレントウィンドウの高さを N (デフォルトは1 ) 行分高くする。|:vertical| の後に置かれたときは、幅を N 桁分増やす。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:res[ize] [N]
+CTRL-W CTRL-_					*CTRL-W_CTRL-_* *CTRL-W__*
+CTRL-W _	Set current window height to N (default: highest possible).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_CTRL-_}
+@anchor{CTRL-W__}
+@cindex CTRL-W_CTRL-_
+@cindex CTRL-W__
+@item :res[ize] [N] または
+@itemx @kbd{CTRL-W} @kbd{CTRL-_} または
+@itemx @kbd{CTRL-W} _
+カレントウィンドウの高さを N 行にする (デフォルト: 可能な限り高くする)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+z{nr}<CR>	Set current window height to {nr}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item z@{nr@}@key{<CR>}
+カレントウィンドウの高さを @{nr@} にする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*CTRL-W_<*
+CTRL-W <	Decrease current window width by N (default 1).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_<}
+@cindex CTRL-W_<
+@item @kbd{CTRL-W} <
+カレントウィンドウの幅を N (デフォルトは 1) 桁分減らす。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*CTRL-W_>*
+CTRL-W >	Increase current window width by N (default 1).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_>}
+@cindex CTRL-W_>
+@item @kbd{CTRL-W} >
+カレントウィンドウの幅を N (デフォルトは 1) 桁分増やす。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:vertical res[ize] [N]			*:vertical-resize* *CTRL-W_bar*
+CTRL-W |	Set current window width to N (default: widest possible).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:vertical-resize}
+@anchor{CTRL-W_bar}
+@cindex :vertical-resize
+@cindex CTRL-W_bar
+@item :vertical res[ize] [N] または
+@itemx @kbd{CTRL-W} |
+カレントウィンドウの幅を N 桁にする (デフォルト:可能な限り広くする)
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can also resize a window by dragging a status line up or down with the
+mouse.  Or by dragging a vertical separator line left or right.  This only
+works if the version of Vim that is being used supports the mouse and the
+'mouse' option has been set to enable it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マウスでステータス行を上下にドラッグすることによってもウィンドウのサイズを変更できる。垂直セパレータ行を左右にドラッグしても同様。これができるのは、使用している Vim がマウスをサポートしていて '@option{mouse}' オプションでマウスが使えるように設定されているときである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The option 'winheight' ('wh') is used to set the minimal window height of the
+current window.  This option is used each time another window becomes the
+current window.  If the option is '0', it is disabled.  Set 'winheight' to a
+very large value, e.g., '9999', to make the current window always fill all
+available space.  Set it to a reasonable value, e.g., '10', to make editing in
+the current window comfortable.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{winheight}' ('@option{wh}') オプションはカレントウィンドウの最小の高さを設定する。このオプションは他のウィンドウがカレントウィンドウになるたびに使用される。このオプションが '@var{0}' に設定されている場合、オプションが無効になる。'@option{winheight}' オプションをかなり大きい値、例えば '@var{9999}' に設定すると、カレントウィンドウの高さは常に可能な限り高くなる。このオプションを適当な値、例えば '@var{10}' に設定した場合、カレントウィンドウでの編集がやりやすくなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The equivalent 'winwidth' ('wiw') option is used to set the minimal width of
+the current window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同様のオプション '@option{winwidth}' ('@option{wiw}') がカレントウィンドウの最小幅を設定するのに使える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the option 'equalalways' ('ea') is set, all the windows are automatically
+made the same size after splitting or closing a window.  If you don't set this
+option, splitting a window will reduce the size of the current window and
+leave the other windows the same.  When closing a window, the extra lines are
+given to the window above it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{equalalways}' ('@option{ea}') オプションをセットした場合、ウィンドウを分割したり閉じたりした後は全てのウィンドウは自動的に同じ高さとなる。このオプションをセットしていない場合、ウィンドウを分割するとカレントウィンドウが低くなり他のウィンドウの高さは変化しない。ウィンドウを閉じると、閉じたウィンドウの上のウィンドウの下のウィンドウが高くなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'eadirection' option limits the direction in which the 'equalalways'
+option is applied.  The default "both" resizes in both directions.  When the
+value is "ver" only the heights of windows are equalized.  Use this when you
+have manually resized a vertically split window and want to keep this width.
+Likewise, "hor" causes only the widths of windows to be equalized.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{eadirection}' は '@option{equalalways}' がどの方向に適用されるかを制限する。デフォルトの "@var{both}" は両方の方向にリサイズする。その値が "ver" のときはウィンドウの高さだけが等しくされる。垂直分割したウィンドウを手動でリサイズし、この幅を保ちたいときにこれを使うとよい。同じように、値が "@var{hor}" のときはウィンドウの幅だけが等しくされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The option 'cmdheight' ('ch') is used to set the height of the command-line.
+If you are annoyed by the |hit-enter| prompt for long messages, set this
+option to 2 or 3.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{cmdheight}' ('@option{ch}') オプションはコマンド行の高さを設定する。長いメッセージの表示の際の |hit-enter| プロンプトをわずらわしいと感じたら、このオプションを 2 か 3 に設定すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If there is only one window, resizing that window will also change the command
+line height.  If there are several windows, resizing the current window will
+also change the height of the window below it (and sometimes the window above
+it).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウが 1 つしかない場合、ウィンドウの高さを変更するとコマンド行の高さも変化する。2 つ以上ウィンドウがある場合、カレントウィンドウの高さを変更するとその下のウィンドウの高さも変化する(たまに上のウィンドウの高さが変化することもある)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The minimal height and width of a window is set with 'winminheight' and
+'winminwidth'.  These are hard values, a window will never become smaller.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウの最小の高さと幅は '@option{winminheight}' と '@option{winminwidth}' によって設定される。これらは絶対的な値で、ウィンドウはこれらより小さくなることはない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. Argument and buffer list commands			*buffer-list*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{buffer-list}
+@cindex buffer-list
+@section 7. コマンド引数とバッファリスト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+      args list		       buffer list	   meaning ~
+1. :[N]argument [N]	11. :[N]buffer [N]	to arg/buf N
+2. :[N]next [file ..]	12. :[N]bnext [N]	to Nth next arg/buf
+3. :[N]Next [N]		13. :[N]bNext [N]	to Nth previous arg/buf
+4. :[N]previous	[N]	14. :[N]bprevious [N]	to Nth previous arg/buf
+5. :rewind / :first	15. :brewind / :bfirst	to first arg/buf
+6. :last		16. :blast		to last arg/buf
+7. :all			17. :ball		edit all args/buffers
+			18. :unhide		edit all loaded buffers
+			19. :[N]bmod [N]	to Nth modified buf
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .3 .4
+@headitem args list @tab buffer list @tab meaning
+@item 1. :[N]argument [N] @tab 11. :[N]buffer [N] @tab N 番目の引数/バッファに移動
+@item 2. :[N]next [file ..] @tab 12. :[N]bnext [N] @tab N 個先の引数/バッファに移動
+@item 3. :[N]Next [N] @tab 13. :[N]bNext [N] @tab N 個前の引数/バッファに移動
+@item 4. :[N]previous [N] @tab 14. :[N]bprevious [N] @tab N 個前の引数/バッファに移動
+@item 5. :rewind / :first @tab 15. :brewind / :bfirst @tab 最初の引数/バッファに移動
+@item 6. :last @tab 16. :blast @tab 最後の引数/バッファに移動
+@item 7. :all @tab 17. :ball @tab 全ての引数/バッファを編集
+@item @tab 18. :unhide @tab 全ての読み込まれたバッファを編集
+@item @tab 19. :[N]bmod [N] @tab N 個先の編集中のバッファに移動
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  split & args list	  split & buffer list	   meaning ~
+21. :[N]sargument [N]   31. :[N]sbuffer [N]	split + to arg/buf N
+22. :[N]snext [file ..] 32. :[N]sbnext [N]      split + to Nth next arg/buf
+23. :[N]sNext [N]       33. :[N]sbNext [N]      split + to Nth previous arg/buf
+24. :[N]sprevious [N]   34. :[N]sbprevious [N]  split + to Nth previous arg/buf
+25. :srewind / :sfirst	35. :sbrewind / :sbfirst split + to first arg/buf
+26. :slast		36. :sblast		split + to last arg/buf
+27. :sall		37. :sball		edit all args/buffers
+			38. :sunhide		edit all loaded buffers
+			39. :[N]sbmod [N]	split + to Nth modified buf
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .3 .4
+@headitem split & args list @tab split & buffer list @tab meaning
+@item 21. :[N]sargument [N] @tab 31. :[N]sbuffer [N] @tab split + N番目の引数/バッファに移動
+@item 22. :[N]snext [file ..] @tab 32. :[N]sbnext [N] @tab split + N個先の引数/バッファに移動
+@item 23. :[N]sNext [N] @tab 33. :[N]sbNext [N] @tab split + N個前の引数/バッファに移動
+@item 24. :[N]sprevious [N] @tab 34. :[N]sbprevious [N] @tab split + N個前の引数/バッファに移動
+@item 25. :srewind / :sfirst @tab 35. :sbrewind / :sbfirst @tab split + 最初の引数/バッファに移動
+@item 26. :slast @tab 36. :sblast @tab split + 最後の引数/バッファに移動
+@item 27. :sall @tab 37: :sball @tab 全ての引数/バッファを編集
+@item @tab 38. :sunhide @tab 全ての読み込まれたバッファを編集
+@item @tab 39. :[N]sbmod [N] @tab split + N 個先の編集中のバッファに移動
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+40. :args		list of arguments
+41. :buffers		list of buffers
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 40. :args @tab コマンド引数の表示
+@item 41. :buffers @tab バッファの表示
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The meaning of [N] depends on the command:
+ [N] is number of buffers to go forward/backward on ?2, ?3, and ?4
+ [N] is an argument number, defaulting to current argument, for 1 and 21
+ [N] is a buffer number, defaulting to current buffer, for 11 and 31
+ [N] is a count for 19 and 39
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[N] の意味はコマンドによって異なる。
+@multitable @columnfractions .1
+@item ?2, ?3, ?4 のコマンドにおいては、[N] は前方/後方に移動するバッファ数
+@item 1, 21 のコマンドにおいては、[N] は引数番号、デフォルトはカレント引数
+@item 11, 31 のコマンドにおいては、[N] はバッファ番号、デフォルトはカレントバッファ
+@item 19, 39 のコマンドにおいては、[N ]はカウント
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: ":next" is an exception, because it must accept a list of file names
+for compatibility with Vi.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+":next" は例外である。なぜならこのコマンドは Vi との互換性のためにファイル名リストを受け付けなければならないからである。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The argument list and multiple windows
+--------------------------------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 引数リストと複数のウィンドウ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The current position in the argument list can be different for each window.
+Remember that when doing ":e file", the position in the argument list stays
+the same, but you are not editing the file at that position.  To indicate
+this, the file message (and the title, if you have one) shows
+"(file (N) of M)", where "(N)" is the current position in the file list, and
+"M" the number of files in the file list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数リストのカレント位置は各ウィンドウ毎に異なっている可能性がある。"@command{:e file}" コマンドを実行した際には引数リストないのカレント位置は変化しないが、カレント位置のファイルを編集していないことを忘れないでほしい。この状態を示すために、ファイルメッセージに(もしあるならタイトルにも)「(file (N) of M)」と表示する。ここで、"(N)" はファイルリスト中のカレント位置を、"M" はファイルリスト中のファイルの数を表している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All the entries in the argument list are added to the buffer list.  Thus, you
+can also get to them with the buffer list commands, like ":bnext".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数リストの全てはバッファリストに追加される。だから、"@command{:bnext}" のようなバッファリストコマンドで引数リストを表示することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]al[l][!] [N]				*:al* *:all* *:sal* *:sall*
+:[N]sal[l][!] [N]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:al}
+@anchor{:all}
+@anchor{:sal}
+@anchor{:sall}
+@cindex :al
+@cindex :all
+@cindex :sal
+@cindex :sall
+@item :[N]al[l][!] [N] または
+@itemx :[N]sal[l][!] [N]
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Rearrange the screen to open one window for each argument.
+		All other windows are closed.  When a count is given, this is
+		the maximum number of windows to open.
+		With the |:tab| modifier open a tab page for each argument.
+		When there are more arguments than 'tabpagemax' further ones
+		become split windows in the last tab page.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+各引数に対して 1 つのウィンドウを開き、スクリーンを再構成する。他の全てのウィンドウは閉じられる。カウントが指定された時は、開くウィンドウの最大数となる。コマンド修飾子 |:tab| をつけて実行すると、各引数に対して 1 つずつタブページを開く。'@option{tabpagemax}' 個より多くの引数が与えられたときは、多すぎる引数は最後のタブページの中でウィンドウに分割されて開かれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When the 'hidden' option is set, all buffers in closed windows
+		become hidden.
+		When 'hidden' is not set, and the 'autowrite' option is set,
+		modified buffers are written.  Otherwise, windows that have
+		buffers that are modified are not removed, unless the [!] is
+		given, then they become hidden.  But modified buffers are
+		never abandoned, so changes cannot get lost.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{hidden}' オプションがセットされている場合は、閉じられるウィンドウで表示されている全てのバッファは隠れ状態 (hidden) となる。'@option{hidden}' オプションがセットされておらず '@option{autowrite}' オプションがセットされている場合は、編集中のバッファは保存される。さもなければ、編集中のバッファを表示しているウィンドウは閉じられない。ただし [!] が与えられていれば、それらのバッファは隠れ状態 (hidden) となる。しかし、編集中のバッファは決して削除されないので、変更は失われない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		[N] is the maximum number of windows to open.  'winheight'
+		also limits the number of windows opened ('winwidth' if
+		|:vertical| was prepended).
+		Buf/Win Enter/Leave autocommands are not executed for the new
+		windows here, that's only done when they are really entered.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[N] は開かれるウィンドウの数の最大値。'@option{winheight}' (|:vertical| が前に与えられている場合は '@option{winwidth}') もまた開かれるウィンドウの数を制限する。この時点では Buf/Win Enter/Leave オートコマンドは新しいウィンドウに対して実行されない。実際にそのウィンドウに移ったときに実行される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]sa[rgument][!] [++opt] [+cmd] [N]			*:sa* *:sargument*
+		Short for ":split | argument [N]": split window and go to Nth
+		argument.  But when there is no such argument, the window is
+		not split.  Also see |++opt| and |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sa}
+@anchor{:sargument}
+@cindex :sa
+@cindex :sargument
+@item :[N]sa[rgument][!] [++opt] [+cmd] [N]
+"@command{:split | argument [N]}" の短縮形: ウィンドウを分割し、N 番目の引数へ移動する。しかし、N 番目の引数がなければ、ウィンドウは分割しない。|++opt| と |+cmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]sn[ext][!] [++opt] [+cmd] [file ..]			*:sn* *:snext*
+		Short for ":split | [N]next": split window and go to Nth next
+		argument.  But when there is no next file, the window is not
+		split.  Also see |++opt| and |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sn}
+@anchor{:snext}
+@cindex :sn
+@cindex :snext
+@item :[N]sn[ext][!] [++opt] [+cmd] [file ..]
+"@command{:split | [N]next}" の短縮形: ウィンドウを分割し、N 個先の引数へ移動する。しかし、N 個先の引数がなければ、ウィンドウは分割しない。|++opt| と |+cmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]spr[evious][!] [++opt] [+cmd] [N]			*:spr* *:sprevious*
+:[N]sN[ext][!] [++opt] [+cmd] [N]			*:sN* *:sNext*
+		Short for ":split | [N]Next": split window and go to Nth
+		previous argument.  But when there is no previous file, the
+		window is not split.  Also see |++opt| and |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:spr}
+@anchor{:sprevious}
+@anchor{:sN}
+@anchor{:sNext}
+@cindex :spr
+@cindex :sprevious
+@cindex :sN
+@cindex :sNext
+@item :[N]spr[evious][!] [++opt] [+cmd] [N] または
+@itemx :[N]sN[ext][!] [++opt] [+cmd] [N]
+"@command{:split | [N]Next}" の短縮形: ウィンドウを分割し、N 個前の引数へ移動する。しかし、N 個前の引数がなければ、ウィンドウは分割しない。|++opt| と |+cmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:sre* *:srewind*
+:sre[wind][!] [++opt] [+cmd]
+		Short for ":split | rewind": split window and go to first
+		argument.  But when there is no argument list, the window is
+		not split.  Also see |++opt| and |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sre}
+@anchor{:srewind}
+@cindex :sre
+@cindex :srewind
+@item :sre[wind][!] [++opt] [+cmd]
+"@command{:split | rewind}" の短縮形: ウィンドウを分割し、最初の引数へ移動する。しかし、引数がなければ、ウィンドウは分割しない。|++opt| と |+cmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:sfir* *:sfirst*
+:sfir[st] [++opt] [+cmd]
+		Same as ":srewind".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sfir}
+@anchor{:sfirst}
+@cindex :sfir
+@cindex :sfirst
+@item :sfir[st] [++opt] [+cmd]
+"@command{:srewind}" と同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:sla* *:slast*
+:sla[st][!] [++opt] [+cmd]
+		Short for ":split | last": split window and go to last
+		argument.  But when there is no argument list, the window is
+		not split.  Also see |++opt| and |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sla}
+@anchor{:slast}
+@cindex :sla
+@cindex :slast
+@item :sla[st][!] [++opt] [+cmd]
+"@command{:split | last}" の短縮形: ウィンドウを分割し、最後の引数へ移動する。しかし、引数がなければ、ウィンドウは分割しない。|++opt| と |+cmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:dr* *:drop*
+:dr[op] [++opt] [+cmd] {file} ..
+		Edit the first {file} in a window.
+		- If the file is already open in a window change to that
+		  window.
+		- If the file is not open in a window edit the file in the
+		  current window.  If the current buffer can't be |abandon|ed,
+		  the window is split first.
+		- Windows that are not in the argument list or are not full
+		  width will be closed if possible.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:dr}
+@anchor{:drop}
+@cindex :dr
+@cindex :drop
+@item :dr[op] [++opt] [+cmd] @{file@} ..
+最初の @{file@} を編集する。
+@itemize @minus
+@item そのファイルがすでにあるウィンドウで開かれていたら、そのウィンドウに移動する。
+@item そのファイルがウィンドウで開かれていなければ、カレントウィンドウで開く。カレントバッファが破棄されえない (|abandon|) ならばまずウィンドウが分割される。
+@item 引数リストにないウィンドウや、ウィンドウ幅が最大でないウィンドウは、可能ならば閉じられる。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The |argument-list| is set, like with the |:next| command.
+		The purpose of this command is that it can be used from a
+		program that wants Vim to edit another file, e.g., a debugger.
+		When using the |:tab| modifier each argument is opened in a
+		tab page.  The last window is used if it's empty.
+		Also see |++opt| and |+cmd|.
+		{only available when compiled with a GUI}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:next| コマンドと同様に、|argument-list| がセットされる。このコマンドの目的は、Vim に別のファイルを開いてほしいプログラム (例:デバッガ) から使われることである。コマンド修飾子 |:tab| をつけて実行すると、各引数が 1 つずつタブページで開かれる。最後のウィンドウが空ならそのウィンドウが使われる。|++opt| と |+cmd| も参照。
+
+@{GUI 機能つきでコンパイルされたときのみ使用可能@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+8. Do a command in all buffers or windows			*list-repeat*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{list-repeat}
+@cindex list-repeat
+@section 8. 全てのバッファ／ウィンドウに対してコマンド実行
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:windo*
+:[range]windo {cmd}	Execute {cmd} in each window or if [range] is given
+			only in windows for which the window number lies in
+			the [range].  It works like doing this: >
+				CTRL-W t
+				:{cmd}
+				CTRL-W w
+				:{cmd}
+				etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:windo}
+@cindex :windo
+@item :[range]windo @{cmd@}
+各ウィンドウに対して @{cmd@} を実行する。[range] が指定された場合には、指定された範囲の番号のウィンドウが操作対象となる。これは次のようにするのと同じ動作をする:
+@example
+CTRL-W t
+:@{cmd@}
+CTRL-W w
+:@{cmd@}
+etc.
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<			This only operates in the current tab page.
+			When an error is detected on one window, further
+			windows will not be visited.
+			The last window (or where an error occurred) becomes
+			the current window.
+			{cmd} can contain '|' to concatenate several commands.
+			{cmd} must not open or close windows or reorder them.
+			{not in Vi} {not available when compiled without the
+			|+listcmds| feature}
+			Also see |:tabdo|, |:argdo|, |:bufdo|, |:cdo|, |:ldo|,
+			|:cfdo| and |:lfdo|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カレントタブページ内でのみ実行される。1 つのウィンドウに対してエラーが検出されると、それ以降のウィンドウに対しては実行されない。最後のウィンドウ (またはエラーが起こったウィンドウ) がカレントウィンドウになる。
+
+@{cmd@} は '|' を含んで複数のコマンドを連結していてもよい。@{cmd@} はウィンドウの開閉、並べ替えをしてはならない。
+
+@{Vi にはない@}
+
+@{|+listcmds| 機能なしでコンパイルされた場合は使用できない@}
+
+|:tabdo|, |:argdo|, |:bufdo|, |:cdo|, |:ldo|, |:cfdo|, |:lfdo| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:bufdo*
+:[range]bufdo[!] {cmd}	Execute {cmd} in each buffer in the buffer list or if
+			[range] is given only for buffers for which their
+			buffer number is in the [range].  It works like doing
+			this: >
+				:bfirst
+				:{cmd}
+				:bnext
+				:{cmd}
+				etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:bufdo}
+@cindex :bufdo
+@item :[range]bufdo[!] @{cmd@}
+@{cmd@} をバッファリスト内の各バッファに対して実行する。[range] が指定された場合は、指定された範囲の番号のバッファが操作対象となる。これは次のようにするのと同じ動作をする:
+@example
+:bfirst
+:@{cmd@}
+:bnext
+:@{cmd@}
+etc.
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<			When the current file can't be |abandon|ed and the [!]
+			is not present, the command fails.
+			When an error is detected on one buffer, further
+			buffers will not be visited.
+			Unlisted buffers are skipped.
+			The last buffer (or where an error occurred) becomes
+			the current buffer.
+			{cmd} can contain '|' to concatenate several commands.
+			{cmd} must not delete buffers or add buffers to the
+			buffer list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カレントファイルが破棄されえなく (|abandon|) かつ [!] が与えられない場合、このコマンドは失敗する。1 つのバッファに対してエラーが検出されると、それ以降のバッファに対しては実行されない。リストされていないバッファはスキップされる。最後のバッファ (またはエラーが起こったバッファ) がカレントウィンドウになる。
+
+@{cmd@} は '|' を含んで複数のコマンドを連結していてもよい。@{cmd@} はバッファリストにバッファを削除、追加してはならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Note: While this command is executing, the Syntax
+			autocommand event is disabled by adding it to
+			'eventignore'.  This considerably speeds up editing
+			each buffer.
+			{not in Vi} {not available when compiled without the
+			|+listcmds| feature}
+			Also see |:tabdo|, |:argdo|, |:windo|, |:cdo|, |:ldo|,
+			|:cfdo| and |:lfdo|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+このコマンドを実行している間、Syntax 自動コマンドイベントが '@option{eventignore}' に追加され、無効化される。これは各バッファの編集を大幅にスピードアップさせる。
+
+@{Vi にはない@}
+
+@{|+listcmds| 機能なしでコンパイルされた場合は使用できない@}
+
+|:tabdo|, |:argdo|, |:windo|, |:cdo|, |:ldo|, |:cfdo|, |:lfdo| も参照。
+@end quotation
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples: >
+
+	:windo set nolist nofoldcolumn | normal zn
+
+This resets the 'list' option and disables folding in all windows. >
+
+	:bufdo set fileencoding= | update
+
+This resets the 'fileencoding' in each buffer and writes it if this changed
+the buffer.  The result is that all buffers will use the 'encoding' encoding
+(if conversion works properly).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:windo set nolist nofoldcolumn | normal zn
+@end example
+これは '@option{list}' オプションをリセットし全てのウィンドウの折り畳みを無効化する。
+@example
+:bufdo set fileencoding= | update
+@end example
+これは各バッファの '@option{fileencoding}' をリセットし、バッファに変更があったらそれを保存する。結果として、すべてのバッファが同じ '@option{encoding}' のエンコーディングを使用する (変換がうまくいったとすれば)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+9. Tag or file name under the cursor			*window-tag*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{window-tag}
+@cindex window-tag
+@section 9. カーソル位置のタグ名／ファイル名
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:sta* *:stag*
+:sta[g][!] [tagname]
+		Does ":tag[!] [tagname]" and splits the window for the found
+		tag.  See also |:tag|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:sta}
+@anchor{:stag}
+@cindex :sta
+@cindex :stag
+@item :sta[g][!] [tagname]
+"@command{:tag[!] [tagname]}" を実行し見つかったタグの表示のためにウィンドウを分割する。|:tag| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W ]					*CTRL-W_]* *CTRL-W_CTRL-]*
+CTRL-W CTRL-]	Split current window in two.  Use identifier under cursor as a
+		tag and jump to it in the new upper window.
+		In Visual mode uses the Visually selected text as a tag.
+		Make new window N high.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_]}
+@anchor{CTRL-W_CTRL-]}
+@cindex CTRL-W_]
+@cindex CTRL-W_CTRL-]
+@item @kbd{CTRL-W} ] または
+@itemx @kbd{CTRL-W} @kbd{CTRL-]}
+カレントウィンドウを2つに分割する。カーソル位置の識別子をタグとして使用し、新しくできた上側のウィンドウでタグに移動する。ビジュアルモードではビジュアル選択されたテキストがタグとして使われる。新しいウィンドウの高さは N となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*CTRL-W_g]*
+CTRL-W g ]	Split current window in two.  Use identifier under cursor as a
+		tag and perform ":tselect" on it in the new upper window.
+		In Visual mode uses the Visually selected text as a tag.
+		Make new window N high.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_g]}
+@cindex CTRL-W_g]
+@item @kbd{CTRL-W} g ]
+カレントウィンドウを 2 つに分割する。カーソル位置の識別子をタグとして使用し、新しくできた上側のウィンドウで "@command{:tselect}" を実行する。ビジュアルモードではビジュアル選択されたテキストがタグとして使われる。新しいウィンドウの高さは N となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*CTRL-W_g_CTRL-]*
+CTRL-W g CTRL-]	Split current window in two.  Use identifier under cursor as a
+		tag and perform ":tjump" on it in the new upper window.
+		In Visual mode uses the Visually selected text as a tag.
+		Make new window N high.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_g_CTRL-]}
+@cindex CTRL-W_g_CTRL-]
+@item @kbd{CTRL-W} g @kbd{CTRL-]}
+カレントウィンドウを 2 つに分割する。カーソル位置の識別子をタグとして使用し、新しくできた上側のウィンドウで "@command{:tjump}" を実行する。ビジュアルモードではビジュアル選択されたテキストがタグとして使われる。新しいウィンドウの高さは N となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W f					*CTRL-W_f* *CTRL-W_CTRL-F*
+CTRL-W CTRL-F	Split current window in two.  Edit file name under cursor.
+		Like ":split gf", but window isn't split if the file does not
+		exist.
+		Uses the 'path' variable as a list of directory names where to
+		look for the file.  Also the path for current file is
+		used to search for the file name.
+		If the name is a hypertext link that looks like
+		"type://machine/path", only "/path" is used.
+		If a count is given, the count'th matching file is edited.
+		{not available when the |+file_in_path| feature was disabled
+		at compile time}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_f}
+@anchor{CTRL-W_CTRL-F}
+@cindex CTRL-W_f
+@cindex CTRL-W_CTRL-F
+@item @kbd{CTRL-W} f または
+@itemx @kbd{CTRL-W} @kbd{CTRL-F}
+カレントウィンドウを 2 つに分割する。カーソル位置のファイル名を編集する。"@command{:split ]f}" と同様だが、ファイルが存在しなければウィンドウを分割しない。
+
+ファイルを探すディレクトリのリストとして変数 '@option{path}' が使われる。また、カレントファイルのパスも探される。その名前が "type://machine/path" のようにハイパーテキストリンクならば "/path" のみが使われる。
+
+count が与えられた場合、count 番目にマッチしたファイルが編集される。
+
+@{|+file_in_path| 機能なしでコンパイルされた場合は使用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W F						*CTRL-W_F*
+		Split current window in two.  Edit file name under cursor and
+		jump to the line number following the file name. See |gF| for
+		details on how the line number is obtained.
+		{not available when the |+file_in_path| feature was disabled
+		at compile time}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_F}
+@cindex CTRL-W_F
+@item @kbd{CTRL-W} F
+カレントウィンドウを 2 つに分割する。カーソル下のファイル名を開き、そのファイル名の後に書かれている行番号へジャンプする。どのように行番号を取得するかについては |gF| を参照。
+
+@{|+file_in_path| 機能なしでコンパイルされた場合は使用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W gf						*CTRL-W_gf*
+		Open a new tab page and edit the file name under the cursor.
+		Like "tab split" and "gf", but the new tab page isn't created
+		if the file does not exist.
+		{not available when the |+file_in_path| feature was disabled
+		at compile time}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_gf}
+@cindex CTRL-W_gf
+@item @kbd{CTRL-W} gf
+新しいタブページを開き、カーソル下のファイル名を開く。"tab split" と "gf" の組み合わせに似ているが、そのファイルが存在しない場合に新しいタブページを作成しないところが異なる。
+
+@{|+file_in_path| 機能なしでコンパイルされた場合は使用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W gF						*CTRL-W_gF*
+		Open a new tab page and edit the file name under the cursor
+		and jump to the line number following the file name.  Like
+		"tab split" and "gF", but the new tab page isn't created if
+		the file does not exist.
+		{not available when the |+file_in_path| feature was disabled
+		at compile time}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_gF}
+@cindex CTRL-W_gF
+@item @kbd{CTRL-W} gF
+新しいタブページを開き、カーソル下のファイル名を開いて、ファイル名の後に書かれている行番号へジャンプする。"tab split" と "gF" の組み合わせに似ているが、そのファイルが存在しない場合に新しいタブページを作成しないところが異なる。
+
+@{|+file_in_path| 機能なしでコンパイルされた場合は使用できない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Also see |CTRL-W_CTRL-I|: open window for an included file that includes
+the keyword under the cursor.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|CTRL-W_CTRL-I| も参照: カーソル位置のキーワードを含むインクルードファイルを新しいウィンドウで開く。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+10. The preview window				*preview-window*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{preview-window}
+@cindex preview-window
+@section 10. プレビューウィンドウ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The preview window is a special window to show (preview) another file.  It is
+normally a small window used to show an include file or definition of a
+function.
+{not available when compiled without the |+quickfix| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プレビューウィンドウは別のファイルをプレビューする特別なウィンドウである。通常はインクルードファイルや関数の定義を示すのに使われる小さなウィンドウである。
+
+@{|+quickfix| 機能なしでコンパイルされた場合は使用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There can be only one preview window (per tab page).  It is created with one
+of the commands below.  The 'previewheight' option can be set to specify the
+height of the preview window when it's opened.  The 'previewwindow' option is
+set in the preview window to be able to recognize it.  The 'winfixheight'
+option is set to have it keep the same height when opening/closing other
+windows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プレビューウィンドウはタブページにつき1つだけ開くことができる。プレビューウィンドウは以下のコマンドのどれかが実行されたとき作成される。オプション '@option{previewheight}' によってプレビューウィンドウが開くときの高さを設定できる。プレビューウィンドウを識別するために、プレビューウィンドウにはオプション '@option{previewwindow}' がセットされる。他のウィンドウを開閉したときにも同じ高さを保つためにオプション '@option{winfixheight}' がセットされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:pta* *:ptag*
+:pta[g][!] [tagname]
+		Does ":tag[!] [tagname]" and shows the found tag in a
+		"Preview" window without changing the current buffer or cursor
+		position.  If a "Preview" window already exists, it is re-used
+		(like a help window is).  If a new one is opened,
+		'previewheight' is used for the height of the window.   See
+		also |:tag|.
+		See below for an example. |CursorHold-example|
+		Small difference from |:tag|: When [tagname] is equal to the
+		already displayed tag, the position in the matching tag list
+		is not reset.  This makes the CursorHold example work after a
+		|:ptnext|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:pta}
+@anchor{:ptag}
+@cindex :pta
+@cindex :ptag
+@item :pta[g][!] [tagname]
+"@command{:tag[!] [tagname]}" を実行し、現在のバッファまたはカーソル位置を変えずに「プレビュー」ウィンドウ内で検索したタグを表示する。「プレビュー」ウィンドウがすでに存在していた場合は、(ヘルプウィンドウのように) そのウィンドウに表示する。新しいウィンドウが開いたときは、'@option{previewheight}' の設定がそのウィンドウの高さになる。|:tag| も参照のこと。
+
+例は下を参照。|CursorHold-example|
+
+|:tag| とは小さな違いがある: [tagname] がすでに表示されているタグと同じ場合、マッチしたタグリスト内の位置はリセットされない。このおかげで |:ptnext| の後でも CursorHold の例がうまくいくようになっている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W z					*CTRL-W_z*
+CTRL-W CTRL-Z					*CTRL-W_CTRL-Z* *:pc* *:pclose*
+:pc[lose][!]	Close any "Preview" window currently open.  When the 'hidden'
+		option is set, or when the buffer was changed and the [!] is
+		used, the buffer becomes hidden (unless there is another
+		window editing it).  The command fails if any "Preview" buffer
+		cannot be closed.  See also |:close|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_z}
+@anchor{CTRL-W_CTRL-Z}
+@anchor{:pc}
+@anchor{:pclose}
+@cindex CTRL-W_z
+@cindex CTRL-W_CTRL-Z
+@cindex :pc
+@cindex :pclose
+@item @kbd{CTRL-W} z または
+@itemx @kbd{CTRL-W} @kbd{CTRL-Z} または
+@itemx :pc[lose][!]
+現在開いている「プレビュー」ウィンドウを閉じる。'@option{hidden}' オプションがセットされている時、または、バッファが編集中で [!] が使われた時、(そのバッファを編集している他のウィンドウがなければ)そのバッファは隠れ状態 (hidden) となる。いずれかの「プレビュー」バッファを閉じることができない場合、このコマンドは失敗する。|:close| も参照のこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:pp* *:ppop*
+:[count]pp[op][!]
+		Does ":[count]pop[!]" in the preview window.  See |:pop| and
+		|:ptag|.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:pp}
+@anchor{:ppop}
+@cindex :pp
+@cindex :ppop
+@item :[count]pp[op][!]
+プレビューウィンドウで "@command{:[count]pop[!]}" を実行する。|:pop| と |:ptag| を参照。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W }						*CTRL-W_}*
+		Use identifier under cursor as a tag and perform a :ptag on
+		it.  Make the new Preview window (if required) N high.  If N is
+		not given, 'previewheight' is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_@}}
+@cindex CTRL-W_@}
+@item @kbd{CTRL-W} @}
+カーソル位置の識別子をタグとして使用し、@command{:ptag} を実行する。 (必要なら) 高さ N の新しいプレビューウィンドウを作成する。N が与えられなければ、'@option{previewheight}' が使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W g }						*CTRL-W_g}*
+		Use identifier under cursor as a tag and perform a :ptjump on
+		it.  Make the new Preview window (if required) N high.  If N is
+		not given, 'previewheight' is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_g@}}
+@cindex CTRL-W_g@}
+@item @kbd{CTRL-W} g @}
+
+カーソル位置の識別子をタグとして使用し、@command{:ptjump} を実行する。(必要なら) 高さ N の新しいプレビューウィンドウを作成する。 N が与えられなければ、'@option{previewheight}' が使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:ped* *:pedit*
+:ped[it][!] [++opt] [+cmd] {file}
+		Edit {file} in the preview window.  The preview window is
+		opened like with |:ptag|.  The current window and cursor
+		position isn't changed.  Useful example: >
+			:pedit +/fputc /usr/include/stdio.h
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ped}
+@anchor{:pedit}
+@cindex :ped
+@cindex :pedit
+@item :ped[it][!] [++opt] [+cmd] @{file@}
+@{file@} をプレビューウィンドウで編集する。プレビューウィンドウは |:ptag| と同じように開かれる。カレントウィンドウとカーソル位置は変わらない。便利な例:
+@example
+:pedit +/fputc /usr/include/stdio.h
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:ps* *:psearch*
+:[range]ps[earch][!] [count] [/]pattern[/]
+		Works like |:ijump| but shows the found match in the preview
+		window.  The preview window is opened like with |:ptag|.  The
+		current window and cursor position isn't changed.  Useful
+		example: >
+			:psearch popen
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ps}
+@anchor{:psearch}
+@cindex :ps
+@cindex :psearch
+@item :[range]ps[earch][!] [count] [/]pattern[/]
+|:ijump| と同様だが、見つかったマッチをプレビューウィンドウで開く。プレビューウィンドウは |:ptag| と同じように開かれる。カレントウィンドウとカーソル位置は変わらない。便利な例:
+@example
+:psearch popen
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		Like with the |:ptag| command, you can use this to
+		automatically show information about the word under the
+		cursor.  This is less clever than using |:ptag|, but you don't
+		need a tags file and it will also find matches in system
+		include files.  Example: >
+  :au! CursorHold *.[ch] nested exe "silent! psearch " . expand("<cword>")
+<		Warning: This can be slow.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:ptag| コマンドと同じように、これを使ってカーソル位置の単語に関する情報を自動的に表示させることができる。これは |:ptag| コマンドを使うほど賢くないが、@file{tags} ファイルが必要なく、システムインクルードファイル内のマッチを見つけることもできる。例:
+@example
+:au! CursorHold *.[ch] nested exe "silent! psearch " . expand("<cword>")
+@end example
+注意: 遅いかもしれない。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example						*CursorHold-example*  >
+
+  :au! CursorHold *.[ch] nested exe "silent! ptag " . expand("<cword>")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CursorHold-example}
+@cindex CursorHold-example
+@unnumberedsubsec 例
+@example
+:au! CursorHold *.[ch] nested exe "silent! ptag " . expand("<cword>")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will cause a ":ptag" to be executed for the keyword under the cursor,
+when the cursor hasn't moved for the time set with 'updatetime'.  The "nested"
+makes other autocommands be executed, so that syntax highlighting works in the
+preview window.  The "silent!" avoids an error message when the tag could not
+be found.  Also see |CursorHold|.  To disable this again: >
+
+  :au! CursorHold
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この例では、'@option{updatetime}' に設定された時間の間カーソルが動かなければ、カーソル下のキーワードで "@command{:ptag}" が実行される。"nested" は他のオートコマンドを実行するので、シンタックスハイライトはプレビューウィンドウ内で動作する。"silent!" はタグが見つからなかったときのエラーメッセージを抑止する。|CursorHold| も参照。この自動コマンドを再び無効化するには:
+@example
+:au! CursorHold
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A nice addition is to highlight the found tag, avoid the ":ptag" when there
+is no word under the cursor, and a few other things: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+見つかったタグをハイライトさせる、カーソル位置に単語がないときに "@command{:ptag}" を実行しない、などの改良をしたものが以下の通り:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  :au! CursorHold *.[ch] nested call PreviewWord()
+  :func PreviewWord()
+  :  if &previewwindow			" don't do this in the preview window
+  :    return
+  :  endif
+  :  let w = expand("<cword>")		" get the word under cursor
+  :  if w =~ '\a'			" if the word contains a letter
+  :
+  :    " Delete any existing highlight before showing another tag
+  :    silent! wincmd P			" jump to preview window
+  :    if &previewwindow			" if we really get there...
+  :      match none			" delete existing highlight
+  :      wincmd p			" back to old window
+  :    endif
+  :
+  :    " Try displaying a matching tag for the word under the cursor
+  :    try
+  :       exe "ptag " . w
+  :    catch
+  :      return
+  :    endtry
+  :
+  :    silent! wincmd P			" jump to preview window
+  :    if &previewwindow		" if we really get there...
+  :	 if has("folding")
+  :	   silent! .foldopen		" don't want a closed fold
+  :	 endif
+  :	 call search("$", "b")		" to end of previous line
+  :	 let w = substitute(w, '\\', '\\\\', "")
+  :	 call search('\<\V' . w . '\>')	" position cursor on match
+  :	 " Add a match highlight to the word at this position
+  :      hi previewWord term=bold ctermbg=green guibg=green
+  :	 exe 'match previewWord "\%' . line(".") . 'l\%' . col(".") . 'c\k*"'
+  :      wincmd p			" back to old window
+  :    endif
+  :  endif
+  :endfun
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:au! CursorHold *.[ch] nested call PreviewWord()
+:func PreviewWord()
+:  if &previewwindow                  " プレビューウィンドウ内では実行しない
+:    return
+:  endif
+:  let w = expand("<cword>")          " カーソル下の単語を得る
+:  if w =~ '\a'                       " その単語が文字を含んでいるなら
+:
+:    " 別のタグを表示させる前にすでに存在するハイライトを消去する
+:    silent! wincmd P                 " プレビューウィンドウにジャンプ
+:    if &previewwindow                        " すでにそこにいるなら
+:      match none                     " 存在するハイライトを消去する
+:      wincmd p                       " もとのウィンドウに戻る
+:    endif
+:
+:    " カーソル下の単語にマッチするタグを表示してみる
+:    try
+:       exe "ptag " . w
+:    catch
+:      return
+:    endtry
+:
+:    silent! wincmd P                 " プレビューウィンドウにジャンプ
+:    if &previewwindow                " すでにそこにいるなら
+:      if has("folding")
+:        silent! .foldopen            " 閉じた折り畳みを開く
+:      endif
+:      call search("$", "b")          " 前の行の最後へ
+:      let w = substitute(w, '\\', '\\\\', "")
+:      call search('\<\V' . w . '\>') " カーソルをマッチしたところへ
+:      " ここで単語にハイライトをつける
+:      hi previewWord term=bold ctermbg=green guibg=green
+:      exe 'match previewWord "\%' . line(".") . 'l\%' . col(".") . 'c\k*"'
+:      wincmd p                       " もとのウィンドウへ戻る
+:    endif
+:  endif
+:endfun
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+11. Using hidden buffers				*buffer-hidden*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{buffer-hidden}
+@cindex buffer-hidden
+@section 11. 隠れ (hidden) バッファを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A hidden buffer is not displayed in a window, but is still loaded into memory.
+This makes it possible to jump from file to file, without the need to read or
+write the file every time you get another buffer in a window.
+{not available when compiled without the |+listcmds| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+隠れ (hidden) バッファはウィンドウに表示されないが、メモリ上にはすでにロードされている。これにより、毎回ファイルを保存したり読み込んだりしなくても、また、ウィンドウ内にファイルを残しておかなくても、他のバッファをウィンドウに表示することが可能となる。
+
+@{|+listcmds| 機能なしでコンパイルされた場合には使用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:buffer-!*
+If the option 'hidden' ('hid') is set, abandoned buffers are kept for all
+commands that start editing another file: ":edit", ":next", ":tag", etc.  The
+commands that move through the buffer list sometimes make the current buffer
+hidden although the 'hidden' option is not set.  This happens when a buffer is
+modified, but is forced (with '!') to be removed from a window, and
+'autowrite' is off or the buffer can't be written.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:buffer-!}
+@cindex :buffer-!
+'@option{hidden}' ('@option{hi}') オプションがセットされている場合は、"@command{:edit}", "@command{:next}", "@command{:tag}" 等の他のファイルの編集をスタートさせる全てのコマンドに関して、いらないバッファは捨てられない。バッファリストで移動コマンドを実行すると、'@option{hidden}' オプションがセットされていないにも関わらず、バッファが隠れ状態 (hidden) になることがある。これはバッファが編集中で、ウィンドウが強制的に削除され ('!' を使用)、'@option{autowrite}' がセットされていないかバッファを保存できなかったときに起こる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can make a hidden buffer not hidden by starting to edit it with any
+command.  Or by deleting it with the ":bdelete" command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+隠れ状態の (hidden) バッファはそのバッファの編集を開始するコマンドで隠れ状態 (hidden) ではなくなる。"@command{:bdelete}" コマンドでバッファを削除しても隠れ状態 (hidden) ではなくなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'hidden' is global, it is used for all buffers.  The 'bufhidden' option
+can be used to make an exception for a specific buffer.  It can take these
+values:
+	<empty>		Use the value of 'hidden'.
+	hide		Hide this buffer, also when 'hidden' is not set.
+	unload		Don't hide but unload this buffer, also when 'hidden'
+			is set.
+	delete		Delete the buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{hidden}' はグローバルである、全てのバッファに適用される。オプション '@option{bufhidden}' は特定のバッファを例外にするために使える。'@option{bufhidden}' はこれらの値をとりうる:
+@multitable @columnfractions .2 .8
+@item <empty> @tab '@option{hidden}' の値を使う。
+@item hide @tab '@option{hidden}' が設定されてなくてもこのバッファを隠れ状態にする。
+@item unload @tab '@option{hidden}' が設定されているときでも隠れ状態にせず、このバッファをアンロードする。
+@item delete @tab バッファを削除する。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*hidden-quit*
+When you try to quit Vim while there is a hidden, modified buffer, you will
+get an error message and Vim will make that buffer the current buffer.  You
+can then decide to write this buffer (":wq") or quit without writing (":q!").
+Be careful: there may be more hidden, modified buffers!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{hidden-quit}
+@cindex hidden-quit
+編集中で隠れ状態 (hidden) のバッファがあるときに Vim を終了しようとすると、エラーが表示されてその編集中のバッファがカレントバッファになる。そして、バッファを保存するか ("@command{:wq}")、保存しないで終了するか ("@command{:q!}") を指定することができる。
+
+注意: 他にも編集中の隠れバッファ (hidden) や編集中のバッファがあるかも！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A buffer can also be unlisted.  This means it exists, but it is not in the
+list of buffers. |unlisted-buffer|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファはリストから除かれることもある。これは、存在しているがバッファのリスト内にはないことを意味する。|unlisted-buffer|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+:files[!] [flags]				*:files*
+:buffers[!] [flags]				*:buffers* *:ls*
+:ls[!] [flags]
+		Show all buffers.  Example:
+
+			1 #h   "/test/text"		line 1 ~
+			2u     "asdf"			line 0 ~
+			3 %a + "version.c"		line 1 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:files}
+@anchor{:buffers}
+@anchor{:ls}
+@cindex :files
+@cindex :buffers
+@cindex :ls
+@item :files[!] [flags] または
+@itemx :buffers[!] [flags] または
+@itemx :ls[!] [flags]
+全バッファを表示。例:
+@verbatim
+1 #h   "/test/text"             line 1 ~
+2u     "asdf"                   line 0 ~
+3 %a + "version.c"              line 1 ~
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When the [!] is included the list will show unlisted buffers
+		(the term "unlisted" is a bit confusing then...).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[!] が含まれているときは、バッファリストにないバッファも表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Each buffer has a unique number.  That number will not change,
+		thus you can always go to a specific buffer with ":buffer N"
+		or "N CTRL-^", where N is the buffer number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+各バッファは一意の番号が割り当てられている。この番号は変わらないので、"@command{:buffer N}" や "N CTRL-^" を使ってある特定のバッファへ移動できる。N はバッファの番号である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Indicators (chars in the same column are mutually exclusive):
+		u	an unlisted buffer (only displayed when [!] is used)
+			   |unlisted-buffer|
+		 %	the buffer in the current window
+		 #	the alternate buffer for ":e #" and CTRL-^
+		  a	an active buffer: it is loaded and visible
+		  h	a hidden buffer: It is loaded, but currently not
+			   displayed in a window |hidden-buffer|
+		   -	a buffer with 'modifiable' off
+		   =	a readonly buffer
+		    +	a modified buffer
+		    x   a buffer with read errors
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+指標 (同じ桁にある文字は互いに排他的):
+@multitable @columnfractions .2 .8
+@item u @tab リストされていないバッファ ([!] が使われたときのみ表示される) |unlisted-buffer|
+@item @ % @tab カレントウィンドウにあるバッファ
+@item @ # @tab "@command{:e #}" や @kbd{CTRL_^} で使われる代替バッファ
+@item @ @ a @tab アクティブバッファ: ロードされていて、表示されている
+@item @ @ h @tab 隠れバッファ: ロードされているが、現在はウィンドウに表示されていない |hidden-buffer|
+@item @ @ @ - @tab '@option{modifiable}' がオフのバッファ
+@item @ @ @ = @tab リードオンリーのバッファ
+@item @ @ @ @ + @tab 変更のあるバッファ
+@item @ @ @ @ x @tab 読み込みエラーのあるバッファ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		[flags] can be a combination of the following characters,
+		which restrict the buffers to be listed:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[flags] は以下の組み合わせを取る事ができる。ただしリストに存在するバッファに限られる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		     +   modified buffers
+		     -   buffers with 'modifiable' off
+		     =   readonly buffers
+		     a   active buffers
+		     u   unlisted buffers (overrides the "!")
+		     h   hidden buffers
+		     x   buffers with a read error
+		     %   current buffer
+		     #   alternate buffer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item @ @ @ @ @ + @tab 変更されたバッファ
+@item @ @ @ @ @ - @tab 'modifiable' がオフのバッファ
+@item @ @ @ @ @ = @tab リードオンリーのバッファ
+@item @ @ @ @ @ a @tab アクティブバッファ
+@item @ @ @ @ @ u @tab リストに存在しないバッファ ("!" の挙動は上書きされる)
+@item @ @ @ @ @ h @tab 隠れたバッファ
+@item @ @ @ @ @ x @tab 読み込みエラーのあるバッファ
+@item @ @ @ @ @ % @tab 現在のバッファ
+@item @ @ @ @ @ # @tab 代替バッファ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Combining flags means they are "and"ed together, e.g.:
+		     h+   hidden buffers which are modified
+		     a+   active buffers which are modified
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+フラグの合成は互いの "and" を意味します。例えば:
+@multitable @columnfractions .2 .8
+@item @ @ @ @ @ h+ @tab 変更された隠れバッファ
+@item @ @ @ @ @ a+ @tab 変更されたアクティブバッファ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When using |:filter| the pattern is matched against the
+		displayed buffer name, e.g.: >
+			filter /\.vim/ ls
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+表示されるバッファ名に対して |:filter| でパターンをマッチさせるには次のようにする:
+@example
+filter /\.vim/ ls
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*:bad* *:badd*
+:bad[d]	[+lnum] {fname}
+		Add file name {fname} to the buffer list, without loading it.
+		If "lnum" is specified, the cursor will be positioned at that
+		line when the buffer is first entered.  Note that other
+		commands after the + will be ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:bad}
+@anchor{:badd}
+@cindex :bad
+@cindex :badd
+@item :bad[d] [+lnum] @{fname@}
+ファイル名 @{fname@} をバッファリストに追加する。ただし、メモリ上には読み込まれない。"lnum" が指定された場合、バッファに初めて移動したときにカーソルが指定された行番号にジャンプする。+ 以降の他のコマンドは無視されることに注意。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]bd[elete][!]			*:bd* *:bdel* *:bdelete* *E516*
+:bd[elete][!] [N]
+		Unload buffer [N] (default: current buffer) and delete it from
+		the buffer list.  If the buffer was changed, this fails,
+		unless when [!] is specified, in which case changes are lost.
+		The file remains unaffected.  Any windows for this buffer are
+		closed.  If buffer [N] is the current buffer, another buffer
+		will be displayed instead.  This is the most recent entry in
+		the jump list that points into a loaded buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:bd}
+@anchor{:bdel}
+@anchor{:bdelete}
+@anchor{E516}
+@cindex :bd
+@cindex :bdel
+@cindex :bdelete
+@cindex E516
+@item :[N]bd[elete][!] または
+@itemx :bd[elete][!] [N]
+バッファ [N] (デフォルト: カレントバッファ) をメモリから取り除き、バッファリストから削除する。バッファが編集中の場合はこのコマンドは失敗する ([!] が与えられた場合は成功する。そのとき変更は破棄される)。ファイルには影響はない。このバッファを表示している全てのウィンドウは閉じられる。
+
+バッファ[N]がカレントバッファの場合は、他のバッファが代わりに表示される。このバッファには、ジャンプリストの中のメモリ上にロードされているバッファを指し示している最も最近のエントリが使用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Actually, the buffer isn't completely deleted, it is removed
+		from the buffer list |unlisted-buffer| and option values,
+		variables and mappings/abbreviations for the buffer are
+		cleared. Examples: >
+		    :.,$-bdelete    " delete buffers from the current one to
+				    " last but one
+		    :%bdelete	    " delete all buffers
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実際は、バッファは完全に削除されていない。バッファリストから削除され |unlisted-buffer|、バッファに対するオプションの値、変数、マッピング・略語が消去される。
+
+例:
+@verbatim
+:.,$-bdelete    " 現在のバッファからバッファを削除
+                " 最後だが 1 つのバッファ
+:%bdelete       " すべてのバッファを削除
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:bdelete[!] {bufname}						*E93* *E94*
+		Like ":bdelete[!] [N]", but buffer given by name.  Note that a
+		buffer whose name is a number cannot be referenced by that
+		name; use the buffer number instead.  Insert a backslash
+		before a space in a buffer name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E93}
+@anchor{E94}
+@cindex E93
+@cindex E94
+@item :bdelete[!] @{bufname@}
+"@command{:bdelete[!] [N]}" と同様だが、バッファを名前で指定する。数字が名前になっているバッファは、その数字では参照されない。つまり、バッファ番号として使用されてしまう。バッファ名中のスペースの前にはバックスラッシュを入れる必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:bdelete[!] N1 N2 ...
+		Do ":bdelete[!]" for buffer N1, N2, etc.  The arguments can be
+		buffer numbers or buffer names (but not buffer names that are
+		a number).  Insert a backslash before a space in a buffer
+		name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :bdelete[!] N1 N2 ...
+"@command{:bdelete[!]}" をバッファ N1, N2 等に対して実行する。引数にはバッファ番号かバッファ名 (ただし数字のバッファ名は使用不可) を使用できる。バッファ名中のスペースの前にはバックスラッシュを入れる必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:N,Mbdelete[!]	Do ":bdelete[!]" for all buffers in the range N to M
+		|inclusive|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :N,Mbdelete[!]
+"@command{:bdelete[!]}" を N から M まで (N, M を含む) の全てのバッファに対して実行する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]bw[ipeout][!]			*:bw* *:bwipe* *:bwipeout* *E517*
+:bw[ipeout][!] {bufname}
+:N,Mbw[ipeout][!]
+:bw[ipeout][!] N1 N2 ...
+		Like |:bdelete|, but really delete the buffer.  Everything
+		related to the buffer is lost.  All marks in this buffer
+		become invalid, option settings are lost, etc.  Don't use this
+		unless you know what you are doing. Examples: >
+		    :.+,$bwipeout   " wipe out all buffers after the current
+				    " one
+		    :%bwipeout	    " wipe out all buffers
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:bw}
+@anchor{:bwipe}
+@anchor{:bwipeout}
+@anchor{E517}
+@cindex :bw
+@cindex :bwipe
+@cindex :bwipeout
+@cindex E517
+@item :[N]bw[ipeout][!] または
+@itemx :bw[ipeout][!] @{bufname@} または
+@itemx :N,Mbw[ipeout][!] または
+@itemx :bw[ipeout][!] N1 N2 ...
+|:bdelete| に似ているが、本当にバッファを削除する。このバッファに関するすべてが失われる。例えば、このバッファ中のすべてのマークが無効になり、オプション設定が失われるなど。このことの意味がわからなければ使わないこと。
+例:
+@verbatim
+:.+,$bwipeout   " 現在のバッファ以降のすべてのバッファを消す
+                " ひとつ
+:%bwipeout      " すべてのバッファを消す
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]bun[load][!]				*:bun* *:bunload* *E515*
+:bun[load][!] [N]
+		Unload buffer [N] (default: current buffer).  The memory
+		allocated for this buffer will be freed.  The buffer remains
+		in the buffer list.
+		If the buffer was changed, this fails, unless when [!] is
+		specified, in which case the changes are lost.
+		Any windows for this buffer are closed.  If buffer [N] is the
+		current buffer, another buffer will be displayed instead.
+		This is the most recent entry in the jump list that points
+		into a loaded buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:bun}
+@anchor{:bunload}
+@anchor{E515}
+@cindex :bun
+@cindex :bunload
+@cindex E515
+@item :[N]bun[load][!] または
+@itemx :bun[load][!] [N]
+バッファ [N] (デフォルト: カレントバッファ)をメモリから取り除く。このバッファに割り当てられたメモリ領域を解放する。バッファはバッファリストには残る。
+
+バッファが編集中の場合は、このコマンドは失敗する ([!] が与えられた場合は成功する。そのとき変更は破棄される)。このバッファを表示しているどのウィンドウも閉じられる。
+
+バッファ [N] がカレントバッファの場合、他のバッファが代わりに表示される。このバッファには、ジャンプリストの中のメモリ上にロードされているバッファを指し示している最も最近のエントリが使用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:bunload[!] {bufname}
+		Like ":bunload[!] [N]", but buffer given by name.  Note that a
+		buffer whose name is a number cannot be referenced by that
+		name; use the buffer number instead.  Insert a backslash
+		before a space in a buffer name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :bunload[!] @{bufname@}
+"@command{:bunload[!] [N]}" と同様だが、バッファを名前で指定する。数字が名前になっているバッファは、その数字では参照されない。つまり、バッファ番号として使用されてしまう。バッファ名中のスペースの前にはバックスラッシュを入れる必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:N,Mbunload[!]	Do ":bunload[!]" for all buffers in the range N to M
+		|inclusive|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :N,Mbunload[!]
+"@command{:bunload[!]}" を N から M まで (N, M を含む) の全てのバッファに対して実行する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:bunload[!] N1 N2 ...
+		Do ":bunload[!]" for buffer N1, N2, etc.  The arguments can be
+		buffer numbers or buffer names (but not buffer names that are
+		a number).  Insert a backslash before a space in a buffer
+		name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :bunload[!] N1 N2 ...
+"@command{:bunload[!]}" をバッファ N1, N2 等に対して実行する。引数にはバッファ番号かバッファ名 (ただし数字のバッファ名は使用不可) を使用できる。バッファ名中のスペースの前にはバックスラッシュを入れる必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]b[uffer][!] [+cmd] [N]		*:b* *:bu* *:buf* *:buffer* *E86*
+		Edit buffer [N] from the buffer list.  If [N] is not given,
+		the current buffer remains being edited.  See |:buffer-!| for
+		[!].  This will also edit a buffer that is not in the buffer
+		list, without setting the 'buflisted' flag.
+		Also see |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:b}
+@anchor{:bu}
+@anchor{:buf}
+@anchor{:buffer}
+@anchor{E86}
+@cindex :b
+@cindex :bu
+@cindex :buf
+@cindex :buffer
+@cindex E86
+@item :[N]b[uffer][!] [+cmd] [N]
+バッファリストのバッファ [N] を編集する。[N] が与えられなければ、そのままカレントバッファが編集される。[!] については |:buffer-!| を参照。これはバッファリストにないバッファも '@option{buflisted}' フラグを設定することなく編集する。
+
+|+cmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]b[uffer][!] [+cmd] {bufname}
+		Edit buffer for {bufname} from the buffer list.  See
+		|:buffer-!| for [!].  This will also edit a buffer that is not
+		in the buffer list, without setting the 'buflisted' flag.
+		Also see |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[N]b[uffer][!] [+cmd] @{bufname@}
+バッファリストの @{bufname@} のバッファを編集する。[!] については |:buffer-!| を参照。これはバッファリストにないバッファも '@option{buflisted}' フラグを設定することなく編集する。
+|+cmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]sb[uffer] [+cmd] [N]				*:sb* *:sbuffer*
+		Split window and edit buffer [N] from the buffer list.  If [N]
+		is not given, the current buffer is edited.  Respects the
+		"useopen" setting of 'switchbuf' when splitting.  This will
+		also edit a buffer that is not in the buffer list, without
+		setting the 'buflisted' flag.
+		Also see |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sb}
+@anchor{:sbuffer}
+@cindex :sb
+@cindex :sbuffer
+@item :[N]sb[uffer] [+cmd] [N]
+ウィンドウを分割しバッファリストのバッファ [N] を編集する。[N] が与えられなければ、そのままカレントバッファが編集される。ウィンドウ分割の際には、'@option{switchbuf}' の "@var{useopen}" の設定に従う。これはバッファリストにないバッファも '@option{buflisted}' フラグを設定することなく編集する。
+
+|+cmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]sb[uffer] [+cmd] {bufname}
+		Split window and edit buffer for {bufname} from the buffer
+		list.  This will also edit a buffer that is not in the buffer
+		list, without setting the 'buflisted' flag.
+		Note: If what you want to do is split the buffer, make a copy
+		under another name, you can do it this way: >
+			:w foobar | sp #
+<		Also see |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[N]sb[uffer] [+cmd] @{bufname@}
+ウィンドウを分割しバッファリストの @{bufname@} バッファを編集する。これはバッファリストにないバッファも '@option{buflisted}' フラグを設定することなく編集する。Note: 別名でカレントバッファのコピーを作って、それを別のウィンドウで表示したいのなら、次のようにすること:
+@example
+:w foobar | sp #
+@end example
+
+|+cmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]bn[ext][!] [+cmd] [N]				*:bn* *:bnext* *E87*
+		Go to [N]th next buffer in buffer list.  [N] defaults to one.
+		Wraps around the end of the buffer list.
+		See |:buffer-!| for [!].
+		Also see |+cmd|.
+		If you are in a help buffer, this takes you to the next help
+		buffer (if there is one).  Similarly, if you are in a normal
+		(non-help) buffer, this takes you to the next normal buffer.
+		This is so that if you have invoked help, it doesn't get in
+		the way when you're browsing code/text buffers.  The next three
+		commands also work like this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:bn}
+@anchor{:bnext}
+@anchor{E87}
+@cindex :bn
+@cindex :bnext
+@cindex E87
+@item :[N]bn[ext][!] [+cmd] [N]
+バッファリスト中の [N] 個先のバッファへ移動する。[N] のデフォルト値は 1 である。バッファリストの最後に到達したら、先頭に戻ってバッファを探す。[!] については |:buffer-!| を参照。
+
+|+cmd| も参照。
+
+ヘルプバッファにいる場合、(もし有れば) 次のヘルプバッファへ移動する。同様に、通常の (ヘルプではない) バッファにいる場合、次の通常のバッファへ移動する。従って、ヘルプウィンドウを表示していても、コード/テキストバッファを次々と表示する際にヘルプが邪魔にならない。次の 3 つのコマンドも同じように動作する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+							*:sbn* *:sbnext*
+:[N]sbn[ext] [+cmd] [N]
+		Split window and go to [N]th next buffer in buffer list.
+		Wraps around the end of the buffer list.  Uses 'switchbuf'
+		Also see |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sbn}
+@anchor{:sbnext}
+@cindex :sbn
+@cindex :sbnext
+@item :[N]sbn[ext] [+cmd] [N]
+ウィンドウを分割しバッファリストの [N] 個先のバッファへ移動する。バッファリストの最後に到達したら、先頭に戻ってバッファを探す。ウィンドウ分割の際には、'@option{switchbuf}' の "@var{useopen}" 設定に従う。
+
+|+cmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]bN[ext][!] [+cmd] [N]		*:bN* *:bNext* *:bp* *:bprevious* *E88*
+:[N]bp[revious][!] [+cmd] [N]
+		Go to [N]th previous buffer in buffer list.  [N] defaults to
+		one.  Wraps around the start of the buffer list.
+		See |:buffer-!| for [!] and 'switchbuf'.
+		Also see |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:bN}
+@anchor{:bNext}
+@anchor{:bp}
+@anchor{:bprevious}
+@anchor{E88}
+@cindex :bN
+@cindex :bNext
+@cindex :bp
+@cindex :bprevious
+@cindex E88
+@item :[N]bN[ext][!] [+cmd] [N] または
+@itemx :[N]bp[revious][!] [+cmd] [N]
+バッファリスト中の [N] 個前のバッファへ移動する。[N] のデフォルト値は 1 である。バッファリストの先頭に到達したら、最後に戻ってバッファを探す。[!] については |:buffer-!| を参照。'@option{switchbuf}' も参照。
+
+|+cmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]sbN[ext] [+cmd] [N]			*:sbN* *:sbNext* *:sbp* *:sbprevious*
+:[N]sbp[revious] [+cmd] [N]
+		Split window and go to [N]th previous buffer in buffer list.
+		Wraps around the start of the buffer list.
+		Uses 'switchbuf'.
+		Also see |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sbN}
+@anchor{:sbNext}
+@anchor{:sbp}
+@anchor{:sbprevious}
+@cindex :sbN
+@cindex :sbNext
+@cindex :sbp
+@cindex :sbprevious
+@item :[N]sbN[ext] [+cmd] [N] または
+@itemx :[N]sbp[revious] [+cmd] [N]
+ウィンドウを分割しバッファリストの [N] 個前のバッファへ移動する。バッファリストの先頭に到達したら、最後に戻ってバッファを探す。ウィンドウ分割の際には、'@option{switchbuf}' の "@var{useopen}" 設定に従う。
+
+|+cmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:br[ewind][!] [+cmd]					*:br* *:brewind*
+		Go to first buffer in buffer list.  If the buffer list is
+		empty, go to the first unlisted buffer.
+		See |:buffer-!| for [!].
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:br}
+@anchor{:brewind}
+@item :br[ewind][!] [+cmd]
+バッファリスト中の先頭のバッファへ移動する。バッファリストが空の場合はリストされていない最初のバッファに移動する。
+
+[!] については |:buffer-!| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:bf[irst] [+cmd]					*:bf* *:bfirst*
+		Same as |:brewind|.
+		Also see |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:bf}
+@anchor{:bfirst}
+@cindex :bf
+@cindex :bfirst
+@item :bf[irst] [+cmd]
+|:brewind| と同じ。
+
+|+cmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sbr[ewind] [+cmd]					*:sbr* *:sbrewind*
+		Split window and go to first buffer in buffer list.  If the
+		buffer list is empty, go to the first unlisted buffer.
+		Respects the 'switchbuf' option.
+		Also see |+cmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sbr}
+@anchor{:sbrewind}
+@cindex :sbr
+@cindex :sbrewind
+@item :sbr[ewind] [+cmd]
+ウィンドウを分割してバッファリスト中の先頭のバッファへ移動する。バッファリストが空の場合はリストされていない最初のバッファへ移動する。'@option{switchbuf}' オプションの設定に従う。
+
+|+cmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sbf[irst] [+cmd]					*:sbf* *:sbfirst*
+		Same as ":sbrewind".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sbf}
+@anchor{:sbfirst}
+@cindex :sbf
+@cindex :sbfirst
+@item :sbf[irst] [+cmd]
+"@command{:sbrewind}" と同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:bl[ast][!] [+cmd]					*:bl* *:blast*
+		Go to last buffer in buffer list.  If the buffer list is
+		empty, go to the last unlisted buffer.
+		See |:buffer-!| for [!].
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:bl}
+@anchor{:blast}
+@cindex :bl
+@cindex :blast
+@item :bl[ast][!] [+cmd]
+バッファリスト中の最後のバッファへ移動する。バッファリストが空の場合はリストされていない最初のバッファへ移動する。
+
+[!] については |:buffer-!| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sbl[ast] [+cmd]					*:sbl* *:sblast*
+		Split window and go to last buffer in buffer list.  If the
+		buffer list is empty, go to the last unlisted buffer.
+		Respects 'switchbuf' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sbl}
+@anchor{:sblast}
+@cindex :sbl
+@cindex :sblast
+@item :sbl[ast] [+cmd]
+ウィンドウを分割してバッファリスト中の最後のバッファへ移動する。バッファリストが空の場合はリストされていない最初のバッファへ移動する。'@option{switchbuf}' オプションの設定に従う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]bm[odified][!] [+cmd] [N]			*:bm* *:bmodified* *E84*
+		Go to [N]th next modified buffer.  Note: this command also
+		finds unlisted buffers.  If there is no modified buffer the
+		command fails.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:bm}
+@anchor{:bmodified}
+@anchor{E84}
+@cindex :bm
+@cindex :bmodified
+@cindex E84
+@item :[N]bm[odified][!] [+cmd] [N]
+バッファリスト中の [N] 個先の編集中のバッファへ移動する。
+@quotation
+@strong{Note:} @*
+このコマンドはリストされていないバッファも見つける。変更されているバッファがない場合はコマンドは失敗する。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]sbm[odified] [+cmd] [N]				*:sbm* *:sbmodified*
+		Split window and go to [N]th next modified buffer.
+		Respects 'switchbuf' option.
+		Note: this command also finds buffers not in the buffer list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sbm}
+@anchor{:sbmodified}
+@cindex :sbm
+@cindex :sbmodified
+@item :[N]sbm[odified] [+cmd] [N]
+ウィンドウを分割し、バッファリスト中の [N] 個先の編集中のバッファへ移動する。'@option{switchbuf}' オプションの設定に従う。
+@quotation
+@strong{Note:} @*
+このコマンドはリストされていないバッファも見つける。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]unh[ide] [N]			*:unh* *:unhide* *:sun* *:sunhide*
+:[N]sun[hide] [N]
+		Rearrange the screen to open one window for each loaded buffer
+		in the buffer list.  When a count is given, this is the
+		maximum number of windows to open.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:unh}
+@anchor{:unhide}
+@anchor{:sun}
+@anchor{:sunhide}
+@cindex :unh
+@cindex :unhide
+@cindex :sun
+@cindex :sunhide
+@item :[N]unh[ide] [N] または
+@itemx :[N]sun[hide] [N]
+バッファリスト中のメモリ上にロードされた各バッファに対して 1 つのウィンドウが開かれているようにスクリーンを再構成する。カウントが与えられたら、開くウィンドウの最大数となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[N]ba[ll] [N]					*:ba* *:ball* *:sba* *:sball*
+:[N]sba[ll] [N]	Rearrange the screen to open one window for each buffer in
+		the buffer list.  When a count is given, this is the maximum
+		number of windows to open.  'winheight' also limits the number
+		of windows opened ('winwidth' if |:vertical| was prepended).
+		Buf/Win Enter/Leave autocommands are not executed for the new
+		windows here, that's only done when they are really entered.
+		When the |:tab| modifier is used new windows are opened in a
+		new tab, up to 'tabpagemax'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ba}
+@anchor{:ball}
+@anchor{:sba}
+@anchor{:sball}
+@cindex :ba
+@cindex :ball
+@cindex :sba
+@cindex :sball
+@item :[N]ba[ll] [N] または
+@itemx :[N]sba[ll] [N]
+バッファリスト中の各バッファに対して 1 つのウィンドウが開かれているようにスクリーンを再構成する。カウントが与えられたら、開くウィンドウの最大数となる。'@option{winheight}' も開くウィンドウの数を制限する (|:vertical| が前に与えられているときは '@option{winwidth}')。この時点では、Buf/Win Enter/Leave オートコマンドは新しいウィンドウに対して実行されない。ウィンドウに移動したときにのみ実行される。
+
+コマンド修飾子 |:tab| をつけて実行すると、新しいウィンドウがそれぞれ新しいタブで開く。ただしタブの個数は '@option{tabpagemax}' に制限される。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: All the commands above that start editing another buffer, keep the
+'readonly' flag as it was.  This differs from the ":edit" command, which sets
+the 'readonly' flag each time the file is read.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+上の全てのコマンドは他のバッファの編集を開始する。各バッファの '@option{readonly}' フラグは保存されている。"@command{:edit}" コマンドと異なる点は、"@command{:edit}" コマンドではファイルが読まれた時点で '@option{readonly}' フラグが設定される点である。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+12. Special kinds of buffers			*special-buffers*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{special-buffers}
+@cindex special-buffers
+@section 12. 特殊なバッファ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Instead of containing the text of a file, buffers can also be used for other
+purposes.  A few options can be set to change the behavior of a buffer:
+	'bufhidden'	what happens when the buffer is no longer displayed
+			in a window.
+	'buftype'	what kind of a buffer this is
+	'swapfile'	whether the buffer will have a swap file
+	'buflisted'	buffer shows up in the buffer list
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファがファイルのテキストを保持するのでなく、他の目的のために使われることもある。バッファの振る舞いを変更するためにいくつかのオプションを設定することができる:
+@multitable @columnfractions .2 .8
+@item '@option{bufhidden}' @tab バッファがウィンドウに表示されなくなったときどうするか
+@item '@option{buftype}' @tab どんな種類のバッファか
+@item '@option{swapfile}' @tab バッファがスワップファイルを持つか
+@item '@option{buflisted}' @tab バッファリストに現れるか
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A few useful kinds of a buffer:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec いくつかの有用なバッファの種類:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+quickfix	Used to contain the error list or the location list.  See
+		|:cwindow| and |:lwindow|.  This command sets the 'buftype'
+		option to "quickfix".  You are not supposed to change this!
+		'swapfile' is off.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item quickfix
+エラーリストやロケーションリストを保持するのに使われる。|:cwindow| と |:lwindow| を参照。このコマンドは '@option{buftype}' オプションを "@var{quickfix}" にセット。これを変更してはならない。'@option{swapfile}' はオフ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+help		Contains a help file.  Will only be created with the |:help|
+		command.  The flag that indicates a help buffer is internal
+		and can't be changed.  The 'buflisted' option will be reset
+		for a help buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item help
+ヘルプファイルを保持する。|:help| コマンドによってのみ作成される。ヘルプバッファを示すフラグは内部にあり、変更することはできない。ヘルプバッファに対する '@option{buflisted}' オプションはリセットされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+terminal	A terminal window buffer, see |terminal|. The contents cannot
+		be read or changed until the job ends.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item terminal
+ターミナルウィンドウバッファ。|terminal| を参照。内容はジョブが終了するまでは、書き込みや変更をすることができない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+directory	Displays directory contents.  Can be used by a file explorer
+		plugin.  The buffer is created with these settings: >
+			:setlocal buftype=nowrite
+			:setlocal bufhidden=delete
+			:setlocal noswapfile
+<		The buffer name is the name of the directory and is adjusted
+		when using the |:cd| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item directory
+ディレクトリの内容を表示する。ファイルエクスプローラープラグインで使用されている。このバッファは以下の設定で作成される:
+@example
+:setlocal buftype=nowrite
+:setlocal bufhidden=delete
+:setlocal noswapfile
+@end example
+バッファ名はディレクトリの名前になり、|:cd| コマンドを使ったときは変更される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+scratch		Contains text that can be discarded at any time.  It is kept
+		when closing the window, it must be deleted explicitly.
+		Settings: >
+			:setlocal buftype=nofile
+			:setlocal bufhidden=hide
+			:setlocal noswapfile
+<		The buffer name can be used to identify the buffer, if you
+		give it a meaningful name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item scratch
+いつでも破棄されうるテキストを保持する。ウィンドウを閉じても保たれ、明示的に削除されなければならない。設定は:
+@example
+:setlocal buftype=nofile
+:setlocal bufhidden=hide
+:setlocal noswapfile
+@end example
+このバッファを識別するためにはバッファ名が使われる。ただし、そのためにはそのバッファに意味のある名前がついていなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*unlisted-buffer*
+unlisted	The buffer is not in the buffer list.  It is not used for
+		normal editing, but to show a help file, remember a file name
+		or marks.  The ":bdelete" command will also set this option,
+		thus it doesn't completely delete the buffer.  Settings: >
+			:setlocal nobuflisted
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{unlisted-buffer}
+@cindex unlisted-buffer
+@item unlisted
+このバッファはバッファリストにない。通常の編集には使われず、ヘルプファイルを表示するためや、ファイル名やマークを記憶するために使われる。"@command{:bdelete}" コマンドによってもこのオプションがセットされる。それゆえ、このコマンドは完全にはバッファを削除しない。設定は:
+@example
+:setlocal nobuflisted
+@end example
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
