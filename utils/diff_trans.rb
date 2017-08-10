@@ -1,6 +1,14 @@
 # Author: nakinor
 # Created: 2017-01-26
-# Revised: 2017-08-03
+# Revised: 2017-08-10
+
+require "optparse"
+begin
+  PARAMS = ARGV.getopts('', 'dir:')
+rescue
+  usage()
+  exit
+end
 
 TAG_JA_START =
   '< @ifset JA  @c ----------- v -----------  JA  ----------- v -----------'
@@ -8,14 +16,14 @@ TAG_JA_END =
   '< @end ifset @c ----------- \^ -----------  JA  ----------- \^ -----------'
 
 def diff_docs(ifn)
-  origin = "#{ENV['ORIG_DOC']}/#{ifn.gsub(".texi", ".txt")}"
+  origin = "#{PARAMS['dir']}/#{ifn.gsub(".texi", ".txt")}"
   trans = "#{ifn}"
   diff = `diff #{trans} #{origin}`
-  removed_ja = diff.gsub(/#{TAG_JA_START}.*?#{TAG_JA_END}\n/m, "")
+  removed_head = diff.gsub(/< \\input .*utf-8 -\*-\n/, "")
+  removed_ja = removed_head.gsub(/#{TAG_JA_START}.*?#{TAG_JA_END}\n/m, "")
   removed_tag = removed_ja.gsub(/< @ifset EN\n|< @end ifset\n/, "")
   removed_lan = removed_tag.gsub(/< @clear EN\n|< @clear JA\n|< @set JA\n/, "")
-  removed_fin = removed_lan.gsub(/< .*\n/, "")
-  judge = removed_fin.gsub(/[0-9].+d[0-9]+?\n/, "")
+  judge = removed_lan.gsub(/[0-9].+d[0-9]+?\n|< \n|< @bye\n/, "")
   if judge.size == 0
     puts ifn + " --- \033[32mNot Modified.\033[0m"
   else
@@ -29,14 +37,12 @@ def usage()
 end
 
 def main()
-  if ARGV.size == 0
-    usage()
-  elsif ENV['ORIG_DOC'] == nil
-    puts "環境変数 ORIG_DOC を指定してや"
-  else
+  if PARAMS['dir'] != nil
     for x in ARGV
       diff_docs(x)
     end
+  else
+    usage()
   end
 end
 
