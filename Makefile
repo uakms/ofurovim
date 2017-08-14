@@ -36,14 +36,15 @@ USRMANUALS = \
 
 first:
 	@echo
-	@echo "	usrhtml: HTML 版のユーザーマニュアルを生成する"
-	@echo "	refhtml: HTML 版のリファレンスマニュアルを生成する"
-	@echo "	usrpdf:  PDF 版のユーザーマニュアルを生成する"
-	@echo "	refpdf:  PDF 版のリファレンスマニュアルを生成する"
-	@echo "	kyukana: 旧字旧仮名に変換したユーザーマニュアルを生成する"
-	@echo "	diffja:  本家との差分を調べる"
-	@echo "	nvcheck: 表記のゆれをチェックする"
-	@echo "	clean:   生成したものを削除する"
+	@echo "	usrhtml:  HTML 版のユーザーマニュアルを生成する"
+	@echo "	refhtml:  HTML 版のリファレンスマニュアルを生成する"
+	@echo "	usrpdf:   PDF 版のユーザーマニュアルを生成する"
+	@echo "	refpdf:   PDF 版のリファレンスマニュアルを生成する"
+	@echo "	kyukana:  旧字旧仮名に変換したユーザーマニュアルを生成する"
+	@echo "	diffja:   本家との差分を調べる"
+	@echo "	nvcheck:  表記のゆれをチェックする"
+	@echo "	tagcheck: タグのモレをチェックする"
+	@echo "	clean:    生成したものを削除する"
 	@echo
 
 usrhtml: htmls/usrman.html ;
@@ -95,6 +96,9 @@ diffja:
 
 nvcheck:
 	nvcheck doc/*.texi
+
+tagcheck:
+	@ruby utils/check_tag.rb
 
 clean:
 	@find htmls -name "*.html" | xargs rm
