@@ -18,7 +18,7 @@ REFMANUALS = \
 	doc/repeat.texi doc/visual.texi doc/various.texi doc/recover.texi \
 	doc/cmdline.texi doc/options.texi doc/pattern.texi doc/map.texi \
 	doc/tagsrch.texi doc/quickfix.texi doc/windows.texi doc/tabpage.texi \
-	doc/syntax.texi
+	doc/syntax.texi doc/spell.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
@@ -30,6 +30,13 @@ USRMANUALS = \
 	doc/usr_28.texi doc/usr_29.texi doc/usr_30.texi doc/usr_31.texi \
 	doc/usr_32.texi doc/usr_40.texi doc/usr_41.texi doc/usr_42.texi \
 	doc/usr_43.texi doc/usr_44.texi doc/usr_45.texi doc/usr_90.texi
+
+# そのまま diff をかけると不都合があるので UTF-8 に変換するファイル
+INCONVENIENTFILES = \
+	$(ORIG)/doc/usr_24.txt \
+	$(ORIG)/doc/quotes.txt \
+	$(ORIG)/doc/map.txt \
+	$(ORIG)/doc/spell.txt
 
 .PHONY: usrhtml refonehtml refhtml usrpdf refpdf kyukana \
 	first diffja nvcheck clean
@@ -83,16 +90,9 @@ htmls/tk-ok-usrman.html: htmls/tk-usrman.html
 	python3 $(PRG_MTO) oldkanji $< > $@
 
 diffja:
-	@cp $(ORIG)/doc/usr_24.txt $(ORIG)/doc/org_usr_24.txt
-	@iconv -f LATIN1 -t UTF8 $(ORIG)/doc/org_usr_24.txt > $(ORIG)/doc/usr_24.txt
-	@cp $(ORIG)/doc/quotes.txt $(ORIG)/doc/org_quotes.txt
-	@iconv -f LATIN1 -t UTF8 $(ORIG)/doc/org_quotes.txt > $(ORIG)/doc/quotes.txt
-	@cp $(ORIG)/doc/map.txt $(ORIG)/doc/org_map.txt
-	@iconv -f LATIN1 -t UTF8 $(ORIG)/doc/org_map.txt > $(ORIG)/doc/map.txt
+	@sh utils/prepare_for_diff.sh -a $(INCONVENIENTFILES)
 	@ruby utils/diff_trans.rb --dir=$(ORIG) $(USRMANUALS) $(REFMANUALS)
-	@mv $(ORIG)/doc/org_usr_24.txt $(ORIG)/doc/usr_24.txt
-	@mv $(ORIG)/doc/org_quotes.txt $(ORIG)/doc/quotes.txt
-	@mv $(ORIG)/doc/org_map.txt $(ORIG)/doc/map.txt
+	@sh utils/prepare_for_diff.sh -z $(INCONVENIENTFILES)
 
 nvcheck:
 	nvcheck doc/*.texi
