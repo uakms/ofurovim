@@ -1,0 +1,1216 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node diff.txt, , , 目次
+@unnumbered バージョン違いのファイルの編集 (差分モード)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*diff.txt*      For Vim version 8.0.  Last change: 2017 Feb 03
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*diff.txt*      For Vim バージョン 8.0.  Last change: 2017 Feb 03
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+				*diff* *vimdiff* *gvimdiff* *diff-mode*
+This file describes the |+diff| feature: Showing differences between two to
+eight versions of the same file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{diff}
+@anchor{vimdiff}
+@anchor{gvimdiff}
+@anchor{diff-mode}
+@cindex diff
+@cindex vimdiff
+@cindex gvimdiff
+@cindex diff-mode
+このファイルでは |+diff| 機能 (同じファイルの 2 つから 8 つまでのバージョン間の違いを表示する機能) について解説する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The basics are explained in section |08.7| of the user manual.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+基本はユーザーマニュアルのセクション |@ref{08.7}| に記載されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Starting diff mode		|vimdiff|
+2. Viewing diffs		|view-diffs|
+3. Jumping to diffs		|jumpto-diffs|
+4. Copying diffs		|copy-diffs|
+5. Diff options			|diff-options|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item 1. 差分モードを開始する @tab |@ref{vimdiff, , vimdiff}|
+@item 2. 差分を眺める @tab |@ref{view-diffs, , view-diffs}|
+@item 3. 差分へ移動する @tab |@ref{jumpto-diffs, , jumpto-diffs}|
+@item 4. 差分を写す @tab |@ref{copy-diffs, , copy-diffs}|
+@item 5. 差分モードのオプション @tab |@ref{diff-options, , diff-options}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Starting diff mode
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@section 1. 差分モードを開始する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The easiest way to start editing in diff mode is with the "vimdiff" command.
+This starts Vim as usual, and additionally sets up for viewing the differences
+between the arguments. >
+
+	vimdiff file1 file2 [file3 [file4]]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+差分モードで編集を開始するいちばん簡単な方法は "vimdiff" コマンドである。これは Vim を通常どおり起動して、加えて引数で与えたファイル間の違いを表示する。
+@example
+vimdiff file1 file2 [file3 [file4]]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is equivalent to: >
+
+	vim -d file1 file2 [file3 [file4]]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは以下に等しい:
+@example
+vim -d file1 file2 [file3 [file4]]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You may also use "gvimdiff" or "vim -d -g".  The GUI is started then.
+You may also use "viewdiff" or "gviewdiff".  Vim starts in readonly mode then.
+"r" may be prepended for restricted mode (see |-Z|).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"gvimdiff" もしくは "vim -d -g" を使うこともできる。その際は GUI がスタートする。"viewdiff" もしくは "gviewdiff" を使うこともできる。その際は読込専用モードでスタートする。"r" が先頭に付け加われば制限モードになる (|-Z| 参照)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The second and following arguments may also be a directory name.  Vim will
+then append the file name of the first argument to the directory name to find
+the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+2 つ目以降の引数にはディレクトリ名を指定することもできる。その際には第 1 引数のファイル名がそのディレクトリ名に追加され、ファイルを検索するのに利用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This only works when a standard "diff" command is available.  See 'diffexpr'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは外部コマンドの "diff" が存在する場合にだけ動作する。'@option{diffexpr}' 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Diffs are local to the current tab page |tab-page|.  You can't see diffs with
+a window in another tab page.  This does make it possible to have several
+diffs at the same time, each in their own tab page.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+diff はカレントタブページ |tab-page| にローカルである。他のタブページにあるウィンドウとの差分を見ることはできない。これによって、複数の差分を同時に見ることが可能になっている。それぞれを別々のタブで開けばよい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+What happens is that Vim opens a window for each of the files.  This is like
+using the |-O| argument.  This uses vertical splits.  If you prefer horizontal
+splits add the |-o| argument: >
+
+	vimdiff -o file1 file2 [file3 [file4]]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が各ファイルについてウィンドウを開く時に起こることは、|-O| 引数を使った時に起こることに似ている。これには垂直分割が使用される。水平分割を行いたいならば |-o| 引数を追加する:
+@example
+vimdiff -o file1 file2 [file3 [file4]]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you always prefer horizontal splits include "horizontal" in 'diffopt'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+常に水平分割にしたければ '@option{diffopt}' に "@var{horizontal}" を含めること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In each of the edited files these options are set:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+編集される各ファイルには以下のオプションが設定される:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	'diff'		on
+	'scrollbind'	on
+	'cursorbind'	on
+	'scrollopt'	includes "hor"
+	'wrap'		off
+	'foldmethod'	"diff"
+	'foldcolumn'	value from 'diffopt', default is 2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 'diff' @tab on
+@item 'scrollbind' @tab on
+@item 'cursorbind' @tab on
+@item 'scrollopt' @tab "hor" を入れる
+@item 'wrap' @tab off
+@item 'foldmethod' @tab "diff"
+@item 'foldcolumn' @tab 2
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These options are set local to the window.  When editing another file they are
+reset to the global value.
+The options can still be overruled from a modeline when re-editing the file.
+However, 'foldmethod' and 'wrap' won't be set from a modeline when 'diff' is
+set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのオプションはウィンドウローカルに設定される。別のファイルを開いた時には、これらはグローバルの値へリセットされる。このオプションはさらにそのファイルを再読み込みするときモードラインから上書きされることがある。しかし '@option{diff}' がオンのとき、'@option{foldmethod}' と '@option{wrap}' はモードラインからはセットされない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The differences shown are actually the differences in the buffer.  Thus if you
+make changes after loading a file, these will be included in the displayed
+diffs.  You might have to do ":diffupdate" now and then, not all changes are
+immediately taken into account.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+表示される差分はバッファ内の違いである。だからファイルを読み込んだ後に変更を行えば、その変更分は差分として表示される。全ての変更が即表示に反映されるわけではないので、時々 "@command{:diffupdate}" を行うと良いだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In your .vimrc file you could do something special when Vim was started in
+diff mode.  You could use a construct like this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+差分モードで起動した時の特別な設定を @file{.vimrc} ファイルに記すことができる。このようにすれば良い:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if &diff
+	   setup for diff mode
+	else
+	   setup for non-diff mode
+	endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if &diff
+   setup for diff mode
+else
+   setup for non-diff mode
+endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+While already in Vim you can start diff mode in three ways.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+既に Vim を利用している時には、3 つの方法で差分モードへ移行することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E98*
+:diffs[plit] {filename}					*:diffs* *:diffsplit*
+		Open a new window on the file {filename}.  The options are set
+		as for "vimdiff" for the current and the newly opened window.
+		Also see 'diffexpr'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{E98}
+@cindex E98
+@anchor{:diffs}
+@anchor{:diffsplit}
+@cindex :diffs
+@cindex :diffsplit
+@item :diffs[plit] @{filename@}
+ファイル @{filename@} の新しいウィンドウを開く。現在と新しく開くウィンドウについて "vimdiff" と同様のオプションをセットする。'@option{diffexpr}' も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:difft* *:diffthis*
+:difft[his]	Make the current window part of the diff windows.  This sets
+		the options like for "vimdiff".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:difft}
+@anchor{:diffthis}
+@cindex :difft
+@cindex :diffthis
+@item :difft[his]
+現在のウィンドウを差分ウィンドウの 1 つにする。これにより "vimdiff" と同じオプションが設定される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:diffp[atch] {patchfile}			 *E816* *:diffp* *:diffpatch*
+		Use the current buffer, patch it with the diff found in
+		{patchfile} and open a buffer on the result.  The options are
+		set as for "vimdiff".
+		{patchfile} can be in any format that the "patch" program
+		understands or 'patchexpr' can handle.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E816}
+@anchor{:diffp}
+@anchor{:diffpatch}
+@cindex E816
+@cindex :diffp
+@cindex :diffpatch
+@item :diffp[atch] @{patchfile@}
+@{patchfile@} 内の差分情報を現在のバッファへ適用し、結果を新しく作成したバッファへ出力する。オプションは "vimdiff" と同様に設定される。
+
+@{patchexpr@} の形式は "patch" プログラムか '@option{patchexpr}' が取り扱える形式ならどのようなものでもかまわない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Note that {patchfile} should only contain a diff for one file,
+		the current file.  If {patchfile} contains diffs for other
+		files as well, the results are unpredictable.  Vim changes
+		directory to /tmp to avoid files in the current directory
+		accidentally being patched.  But it may still result in
+		various ".rej" files to be created.  And when absolute path
+		names are present these files may get patched anyway.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+@{patchfile@} は現在のファイルに対して適用可能な差分情報だけを含んでなければならないことに注意。もしも @{patchfile@} が他のファイル用の差分情報を含んでいた場合は、結果は予想不可能となる。Vim は現在のディレクトリのファイルが偶発的に書き換えられてしまうのを避けるためディレクトリを /tmp へ変更する。しかし様々な ".rej" ファイルが作成されてしまう問題は依然としてある。また差分情報内にファイルが絶対パスとして与えられた場合には、やはり適用されてしまう。
+@end quotation
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To make these commands use a vertical split, prepend |:vertical|.  Examples: >
+
+	:vert diffsplit main.c~
+	:vert diffpatch /tmp/diff
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドを垂直分割で使うには、|:vertical| を先行させる。例:
+@example
+:vert diffsplit main.c~
+:vert diffpatch /tmp/diff
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you always prefer a vertical split include "vertical" in 'diffopt'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+常に垂直分割にしたければ '@option{diffopt}' に "@var{vertical}" を含めること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E96*
+There can be up to eight buffers with 'diff' set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E96}
+@cindex E96
+'@option{diff}' オプションは最大で8つのバッファにまで同時に設定できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Since the option values are remembered with the buffer, you can edit another
+file for a moment and come back to the same file and be in diff mode again.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプションの値はバッファへ記憶されるので、しばらくの間異なるファイルを編集し、また同じファイルへ戻って再び差分モードを継続することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:diffo* *:diffoff*
+:diffo[ff]	Switch off diff mode for the current window.  Resets related
+		options also when 'diff' was not set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:diffo}
+@anchor{:diffoff}
+@cindex :diffo
+@cindex :diffoff
+@item :diffo[ff]
+カレントウィンドウの差分モードを終了する。'@option{diff}' が設定されていてもいなくても、関連オプションはリセットされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:diffo[ff]!	Switch off diff mode for the current window and in all windows
+		in the current tab page where 'diff' is set.  Resetting
+		related options only happens in a window that has 'diff' set,
+		if the current window does not have 'diff' set then no options
+		in it are changed.
+		Hidden buffers are also removed from the list of diff'ed
+		buffers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :diffo[ff]!
+カレントウィンドウとカレントタブページのすべてのウィンドウの差分モードを終了する。'@option{diff}' が設定されているウィンドウのみ、関連オプションがリセットされる。カレントウィンドウの '@option{diff}' オプションが設定されていない場合は、そのウィンドウの関連オプションは変更されない。隠れバッファも、diff 対象のバッファの一覧から削除される。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The `:diffoff` command resets the relevant options to the values they had when
+using `:diffsplit`, `:diffpatch` , `:diffthis`. or starting Vim in diff mode.
+When using `:diffoff` twice the last saved values are restored.
+Otherwise they are set to their default value:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンド `@command{:diffoff}` は関連するオプションを差分モード実行前の設定値に戻す。それは `@command{:diffsplit}`, `@command{:diffpatch}`, `@command{:diffthis}` を実行したときの設定値、または Vim を差分モードで起動したときの設定値である。`@command{:diffoff}` を 2 回実行したときは最後に保存された値が復元される。
+
+それ以外の場合はデフォルト値に戻す:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	'diff'		off
+	'scrollbind'	off
+	'cursorbind'	off
+	'scrollopt'	without "hor"
+	'wrap'		on
+	'foldmethod'	"manual"
+	'foldcolumn'	0
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 'diff' @tab off
+@item 'scrollbind' @tab off
+@item 'cursorbind' @tab off
+@item 'scrollopt' @tab "hor" を外す
+@item 'wrap' @tab on
+@item 'foldmethod' @tab "manual"
+@item 'foldcolumn' @tab 0
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Viewing diffs						*view-diffs*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{view-diffs}
+@cindex view-diffs
+@section 2. 差分を眺める
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The effect is that the diff windows show the same text, with the differences
+highlighted.  When scrolling the text, the 'scrollbind' option will make the
+text in other windows to be scrolled as well.  With vertical splits the text
+should be aligned properly.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+差分ウィンドウには同じテキストが、異なるハイライト方法で表示される。テキストをスクロールした際には '@option{scrollbind}' オプションにより、他のウィンドウも同じようにスクロールする。垂直分割をしている場合にはテキストは正しく同期する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The alignment of text will go wrong when:
+- 'wrap' is on, some lines will be wrapped and occupy two or more screen
+  lines
+- folds are open in one window but not another
+- 'scrollbind' is off
+- changes have been made to the text
+- "filler" is not present in 'diffopt', deleted/inserted lines makes the
+  alignment go wrong
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストの位置は次のような場合に狂っていく:
+@itemize @minus
+@item '@option{wrap}' が有効で、幾つかの行が折り返され複数行を占めている時
+@item 折畳が一方のウィンドウでは開かれているが、もう一方では閉じられている
+@item '@option{scrollbind}' が無効になっている
+@item テキストが変更された
+@item '@option{diffopt}' に "@var{filler}" が指定されておらず、削除・追加された行が配置を狂わせている
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All the buffers edited in a window where the 'diff' option is set will join in
+the diff.  This is also possible for hidden buffers.  They must have been
+edited in a window first for this to be possible.  To get rid of the hidden
+buffers use `:diffoff!`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{diff}' オプションが設定されているウィンドウで編集されている全てのバッファが差分へ連結される。これは隠し (hidden) バッファにもあてはまる。これを可能にするには初めに 1 つのウィンドウでそれらが編集される必要がある。隠れバッファを取り除くには、`@command{:diffoff!}` を用いること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*:DiffOrig* *diff-original-file*
+Since 'diff' is a window-local option, it's possible to view the same buffer
+in diff mode in one window and "normal" in another window.  It is also
+possible to view the changes you have made to a buffer since the file was
+loaded.  Since Vim doesn't allow having two buffers for the same file, you
+need another buffer.  This command is useful: >
+	 command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_
+	 	\ | diffthis | wincmd p | diffthis
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:DiffOrig}
+@anchor{diff-original-file}
+@cindex :DiffOrig
+@cindex diff-original-file
+'@option{diff}' はウィンドウローカルのオプションであるから、1 つのバッファをあるウィンドウでは差分モードで、別のウィンドウでは通常のウィンドウで表示することも可能である。ファイルを読み込んで以来バッファに対して行った変更を表示することも可能である。だが、Vim は 1 つのファイルに対して複数のバッファを持つことはできないから、別のバッファを作る必要がある。
+
+次のコマンドが便利である:
+@example
+command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_
+       \ | diffthis | wincmd p | diffthis
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+(this is in |vimrc_example.vim|).  Use ":DiffOrig" to see the differences
+between the current buffer and the file it was loaded from.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+(これは |vimrc_example.vim| に書かれている)。"@command{:DiffOrig}" を実行すると、カレントバッファと元のファイルの差分を見ることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A buffer that is unloaded cannot be used for the diff.  But it does work for
+hidden buffers.  You can use ":hide" to close a window without unloading the
+buffer.  If you don't want a buffer to remain used for the diff do ":set
+nodiff" before hiding it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+アンロードされたバッファの差分をとることはできない。隠れバッファの差分をとることはできる。コマンド "@option{:hide}" を使うと、バッファをアンロードせずにウィンドウを閉じることができる。そのときバッファを差分対象から外したいならば、隠れバッファにする前に "@option{:set nodiff}" をする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:dif* *:diffupdate*
+:dif[fupdate][!]		Update the diff highlighting and folds.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:dif}
+@anchor{:diffupdate}
+@cindex :dif
+@cindex :diffupdate
+@item :dif[fupdate][!]
+差分の強調と折り畳みを更新する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim attempts to keep the differences updated when you make changes to the
+text.  This mostly takes care of inserted and deleted lines.  Changes within a
+line and more complicated changes do not cause the differences to be updated.
+To force the differences to be updated use: >
+
+	:diffupdate
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストを変更した時には、Vim は差分情報を最新に保とうと試みる。これの大部分は挿入と削除をされた行 (複数も可) に着目して行われる。1 行内で行われた変更、及びそれよりも複雑な変更に対しては差分情報は更新されない。差分情報を強制的に更新するには次のコマンドを使う:
+@example
+:diffupdate
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the ! is included Vim will check if the file was changed externally and
+needs to be reloaded.  It will prompt for each changed file, like `:checktime`
+was used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+! が含まれている場合、Vimは ファイルが外部で変更され、再読み込みが必要かどうかをチェックする。その際、`@command{:checktime}` を使ったときと同様に、変更されたそれぞれのファイルについてプロンプトが表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will show filler lines for lines that are missing in one window but are
+present in another.  These lines were inserted in another file or deleted in
+this file.  Removing "filler" from the 'diffopt' option will make Vim not
+display these filler lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は片方のウィンドウには存在しないがもう一方には存在する行については補充して表示する。これらはもう一方のファイルで追加されたかこのファイルで削除された行である。'@option{diffopt}' オプションから "filler" を削除すると Vim はこのような行の補充は行わない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Folds are used to hide the text that wasn't changed.  See |folding| for all
+the commands that can be used with folds.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+変更されていないテキストについては折畳を使用して隠される。折畳に使用できる全てのコマンドについては |folding| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The context of lines above a difference that are not included in the fold can
+be set with the 'diffopt' option.  For example, to set the context to three
+lines: >
+
+	:set diffopt=filler,context:3
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+差分の近辺の折畳に含まれない領域はコンテキストと呼び、その行数を '@option{diffopt}' オプションで設定できる。以下の例ではこのコンテキストを 3 行に設定している:
+@example
+:set diffopt=filler,context:3
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The diffs are highlighted with these groups:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+差分は以下の強調グループで強調表示される:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|hl-DiffAdd|	DiffAdd		Added (inserted) lines.  These lines exist in
+				this buffer but not in another.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@item |hl-DiffAdd| DiffAdd
+@tab 追加(挿入)された行。このバッファに存在する行は、別のバッファには存在しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+|hl-DiffChange|	DiffChange	Changed lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item |hl-DiffChange| DiffChange
+@tab 変更された行。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+|hl-DiffText|	DiffText	Changed text inside a Changed line.  Vim
+				finds the first character that is different,
+				and the last character that is different
+				(searching from the end of the line).  The
+				text in between is highlighted.  This means
+				that parts in the middle that are still the
+				same are highlighted anyway.  Only "iwhite" of
+				'diffopt' is used here.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item |hl-DiffText| DiffText
+@tab 変更された行の中の変更されたテキスト。Vim は異なる最初の文字と、最後の文字を発見する (検索は行末から行われる)。その文字の間のテキストが強調される。これはその間にあるテキストが例え同じだったとしても強調されることを意味する。ここでは '@option{diffopt}' の "@var{iwhite}" だけが適用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+|hl-DiffDelete|	DiffDelete	Deleted lines.  Also called filler lines,
+				because they don't really exist in this
+				buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item |hl-DiffDelete| DiffDelete
+@tab 削除された行。補充された行についても、実際そのバッファには存在していないことから、このグループが適用される。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Jumping to diffs					*jumpto-diffs*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{jumpto-diffs}
+@cindex jumpto-diffs
+@section 3. 差分へ移動する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Two commands can be used to jump to diffs:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+差分へ移動するのに 2 つのコマンドを使える:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*[c*
+	[c		Jump backwards to the previous start of a change.
+			When a count is used, do it that many times.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .9
+@anchor{[c}
+@cindex [c
+@item [c
+@tab 前(上方)の変更の先頭へ移動する。カウントが与えられた場合、その回数繰り返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*]c*
+	]c		Jump forwards to the next start of a change.
+			When a count is used, do it that many times.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{]c}
+@cindex ]c
+@item ]c
+@tab 次(下方)の変更の先頭へ移動する。カウントが与えられた場合、その回数繰り返される。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is an error if there is no change for the cursor to move to.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カーソルの動く方向に変更がなかった場合にはエラーになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Diff copying			*copy-diffs* *E99* *E100* *E101* *E102* *E103*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{copy-diffs}
+@anchor{E99}
+@anchor{E100}
+@anchor{E101}
+@anchor{E102}
+@anchor{E103}
+@cindex copy-diffs
+@cindex E99
+@cindex E100
+@cindex E101
+@cindex E102
+@cindex E103
+@section 4. 差分を写す
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*merge*
+There are two commands to copy text from one buffer to another.  The result is
+that the buffers will be equal within the specified range.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{merge}
+@cindex merge
+あるバッファから別のバッファへテキストを複写する 2 つのコマンドがある。結果的にある範囲について 2 つのバッファの内容は等しくなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:diffg* *:diffget*
+:[range]diffg[et] [bufspec]
+		Modify the current buffer to undo difference with another
+		buffer.  If [bufspec] is given, that buffer is used.  If
+		[bufspec] refers to the current buffer then nothing happens.
+		Otherwise this only works if there is one other buffer in diff
+		mode.
+		See below for [range].
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:diffg}
+@anchor{:diffget}
+@cindex :diffg
+@cindex :diffget
+@item :[range]diffg[et] [bufspec]
+現在のバッファをもう1つのバッファと同じくなるように変更をする。[bufspec] が与えられた時は、そのバッファが使用される。[bufspec] がカレントバッファである場合は何も起こらない。そうでなければ差分モードのバッファが他に 1 つしかない時にだけ動作する。[range] については以下を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:diffpu* *:diffput* *E793*
+:[range]diffpu[t] [bufspec]
+		Modify another buffer to undo difference with the current
+		buffer.  Just like ":diffget" but the other buffer is modified
+		instead of the current one.
+		When [bufspec] is omitted and there is more than one other
+		buffer in diff mode where 'modifiable' is set this fails.
+		See below for [range].
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:diffpu}
+@anchor{:diffput}
+@anchor{E793}
+@cindex :diffpu
+@cindex :diffput
+@cindex E793
+@item :[range]diffpu[t] [bufspec]
+もう 1 つのバッファを現在のバッファと同じくなるように変更する。"@command{:diffget}" と同様だが現在のバッファではなく、もう一方のバッファが変更を受ける。[bufspec] が省略され、かつ '@option{modifiable}' がオンで差分モードにあるバッファが 2 個以上あると、このコマンドは失敗する。[range] については以下を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*do*
+[count]do	Same as ":diffget" without range.  The "o" stands for "obtain"
+		("dg" can't be used, it could be the start of "dgg"!). Note:
+		this doesn't work in Visual mode.
+		If you give a [count], it is used as the [bufspec] argument
+		for ":diffget".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{do}
+@cindex do
+@item[count]do
+範囲のない "@command{:diffget}" と同じ。"o" は "obtain" の意味 ("dgg" と区別できないので、"dg" は使えない)。
+@quotation
+@strong{Note:} @*
+これはビジュアルモードでは機能しない。
+@end quotation
+[count] を与えた場合、それは "@command{:diffget}" に対して [bufspec] 引数として用いられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*dp*
+[count]dp	Same as ":diffput" without range.  Note: this doesn't work in
+		Visual mode.
+		If you give a [count], it is used as the [bufspec] argument
+		for ":diffput".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{dp}
+@cindex dp
+@item [count]dp
+範囲のない "@command{:diffput}" と同じ。
+@quotation
+@strong{Note:} @*
+これはビジュアルモードでは機能しない。
+@end quotation
+[count] を与えた場合、それは "@command{:diffput}" に対して [bufspec] 引数として用いられる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+When no [range] is given, the diff at the cursor position or just above it is
+affected.  When [range] is used, Vim tries to only put or get the specified
+lines.  When there are deleted lines, this may not always be possible.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[range] が与えられない場合にはカーソルの位置かその上の差分が適用される。[range] が使われた時にはその範囲だけを適用 (put/get) しようと試みる。削除された場合には必ずしも可能なわけではない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There can be deleted lines below the last line of the buffer.  When the cursor
+is on the last line in the buffer and there is no diff above this line, the
+":diffget" and "do" commands will obtain lines from the other buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファの最後の行のさらに下方に削除された行があることも考えられる。そのときカーソルが最終行にあり、最終行より上に差異がないとき、"@command{:diffget}" と "@command{do}" コマンドはそれらの行を取得する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To be able to get those lines from another buffer in a [range] it's allowed to
+use the last line number plus one.  This command gets all diffs from the other
+buffer: >
+
+	:1,$+1diffget
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+超えた位置の行をもう一方のバッファから取得するには、最終行 +1 の行番号を指定する。次のコマンドはもう一方のバッファから完全な差分情報を受け取る:
+@example
+:1,$+1diffget
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that deleted lines are displayed, but not counted as text lines.  You
+can't move the cursor into them.  To fill the deleted lines with the lines
+from another buffer use ":diffget" on the line below them.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+削除された行は画面に表示こそされているが、テキストラインとしては数えられていないことに注意。消された範囲にカーソルを移動することはできない。もう一方のバッファから、削除された行を "@command{:diffget}" で取得するには対象行の下方で行う必要がある。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*E787*
+When the buffer that is about to be modified is read-only and the autocommand
+that is triggered by |FileChangedRO| changes buffers the command will fail.
+The autocommand must not change buffers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E787}
+@cindex E787
+変更を受けるバッファが読み込み専用で、 |FileChangedRO| で引き起こされる自動コマンドがバッファを変更するとき、このコマンドは失敗する。この自動コマンドはバッファを変更してはならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The [bufspec] argument above can be a buffer number, a pattern for a buffer
+name or a part of a buffer name.  Examples:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数 [bufspec] にはバッファ番号、バッファ名のパターンもしくはバッファ名の一部を使用できる。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:diffget		Use the other buffer which is in diff mode
+	:diffget 3		Use buffer 3
+	:diffget v2		Use the buffer which matches "v2" and is in
+				diff mode (e.g., "file.c.v2")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item :diffget @tab 差分モードにある別のバッファを使用する
+@item :diffget 3 @tab 3 番のバッファを使用する。
+@item :diffget v2 @tab 差分モードにある "v2" にマッチするバッファを使用する (例, "file.c.v2")
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Diff options						*diff-options*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{diff-options}
+@cindex diff-options
+@section 5. 差分モードオプション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Also see |'diffopt'| and the "diff" item of |'fillchars'|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|'diffopt'| と |'fillchars'| の "diff" 項目も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					    *diff-slow* *diff_translations*
+For very long lines, the diff syntax highlighting might be slow, especially
+since it tries to match all different kind of localisations. To disable
+localisations and speed up the syntax highlighting, set the global variable
+g:diff_translations to zero: >
+
+    let g:diff_translations = 0
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{diff-slow}
+@anchor{diff_translations}
+@cindex diff-slow
+@cindex diff_translations
+行がとても長いと diff 構文ハイライトが遅くなるかもしれない。その場合は特にたくさんの異なったローカライゼーションをマッチしようと試みるからである。ローカライゼーションを無効化して構文ハイライトを高速化するには、グローバル変数 g:diff_translations を 0 に設定する:
+@example
+let g:diff_translations = 0
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+After setting this variable, Reload the syntax script: >
+
+    set syntax=diff
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この変数を設定した後、構文スクリプトを再読み込みする:
+@example
+set syntax=diff
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+FINDING THE DIFFERENCES					*diff-diffexpr*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{diff-diffexpr}
+@cindex diff-diffexpr
+@unnumberedsubsec 差分を発見する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'diffexpr' option can be set to use something else than the standard
+"diff" program to compare two files and find the differences.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{diffexpr}' オプションは、2 つのファイルを比較し差分を取得する標準的な "diff" プログラム以外の何かを利用する場合に設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When 'diffexpr' is empty, Vim uses this command to find the differences
+between file1 and file2: >
+
+	diff file1 file2 > outfile
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{diffexpr}' が空ならば、Vim は file1 と file2 間の差分を得るために次のコマンドを使用する:
+@example
+diff file1 file2 > outfile
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ">" is replaced with the value of 'shellredir'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+">" は '@option{shellredir}' の値に置き換えられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The output of "diff" must be a normal "ed" style diff.  Do NOT use a context
+diff.  This example explains the format that Vim expects: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"diff" の出力は通常の "ed" 形式の差分でなければならない。コンテキスト差分を使用してはいけない。この例は Vim が求めるフォーマットを示している:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	1a2
+	> bbb
+	4d4
+	< 111
+	7c7
+	< GGG
+	---
+	> ggg
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+1a2
+> bbb
+4d4
+< 111
+7c7
+< GGG
+---
+> ggg
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "1a2" item appends the line "bbb".
+The "4d4" item deletes the line "111".
+The "7c7" item replaces the line "GGG" with "ggg".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item 項目 "1a2" が 行 "bbb" を追加する。
+@item 項目 "4d4" が 行 "111" を削除する。
+@item 項目 "7c7" が 行 "GGG" を 行 "ggg" で置き換える。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When 'diffexpr' is not empty, Vim evaluates it to obtain a diff file in the
+format mentioned.  These variables are set to the file names used:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{diffexpr}' が空でなければ、差分ファイルを述べた形式で取得するためにそれを評価実行する。これらの変数がファイル名として設定される:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	v:fname_in		original file
+	v:fname_new		new version of the same file
+	v:fname_out		resulting diff file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item v:fname_in @tab 基準となるファイル
+@item v:fname_new @tab 同ファイルの新バージョン
+@item v:fname_out @tab 結果を出力する差分ファイル
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Additionally, 'diffexpr' should take care of "icase" and "iwhite" in the
+'diffopt' option.  'diffexpr' cannot change the value of 'lines' and
+'columns'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+その上、'@option{diffexpr}' は '@option{diffopt}' オプションの "icase" と "iwhite" についても考慮するべきだろう。'@option{diffexpr}' は '@option{lines}' と '@option{columns}' の値を変更できない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example (this does almost the same as 'diffexpr' being empty): >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例 (これは '@option{diffexpr}' が空の時とほぼ同じように働く):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	set diffexpr=MyDiff()
+	function MyDiff()
+	   let opt = ""
+	   if &diffopt =~ "icase"
+	     let opt = opt . "-i "
+	   endif
+	   if &diffopt =~ "iwhite"
+	     let opt = opt . "-b "
+	   endif
+	   silent execute "!diff -a --binary " . opt . v:fname_in . " " . v:fname_new .
+		\  " > " . v:fname_out
+	endfunction
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+set diffexpr=MyDiff()
+function MyDiff()
+   let opt = ""
+   if &diffopt =~ "icase"
+     let opt = opt . "-i "
+   endif
+   if &diffopt =~ "iwhite"
+     let opt = opt . "-b "
+   endif
+   silent execute "!diff -a --binary " . opt . v:fname_in . " " . v:fname_new .
+        \  " > " . v:fname_out
+endfunction
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "-a" argument is used to force comparing the files as text, comparing as
+binaries isn't useful.  The "--binary" argument makes the files read in binary
+mode, so that a CTRL-Z doesn't end the text on DOS.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数の "-a" は強制的にテキストファイルとして比較するために使われる。バイナリでの比較は使いにくい。引数の "--binary" はファイルをバイナリモードで読み込むために使われる。DOS で @kbd{CTRL-Z} をテキストの終わりとしないためである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*E810* *E97*
+Vim will do a test if the diff output looks alright.  If it doesn't, you will
+get an error message.  Possible causes:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E810}
+@anchor{E97}
+@cindex E810
+@cindex E97
+Vim は差分の出力結果が妥当であるか検証する。妥当でない場合、エラーメッセージを得るだろう。起こりうるエラーは:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+-  The "diff" program cannot be executed.
+-  The "diff" program doesn't produce normal "ed" style diffs (see above).
+-  The 'shell' and associated options are not set correctly.  Try if filtering
+   works with a command like ":!sort".
+-  You are using 'diffexpr' and it doesn't work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item プログラム "diff" を実行できなかった。
+@item プログラム "diff" が通常の "ed" スタイルの差分を出力しなかった(上記参照)。
+@item '@option{shell}' と関連するオプションが正しく設定されていなかった。"@command{:!sort}" のようなフィルタリングコマンドが正しく動作するか確認すること。
+@item '@option{diffexpr}' を使っているが動作しなかった。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+If it's not clear what the problem is set the 'verbose' option to one or more
+to see more messages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+エラーメッセージがよくわからないときは '@option{verbose}' オプションを設定してより多くのメッセージを見ることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The self-installing Vim for MS-Windows includes a diff program.  If you don't
+have it you might want to download a diff.exe.  For example from
+http://gnuwin32.sourceforge.net/packages/diffutils.htm.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows 用の Vim インストーラには diff プログラムが含まれている。もし diff プログラムを持っていない場合はどこかから diff.exe をダウンロードすること。例えば次の場所から入手できる。
+
+@url{http://gnuwin32.sourceforge.net/packages/diffutils.htm}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING PATCHES					*diff-patchexpr*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{diff-patchexpr}
+@cindex diff-patchexpr
+@unnumberedsubsec パッチを使用する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'patchexpr' option can be set to use something else than the standard
+"patch" program.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{patchexpr}' オプションは、標準的な "patch" プログラム以外の何かを利用する場合に設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When 'patchexpr' is empty, Vim will call the "patch" program like this: >
+
+	patch -o outfile origfile < patchfile
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{patchexpr}' が空ならば、Vim は "patch" を次のように呼び出す:
+@example
+patch -o outfile origfile < patchfile
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This should work fine with most versions of the "patch" program.  Note that a
+CR in the middle of a line may cause problems, it is seen as a line break.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはほとんどのバージョンの "patch" で正しく働くだろう。行中間の CR が、改行記号として解釈され問題を起こすことはあるかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the default doesn't work for you, set the 'patchexpr' to an expression that
+will have the same effect.  These variables are set to the file names used:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトが正しく働かないのならば、同様の働きをする式を '@option{patchexpr}' に設定する。これらの変数がファイル名として設定される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	v:fname_in		original file
+	v:fname_diff		patch file
+	v:fname_out		resulting patched file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item v:fname_in @tab 基準となるファイル
+@item v:fname_diff @tab パッチファイル
+@item v:fname_out @tab パッチ適用結果を出力するファイル
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example (this does the same as 'patchexpr' being empty): >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例 (これは '@option{patchexpr}' を空にしたのと同じ働きをする):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	set patchexpr=MyPatch()
+	function MyPatch()
+	   :call system("patch -o " . v:fname_out . " " . v:fname_in .
+	   \  " < " . v:fname_diff)
+	endfunction
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+set patchexpr=MyPatch()
+function MyPatch()
+   :call system("patch -o " . v:fname_out . " " . v:fname_in .
+   \  " < " . v:fname_diff)
+endfunction
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Make sure that using the "patch" program doesn't have unwanted side effects.
+For example, watch out for additionally generated files, which should be
+deleted.  It should just patch the file and nothing else.
+   Vim will change directory to "/tmp" or another temp directory before
+evaluating 'patchexpr'.  This hopefully avoids that files in the current
+directory are accidentally patched.  Vim will also delete files starting with
+v:fname_in and ending in ".rej" and ".orig".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+利用する "patch" プログラムが望んでいない副作用をしていないことを確認する必要がある。例えば消されるべき付加的なファイルが生成されていないか用心する必要がある。ファイルにパッチをあてる以上のことは何もすべきではない。
+
+Vim は '@option{patchexpr}' を実行する前に "/tmp" か他の一時ディレクトリへ現在のディレクトリを移動する。これにはカレントディレクトリの別のファイルへ偶然にパッチがあたってしまうのを避ける狙いがある。Vim は v:fname_in で始まり ".rej" や ".orig" で終わる名前のファイルを消すこともする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
