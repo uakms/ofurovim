@@ -18,7 +18,7 @@ REFMANUALS = \
 	doc/repeat.texi doc/visual.texi doc/various.texi doc/recover.texi \
 	doc/cmdline.texi doc/options.texi doc/pattern.texi doc/map.texi \
 	doc/tagsrch.texi doc/quickfix.texi doc/windows.texi doc/tabpage.texi \
-	doc/syntax.texi doc/spell.texi
+	doc/syntax.texi doc/spell.texi doc/diff.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
@@ -76,6 +76,7 @@ htmls/refman: $(REFMANUALS) $(USRMANUALS)
 	sh utils/trick_for_mobile_usr.sh htmls/refman/usr_005ftoc_002etxt.html
 	sh utils/trick_for_mobile_ref.sh htmls/refman/Mu-Ci-.html
 	sh utils/trick_for_mobile.sh
+	sh utils/trick_for_html5.sh
 
 pdfs/userman.pdf: $(USRMANUALS)
 	PDFTEX=xetex texi2pdf -c -o $@ $<
