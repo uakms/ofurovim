@@ -1,0 +1,3924 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node autocmd.txt, , , 目次
+@unnumbered イベントに応じて自動的にコマンドを実行する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*autocmd.txt*   For Vim version 8.0.  Last change: 2017 Jul 14
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*autocmd.txt*   For Vim バージョン 8.0.  Last change: 2017 Jul 14
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Automatic commands					*autocommand*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocommand}
+@cindex autocommand
+@section 自動コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For a basic explanation, see section |40.3| in the user manual.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+基本的な説明については、ユーザーマニュアルの |@ref{40.3}| 章を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1.  Introduction		|autocmd-intro|
+2.  Defining autocommands	|autocmd-define|
+3.  Removing autocommands	|autocmd-remove|
+4.  Listing autocommands	|autocmd-list|
+5.  Events			|autocmd-events|
+6.  Patterns			|autocmd-patterns|
+7.  Buffer-local autocommands	|autocmd-buflocal|
+8.  Groups			|autocmd-groups|
+9.  Executing autocommands	|autocmd-execute|
+10. Using autocommands		|autocmd-use|
+11. Disabling autocommands	|autocmd-disable|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. はじめに @tab |@ref{autocmd-intro, , autocmd-intro}|
+@item 2. 自動コマンドの定義 @tab |@ref{autocmd-define, , autocmd-define}|
+@item 3. 自動コマンドの削除 @tab |@ref{autocmd-remove, , autocmd-remove}|
+@item 4. 自動コマンドの列挙 @tab |@ref{autocmd-list, , autocmd-list}|
+@item 5. イベント @tab |@ref{autocmd-events, , autocmd-events}|
+@item 6. パターン @tab |@ref{autocmd-patterns, , autocmd-patterns}|
+@item 7. バッファローカルな自動コマンド @tab |@ref{autocmd-buflocal, , autocmd-buflocal}|
+@item 8. グループ @tab |@ref{autocmd-groups, , autocmd-groups}|
+@item 9. 自動コマンドの実行 @tab |@ref{autocmd-execute, , autocmd-execute}|
+@item 10.自動コマンドの使用 @tab |@ref{autocmd-use, , autocmd-use}|
+@item 11.自動コマンドを無効にする @tab |@ref{autocmd-disable, , autocmd-disable}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these commands}
+{only when the |+autocmd| feature has not been disabled at compile time}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらのコマンドはない@}
+
+@{|+autocmd| の機能は、コンパイル時に有効にされていなければ使えない。@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Introduction						*autocmd-intro*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-intro}
+@cindex autocmd-intro
+@section 1. はじめに
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can specify commands to be executed automatically when reading or writing
+a file, when entering or leaving a buffer or window, and when exiting Vim.
+For example, you can create an autocommand to set the 'cindent' option for
+files matching *.c.  You can also use autocommands to implement advanced
+features, such as editing compressed files (see |gzip-example|).  The usual
+place to put autocommands is in your .vimrc or .exrc file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルを読み込んだり書き込むときや、バッファやウィンドウに入ったり出たりしたとき、あるいは Vim を終了させるときに、コマンドを自動的に実行するように指定できる。例えば "*.c" にマッチするファイルに対して、オプション '@option{cindent}' をオンにする自動コマンドを作ることができる。また自動コマンドでさらに高度な機能を実装することができる。圧縮ファイルを編集するといったような機能だ (|gzip-example| を参照)。こういった自動コマンドはファイル @file{.vimrc} かファイル @file{.exrc} に書き込む。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*E203* *E204* *E143* *E855* *E937*
+WARNING: Using autocommands is very powerful, and may lead to unexpected side
+effects.  Be careful not to destroy your text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E203}
+@anchor{E204}
+@anchor{E143}
+@anchor{E855}
+@anchor{E937}
+@cindex E203
+@cindex E204
+@cindex E143
+@cindex E855
+@cindex E937
+@quotation
+@strong{警告:} @*
+自動コマンドは大変強力であるので、思いも寄らない副作用をもたらすことがある。テキストを壊さないように注意しなければならない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- It's a good idea to do some testing on an expendable copy of a file first.
+  For example: If you use autocommands to decompress a file when starting to
+  edit it, make sure that the autocommands for compressing when writing work
+  correctly.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 捨ててもよいようなファイルのコピーに対して、最初にテストしておくのがよい。例えば、ファイルの編集開始時にファイルを解凍する自動コマンドを使うときには、書き込みするときに圧縮を行う自動コマンドが正しく働くか確かめること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Be prepared for an error halfway through (e.g., disk full).  Vim will mostly
+  be able to undo the changes to the buffer, but you may have to clean up the
+  changes to other files by hand (e.g., compress a file that has been
+  decompressed).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 実行中のエラー (例えばディスクが満杯になる) に対して、対処の準備をしておかなければならない。バッファへの変更に対しては大抵アンドゥができるが、他のファイルへの変更は、自分で処理しなければならないかもしれない (例えば、解凍されたファイルを圧縮する、等)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- If the BufRead* events allow you to edit a compressed file, the FileRead*
+  events should do the same (this makes recovery possible in some rare cases).
+  It's a good idea to use the same autocommands for the File* and Buf* events
+  when possible.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item もしイベント BufRead* の自動コマンドによって圧縮ファイルを編集できるなら、FileRead* でも同じ事ができるようにするべきである (こうすることで復旧可能になる場合がたまにある)。可能であれば、イベント File* や Buf* には同じ自動コマンドを使うのはよい考えだ。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Defining autocommands				*autocmd-define*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-define}
+@cindex autocmd-define
+@section 2. 自動コマンドの定義
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:au* *:autocmd*
+:au[tocmd] [group] {event} {pat} [nested] {cmd}
+			Add {cmd} to the list of commands that Vim will
+			execute automatically on {event} for a file matching
+			{pat} |autocmd-patterns|.
+			Vim always adds the {cmd} after existing autocommands,
+			so that the autocommands execute in the order in which
+			they were given.  See |autocmd-nested| for [nested].
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:au}
+@anchor{:autocmd}
+@cindex :au
+@cindex :autocmd
+@item :au[tocmd] [group] @{event@} @{pat@} [nested] @{cmd@}
+@{pat@} |autocmd-patterns| に一致するファイルで、@{event@} のときに自動的に実行するコマンドのリストに、@{cmd@} を加える。
+
+@{cmd@} は常に既存の自動コマンドの後に追加されるので、自動コマンドは指定された順に実行される。 [nested] については |autocmd-nested| を参照。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The special pattern <buffer> or <buffer=N> defines a buffer-local autocommand.
+See |autocmd-buflocal|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特殊なパターン <buffer> や <buffer=N> はバッファローカルな自動コマンドを定義する。|autocmd-buflocal| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: The ":autocmd" command can only be followed by another command when the
+'|' appears before {cmd}.  This works: >
+	:augroup mine | au! BufRead | augroup END
+But this sees "augroup" as part of the defined command: >
+	:augroup mine | au BufRead * set tw=70 | augroup END
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+'|' が @{cmd@} の前にある場合、"@command{:autocmd}" コマンドの後には別のコマンドを続けることができる。これは動作する:
+@example
+:augroup mine | au! BufRead | augroup END
+@end example
+しかし、これは定義されたコマンドの一部として "augroup" を見る:
+@example
+:augroup mine | au BufRead * set tw=70 | augroup END
+@end example
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that special characters (e.g., "%", "<cword>") in the ":autocmd"
+arguments are not expanded when the autocommand is defined.  These will be
+expanded when the Event is recognized, and the {cmd} is executed.  The only
+exception is that "<sfile>" is expanded when the autocmd is defined.  Example:
+>
+	:au BufNewFile,BufRead *.html so <sfile>:h/html.vim
+
+Here Vim expands <sfile> to the name of the file containing this line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"@command{:autocmd}" の引数の中の特別な文字 (例えば "%" や "<cword>" 等) は、自動コマンドが定義されたときに展開されるのではなく、イベントの発生が認識され、@{cmd@} が実行されるときに展開されることに注意せよ。唯一の例外は、"<sfile>" が自動コマンドが定義されたときに展開されることである。例:
+@example
+:au BufNewFile,BufRead *.html so <sfile>:h/html.vim
+@end example
+ここで <sfile> は、この行を含むファイルの名前に展開される。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+`:autocmd` adds to the list of autocommands regardless of whether they are
+already present.  When your .vimrc file is sourced twice, the autocommands
+will appear twice.  To avoid this, define your autocommands in a group, so
+that you can easily clear them: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+`@command{:autocmd}` は、すでに存在しているかどうかに関わらず、自動コマンドのリストに追加する。@file{.vimrc} ファイルが 2 回読み込まれると、自動コマンドが 2 回表示される。これを避けるには、グループ内に自動コマンドを定義することで、簡単にクリアできる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	augroup vimrc
+	  autocmd!	" Remove all vimrc autocommands
+	  au BufNewFile,BufRead *.html so <sfile>:h/html.vim
+	augroup END
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+augroup vimrc
+  autocmd!      " 「全ての」vimrcの自動コマンドを削除する
+  au BufNewFile,BufRead *.html so <sfile>:h/html.vim
+augroup END
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you don't want to remove all autocommands, you can instead use a variable
+to ensure that Vim includes the autocommands only once: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もし全ての自動コマンドを消去したくなかったら、代わりに変数を使って自動コマンドを読み込むのがただ1度だけにすることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:if !exists("autocommands_loaded")
+	:  let autocommands_loaded = 1
+	:  au ...
+	:endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:if !exists("autocommands_loaded")
+:  let autocommands_loaded = 1
+:  au ...
+:endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the [group] argument is not given, Vim uses the current group (as defined
+with ":augroup"); otherwise, Vim uses the group defined with [group].  Note
+that [group] must have been defined before.  You cannot define a new group
+with ":au group ..."; use ":augroup" for that.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数 [group] が指定されないと、現在のグループが使われる ("@command{:augroup}" で定義されたもの)。そうでなければ、Vim は [group] で定義されたグループを使う。
+@quotation
+@strong{Note:} @* [group] はあらかじめ定義されていなければならないことに注意。
+@end quotation
+":au group ..." で新しいグループを定義することはできない。それには "@command{:augroup}" を使うこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+While testing autocommands, you might find the 'verbose' option to be useful: >
+	:set verbose=9
+This setting makes Vim echo the autocommands as it executes them.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動コマンドをテストするとき、オプション '@option{verbose}' が便利かもしれない。
+@example
+:set verbose=9
+@end example
+この設定により、Vim は自動コマンドが実行されるとそれらを表示するようになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When defining an autocommand in a script, it will be able to call functions
+local to the script and use mappings local to the script.  When the event is
+triggered and the command executed, it will run in the context of the script
+it was defined in.  This matters if |<SID>| is used in a command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スクリプト内で自動コマンドを定義するときには、スクリプト内でのみ有効なローカル関数とローカルキーマップを利用できる。イベントが発生してコマンドが実行されるとき、コマンドは自分の定義されたスクリプト内での設定に従って働く。これはコマンドに |<SID>| が使われているときに問題になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When executing the commands, the message from one command overwrites a
+previous message.  This is different from when executing the commands
+manually.  Mostly the screen will not scroll up, thus there is no hit-enter
+prompt.  When one command outputs two messages this can happen anyway.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドを実行するとき、あるコマンドからのメッセージは前のメッセージを上書きしてしまう。これはコマンドを手動で実行するときとは違う動作である。大抵、メッセージスクリーンはスクロールしないので、「続けるには」というプロンプトは現れない。また 1 個のコマンドが 2 つのメッセージを出すときには、何にせよメッセージは上書きされてしまう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Removing autocommands				*autocmd-remove*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-remove}
+@cindex autocmd-remove
+@section 3. 自動コマンドの除去
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:au[tocmd]! [group] {event} {pat} [nested] {cmd}
+			Remove all autocommands associated with {event} and
+			{pat}, and add the command {cmd}.  See
+			|autocmd-nested| for [nested].
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :au[tocmd]! [group] @{event@} @{pat@} [nested] @{cmd@}
+@{event@} と @{pat@} に関連づけられた全ての自動コマンドを除去し、コマンド @{cmd@} を加える。 [nested] については |autocmd-nested| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:au[tocmd]! [group] {event} {pat}
+			Remove all autocommands associated with {event} and
+			{pat}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :au[tocmd]! [group] @{event@} @{pat@}
+@{event@} と @{pat@} に関連づけられた全ての自動コマンドを除去する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:au[tocmd]! [group] * {pat}
+			Remove all autocommands associated with {pat} for all
+			events.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :au[tocmd]! [group] * @{pat@}
+@{pat@} に関連づけられた、全てのイベントに関する自動コマンドを全て除去する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:au[tocmd]! [group] {event}
+			Remove ALL autocommands for {event}.
+			Warning: You should not do this without a group for
+			|BufRead| and other common events, it can break
+			plugins, syntax highlighting, etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :au[tocmd]! [group] @{event@}
+@{event@} に関連づけられた「全ての」自動コマンドを除去する。
+@quotation
+@strong{警告:} @*
+|BufRead| や他の一般的なイベントのためのグループなしでこれを行うべきではない。プラグインや構文のハイライトなどを壊すことがある。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:au[tocmd]! [group]	Remove ALL autocommands.
+			Warning: You should normally not do this without a
+			group, it breaks plugins, syntax highlighting, etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :au[tocmd]! [group]
+「全ての」自動コマンドを除去する。
+@quotation
+@strong{警告:} @*
+ 通常はグループなしでこれを行うべきではない。プラグインや構文の強調表示などが壊れる。
+@end quotation
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the [group] argument is not given, Vim uses the current group (as defined
+with ":augroup"); otherwise, Vim uses the group defined with [group].
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数 [group] が指定されないと、現在のグループが使われる ("@command{:augroup}" で定義されたもの)。そうでなければ、[group] で定義されたグループが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Listing autocommands					*autocmd-list*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-list}
+@cindex autocmd-list
+@section 4. 自動コマンドの列挙
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:au[tocmd] [group] {event} {pat}
+			Show the autocommands associated with {event} and
+			{pat}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :au[tocmd] [group] @{event@} @{pat@}
+@{event@} と @{pat@} に関連づけられた全ての自動コマンドを表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:au[tocmd] [group] * {pat}
+			Show the autocommands associated with {pat} for all
+			events.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :au[tocmd] [group] * @{pat@}
+@{pat@} に関連づけられた、全てのイベントに関する自動コマンドを表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:au[tocmd] [group] {event}
+			Show all autocommands for {event}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :au[tocmd] [group] @{event@}
+@{event@} に関連づけられた全ての自動コマンドを表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:au[tocmd] [group]	Show all autocommands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :au[tocmd] [group]
+全ての自動コマンドを表示する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you provide the [group] argument, Vim lists only the autocommands for
+[group]; otherwise, Vim lists the autocommands for ALL groups.  Note that this
+argument behavior differs from that for defining and removing autocommands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数 [group] を指定すると、[group] に関する自動コマンドのみが列挙される。そうでなければ、「全ての」グループに関する自動コマンドが表示される。
+@quotation
+@strong{Note:} @*
+ここでの引数による動作の違いは、自動コマンドを定義したり除去するときとは違うことに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In order to list buffer-local autocommands, use a pattern in the form <buffer>
+or <buffer=N>.  See |autocmd-buflocal|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファローカルな自動コマンドを列挙するには、<buffer> または <buffer=N> という形のパターンを使う。|autocmd-buflocal| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:autocmd-verbose*
+When 'verbose' is non-zero, listing an autocommand will also display where it
+was last defined. Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:autocmd-verbose}
+@cindex :autocmd-verbose
+'@option{verbose}'がゼロでないならば、自動コマンドを列挙するときに、それが最後にどこで定義されたかも表示する。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    :verbose autocmd BufEnter
+    FileExplorer  BufEnter
+	*	  call s:LocalBrowse(expand("<amatch>"))
+	    Last set from /usr/share/vim/vim-7.0/plugin/NetrwPlugin.vim
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:verbose autocmd BufEnter
+FileExplorer  BufEnter
+    *         call s:LocalBrowse(expand("<amatch>"))
+        Last set from /usr/share/vim/vim-7.0/plugin/NetrwPlugin.vim
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+See |:verbose-cmd| for more information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+より詳しい情報は |:verbose-cmd| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Events					*autocmd-events* *E215* *E216*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-events}
+@anchor{E215}
+@anchor{E216}
+@cindex autocmd-events
+@cindex E215
+@cindex E216
+@section 5. イベント
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can specify a comma-separated list of event names.  No white space can be
+used in this list.  The command applies to all the events in the list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+複数のイベントをコンマ (,) で区切ったリストにして指定することもできる。そのリストにはスペースを含めてはいけない。そのコマンドは指定したリストにある全てのイベントに適用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For READING FILES there are four kinds of events possible:
+	BufNewFile			starting to edit a non-existent file
+	BufReadPre	BufReadPost	starting to edit an existing file
+	FilterReadPre	FilterReadPost	read the temp file with filter output
+	FileReadPre	FileReadPost	any other file read
+Vim uses only one of these four kinds when reading a file.  The "Pre" and
+"Post" events are both triggered, before and after reading the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+「ファイル読み込み」には次の 4 種類のイベントが発生しうる。
+@multitable @columnfractions .3 .3 .4
+@item BufNewFile @tab @tab 存在しないファイルの編集を開始する。
+@item BufReadPre @tab BufReadPost @tab 既存のファイルの編集を開始する。
+@item FilterReadPre @tab FilterReadPost @tab フィルタの出力による一時ファイルを読み込む。
+@item FileReadPre @tab FileReadPost @tab その他のファイルを読み込む。
+@end multitable
+Vim はファイルを読み込むときにこの 4 種類のうちどれか1つを利用する。"Pre" と "Post" のイベントは、ファイル読み込みの前後で両方とも起動される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the autocommands for the *ReadPre events and all the Filter events
+are not allowed to change the current buffer (you will get an error message if
+this happens).  This is to prevent the file to be read into the wrong buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+イベント *ReadPre や、全てのイベント Filter に関する自動コマンドは、カレントバッファを変更してはならないことに注意 (これが起きると、エラーメッセージが表示される)。これは、間違ったバッファにファイルを読み込むのを防ぐためである。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the 'modified' flag is reset AFTER executing the BufReadPost
+and BufNewFile autocommands.  But when the 'modified' option was set by the
+autocommands, this doesn't happen.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+オプション '@option{modified}' は、BufReadPost と BufNewFile の自動コマンドを実行した「後に」オフに設定されることに注意。しかし '@option{modified}' が自動コマンドからオンに設定されたときはそうならない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use the 'eventignore' option to ignore a number of events or all
+events.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{eventignore}' は、いくつかあるいは全てのイベントを無視するために使える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+					*autocommand-events* *{event}*
+Vim recognizes the following events.  Vim ignores the case of event names
+(e.g., you can use "BUFread" or "bufread" instead of "BufRead").
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocommand-events}
+@anchor{@{event@}}
+@cindex autocommand-events
+@cindex @{event@}
+Vim は以下のイベントを認識する。イベント名が大文字か小文字かは無視される (例えば "BufRead" の代わりに "BUFread" や "bufread" が使える)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+First an overview by function with a short explanation.  Then the list
+alphabetically with full explanations |autocmd-events-abc|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+まず機能ごとに短い説明とともに概要を解説する。それから完全な説明とともにアルファベット順のリストを載せる |autocmd-events-abc|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Name			triggered by ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .75
+@headitem 名前 @tab 発生するとき
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Reading
+|BufNewFile|		starting to edit a file that doesn't exist
+|BufReadPre|		starting to edit a new buffer, before reading the file
+|BufRead|		starting to edit a new buffer, after reading the file
+|BufReadPost|		starting to edit a new buffer, after reading the file
+|BufReadCmd|		before starting to edit a new buffer |Cmd-event|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @strong{読み込み} @tab
+@item |BufNewFile| @tab 存在しないファイルの編集を始めたとき
+@item |BufReadPre| @tab 新しいバッファの編集を始めたとき。ファイルを読み込む前
+@item |BufRead| @tab 新しいバッファの編集を始めたとき。ファイルを読み込んだ後
+@item |BufReadPost| @tab 新しいバッファの編集を始めたとき。ファイルを読み込んだ後
+@item |BufReadCmd| @tab 新しいバッファの編集を始める前 |Cmd-event|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|FileReadPre|		before reading a file with a ":read" command
+|FileReadPost|		after reading a file with a ":read" command
+|FileReadCmd|		before reading a file with a ":read" command |Cmd-event|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |FileReadPre| @tab "@command{:read}" でファイルを読み込む前
+@item |FileReadPost| @tab "@command{:read}" でファイルを読み込んだ後
+@item |FileReadCmd| @tab "@command{:read}" でファイルを読み込む前 |Cmd-event|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|FilterReadPre|		before reading a file from a filter command
+|FilterReadPost|	after reading a file from a filter command
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |FilterReadPre| @tab フィルタコマンドでファイルを読み込む前
+@item |FilterReadPost| @tab フィルタコマンドでファイルを読み込んだ後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|StdinReadPre|		before reading from stdin into the buffer
+|StdinReadPost|		After reading from the stdin into the buffer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |StdinReadPre| @tab 標準入力からバッファに読み込む前
+@item |StdinReadPost| @tab 標準入力からバッファに読み込んだ後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Writing
+|BufWrite|		starting to write the whole buffer to a file
+|BufWritePre|		starting to write the whole buffer to a file
+|BufWritePost|		after writing the whole buffer to a file
+|BufWriteCmd|		before writing the whole buffer to a file |Cmd-event|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item @strong{書き込み} @tab
+@item |BufWrite| @tab バッファ全体をファイルに書き込むとき
+@item |BufWritePre| @tab バッファ全体をファイルに書き込むとき
+@item |BufWritePost| @tab バッファ全体をファイルに書き込んだ後
+@item |BufWriteCmd| @tab バッファ全体をファイルに書き込む前 |Cmd-event|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|FileWritePre|		starting to write part of a buffer to a file
+|FileWritePost|		after writing part of a buffer to a file
+|FileWriteCmd|		before writing part of a buffer to a file |Cmd-event|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |FileWritePre| @tab バッファの一部をファイルに書き込むとき
+@item |FileWritePost| @tab バッファの一部をファイルに書き込んだ後
+@item |FileWriteCmd| @tab バッファの一部をファイルに書き込む前 |Cmd-event|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|FileAppendPre|		starting to append to a file
+|FileAppendPost|	after appending to a file
+|FileAppendCmd|		before appending to a file |Cmd-event|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |FileAppendPre| @tab ファイルに追加するとき
+@item |FileAppendPost| @tab ファイルに追加した後
+@item |FileAppendCmd| @tab ファイルに追加する前 |Cmd-event|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|FilterWritePre|	starting to write a file for a filter command or diff
+|FilterWritePost|	after writing a file for a filter command or diff
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |FilterWritePre| @tab フィルタコマンドやdiff用にファイルを書き込むとき
+@item |FilterWritePost| @tab フィルタコマンドやdiff用にファイルを書き込んだ後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Buffers
+|BufAdd|		just after adding a buffer to the buffer list
+|BufCreate|		just after adding a buffer to the buffer list
+|BufDelete|		before deleting a buffer from the buffer list
+|BufWipeout|		before completely deleting a buffer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item @strong{バッファ} @tab
+@item |BufAdd| @tab バッファリストにバッファを追加した直後
+@item |BufCreate| @tab バッファリストにバッファを追加した直後
+@item |BufDelete| @tab バッファリストからバッファを削除する前
+@item |BufWipeout| @tab 完全にバッファを削除する前
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|BufFilePre|		before changing the name of the current buffer
+|BufFilePost|		after changing the name of the current buffer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |BufFilePre| @tab カレントバッファの名前を変える前
+@item |BufFilePost| @tab カレントバッファの名前を変えた後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|BufEnter|		after entering a buffer
+|BufLeave|		before leaving to another buffer
+|BufWinEnter|		after a buffer is displayed in a window
+|BufWinLeave|		before a buffer is removed from a window
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab 
+@item |BufEnter| @tab バッファに入った後
+@item |BufLeave| @tab 別のバッファへ移る前
+@item |BufWinEnter| @tab バッファがウィンドウに表示された後
+@item |BufWinLeave| @tab バッファがウィンドウから削除される前
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|BufUnload|		before unloading a buffer
+|BufHidden|		just after a buffer has become hidden
+|BufNew|		just after creating a new buffer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab 
+@item |BufUnload| @tab バッファをアンロードする前
+@item |BufHidden| @tab バッファが隠れバッファになった直後
+@item |BufNew| @tab 新規バッファを作成した直後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|SwapExists|		detected an existing swap file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab 
+@item |SwapExists| @tab 既存のスワップファイルを検出したとき
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Options
+|FileType|		when the 'filetype' option has been set
+|Syntax|		when the 'syntax' option has been set
+|EncodingChanged|	after the 'encoding' option has been changed
+|TermChanged|		after the value of 'term' has changed
+|OptionSet|		after setting any option
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item @strong{オプション} @tab
+@item |FileType| @tab オプション '@option{filetype}' がセットされたとき
+@item |Syntax| @tab オプション '@option{syntax}' がセットされたとき
+@item |EncodingChanged| @tab オプション '@option{encoding}' が変更された後
+@item |TermChanged| @tab オプション '@option{term}' が変更された後
+@item |OptionSet| @tab オプションが設定された後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Startup and exit
+|VimEnter|		after doing all the startup stuff
+|GUIEnter|		after starting the GUI successfully
+|GUIFailed|		after starting the GUI failed
+|TermResponse|		after the terminal response to |t_RV| is received
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item @strong{起動と終了} @tab
+@item |VimEnter| @tab 全ての起動処理が終わった後
+@item |GUIEnter| @tab GUI の起動が成功した後
+@item |GUIFailed| @tab GUI の起動が失敗した後
+@item |TermResponse| @tab |t_RV| に対する端末の反応を受け取った後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|QuitPre|		when using `:quit`, before deciding whether to quit
+|VimLeavePre|		before exiting Vim, before writing the viminfo file
+|VimLeave|		before exiting Vim, after writing the viminfo file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |QuitPre| @tab `@command{:quit}` を使ったとき、本当に閉じるか決定する前
+@item |VimLeavePre| @tab Vim を終了する前、viminfo ファイルを書き出す前
+@item |VimLeave| @tab Vim を終了する前、viminfo ファイルを書き出した後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Various
+|FileChangedShell|	Vim notices that a file changed since editing started
+|FileChangedShellPost|	After handling a file changed since editing started
+|FileChangedRO|		before making the first change to a read-only file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item @strong{その他} @tab
+@item |FileChangedShell| @tab 編集を始めた後にファイルが変更されたことを検出したとき
+@item |FileChangedShellPost| @tab 編集を始めた後にファイルが変更されたことに対処した後
+@item |FileChangedRO| @tab 読み込み専用ファイルに対して最初に変更を加える前
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|ShellCmdPost|		after executing a shell command
+|ShellFilterPost|	after filtering with a shell command
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |ShellCmdPost| @tab シェルコマンドを実行した後
+@item |ShellFilterPost| @tab シェルコマンドでフィルタをかけた後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|CmdUndefined|		a user command is used but it isn't defined
+|FuncUndefined|		a user function is used but it isn't defined
+|SpellFileMissing|	a spell file is used but it can't be found
+|SourcePre|		before sourcing a Vim script
+|SourceCmd|		before sourcing a Vim script |Cmd-event|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |CmdUndefined| @tab 呼び出そうとしたユーザー定義コマンドが定義されていなかったとき
+@item |FuncUndefined| @tab 呼び出そうとしたユーザー定義関数が定義されていなかったとき
+@item |SpellFileMissing| @tab スペリングファイルを使おうとしたが見つからなかったとき
+@item |SourcePre| @tab Vim script を読み込む前
+@item |SourceCmd| @tab Vim script を読み込む前 |Cmd-event|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|VimResized|		after the Vim window size changed
+|FocusGained|		Vim got input focus
+|FocusLost|		Vim lost input focus
+|CursorHold|		the user doesn't press a key for a while
+|CursorHoldI|		the user doesn't press a key for a while in Insert mode
+|CursorMoved|		the cursor was moved in Normal mode
+|CursorMovedI|		the cursor was moved in Insert mode
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |VimResized| @tab Vim のウィンドウサイズが変わったとき
+@item |FocusGained| @tab Vim が入力フォーカスを得たとき
+@item |FocusLost| @tab Vim が入力フォーカスを失ったとき
+@item |CursorHold| @tab ユーザーが一定時間キーを押さなかったとき
+@item |CursorHoldI| @tab 挿入モードでユーザーが一定時間キーを押さなかったとき
+@item |CursorMoved| @tab ノーマルモードでカーソルが移動したとき
+@item |CursorMovedI| @tab 挿入モードでカーソルが移動したとき
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|WinNew|		after creating a new window
+|TabNew|		after creating a new tab page
+|TabClosed|		after closing a tab page
+|WinEnter|		after entering another window
+|WinLeave|		before leaving a window
+|TabEnter|		after entering another tab page
+|TabLeave|		before leaving a tab page
+|CmdwinEnter|		after entering the command-line window
+|CmdwinLeave|		before leaving the command-line window
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |WinNew| @tab 新しいウィンドウを作成した後
+@item |TabNew| @tab 新しいタブページを作成した後
+@item |TabClosed| @tab タブページを閉じた後
+@item |WinEnter| @tab 別のウィンドウに入った後
+@item |WinLeave| @tab ウィンドウから離れる前
+@item |TabEnter| @tab 別のタブページに入った後
+@item |TabLeave| @tab タブページから離れる前
+@item |CmdwinEnter| @tab コマンドラインウィンドウに入った後
+@item |CmdwinLeave| @tab コマンドラインウィンドウから離れる前
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|InsertEnter|		starting Insert mode
+|InsertChange|		when typing <Insert> while in Insert or Replace mode
+|InsertLeave|		when leaving Insert mode
+|InsertCharPre|		when a character was typed in Insert mode, before
+			inserting it
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |InsertEnter| @tab 挿入モードを開始したとき
+@item |InsertChange| @tab 挿入や置換モードで @key{<Insert>} をタイプしたとき
+@item |InsertLeave| @tab 挿入モードを抜けるとき
+@item |InsertCharPre| @tab 挿入モードで文字が入力されたとき、その文字が挿入される前
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|TextChanged|		after a change was made to the text in Normal mode
+|TextChangedI|		after a change was made to the text in Insert mode
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |TextChanged| @tab ノーマルモードでテキストが変更された後
+@item |TextChangedI| @tab 挿入モードでテキストが変更された後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|ColorScheme|		after loading a color scheme
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |ColorScheme| @tab カラースキームを読み込んだ後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|RemoteReply|		a reply from a server Vim was received
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |RemoteReply| @tab Vim サーバーからの返答を受け取ったとき
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|QuickFixCmdPre|	before a quickfix command is run
+|QuickFixCmdPost|	after a quickfix command is run
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |QuickFixCmdPre| @tab QuickFixコマンドを実行する前
+@item |QuickFixCmdPost| @tab QuickFix コマンドを実行した後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|SessionLoadPost|	after loading a session file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |SessionLoadPost| @tab セッションファイルを読み込んだ後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|MenuPopup|		just before showing the popup menu
+|CompleteDone|		after Insert mode completion is done
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |MenuPopup| @tab ポップアップメニューを表示する直前
+@item |CompleteDone| @tab 挿入モード補完が完了したとき
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|User|			to be used in combination with ":doautocmd"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item |User| @tab "@command{:doautocmd}" との組合せで使われる
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The alphabetical list of autocommand events:		*autocmd-events-abc*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-events-abc}
+@cindex autocmd-events-abc
+@unnumberedsubsec 自動コマンドイベントのアルファベット順リスト:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*BufCreate* *BufAdd*
+BufAdd or BufCreate		Just after creating a new buffer which is
+				added to the buffer list, or adding a buffer
+				to the buffer list.
+				Also used just after a buffer in the buffer
+				list has been renamed.
+				The BufCreate event is for historic reasons.
+				NOTE: When this autocommand is executed, the
+				current buffer "%" may be different from the
+				buffer being created "<afile>".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{BufCreate}
+@anchor{BufAdd}
+@cindex BufCreate
+@cindex BufAdd
+@item BufAdd または
+@itemx BufCreate
+バッファリストに追加されるバッファを作った直後か、バッファをバッファリストに追加した直後。バッファリスト内のバッファがリネームされた直後にも発生する。イベント BufCreate は歴史上の理由で存在している。
+@quotation
+@strong{Note:} @*
+このイベントで自動コマンドが実行されたときは、"%" で表されるカレントバッファと "<afile>" で表される作成されたバッファは異なるかもしれないことに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufDelete*
+BufDelete			Before deleting a buffer from the buffer list.
+				The BufUnload may be called first (if the
+				buffer was loaded).
+				Also used just before a buffer in the buffer
+				list is renamed.
+				NOTE: When this autocommand is executed, the
+				current buffer "%" may be different from the
+				buffer being deleted "<afile>" and "<abuf>".
+				Don't change to another buffer, it will cause
+				problems.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufDelete}
+@cindex BufDelete
+@item BufDelete
+バッファリストからバッファを削除する前。(バッファが読み込まれているなら) BufUnload が最初に呼び出されるだろう。また、バッファリスト内のバッファがリネームされた直前にも使われる。
+@quotation
+@strong{Note:} @*
+このイベントで自動コマンドが実行されたときは、"%" で表されるカレントバッファと "<afile>" と "<abuf>" で表される削除されるバッファとは異なるかもしれないことに注意。他のバッファに切り替えないこと。もしすると問題が発生するだろう。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufEnter*
+BufEnter			After entering a buffer.  Useful for setting
+				options for a file type.  Also executed when
+				starting to edit a buffer, after the
+				BufReadPost autocommands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufEnter}
+@cindex BufEnter
+@item BufEnter
+バッファに入った後。ファイルタイプに関するオプションの設定に便利である。バッファの編集を始めるときにも、BufReadPost の自動コマンドの後に実行される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufFilePost*
+BufFilePost			After changing the name of the current buffer
+				with the ":file" or ":saveas" command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufFilePost}
+@cindex BufFilePost
+@item BufFilePost
+現在のバッファの名前をコマンド "@command{:file}" または "@command{:saveas}" で変更した後。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufFilePre*
+BufFilePre			Before changing the name of the current buffer
+				with the ":file" or ":saveas" command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufFilePre}
+@cindex BufFilePre
+@item BufFilePre
+現在のバッファの名前をコマンド "@file{:file}" または "@file{:saveas}" で変更する前。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufHidden*
+BufHidden			Just after a buffer has become hidden.  That
+				is, when there are no longer windows that show
+				the buffer, but the buffer is not unloaded or
+				deleted.  Not used for ":qa" or ":q" when
+				exiting Vim.
+				NOTE: When this autocommand is executed, the
+				current buffer "%" may be different from the
+				buffer being unloaded "<afile>".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufHidden}
+@cindex BufHidden
+@item BufHidden
+バッファが隠れ状態 (hidden) になった直後。つまりそのバッファを表示するウィンドウがもう存在しないのに、バッファが解放されなかったり、削除されないとき。"@command{:qa}" や "@command{q}" で Vim を終了するときには使われない。
+
+@quotation
+@strong{Note:} @*
+このイベントで自動コマンドが実行されたときは、"%" で表されるカレントバッファと "<afile>" で表される解放されるバッファとは異なるかもしれないことに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufLeave*
+BufLeave			Before leaving to another buffer.  Also when
+				leaving or closing the current window and the
+				new current window is not for the same buffer.
+				Not used for ":qa" or ":q" when exiting Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufLeave}
+@cindex BufLeave
+@item BufLeave
+他のバッファに移る前。カレントウィンドウを離れたり、閉じたりするときで、新しいカレントウィンドウが同じバッファを開いていないとき。"@command{:qa}" や "@command{q}" で Vim を閉じるときには使われない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufNew*
+BufNew				Just after creating a new buffer.  Also used
+				just after a buffer has been renamed.  When
+				the buffer is added to the buffer list BufAdd
+				will be triggered too.
+				NOTE: When this autocommand is executed, the
+				current buffer "%" may be different from the
+				buffer being created "<afile>".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufNew}
+@cindex BufNew
+@item BufNew
+新しいバッファを作った直後。バッファがリネームされた直後にも発生する。バッファがバッファリストに追加されると、イベント BufAdd も発生する。
+@quotation
+@strong{Note:} @*
+このイベントで自動コマンドが実行されたときは、"%" で表されるカレントバッファと "<afile>" で表される作成されるバッファとは異なるかもしれないことに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufNewFile*
+BufNewFile			When starting to edit a file that doesn't
+				exist.  Can be used to read in a skeleton
+				file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufNewFile}
+@cindex BufNewFile
+@item BufNewFile
+存在しないファイルの編集を始めたとき。スケルトンファイル @{訳注: テンプレートファイルともいう@} に読み込むときに使える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*BufRead* *BufReadPost*
+BufRead or BufReadPost		When starting to edit a new buffer, after
+				reading the file into the buffer, before
+				executing the modelines.  See |BufWinEnter|
+				for when you need to do something after
+				processing the modelines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufRead}
+@anchor{BufReadPost}
+@cindex BufRead
+@cindex BufReadPost
+@item BufRead または
+@itemx BufReadPost
+新しいバッファの編集を始めたときの、ファイルをバッファに読み込んだ後で、モードラインを実行する前。モードラインを実行した後に何かするには |BufWinEnter| を参照すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				This does NOT work for ":r file".  Not used
+				when the file doesn't exist.  Also used after
+				successfully recovering a file.
+				Also triggered for the filetypedetect group
+				when executing ":filetype detect" and when
+				writing an unnamed buffer in a way that the
+				buffer gets a name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは "@command{:r file}" には「動作しない」。ファイルが存在しないときも使えない。またファイルの復旧に成功したときにも使われる。また、"@command{:filetype detect}" を実行したとき、あるいは無名バッファを保存してバッファに名前がついたとき、filetypedetect グループを対象として発行される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufReadCmd*
+BufReadCmd			Before starting to edit a new buffer.  Should
+				read the file into the buffer. |Cmd-event|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufReadCmd}
+@cindex BufReadCmd
+@item BufReadCmd
+新しいバッファの編集を始める前。ファイルをバッファ内に読み込む役目を負う。|Cmd-event|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*BufReadPre* *E200* *E201*
+BufReadPre			When starting to edit a new buffer, before
+				reading the file into the buffer.  Not used
+				if the file doesn't exist.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufReadPre}
+@anchor{E200}
+@anchor{E201}
+@cindex BufReadPre
+@cindex E200
+@cindex E201
+@item BufReadPre
+新しいバッファの編集を始めたときの、ファイルをバッファに読み込む前。読み込むファイルが存在しないときは使えない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufUnload*
+BufUnload			Before unloading a buffer.  This is when the
+				text in the buffer is going to be freed.  This
+				may be after a BufWritePost and before a
+				BufDelete.  Also used for all buffers that are
+				loaded when Vim is going to exit.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufUnload}
+@cindex BufUnload
+@item BufUnload
+バッファを解放する前。これは、バッファ内のテキストが解放されるときである。BufWritePost の後で、BufDelete の前かもしれない。Vim が終了しようとしているとき、読み込まれた全てのバッファについて発生する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				NOTE: When this autocommand is executed, the
+				current buffer "%" may be different from the
+				buffer being unloaded "<afile>".
+				Don't change to another buffer or window, it
+				will cause problems!
+				When exiting and v:dying is 2 or more this
+				event is not triggered.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+このイベントで自動コマンドが実行されたときは、"%" で表されるカレントバッファと"<afile>" で表される解放されるバッファとは異なるかもしれないことに注意。他のバッファやウィンドウに切り替えないこと。問題が発生するだろう。終了時に v:dying が 2 以上のときはこのイベントは発生しない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufWinEnter*
+BufWinEnter			After a buffer is displayed in a window.  This
+				can be when the buffer is loaded (after
+				processing the modelines) or when a hidden
+				buffer is displayed in a window (and is no
+				longer hidden).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufWinEnter}
+@cindex BufWinEnter
+@item BufWinEnter
+バッファがウィンドウ内に表示された後。これはバッファが読み込まれたとき (モードラインの処理後) か、隠れ (hidden) バッファがウィンドウ内に表示されたとき (もう隠れバッファでなくなったとき)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				Does not happen for |:split| without
+				arguments, since you keep editing the same
+				buffer, or ":split" with a file that's already
+				open in a window, because it re-uses an
+				existing buffer.  But it does happen for a
+				":split" with the name of the current buffer,
+				since it reloads that buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数なしで |:split| をしたときや、既にウィンドウに表示されているバッファを指定して "@command{:split}" をしたときは、同じバッファを開いたままなので、このイベントは発生しない。既存のバッファがそのまま使われるためである。しかし、カレントバッファの名前を指定して "@command{:split}" をすると、そのバッファを再読み込みすることになるので、発生する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufWinLeave*
+BufWinLeave			Before a buffer is removed from a window.
+				Not when it's still visible in another window.
+				Also triggered when exiting.  It's triggered
+				before BufUnload or BufHidden.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufWinLeave}
+@cindex BufWinLeave
+@item BufWinLeave
+バッファがウィンドウから取り除かれる前。そのバッファが別のウィンドウ内で表示中ならば発生しない。Vim の終了時にも発生する。イベント BufUnload や BufHidden よりも前に発生する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				NOTE: When this autocommand is executed, the
+				current buffer "%" may be different from the
+				buffer being unloaded "<afile>".
+				When exiting and v:dying is 2 or more this
+				event is not triggered.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+このイベントで自動コマンドが実行されたときは、"%" で表されるカレントバッファと"<afile>" で表される解放されるバッファとは異なるかもしれないことに注意。他のバッファに切り替えないこと。もしすると問題が発生するだろう。終了時に v:dying が 2 以上のときはこのイベントは発生しない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufWipeout*
+BufWipeout			Before completely deleting a buffer.  The
+				BufUnload and BufDelete events may be called
+				first (if the buffer was loaded and was in the
+				buffer list).  Also used just before a buffer
+				is renamed (also when it's not in the buffer
+				list).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufWipeout}
+@cindex BufWipeout
+@item BufWipeout
+バッファを完全に削除する前。イベント BufUnload と BufDelete が先に発生するかもしれない (バッファが読み込まれていて、バッファリスト内に存在するなら)。バッファがリネームされる直前にも発生する (そのバッファがバッファリスト内になくとも)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				NOTE: When this autocommand is executed, the
+				current buffer "%" may be different from the
+				buffer being deleted "<afile>".
+				Don't change to another buffer, it will cause
+				problems.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+このイベントで自動コマンドが実行されたときは、"%" で表されるカレントバッファと "<afile>" で表される削除されるバッファとは異なるかもしれないことに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*BufWrite* *BufWritePre*
+BufWrite or BufWritePre		Before writing the whole buffer to a file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufWrite}
+@anchor{BufWritePre}
+@cindex BufWrite
+@cindex BufWritePre
+@item BufWrite または
+@itemx BufWritePre
+バッファ全体をファイルに書き込む前。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufWriteCmd*
+BufWriteCmd			Before writing the whole buffer to a file.
+				Should do the writing of the file and reset
+				'modified' if successful, unless '+' is in
+				'cpo' and writing to another file |cpo-+|.
+				The buffer contents should not be changed.
+				When the command resets 'modified' the undo
+				information is adjusted to mark older undo
+				states as 'modified', like |:write| does.
+				|Cmd-event|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufWriteCmd}
+@cindex BufWriteCmd
+@item BufWriteCmd
+バッファ全体をファイルに書き込む前。ファイルへの書き込みの役目を負い、成功したときはオプション '@option{modified}' をオフにする。バッファの内容を変更すべきではない。'@option{modified}' をオフにすると、以前の undo 状態が '@option{modified}' (変更あり) になるように undo 情報が調整される (|:write| と同様)。|Cmd-event|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*BufWritePost*
+BufWritePost			After writing the whole buffer to a file
+				(should undo the commands for BufWritePre).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{BufWritePost}
+@cindex BufWritePost
+@item BufWritePost
+バッファ全体をファイルに書き込んだ後 (イベント BufWritePre によるコマンドをアンドゥする役目を果たす)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*CmdUndefined*
+CmdUndefined			When a user command is used but it isn't
+				defined.  Useful for defining a command only
+				when it's used.  The pattern is matched
+				against the command name.  Both <amatch> and
+				<afile> are set to the name of the command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CmdUndefined}
+@cindex CmdUndefined
+@item CmdUndefined
+ユーザー定義コマンドが使われたが、定義されていなかったとき。必要なときのみコマンドを定義するのに便利である。パターンはコマンド名に対して照合される。<amatch> と <afile> の両方ともコマンド名に設定される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				NOTE: Autocompletion won't work until the
+				command is defined.  An alternative is to
+				always define the user command and have it
+				invoke an autoloaded function.  See |autoload|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+未定義のコマンドに対して自動補完は機能しない。このイベントを使う代わりにユーザー定義コマンドを常に定義するようにしてそのコマンドから autoload 関数を呼び出すようにするという方法もある。|autoload| 参照。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*CmdwinEnter*
+CmdwinEnter			After entering the command-line window.
+				Useful for setting options specifically for
+				this special type of window.  This is
+				triggered _instead_ of BufEnter and WinEnter.
+				<afile> is set to a single character,
+				indicating the type of command-line.
+				|cmdwin-char|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CmdwinEnter}
+@cindex CmdwinEnter
+@item CmdwinEnter
+Command-line ウィンドウに入った後。この特殊なウィンドウに対してのみオプションを設定するのに便利である。このイベントは BufEnter や WinEnter の「代わりに」発生する。<afile> は、command-line の種類を示す 1 文字に設定される。|cmdwin-char|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*CmdwinLeave*
+CmdwinLeave			Before leaving the command-line window.
+				Useful to clean up any global setting done
+				with CmdwinEnter.  This is triggered _instead_
+				of BufLeave and WinLeave.
+				<afile> is set to a single character,
+				indicating the type of command-line.
+				|cmdwin-char|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CmdwinLeave}
+@cindex CmdwinLeave
+@item CmdwinLeave
+Command-line ウィンドウから出る前。イベント CmdwinEnter で行ったグローバル設定を消去するのに便利である。このイベントは BufLeave や WinLeave の「代わりに」発生する。<afile> は、command-line の種類を示す 1 文字に設定される。|cmdwin-char|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*ColorScheme*
+ColorScheme			After loading a color scheme. |:colorscheme|
+				The pattern is matched against the
+				colorscheme name. <afile> can be used for the
+				name of the actual file where this option was
+				set, and <amatch> for the new colorscheme
+				name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ColorScheme}
+@cindex ColorScheme
+@item ColorScheme
+カラースキームを読み込んだ後。|:colorscheme| パターンはカラースキーム名にマッチする。<afile> はこのオプションを設定したファイルの名前になる。<amatch> はカラースキーム名になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+							*CompleteDone*
+CompleteDone			After Insert mode completion is done.  Either
+				when something was completed or abandoning
+				completion. |ins-completion|
+				The |v:completed_item| variable contains
+				information about the completed item.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CompleteDone}
+@cindex CompleteDone
+@item CompleteDone
+挿入モード補完が完了したとき。補完が実行されても中止されても発行される。|ins-completion| 変数 |v:completed_item| には補完された候補についての情報が含まれている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*CursorHold*
+CursorHold			When the user doesn't press a key for the time
+				specified with 'updatetime'.  Not re-triggered
+				until the user has pressed a key (i.e. doesn't
+				fire every 'updatetime' ms if you leave Vim to
+				make some coffee. :)  See |CursorHold-example|
+				for previewing tags.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CursorHold}
+@cindex CursorHold
+@item CursorHold
+'@option{updatetime}' の時間の間、ユーザーがキーを押さなかったとき。ユーザーが何かキーを押すまで、再び発生することはない (例えば、もしあなたがコーヒーを入れるために Vim の前を離れても、その間の '@option{updatetime}' ミリ秒ごと発生することはない :-)。タグをプレビューするためには、|CursorHold-example| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				This event is only triggered in Normal mode.
+				It is not triggered when waiting for a command
+				argument to be typed, or a movement after an
+				operator.
+				While recording the CursorHold event is not
+				triggered. |q|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このイベントはノーマルモードのときのみ呼ばれる。コマンドの引数の入力待ち状態、またはオペレータの後の移動コマンド入力待ち状態のときは発生しない。レコーディングの最中には CursorHold イベントは発生しない。|q|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*<CursorHold>*
+				Internally the autocommand is triggered by the
+				<CursorHold> key. In an expression mapping
+				|getchar()| may see this character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<CursorHold>}
+@cindex <CursorHold>
+この自動コマンドは内部的に <CursorHold> キーが引き金になっている。式による指定のマッピング内では |getchar()| によってこの文字が取得されることがある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				Note: Interactive commands cannot be used for
+				this event.  There is no hit-enter prompt,
+				the screen is updated directly (when needed).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+このイベントには対話的なコマンドは使えないことに注意。「続けるには」プロンプトは現れず、スクリーンは必要に応じて直接更新される。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				Note: In the future there will probably be
+				another option to set the time.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+@end quotation
+近いうちに、発生するまでの時間を設定する別のオプションができるだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				Hint: to force an update of the status lines
+				use: >
+					:let &ro = &ro
+<				{only on Amiga, Unix, Win32, MSDOS and all GUI
+				versions}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Hint:} @*
+ステータスラインの更新を強制的に行うには、これを使うこと:
+@example
+:let &ro = &ro
+@end example
+@{Vim の Amiga 版、Unix 版、Win32 版、MSDOS 版および全ての GUI 版でのみ有効@}
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*CursorHoldI*
+CursorHoldI			Just like CursorHold, but in Insert mode.
+				Not triggered when waiting for another key,
+				e.g. after CTRL-V, and not when in CTRL-X mode
+				|insert_expand|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CursorHoldI}
+@cindex CursorHoldI
+@item CursorHoldI
+CursorHold と同様だが、挿入モードのとき発生する。例えば別のキーを待っているとき、例えば @kbd{CTRL-V} の後で、@kbd{CTRL-X} モード |insert_expand| ではないときにはトリガーされない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*CursorMoved*
+CursorMoved			After the cursor was moved in Normal or Visual
+				mode.  Also when the text of the cursor line
+				has been changed, e.g., with "x", "rx" or "p".
+				Not triggered when there is typeahead or when
+				an operator is pending.
+				For an example see |match-parens|.
+				Careful: This is triggered very often, don't
+				do anything that the user does not expect or
+				that is slow.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CursorMoved}
+@cindex CursorMoved
+@item CursorMoved
+ノーマルモードかビジュアルモードでカーソルが移動した後。カーソル行のテキストが変更されたときにも発生する(例: "x", "rx", "p"などで)。先行入力があったりオペレータが実行待ちになっている場合は発生しない。|match-parens| の例を参照。
+@quotation
+@strong{Careful:} @*
+このイベントは頻繁に発生するので、ユーザーが予期しないことや時間のかかる処理は行わないこと。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*CursorMovedI*
+CursorMovedI			After the cursor was moved in Insert mode.
+				Not triggered when the popup menu is visible.
+				Otherwise the same as CursorMoved.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CursorMovedI}
+@cindex CursorMovedI
+@item CursorMovedI
+挿入モードでカーソルが移動した後。ポップアップメニューが表示されているときは発行されない。それ以外は CursorMoved と同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*EncodingChanged*
+EncodingChanged			Fires off after the 'encoding' option has been
+				changed.  Useful to set up fonts, for example.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{EncodingChanged}
+@cindex EncodingChanged
+@item EncodingChanged
+オプション '@option{encoding}' が変更されたとき。例えば、フォント等の設定に便利である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FileAppendCmd*
+FileAppendCmd			Before appending to a file.  Should do the
+				appending to the file.  Use the '[ and ']
+				marks for the range of lines.|Cmd-event|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FileAppendCmd}
+@cindex FileAppendCmd
+@item FileAppendCmd
+ファイルに追加する前。ファイルへの追加の役目を負う。|Cmd-event|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FileAppendPost*
+FileAppendPost			After appending to a file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FileAppendPost}
+@cindex FileAppendPost
+@item FileAppendPost
+ファイルに追加した後。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FileAppendPre*
+FileAppendPre			Before appending to a file.  Use the '[ and ']
+				marks for the range of lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FileAppendPre}
+@cindex FileAppendPre
+@item FileAppendPre
+ファイルに追加する前。行範囲を指定するためには '[ と '] マークを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FileChangedRO*
+FileChangedRO			Before making the first change to a read-only
+				file.  Can be used to check-out the file from
+				a source control system.  Not triggered when
+				the change was caused by an autocommand.
+				This event is triggered when making the first
+				change in a buffer or the first change after
+				'readonly' was set, just before the change is
+				applied to the text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FileChangedRO}
+@cindex FileChangedRO
+@item FileChangedRO
+読み込み専用ファイルに最初の変更を加える前。ソース管理システム @{訳注: CVS や RCS@} からファイルをチェックアウトするのに使われる。変更が自動コマンドによるときには発生しない。このイベントが発生するのは、バッファに最初の変更を行うときや、'@option{readonly}' がセットされた後に最初の変更を行うときの、変更が適用される直前である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				WARNING: If the autocommand moves the cursor
+				the effect of the change is undefined.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{警告:} @*
+自動コマンドでカーソルが動かされるときの動作は、定義されていない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*E788*
+				It is not allowed to change to another buffer
+				here.  You can reload the buffer but not edit
+				another one.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E788}
+@cindex E788
+ここで他のバッファに変更をしてはならない。バッファを再読み込みするとはよいが、他のバッファを編集してはならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*E881*
+				If the number of lines changes saving for undo
+				may fail and the change will be aborted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E881}
+@cindex E881
+行数が変化した場合 undo のための保存は失敗し、その変更は中止されるだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FileChangedShell*
+FileChangedShell		When Vim notices that the modification time of
+				a file has changed since editing started.
+				Also when the file attributes of the file
+				change or when the size of the file changes.
+				|timestamp|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FileChangedShell}
+@cindex FileChangedShell
+@item FileChangedShell
+ファイルのタイムスタンプが、ファイルの編集が始まってから変更されたことを発見したとき。ファイルの属性やファイルサイズが変更されたときにも使われる。|timestamp|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				Mostly triggered after executing a shell
+				command, but also with a |:checktime| command
+				or when gvim regains input focus.
+				This autocommand is triggered for each changed
+				file.  It is not used when 'autoread' is set
+				and the buffer was not changed.  If a
+				FileChangedShell autocommand is present the
+				warning message and prompt is not given.
+				The |v:fcs_reason| variable is set to indicate
+				what happened and |v:fcs_choice| can be used
+				to tell Vim what to do next.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+大抵はシェルコマンドの実行後に発生する。またコマンド |:checktime| の実行後や、gvim が入力フォーカスを一度失い、再び得たときにも発生する。このイベントは変更されたファイルそれぞれに対して発生する。
+
+オプション '@option{autoread}' がオンであり、かつバッファが変更されていないときには使われない。もし FileChangedShell の自動コマンドが存在しても、警告メッセージやプロンプトは現れない。
+
+変数 |v:fcs_reason| に何が起こったのかが設定され、|v:fcs_choice| によって Vim に次に何をすべきかを指示できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				NOTE: When this autocommand is executed, the
+				current buffer "%" may be different from the
+				buffer that was changed, which is in "<afile>".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+このイベントで自動コマンドが実行されたときは、"%" で表されるカレントバッファと "<afile>" で表される変更されたバッファとは異なるかもしれないことに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				NOTE: The commands must not change the current
+				buffer, jump to another buffer or delete a
+				buffer.  *E246* *E811*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+この自動コマンドはカレントバッファを変更したり、別のバッファにジャンプしたり、バッファを消去してはいけない。
+@anchor{E246}
+@anchor{E811}
+@cindex E246
+@cindex E811
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				NOTE: This event never nests, to avoid an
+				endless loop.  This means that while executing
+				commands for the FileChangedShell event no
+				other FileChangedShell event will be
+				triggered.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+このイベントは、無限ループを避けるために決してネストしてはいけない (入れ子にならない)。つまり、FielChangedShell イベントの処理中は他の FileChangedShell イベントは呼ばれない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FileChangedShellPost*
+FileChangedShellPost		After handling a file that was changed outside
+				of Vim.  Can be used to update the statusline.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FileChangedShellPost}
+@cindex FileChangedShellPost
+@item FileChangedShellPost
+Vim の外部でファイルが変更されたのを検出・対処した後。ステータスラインを更新するのに使える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FileEncoding*
+FileEncoding			Obsolete.  It still works and is equivalent
+				to |EncodingChanged|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FileEncoding}
+@cindex FileEncoding
+@item FileEncoding
+時代遅れである。まだ有効だがイベント |EncodingChanged| と同等である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FileReadCmd*
+FileReadCmd			Before reading a file with a ":read" command.
+				Should do the reading of the file. |Cmd-event|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FileReadCmd}
+@cindex FileReadCmd
+@item FileReadCmd
+コマンド "@command{:read}" でファイルを読み込む前。ファイルを読み込む役目を負う。|Cmd-event|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FileReadPost*
+FileReadPost			After reading a file with a ":read" command.
+				Note that Vim sets the '[ and '] marks to the
+				first and last line of the read.  This can be
+				used to operate on the lines just read.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FileReadPost}
+@cindex FileReadPost
+@item FileReadPost
+コマンド "@command{:read}" でファイルを読み込んだ後。
+@quotation
+@strong{Note:} @*
+読み込んだテキストの先頭行と末尾行には、マーク '[ と '] が設定されることに注意。これは、読み込まれた行に対して操作を行うのに使われる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FileReadPre*
+FileReadPre			Before reading a file with a ":read" command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FileReadPre}
+@cindex FileReadPre
+@item FileReadPre
+コマンド "@command{:read}" でファイルを読み込む前。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FileType*
+FileType			When the 'filetype' option has been set.  The
+				pattern is matched against the filetype.
+				<afile> can be used for the name of the file
+				where this option was set, and <amatch> for
+				the new value of 'filetype'.  Navigating to
+				another window or buffer is not allowed.
+				See |filetypes|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FileType}
+@cindex FileType
+@item FileType
+オプション '@option{filetype}' が設定されたとき。パターンはファイルタイプに対して照合される。<afile> は '@option{filetype}' が設定されたファイルの名前として使える。<amatch> は '@option{filetype}' の新しい値として使える。他のウィンドウやバッファのナビゲーションは許されていない。|filetypes| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FileWriteCmd*
+FileWriteCmd			Before writing to a file, when not writing the
+				whole buffer.  Should do the writing to the
+				file.  Should not change the buffer.  Use the
+				'[ and '] marks for the range of lines.
+				|Cmd-event|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FileWriteCmd}
+@cindex FileWriteCmd
+@item FileWriteCmd
+バッファ全体を書き込まない場合の、ファイルに書き込む前。ファイルへの書き込みの役目を負う。バッファを変更すべきではない。 |Cmd-event|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FileWritePost*
+FileWritePost			After writing to a file, when not writing the
+				whole buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FileWritePost}
+@cindex FileWritePost
+@item FileWritePost
+バッファ全体を書き込まない場合の、ファイルに書き込んだ後。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FileWritePre*
+FileWritePre			Before writing to a file, when not writing the
+				whole buffer.  Use the '[ and '] marks for the
+				range of lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FileWritePre}
+@cindex FileWritePre
+@item FileWritePre
+バッファ全体を書き込まない場合の、ファイルに書き込む前。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FilterReadPost*
+FilterReadPost			After reading a file from a filter command.
+				Vim checks the pattern against the name of
+				the current buffer as with FilterReadPre.
+				Not triggered when 'shelltemp' is off.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FilterReadPost}
+@cindex FilterReadPost
+@item FilterReadPost
+フィルタコマンドからファイルを読み込んだ後。Vim は FilterReadPre と同様に、現在のバッファの名前に対してパターンを調べる。'@option{shelltemp}' がオフの時は発生しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FilterReadPre* *E135*
+FilterReadPre			Before reading a file from a filter command.
+				Vim checks the pattern against the name of
+				the current buffer, not the name of the
+				temporary file that is the output of the
+				filter command.
+				Not triggered when 'shelltemp' is off.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FilterReadPre}
+@anchor{E135}
+@cindex FilterReadPre
+@cindex E135
+@item FilterReadPre
+フィルタコマンドからファイルを読み込む前。Vim は、フィルタコマンドの出力である一時ファイルの名前ではなく、現在のバッファの名前に対してパターンを調べる。'@option{shelltemp}' がオフの時は発生しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FilterWritePost*
+FilterWritePost			After writing a file for a filter command or
+				making a diff.
+				Vim checks the pattern against the name of
+				the current buffer as with FilterWritePre.
+				Not triggered when 'shelltemp' is off.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FilterWritePost}
+@cindex FilterWritePost
+@item FilterWritePost
+フィルタコマンド用のファイルを書き込んだり、差分表示用のファイルを作った後。Vimは FilterWritePre と同様、現在のバッファの名前に対してパターンをチェックする。'@option{shelltemp}' がオフのときは発生しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FilterWritePre*
+FilterWritePre			Before writing a file for a filter command or
+				making a diff.
+				Vim checks the pattern against the name of
+				the current buffer, not the name of the
+				temporary file that is the output of the
+				filter command.
+				Not triggered when 'shelltemp' is off.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FilterWritePre}
+@cindex FilterWritePre
+@item FilterWritePre
+フィルタコマンド用のファイルを書き込んだり、差分表示用のファイルを作る前。Vim はフィルタコマンドの出力である一時ファイルの名前ではなく、現在のバッファの名前に対してパターンをチェックする。'@option{shelltemp}' がオフのときは発生しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FocusGained*
+FocusGained			When Vim got input focus.  Only for the GUI
+				version and a few console versions where this
+				can be detected.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FocusGained}
+@cindex FocusGained
+@item FocusGained
+Vim が入力フォーカスを得たとき。GUI 版と、入力フォーカスを認識できるいくつかのコンソール版でのみ有効。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FocusLost*
+FocusLost			When Vim lost input focus.  Only for the GUI
+				version and a few console versions where this
+				can be detected.  May also happen when a
+				dialog pops up.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FocusLost}
+@cindex FocusLost
+@item FocusLost
+Vim が入力フォーカスを失ったとき。GUI 版と、入力フォーカスを認識できるいくつかのコンソール版でのみ有効。ダイアログがポップアップした時に発生するかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*FuncUndefined*
+FuncUndefined			When a user function is used but it isn't
+				defined.  Useful for defining a function only
+				when it's used.  The pattern is matched
+				against the function name.  Both <amatch> and
+				<afile> are set to the name of the function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{FuncUndefined}
+@cindex FuncUndefined
+@item FuncUndefined
+ユーザー定義関数が使われたが、定義されていなかったとき。必要なときのみ関数を定義するのに便利である。パターンは関数名に対して照合される。<amatch> と <afile> の両方とも関数名に設定される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				NOTE: When writing Vim scripts a better
+				alternative is to use an autoloaded function.
+				See |autoload-functions|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Vim script を書くときには autoload 関数を使う方がよい。|autoload-functions| を参照。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*GUIEnter*
+GUIEnter			After starting the GUI successfully, and after
+				opening the window.  It is triggered before
+				VimEnter when using gvim.  Can be used to
+				position the window from a .gvimrc file: >
+	:autocmd GUIEnter * winpos 100 50
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{GUIEnter}
+@cindex GUIEnter
+@item GUIEnter
+GUI の開始に成功し、ウィンドウを開いた後。gvim を使ったときは、VimEnter の前に発生する。ファイル @file{.gvimrc} からウィンドウの配置場所を設定するために使うことができる。
+@example
+:autocmd GUIEnter * winpos 100 50
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<							*GUIFailed*
+GUIFailed			After starting the GUI failed.  Vim may
+				continue to run in the terminal, if possible
+				(only on Unix and alikes, when connecting the
+				X server fails).  You may want to quit Vim: >
+	:autocmd GUIFailed * qall
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{GUIFailed}
+@cindex GUIFailed
+@item GUIFailed
+GUI の開始に失敗した後。可能ならば、Vim はターミナル内で実行を継続する (Unix 系のみ。X サーバーへ接続が失敗したとき)。ここで Vim を終了させるには、次のようにする:
+@example
+:autocmd GUIFailed * qall
+@end example                                
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<							*InsertChange*
+InsertChange			When typing <Insert> while in Insert or
+				Replace mode.  The |v:insertmode| variable
+				indicates the new mode.
+				Be careful not to move the cursor or do
+				anything else that the user does not expect.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{InsertChange}
+@cindex InsertChange
+@item InsertChange
+挿入・置換モードで @kbd{<Insert>} をタイプしたとき。変数 |v:insertmode| が新しいモードを示す。カーソルを移動したりなどユーザーが予期しないことは行わないように注意。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*InsertCharPre*
+InsertCharPre			When a character is typed in Insert mode,
+				before inserting the char.
+				The |v:char| variable indicates the char typed
+				and can be changed during the event to insert
+				a different character.  When |v:char| is set
+				to more than one character this text is
+				inserted literally.
+				It is not allowed to change the text |textlock|.
+				The event is not triggered when 'paste' is
+				set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{InsertCharPre}
+@cindex InsertCharPre
+@item InsertCharPre
+挿入モードで文字が入力されたとき、その文字が挿入される前。|v:char| 変数に入力された文字が入っている。イベント内でそれを変更することで実際に挿入される文字を変更できる。|v:char| に 2 つ以上の文字を入れた場合はそのテキストはそのまま (literally) 挿入される。テキストを変更することはできない |textlock|。このイベントは '@option{paste}' がオンに設定されているときは発行されない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*InsertEnter*
+InsertEnter			Just before starting Insert mode.  Also for
+				Replace mode and Virtual Replace mode.  The
+				|v:insertmode| variable indicates the mode.
+				Be careful not to do anything else that the
+				user does not expect.
+				The cursor is restored afterwards.  If you do
+				not want that set |v:char| to a non-empty
+				string.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{InsertEnter}
+@cindex InsertEnter
+@item InsertEnter
+挿入モード・置換モード・仮想置換モードを開始する直前。変数 |v:insertmode| がモードを示す。ユーザーが予期しないことは行わないように注意。カーソルはコマンド実行後に復元される。復元されたくない場合は |v:char| に非空文字を設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*InsertLeave*
+InsertLeave			When leaving Insert mode.  Also when using
+				CTRL-O |i_CTRL-O|.  But not for |i_CTRL-C|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{InsertLeave}
+@cindex InsertLeave
+@item InsertLeave
+挿入モードを抜けるとき。@kbd{CTRL-O} |i_CTRL-O| を使ったときにも発生する。|i_CTRL-C| のときは発生しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*MenuPopup*
+MenuPopup			Just before showing the popup menu (under the
+				right mouse button).  Useful for adjusting the
+				menu for what is under the cursor or mouse
+				pointer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{MenuPopup}
+@cindex MenuPopup
+@item MenuPopup
+(マウス右ボタンで) ポップアップメニューを表示する直前。カーソル下やマウスポインタの下にあるものによってメニューを調整するのに便利。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				The pattern is matched against a single
+				character representing the mode:
+					n	Normal
+					v	Visual
+					o	Operator-pending
+					i	Insert
+					c	Command line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パターンにはモードを表す文字を記述する:
+@multitable @columnfractions .2 .8
+@item n @tab ノーマル
+@item v @tab ビジュアル
+@item o @tab オペレータ実行待ち
+@item i @tab 挿入
+@item c @tab コマンドライン
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*OptionSet*
+OptionSet			After setting an option.  The pattern is
+				matched against the long option name.
+				The |v:option_old| variable indicates the
+				old option value, |v:option_new| variable
+				indicates the newly set value, the
+				|v:option_type| variable indicates whether
+				it's global or local scoped and |<amatch>|
+				indicates what option has been set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{OptionSet}
+@cindex OptionSet
+@item OptionSet
+オプションが設定された後。パターンは長い (短縮しない) オプション名に対してマッチする。変数 |v:option_old| に変更前の値が格納され、|v:option_new| には新しく設定された値が格納され、|v:option_type| にはオプションの変更のスコープがグローバルかローカルかが格納される。|<amatch>| は対象のオプション名が設定される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				Is not triggered on startup and for the 'key'
+				option for obvious reasons.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{key}' の変更の際にはあえてイベントが発生しないようにしている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				Usage example: Check for the existence of the
+				directory in the 'backupdir' and 'undodir'
+				options, create the directory if it doesn't
+				exist yet.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使用例: '@option{backupdir}' や '@option{undodir}' で指定されたディレクトリが存在しているかチェックし、もしなければディレクトリを作成する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				Note: It's a bad idea to reset an option
+				during this autocommand, this may break a
+				plugin. You can always use `:noa` to prevent
+				triggering this autocommand.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+この自動コマンド中でオプションの値をリセットするのは、プラグインの挙動を破壊するため、良くない。この自動コマンドの実行は `@command{:noa}` を使うことで抑制することができる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*QuickFixCmdPre*
+QuickFixCmdPre			Before a quickfix command is run (|:make|,
+				|:lmake|, |:grep|, |:lgrep|, |:grepadd|,
+				|:lgrepadd|, |:vimgrep|, |:lvimgrep|,
+				|:vimgrepadd|, |:lvimgrepadd|, |:cscope|,
+				|:cfile|, |:cgetfile|, |:caddfile|, |:lfile|,
+				|:lgetfile|, |:laddfile|, |:helpgrep|,
+				|:lhelpgrep|, |:cexpr|, |:cgetexpr|,
+				|:caddexpr|, |:cbuffer|, |:cgetbuffer|,
+				|:caddbuffer|).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{QuickFixCmdPre}
+@cindex QuickFixCmdPre
+@item QuickFixCmdPre
+QuickFix コマンドが実行される前 (|:make|, |:lmake|, |:grep|, |:lgrep|, |:grepadd|, |:lgrepadd|, |:vimgrep|, |:lvimgrep|, |:vimgrepadd|, |:lvimgrepadd|, |:cscope|, |:cfile|, |:cgetfile|, |:caddfile|, |:lfile|, |:lgetfile|, |:laddfile|, |:helpgrep|, |:lhelpgrep|, |:cexpr|, |:cgetexpr|, |:caddexpr|, |:cbuffer|, |:cgetbuffer|, |:caddbuffer|)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				The pattern is matched against the command
+				being run.  When |:grep| is used but 'grepprg'
+				is set to "internal" it still matches "grep".
+				This command cannot be used to set the
+				'makeprg' and 'grepprg' variables.
+				If this command causes an error, the quickfix
+				command is not executed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パターンには実行されるコマンドを記述する。|:grep| が書かれていると、'@option{grepprg}' が "@var{internal}" にセットされていても実行される。このコマンドを使って変数 'makeprg' と'grepprg' を設定することはできない。このコマンドでエラーになると QuickFix コマンドは実行されない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*QuickFixCmdPost*
+QuickFixCmdPost			Like QuickFixCmdPre, but after a quickfix
+				command is run, before jumping to the first
+				location. For |:cfile| and |:lfile| commands
+				it is run after error file is read and before
+				moving to the first error.
+				See |QuickFixCmdPost-example|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{QuickFixCmdPost}
+@cindex QuickFixCmdPost
+@item QuickFixCmdPost
+QuickFixCmdPre と同様だが、QuickFix コマンドが実行された後、最初の位置にジャンプする前に発生する。|:cfile| コマンドと |:lfile| コマンドの場合はイベントはエラーファイルを読み込んだ後、最初のエラーに移動する前に実行される。|QuickFixCmdPost-example| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*QuitPre*
+QuitPre				When using `:quit`, `:wq` or `:qall`, before
+				deciding whether it closes the current window
+				or quits Vim.  Can be used to close any
+				non-essential window if the current window is
+				the last ordinary window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{QuitPre}
+@cindex QuitPre
+@item QuitPre
+`@command{:quit}`, `@command{:wq}`, `@command{:qall}` を使ったとき、カレントウィンドウを閉じるのか、Vim を終了するのかを決定する前に発行される。例えば、普通のウィンドウがカレントウィンドウだけだったときに、他の余分なウィンドウを閉じることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*RemoteReply*
+RemoteReply			When a reply from a Vim that functions as
+				server was received |server2client()|.  The
+				pattern is matched against the {serverid}.
+				<amatch> is equal to the {serverid} from which
+				the reply was sent, and <afile> is the actual
+				reply string.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{RemoteReply}
+@cindex RemoteReply
+@item RemoteReply
+サーバーとして働く Vim からの応答を受け取ったとき |server2client()|。パターンは @{serverid@} に対して照合される。<amatch> は応答が送られてきたサーバーの @{serverid@} になり、<afile> は応答の実際の内容になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				Note that even if an autocommand is defined,
+				the reply should be read with |remote_read()|
+				to consume it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+これに自動コマンドを定義したときも、応答を読み込むのには、読み込んだ応答を処理できるように関数 |remote_read()| を使うべきであることに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*SessionLoadPost*
+SessionLoadPost			After loading the session file created using
+				the |:mksession| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{SessionLoadPost}
+@cindex SessionLoadPost
+@item SessionLoadPost
+|:mksession| で作られたセッションファイルを読み込んだ後。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*ShellCmdPost*
+ShellCmdPost			After executing a shell command with |:!cmd|,
+				|:shell|, |:make| and |:grep|.  Can be used to
+				check for any changed files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ShellCmdPost}
+@cindex ShellCmdPost
+@item ShellCmdPost
+|:!cmd|, |:shell|, |:make|, |:grep| を使ってシェルコマンドを実行した後。変更されたファイルをチェックするのに使える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*ShellFilterPost*
+ShellFilterPost			After executing a shell command with
+				":{range}!cmd", ":w !cmd" or ":r !cmd".
+				Can be used to check for any changed files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ShellFilterPost}
+@cindex ShellFilterPost
+@item ShellFilterPost
+"@command{:@{range@}!cmd}", "@command{:w !cmd}", "@command{:r !cmd}" を使ってシェルコマンドを実行した後。変更されたファイルをチェックするのに使える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*SourcePre*
+SourcePre			Before sourcing a Vim script. |:source|
+				<afile> is the name of the file being sourced.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{SourcePre}
+@cindex SourcePre
+@item SourcePre
+Vim script を読み込む前。|:source| <afile> は読み込まれるファイルの名前となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*SourceCmd*
+SourceCmd			When sourcing a Vim script. |:source|
+				<afile> is the name of the file being sourced.
+				The autocommand must source this file.
+				|Cmd-event|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{SourceCmd}
+@cindex SourceCmd
+@item SourceCmd
+Vim script を読み込むとき。|:source| <afile> は読み込まれるファイルの名前となる。この自動コマンドはこのファイルを読み込まねばならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*SpellFileMissing*
+SpellFileMissing		When trying to load a spell checking file and
+				it can't be found.  The pattern is matched
+				against the language.  <amatch> is the
+				language, 'encoding' also matters.  See
+				|spell-SpellFileMissing|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{SpellFileMissing}
+@cindex SpellFileMissing
+@item SpellFileMissing
+スペルチェックファイルを読み込もうとしたが、見つからなかったとき。パターンは言語に対して照合される。<amatch> は言語。'@option{encoding}' も関係する。|spell-SpellFileMissing| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*StdinReadPost*
+StdinReadPost			After reading from the stdin into the buffer,
+				before executing the modelines.  Only used
+				when the "-" argument was used when Vim was
+				started |--|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{StdinReadPost}
+@cindex StdinReadPost
+@item StdinReadPost
+標準入力からバッファへ読み込んだ後で、モードラインを実行する前。Vim を開始したときに引数 "-" が使われた場合のみ使われる (|@samp{--}| 参照)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*StdinReadPre*
+StdinReadPre			Before reading from stdin into the buffer.
+				Only used when the "-" argument was used when
+				Vim was started |--|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{StdinReadPre}
+@cindex StdinReadPre
+@item StdinReadPre
+標準入力からバッファへ読み込む前。Vim を開始したときに引数 "-" が指定された場合のみ使われる (|@samp{--}| 参照)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*SwapExists*
+SwapExists			Detected an existing swap file when starting
+				to edit a file.  Only when it is possible to
+				select a way to handle the situation, when Vim
+				would ask the user what to do.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{SwapExists}
+@cindex SwapExists
+@item SwapExists
+ファイルの編集を始めようとしてスワップファイルが存在することを検出したとき。この状況に対応する方法を選択できるときだけユーザーにどうするか問い合わせる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				The |v:swapname| variable holds the name of
+				the swap file found, <afile> the file being
+				edited.  |v:swapcommand| may contain a command
+				to be executed in the opened file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+変数 |v:swapname| が見つかったスワップファイルの名前を保持する。<afile> は編集しようとしているファイルである。|v:swapcommand| が開かれたファイルで実行するコマンドを含んでいるかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				The commands should set the |v:swapchoice|
+				variable to a string with one character to
+				tell Vim what should be done next:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドは変数 |v:swapchoice| を Vim が次にどうするべきかを示す 1 文字の文字列にセットしなければならない:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+					'o'	open read-only
+					'e'	edit the file anyway
+					'r'	recover
+					'd'	delete the swap file
+					'q'	quit, don't edit the file
+					'a'	abort, like hitting CTRL-C
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item 'o' @tab 読み込み専用で開く
+@item 'e' @tab とにかくファイルを編集する
+@item 'r' @tab 復元する
+@item 'd' @tab スワップファイルを削除する
+@item 'q' @tab ファイルを編集せずに終了する
+@item 'a' @tab @kbd{CTRL-C} を押したのと同様に強制終了する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				When set to an empty string the user will be
+				asked, as if there was no SwapExists autocmd.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これが空文字列にセットされると、自動コマンド SwapExists が存在しないときと同様にユーザーに問い合わせをする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*E812*
+				It is not allowed to change to another buffer,
+				change a buffer name or change directory
+				here.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E812}
+@cindex E812
+ここでは他のバッファに切り替えること、バッファ名を変更すること、ディレクトリを変更することは許可されていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*Syntax*
+Syntax				When the 'syntax' option has been set.  The
+				pattern is matched against the syntax name.
+				<afile> can be used for the name of the file
+				where this option was set, and <amatch> for
+				the new value of 'syntax'.
+				See |:syn-on|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{Syntax}
+@cindex Syntax
+@item Syntax
+オプション '@option{syntax}' が設定されたとき。パターンは構文名に対して照合される。<afile> は '@option{syntax}' が設定されたファイルの名前として使える。<amatch> は '@option{syntax}' の新しい値として使える。|:syn-on| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*TabClosed*
+TabClosed			After closing a tab page.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{TabClosed}
+@cindex TabClosed
+@item TabClosed
+タブページを閉じた後。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*TabEnter*
+TabEnter			Just after entering a tab page. |tab-page|
+				After triggering the WinEnter and before
+				triggering the BufEnter event.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{TabEnter}
+@cindex TabEnter
+@item TabEnter
+タブページに入った直後 |tab-page|。WinEnter が発生した後、BufEnter が発生する前。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*TabLeave*
+TabLeave			Just before leaving a tab page. |tab-page|
+				A WinLeave event will have been triggered
+				first.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{TabLeave}
+@cindex TabLeave
+@item TabLeave
+タブページを離れる直前 |tab-page|。最初に WinLeave が発生する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*TabNew*
+TabNew				When a tab page was created. |tab-page|
+				A WinEnter event will have been triggered
+				first, TabEnter follows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{TabNew}
+@cindex TabNew
+@item TabNew
+タブページが作成されたとき。|tab-page| WinEnter イベントが最初にトリガーされ、TabEnter が実行される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*TermChanged*
+TermChanged			After the value of 'term' has changed.  Useful
+				for re-loading the syntax file to update the
+				colors, fonts and other terminal-dependent
+				settings.  Executed for all loaded buffers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{TermChanged}
+@cindex TermChanged
+@item TermChanged
+オプション '@option{term}' を変更した後。色やフォント等、ターミナル依存の設定を更新するために構文定義ファイルを再読み込みするのに便利である。読み込まれたバッファ全てで発生する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*TermResponse*
+TermResponse			After the response to |t_RV| is received from
+				the terminal.  The value of |v:termresponse|
+				can be used to do things depending on the
+				terminal version.  Note that this event may be
+				triggered halfway executing another event,
+				especially if file I/O, a shell command or
+				anything else that takes time is involved.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{TermResponse}
+@cindex TermResponse
+@item TermResponse
+|t_RV| に対する応答をターミナルから受け取ったとき。Vim 変数 |v:termresponse| の値を使って、ターミナルのバージョンに応じた処理ができる。
+@quotation
+@strong{Note:} @*
+このイベントは他のイベントの処理中にも発行されることがある。特に、ファイル入出力、シェルコマンドの実行、時間の掛かる処理など。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*TextChanged*
+TextChanged			After a change was made to the text in the
+				current buffer in Normal mode.  That is when
+				|b:changedtick| has changed.
+				Not triggered when there is typeahead or when
+				an operator is pending.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{TextChanged}
+@cindex TextChanged
+@item TextChanged
+ノーマルモードでカレントバッファのテキストが変更されたとき。つまり |b:changedtick| が更新されるとき。未処理のキー入力がまだあるとき、またはオペレータを待機しているときは、発生しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				Careful: This is triggered very often, don't
+				do anything that the user does not expect or
+				that is slow.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Careful:} @*
+このイベントは頻繁に発生するので、ユーザーが予期しないことや時間のかかる処理は行わないこと。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*TextChangedI*
+TextChangedI			After a change was made to the text in the
+				current buffer in Insert mode.
+				Not triggered when the popup menu is visible.
+				Otherwise the same as TextChanged.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{TextChangedI}
+@cindex TextChangedI
+@item TextChangedI
+挿入モードでカレントバッファのテキストが変更されたとき。ポップアップメニューが表示されているときは発生しない。他は TextChanged と同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*User*
+User				Never executed automatically.  To be used for
+				autocommands that are only executed with
+				":doautocmd".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{User}
+@cindex User
+@item User
+自動的に実行されることはない。コマンド "@command{:doautocmd}" によってのみ実行される自動コマンドのために使用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*UserGettingBored*
+UserGettingBored		When the user presses the same key 42 times.
+				Just kidding! :-)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{UserGettingBored}
+@cindex UserGettingBored
+@item UserGettingBored
+ユーザーが同じキーを 42 回押したとき。ただの冗談！ :-)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*VimEnter*
+VimEnter			After doing all the startup stuff, including
+				loading .vimrc files, executing the "-c cmd"
+				arguments, creating all windows and loading
+				the buffers in them.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{VimEnter}
+@cindex VimEnter
+@item VimEnter
+ファイル @file{.vimrc} の読み込みを含む、全てのスタートアップ処理を行い、"-c cmd" の引数を実行し、全てのウィンドウを構築し、それらにバッファを読み込んだ後。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				Just before this event is triggered the
+				|v:vim_did_enter| variable is set, so that you
+				can do: >
+				   if v:vim_did_enter
+				     call s:init()
+				   else
+ 	  			     au VimEnter * call s:init()
+				   endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このイベントがトリガーされる直前に、|v:vim_did_enter| 変数が設定されているので、以下のことができる:
+@verbatim
+if v:vim_did_enter
+  call s:init()
+else
+  au VimEnter * call s:init()
+endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<							*VimLeave*
+VimLeave			Before exiting Vim, just after writing the
+				.viminfo file.  Executed only once, like
+				VimLeavePre.
+				To detect an abnormal exit use |v:dying|.
+				When v:dying is 2 or more this event is not
+				triggered.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{VimLeave}
+@cindex VimLeave
+@item VimLeave
+Vim を終了する前で、ファイル @file{.viminfo} を書き込んだ後。VimLeavePre のように、ただ 1 度だけ実行される。異常終了の検出には |v:dying| を使うこと。終了時に v:dying が 2 以上のときはこのイベントは発生しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*VimLeavePre*
+VimLeavePre			Before exiting Vim, just before writing the
+				.viminfo file.  This is executed only once,
+				if there is a match with the name of what
+				happens to be the current buffer when exiting.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{VimLeavePre}
+@cindex VimLeavePre
+@item VimLeavePre
+Vim を終了する前で、ファイル @file{.viminfo} を書き込む直前。これは終了時にたまたまカレントバッファになったバッファの名前とマッチしたときに、ただ 1 度だけ実行される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				Mostly useful with a "*" pattern. >
+	:autocmd VimLeavePre * call CleanupStuff()
+<				To detect an abnormal exit use |v:dying|.
+				When v:dying is 2 or more this event is not
+				triggered.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+大抵、パターンには "*" を使うと便利である。
+@example
+:autocmd VimLeavePre * call CleanupStuff()
+@end example
+異常終了の検出には |v:dying| を使うこと。終了時に v:dying が 2 以上のときはこのイベントは発生しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*VimResized*
+VimResized			After the Vim window was resized, thus 'lines'
+				and/or 'columns' changed.  Not when starting
+				up though.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{VimResized}
+@cindex VimResized
+@item VimResized
+Vim ウィンドウのサイズが変わったとき。よって 'lines' と 'columns' が変更される。しかし開始時には発生しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*WinEnter*
+WinEnter			After entering another window.  Not done for
+				the first window, when Vim has just started.
+				Useful for setting the window height.
+				If the window is for another buffer, Vim
+				executes the BufEnter autocommands after the
+				WinEnter autocommands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{WinEnter}
+@cindex WinEnter
+@item WinEnter
+別のウィンドウに入った後。Vim の開始直後、1 個目のウィンドウに入ったときは発生しない。ウィンドウの高さを設定するのに便利である。そのウィンドウで他のバッファを開いていたときは、イベント WinEnter の後に BufEnter が発生する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				Note: When using ":split fname" the WinEnter
+				event is triggered after the split but before
+				the file "fname" is loaded.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"@command{:split fname}" を実行したとき、WinEnter が発生するのは、ウィンドウ分割の後だがファイル "fname" が読み込まれる前の時点である。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*WinLeave*
+WinLeave			Before leaving a window.  If the window to be
+				entered next is for a different buffer, Vim
+				executes the BufLeave autocommands before the
+				WinLeave autocommands (but not for ":new").
+				Not used for ":qa" or ":q" when exiting Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{WinLeave}
+@cindex WinLeave
+@item WinLeave
+ウィンドウを離れる前。次に入るウィンドウで他のバッファを開いていたときは、イベント WinLeave の前に BufLeave が発生する (ただし "@command{:new}" を使ったときはそうならない)。"@command{:qa}" や "@command{q}" で Vim を終了するときには発生しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*WinNew*
+WinNew				When a new window was created.  Not done for
+				the first window, when Vim has just started.
+				Before a WinEnter event.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{WinNew}
+@cindex WinNew
+@item WinNew
+新しいウィンドウが作成されたとき。Vim がちょうど開始したとき、最初のウィンドウのためには行われない。WinEnter イベントの前。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Patterns					*autocmd-patterns* *{pat}*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-patterns}
+@anchor{@{pat@}}
+@cindex autocmd-patterns
+@cindex @{pat@}
+@section 6. パターン
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The {pat} argument can be a comma separated list.  This works as if the
+command was given with each pattern separately.  Thus this command: >
+	:autocmd BufRead *.txt,*.info set et
+Is equivalent to: >
+	:autocmd BufRead *.txt set et
+	:autocmd BufRead *.info set et
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数 @{pat@} にはコンマ区切りのリストを指定することができる。これによりコマンドは指定されたそれぞれのパターンについて実行される。例えばこのコマンド:
+@example
+:autocmd BufRead *.txt,*.info set et
+@end example
+は下記と等しくなる:
+@example
+:autocmd BufRead *.txt set et
+:autocmd BufRead *.info set et
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The file pattern {pat} is tested for a match against the file name in one of
+two ways:
+1. When there is no '/' in the pattern, Vim checks for a match against only
+   the tail part of the file name (without its leading directory path).
+2. When there is a '/' in the pattern, Vim checks for a match against both the
+   short file name (as you typed it) and the full file name (after expanding
+   it to a full path and resolving symbolic links).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルパターン @{pat@} がファイル名とマッチするかどうかは、2 通りの方法で調べられる。
+@enumerate
+@item パターンに '/' が含まれないとき: Vim はファイル名の後ろの部分からのみマッチを調べる (ファイル名の前につくディレクトリパスは除く)。
+@item パターンに '/' が含まれるとき: Vim は短いファイル名 (ユーザーが打ち込んだもの) と長いファイル名 (短いファイル名をフルパスに展開し、シンボリックリンクならその実体を探したもの) との両方から一致を調べる。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The special pattern <buffer> or <buffer=N> is used for buffer-local
+autocommands |autocmd-buflocal|.  This pattern is not matched against the name
+of a buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特殊なパターン <buffer> または <buffer=N> はバッファローカルな自動コマンド |autocmd-buflocal| で使われる。このパターンはバッファの名前に対してはマッチしない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples: >
+	:autocmd BufRead *.txt		set et
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:autocmd BufRead *.txt          set et
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Set the 'et' option for all text files. >
+
+	:autocmd BufRead /vim/src/*.c	set cindent
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+全てのテキストファイルに対しオプション '@option{expandtab}' をオンにする。
+@example
+:autocmd BufRead /vim/src/*.c	set cindent
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Set the 'cindent' option for C files in the /vim/src directory. >
+
+	:autocmd BufRead /tmp/*.c	set ts=5
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ディレクトリ /vim/src 内の C 言語ファイルに対しオプション '@option{cindent}' をオンにする。
+@example
+:autocmd BufRead /tmp/*.c       set ts=5
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+If you have a link from "/tmp/test.c" to "/home/nobody/vim/src/test.c", and
+you start editing "/tmp/test.c", this autocommand will match.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"/tmp/test.c" から "/home/nobody/vim/src/test.c" にリンクを張っていると、"/tmp/test.c" の編集を始めたとき、この自動コマンドは実行される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note:  To match part of a path, but not from the root directory, use a '*' as
+the first character.  Example: >
+	:autocmd BufRead */doc/*.txt	set tw=78
+This autocommand will for example be executed for "/tmp/doc/xx.txt" and
+"/usr/home/piet/doc/yy.txt".  The number of directories does not matter here.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+パスの途中だけにマッチさせ、ルートディレクトリにマッチさせたくないときは、最初の1文字目に '*' を使う。例:
+@example
+:autocmd BufRead */doc/*.txt    set tw=78
+@end example
+この自動コマンドは、例えば "/tmp/doc/xx.txt" や "/usr/home/piet/doc/yy.txt" にマッチする。ここで、ディレクトリの深さは関係ない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The file name that the pattern is matched against is after expanding
+wildcards.  Thus if you issue this command: >
+	:e $ROOTDIR/main.$EXT
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パターンがマッチするファイル名は、ワイルドカードを展開した後のものである。そのため、次のコマンドを実行すると
+@example
+:e $ROOTDIR/main.$EXT
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The argument is first expanded to: >
+	/usr/root/main.py
+Before it's matched with the pattern of the autocommand.  Careful with this
+when using events like FileReadCmd, the value of <amatch> may not be what you
+expect.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+まずコマンドの引数は、ファイル名が自動コマンドのパターンにマッチする前に、次のように展開される。
+@example
+/usr/root/main.py
+@end example
+イベント FileReadCmd 等を使うときにはこれに注意すること。<amatch> の値が、ユーザーの予期するものと違うかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Environment variables can be used in a pattern: >
+	:autocmd BufRead $VIMRUNTIME/doc/*.txt  set expandtab
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+パターンの中で環境変数を使うこともできる。
+@example
+:autocmd BufRead $VIMRUNTIME/doc/*.txt  set expandtab
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+And ~ can be used for the home directory (if $HOME is defined): >
+	:autocmd BufWritePost ~/.vimrc   so ~/.vimrc
+	:autocmd BufRead ~archive/*      set readonly
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+環境変数 $HOME が定義されているなら、~ をホームディレクトリとして使うこともできる。
+@example
+:autocmd BufWritePost ~/.vimrc   so ~/.vimrc
+:autocmd BufRead ~archive/*      set readonly
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The environment variable is expanded when the autocommand is defined, not when
+the autocommand is executed.  This is different from the command!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+環境変数は、自動コマンドが定義されるときに展開される。自動コマンドが実行されるときではない。これは command とは違っている！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*file-pattern*
+The pattern is interpreted like mostly used in file names:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{file-pattern}
+@cindex file-pattern
+パターンの解釈方法は、ファイル名の解釈方法と大体同じである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	*	matches any sequence of characters; Unusual: includes path
+		separators
+	?	matches any single character
+	\?	matches a '?'
+	.	matches a '.'
+	~	matches a '~'
+	,	separates patterns
+	\,	matches a ','
+	{ }	like \( \) in a |pattern|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item * @tab はあらゆる文字の列にマッチ。注意: パス区切り文字も含まれる。
+@item ? @tab はあらゆる 1 文字にマッチ
+@item \? @tab は '?' にマッチ
+@item .	@tab は'.' にマッチ
+@item ~	@tab は'~' にマッチ
+@item ,	@tab はパターンを分割する
+@item \,@tab は ',' にマッチ
+@item @{ @} @tab は |pattern| の \( \) と同様
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	,	inside { }: like \| in a |pattern|
+	\}	literal }
+	\{	literal {
+	\\\{n,m\}  like \{n,m} in a |pattern|
+	\	special meaning like in a |pattern|
+	[ch]	matches 'c' or 'h'
+	[^ch]   match any character but 'c' and 'h'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item , @tab ('@{' '@}' の内側では) |pattern| の \| と同様
+@item \@} @tab リテラルの @}
+@item \@{ @tab リテラルの @{
+@item \\\@{n,m\@} @tab |pattern| の \@{n,m@} と同様
+@item \ @tab は |pattern| で使われるものと同様の特別な意味を持つ
+@item [ch] @tab は 'c' または 'h' にマッチ
+@item [^ch] @tab は 'c' と 'h' 以外の文字にマッチ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that for all systems the '/' character is used for path separator (even
+MS-DOS and OS/2).  This was done because the backslash is difficult to use
+in a pattern and to make the autocommands portable across different systems.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+'/' という文字は、全てのシステムでパスの区切り文字に使われることに注意すること (MS-DOS と OS/2 でさえも)。これは、パターン内でバックスラッシュを使うことが難しい上に、別々のシステムでも自動コマンドが動作するようにするためである。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is possible to use |pattern| items, but they may not work as expected,
+because of the translation done for the above.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|pattern| を使うことができる。上記の翻訳が行われているため、期待通りに機能しない可能性がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*autocmd-changes*
+Matching with the pattern is done when an event is triggered.  Changing the
+buffer name in one of the autocommands, or even deleting the buffer, does not
+change which autocommands will be executed.  Example: >
+
+	au BufEnter *.foo  bdel
+	au BufEnter *.foo  set modified
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-changes}
+@cindex autocmd-changes
+パターンマッチの検索は、イベントの発生時に行われる。自動コマンドのどれかでバッファ名を変更しても、それどころかバッファを削除しても、実行される 自動コマンドは変わらない。例:
+@example
+au BufEnter *.foo  bdel
+au BufEnter *.foo  set modified
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will delete the current buffer and then set 'modified' in what has become
+the current buffer instead.  Vim doesn't take into account that "*.foo"
+doesn't match with that buffer name.  It matches "*.foo" with the name of the
+buffer at the moment the event was triggered.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはカレントバッファを削除し、代わりにカレントバッファになったバッファ内でオプション '@option{modified}' をオンにする。Vim は "*.foo" が新しいカレントバッファのバッファ名にマッチしなくとも気にしない。"*.foo" はイベントが発生した時点でのバッファ名にマッチする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+However, buffer-local autocommands will not be executed for a buffer that has
+been wiped out with |:bwipe|.  After deleting the buffer with |:bdel| the
+buffer actually still exists (it becomes unlisted), thus the autocommands are
+still executed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+しかし、|:bwipe| でワイプアウトされたバッファに対しては、バッファローカルな自動コマンドは実行されない。|:bdel| で削除されたバッファは実際にはまだ存在している (リストされなくなっただけ) なので、自動コマンドは実行される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. Buffer-local autocommands	*autocmd-buflocal* *autocmd-buffer-local*
+					*<buffer=N>* *<buffer=abuf>* *E680*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-buflocal}
+@anchor{autocmd-buffer-local}
+@anchor{<buffer=N>}
+@anchor{<buffer=abuf>}
+@anchor{E680}
+@cindex autocmd-buflocal
+@cindex autocmd-buffer-local
+@cindex <buffer=N>
+@cindex <buffer=abuf>
+@cindex E680
+@section 7. バッファローカルな自動コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Buffer-local autocommands are attached to a specific buffer.  They are useful
+if the buffer does not have a name and when the name does not match a specific
+pattern.  But it also means they must be explicitly added to each buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファローカルな自動コマンドは特定のバッファに結びつけられている。これは名前を持たないバッファや特定のパターンにマッチしない名前のバッファに使うと便利である。しかしそれぞれのバッファに明示的に追加する必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Instead of a pattern buffer-local autocommands use one of these forms:
+	<buffer>	current buffer
+	<buffer=99>	buffer number 99
+	<buffer=abuf>	using <abuf> (only when executing autocommands)
+			|<abuf>|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファローカルな自動コマンドはパターンの代わりに以下の形式のどれかを使う:
+@multitable @columnfractions .3 .7
+@item <buffer> @tab カレントバッファ
+@item <buffer=99> @tab バッファ番号99
+@item <buffer=abuf> @tab <abuf> の使用(自動コマンドを実行するときのみ) |<abuf>|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples: >
+    :au CursorHold <buffer>  echo 'hold'
+    :au CursorHold <buffer=33>  echo 'hold'
+    :au BufNewFile * au CursorHold <buffer=abuf>  echo 'hold'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:au CursorHold <buffer>  echo 'hold'
+:au CursorHold <buffer=33>  echo 'hold'
+:au BufNewFile * au CursorHold <buffer=abuf>  echo 'hold'
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All the commands for autocommands also work with buffer-local autocommands,
+simply use the special string instead of the pattern.  Examples: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動コマンドに対するコマンドは全てバッファローカルな自動コマンドに対しても機能する。パターンの代わりに特別な文字列を使う。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    :au! * <buffer>		     " remove buffer-local autocommands for
+				     " current buffer
+    :au! * <buffer=33>		     " remove buffer-local autocommands for
+				     " buffer #33
+    :bufdo :au! CursorHold <buffer>  " remove autocmd for given event for all
+				     " buffers
+    :au * <buffer>		     " list buffer-local autocommands for
+				     " current buffer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item :au! * <buffer> @tab カレントバッファのバッファローカル自動コマンドを削除する
+@item :au! * <buffer=33> @tab バッファ#33のバッファローカル自動コマンドを削除する。
+@item :bufdo :au! CursorHold <buffer> @tab 全バッファから指定されたイベントに対する自動コマンドを削除する
+@item :au * <buffer> @tab カレントバッファのバッファローカル自動コマンドをリストする
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that when an autocommand is defined for the current buffer, it is stored
+with the buffer number.  Thus it uses the form "<buffer=12>", where 12 is the
+number of the current buffer.  You will see this when listing autocommands,
+for example.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+カレントバッファに対して自動コマンドを定義するとき、それがバッファ番号とともに保存されることに注意。つまりカレントバッファ番号が 12 なら "<buffer=12>" という形になる。例えば自動コマンドをリストするときこの形式で表示される。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To test for presence of buffer-local autocommands use the |exists()| function
+as follows: >
+    :if exists("#CursorHold#<buffer=12>") | ... | endif
+    :if exists("#CursorHold#<buffer>") | ... | endif    " for current buffer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファローカル自動コマンドが存在するかを判定するには関数 |exists()| を次のように使う:
+@example
+:if exists("#CursorHold#<buffer=12>") | ... | endif
+:if exists("#CursorHold#<buffer>") | ... | endif    " for current buffer
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When a buffer is wiped out its buffer-local autocommands are also gone, of
+course.  Note that when deleting a buffer, e.g., with ":bdel", it is only
+unlisted, the autocommands are still present.  In order to see the removal of
+buffer-local autocommands: >
+    :set verbose=6
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファがワイプアウトされると当然バッファローカル自動コマンドも失われる。":bdel" などでバッファを削除するときは、それがリストからなくなるだけで、自動コマンドはまだ存在していることに注意。バッファローカル自動コマンドの削除を表示させるにはこうする:
+@example
+:set verbose=6
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is not possible to define buffer-local autocommands for a non-existent
+buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+存在しないバッファに対してバッファローカル自動コマンドを定義することはできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+8. Groups						*autocmd-groups*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-groups}
+@cindex autocmd-groups
+@section 8. グループ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Autocommands can be put together in a group.  This is useful for removing or
+executing a group of autocommands.  For example, all the autocommands for
+syntax highlighting are put in the "highlight" group, to be able to execute
+":doautoall highlight BufRead" when the GUI starts.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動コマンドはグループにまとめることができる。これは一連の自動コマンドを取り除いたり実行したりする際に便利である。例えば、構文強調表示のための全ての自動コマンドはグループ "highlight" に入っていて、GUIの 開始時に "@command{:doautoall highlight BufRead}" で実行できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When no specific group is selected, Vim uses the default group.  The default
+group does not have a name.  You cannot execute the autocommands from the
+default group separately; you can execute them only by executing autocommands
+for all groups.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特定のグループが選択されないとき、既定のグループが使われる。既定のグループには名前がない。既定のグループから個別に自動コマンドを実行することはできない。それらを実行できるのは、全てのグループに対する自動コマンドを実行するときのみである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Normally, when executing autocommands automatically, Vim uses the autocommands
+for all groups.  The group only matters when executing autocommands with
+":doautocmd" or ":doautoall", or when defining or deleting autocommands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+普通、自動コマンドを自動的に実行するときは、全てのグループに対する 自動コマンドが使われる。グループが問題になってくるのは、"@command{:doautocmd}" や "@command{:doautoall}" によって自動コマンドを実行するときと、自動コマンドを定義したり削除するときである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The group name can contain any characters except white space.  The group name
+"end" is reserved (also in uppercase).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+グループ名には空白を除く全ての文字が使える。"end" というグループ名は予約語になっている (大文字も)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The group name is case sensitive.  Note that this is different from the event
+name!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+グループ名では大文字と小文字を区別して扱う。イベントの名前とは違うことに注意すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:aug* *:augroup*
+:aug[roup] {name}		Define the autocmd group name for the
+				following ":autocmd" commands.  The name "end"
+				or "END" selects the default group.
+				To avoid confusion, the name should be
+				different from existing {event} names, as this
+				most likely will not do what you intended.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:aug}
+@anchor{:augroup}
+@cindex :aug
+@cindex :augroup
+@item :aug[roup] @{name@}
+後に続くコマンド "@command{:autocmd}" のためのグループ名を定義する。@{name@} を "end" や "END" にすると既定のグループが選ばれる。混乱を避けるため、既存の @{event@} の名前とは違う名前をつけるべきである。これはたいてい意図しない動作を引き起こす。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*:augroup-delete* *E367* *W19* *E936*
+:aug[roup]! {name}		Delete the autocmd group {name}.  Don't use
+				this if there is still an autocommand using
+				this group!  You will get a warning if doing
+				it anyway. when the group is the current group
+				you will get error E936.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:augroup-delete}
+@anchor{E367}
+@anchor{W19}
+@anchor{E936}
+@cindex :augroup-delete
+@cindex E367
+@cindex W19
+@cindex E936
+@item :aug[roup]! @{name@}
+自動コマンドのグループ @{name@} を削除する。そのグループを使っている自動コマンドがまだあるなら、これは使わないこと！その点はチェックされない。とにかくそれをしたら、警告が表示される。グループが現在のグループの場合、エラー E936 が表示される。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To enter autocommands for a specific group, use this method:
+1. Select the group with ":augroup {name}".
+2. Delete any old autocommands with ":au!".
+3. Define the autocommands.
+4. Go back to the default group with "augroup END".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特定のグループとして自動コマンドを定義するには、次の手順に従うこと。
+@enumerate
+@item "@command{:augroup @{name@}}" によってグループを選択する。
+@item "@command{:au!}" によって古い自動コマンドを全て消去する。
+@item 自動コマンドを定義する。
+@item "@command{:augroup END}" によって既定のグループに戻る。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example: >
+	:augroup uncompress
+	:  au!
+	:  au BufEnter *.gz	%!gunzip
+	:augroup END
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:augroup uncompress
+:  au!
+:  au BufEnter *.gz     %!gunzip
+:augroup END
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This prevents having the autocommands defined twice (e.g., after sourcing the
+.vimrc file again).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これで自動コマンドを (例えばファイル @file{.vimrc} を再び読み込んだ後) 2 回定義することが防げる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+9. Executing autocommands				*autocmd-execute*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-execute}
+@cindex autocmd-execute
+@section 9. 自動コマンドの実行
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim can also execute Autocommands non-automatically.  This is useful if you
+have changed autocommands, or when Vim has executed the wrong autocommands
+(e.g., the file pattern match was wrong).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動コマンドは「自動的」でなくとも実行できる。これはあなたが自動コマンドを変更したときや、間違った自動コマンドが実行されたとき (つまりファイルパターンのマッチングが間違っていたとき) に便利である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the 'eventignore' option applies here too.  Events listed in this
+option will not cause any commands to be executed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+オプション '@option{eventignore}' はここにも適用されることに注意。ここに列挙されたイベントでは、どんな自動コマンドも実行されない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*:do* *:doau* *:doautocmd* *E217*
+:do[autocmd] [<nomodeline>] [group] {event} [fname]
+			Apply the autocommands matching [fname] (default:
+			current file name) for {event} to the current buffer.
+			You can use this when the current file name does not
+			match the right pattern, after changing settings, or
+			to execute autocommands for a certain event.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:do}
+@anchor{:doau}
+@anchor{:doautocmd}
+@anchor{E217}
+@cindex :do
+@cindex :doau
+@cindex :doautocmd
+@cindex E217
+@item :do[autocmd] [<nomodeline>] [group] @{event@} [fname]
+[fname] (省略するとカレントファイルの名前) にマッチする、@{event@} のための自動コマンドをカレントバッファに適用する。カレントファイル名が正しいファイルパターンにマッチしないときや設定を変えた後、またはあるイベントのために自動コマンドを実行するために使用できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			It's possible to use this inside an autocommand too,
+			so you can base the autocommands for one extension on
+			another extension.  Example: >
+				:au BufEnter *.cpp so ~/.vimrc_cpp
+				:au BufEnter *.cpp doau BufEnter x.c
+<			Be careful to avoid endless loops.  See
+			|autocmd-nested|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これを自動コマンドの内部で実行することも可能である。だから、ある拡張子用の自動コマンドを元にして別の拡張子用のものを作ることができる。例:
+@example
+:au BufEnter *.cpp so ~/.vimrc_cpp
+:au BufEnter *.cpp doau BufEnter x.c
+@end example
+無限の循環に陥らないよう注意すること。また |autocmd-nested| を参照すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			When the [group] argument is not given, Vim executes
+			the autocommands for all groups.  When the [group]
+			argument is included, Vim executes only the matching
+			autocommands for that group.  Note: if you use an
+			undefined group name, Vim gives you an error message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数 [group] が省かれると、全てのグループの自動コマンドが実行される。[group] が指定されると、それにマッチするグループの自動コマンドのみが実行される。
+@quotation
+@strong{Note:} @*
+定義されていないグループ名を使うと、エラーメッセージが表示される。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*<nomodeline>*
+			After applying the autocommands the modelines are
+			processed, so that their settings overrule the
+			settings from autocommands, like what happens when
+			editing a file. This is skipped when the <nomodeline>
+			argument is present. You probably want to use
+			<nomodeline> for events that are not used when loading
+			a buffer, such as |User|.
+			Processing modelines is also skipped when no
+			matching autocommands were executed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<nomodeline>}
+@cindex <nomodeline>
+自動コマンドを適用した後にモードラインが処理される。ファイルを編集するときと同じように、自動コマンドでなされた設定を上書きするためである。<nomodeline> が指定されている場合はモードラインは処理されない。バッファのロード以外で使われるイベント (例えば |User|) などは <nomodeline> を指定したほうがよいかもしれない。一致する自動コマンドが実行されなかった場合も、モードラインの処理はスキップされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:doautoa* *:doautoall*
+:doautoa[ll] [<nomodeline>] [group] {event} [fname]
+			Like ":doautocmd", but apply the autocommands to each
+			loaded buffer.  Note that [fname] is used to select
+			the autocommands, not the buffers to which they are
+			applied.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:doautoa}
+@anchor{:doautoall}
+@cindex :doautoa
+@cindex :doautoall
+@item :doautoa[ll] [<nomodeline>] [group] @{event@} [fname]
+"@command{:doautocmd}" と似ているが、読み込まれたバッファそれぞれに自動コマンドを適用する。[fname] は自動コマンドを選択するのに使われる。コマンドを適用するバッファではない。@{訳注: |:autocmd| の @{pat@} に使う？@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Careful: Don't use this for autocommands that delete a
+			buffer, change to another buffer or change the
+			contents of a buffer; the result is unpredictable.
+			This command is intended for autocommands that set
+			options, change highlighting, and things like that.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+このコマンドで、バッファを削除したり、バッファを変えたり、バッファの内容を変えるような自動コマンドを実行しないこと。結果は予期できない。このコマンドは、オプションを設定したり、構文強調表示を変えたりする自動コマンドのためのものである。
+@end quotation
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+10. Using autocommands					*autocmd-use*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-use}
+@cindex autocmd-use
+@section 10. 自動コマンドを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For WRITING FILES there are four possible sets of events.  Vim uses only one
+of these sets for a write command:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+「ファイルの書き込み」には、4 組のイベントが起こりうる。1 回の書き込みコマンドでは、これらのうち 1 組しか使われない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+BufWriteCmd	BufWritePre	BufWritePost	writing the whole buffer
+		FilterWritePre	FilterWritePost	writing to filter temp file
+FileAppendCmd	FileAppendPre	FileAppendPost	appending to a file
+FileWriteCmd	FileWritePre	FileWritePost	any other file write
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .25 .25 .25
+@item BufWriteCmd @tab BufWritePre @tab BufWritePost @tab バッファ全体を書き込む
+@item @tab FilterWritePre @tab FilterWritePost @tab フィルタ用一時ファイルに書込む
+@item FileAppendCmd @tab FileAppendPre @tab FileAppendPost @tab ファイルに追加する
+@item FileWriteCmd @tab FileWritePre @tab FileWritePost @tab その他の書き込み
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When there is a matching "*Cmd" autocommand, it is assumed it will do the
+writing.  No further writing is done and the other events are not triggered.
+|Cmd-event|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"*Cmd" にマッチする自動コマンドがあるときは、それが書き込み作業を行うものと想定される。書き込みはそれ以上行われず、他のイベントも発生しない。 |Cmd-event|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the *WritePost commands should undo any changes to the buffer that
+were caused by the *WritePre commands; otherwise, writing the file will have
+the side effect of changing the buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+イベント *WritePost による自動コマンドは、イベント *WritePre による自動コマンドの引き起こしたバッファに対する変化を、どのようなものでもアンドゥすべきであることに注意。さもないと、ファイルの書き込みがバッファを変更するという副作用を持ってしまう。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Before executing the autocommands, the buffer from which the lines are to be
+written temporarily becomes the current buffer.  Unless the autocommands
+change the current buffer or delete the previously current buffer, the
+previously current buffer is made the current buffer again.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+あるバッファの中の行をファイルに書き込むとき、自動コマンドを実行する前にそのバッファが一時的にカレントバッファになる。自動コマンドがカレントバッファを変更したり、元のカレントバッファを消去しない限り、カレントバッファは再び元に戻る。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The *WritePre and *AppendPre autocommands must not delete the buffer from
+which the lines are to be written.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+イベント *WritePre や *AppendPre による自動コマンドは、書き込み元のバッファを削除してはならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The '[ and '] marks have a special position:
+- Before the *ReadPre event the '[ mark is set to the line just above where
+  the new lines will be inserted.
+- Before the *ReadPost event the '[ mark is set to the first line that was
+  just read, the '] mark to the last line.
+- Before executing the *WriteCmd, *WritePre and *AppendPre autocommands the '[
+  mark is set to the first line that will be written, the '] mark to the last
+  line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マーク '[ と '] は特別な位置を記憶している。
+@itemize @minus
+@item イベント *ReadPre の前に、新しい行が挿入される所の上の行にマーク '[ が設定される。
+@item イベント *ReadPost の前に、読み込まれた最初の行にマーク '[ が、最後の行にマーク '] が設定される。
+@item イベント *WriteCmd, *WritePre と *AppendPre による自動コマンドが実行される前に、書き込まれる最初の行にマーク '[ が、最後の行にマーク '] が設定される。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Careful: '[ and '] change when using commands that change the buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Careful:} @*
+バッファを変更するコマンドを使うと、'[ と '] の場所も変更される。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In commands which expect a file name, you can use "<afile>" for the file name
+that is being read |:<afile>| (you can also use "%" for the current file
+name).  "<abuf>" can be used for the buffer number of the currently effective
+buffer.  This also works for buffers that doesn't have a name.  But it doesn't
+work for files without a buffer (e.g., with ":r file").
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル名を必要とするコマンドでは、読み込まれるファイル名に "<afile>" を使うことができる (カレントファイル名に "%" を使うこともできる) |:<afile>|。現在有効なバッファ番号には "<abuf>" を使うことができる。これは名前を持たないバッファに対しても有効だが、バッファを持たないファイルには使えない (例えば、"@command{:r file}" で読み込まれたファイル)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*gzip-example*
+Examples for reading and writing compressed files: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gzip-example}
+@cindex gzip-example
+圧縮されたファイルを読み書きする例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+  :augroup gzip
+  :  autocmd!
+  :  autocmd BufReadPre,FileReadPre	*.gz set bin
+  :  autocmd BufReadPost,FileReadPost	*.gz '[,']!gunzip
+  :  autocmd BufReadPost,FileReadPost	*.gz set nobin
+  :  autocmd BufReadPost,FileReadPost	*.gz execute ":doautocmd BufReadPost " . expand("%:r")
+  :  autocmd BufWritePost,FileWritePost	*.gz !mv <afile> <afile>:r
+  :  autocmd BufWritePost,FileWritePost	*.gz !gzip <afile>:r
+
+  :  autocmd FileAppendPre		*.gz !gunzip <afile>
+  :  autocmd FileAppendPre		*.gz !mv <afile>:r <afile>
+  :  autocmd FileAppendPost		*.gz !mv <afile> <afile>:r
+  :  autocmd FileAppendPost		*.gz !gzip <afile>:r
+  :augroup END
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:augroup gzip
+:  autocmd!
+:  autocmd BufReadPre,FileReadPre     *.gz set bin
+:  autocmd BufReadPost,FileReadPost   *.gz '[,']!gunzip
+:  autocmd BufReadPost,FileReadPost   *.gz set nobin
+:  autocmd BufReadPost,FileReadPost   *.gz execute ":doautocmd BufReadPost " . expand("%:r")
+:  autocmd BufWritePost,FileWritePost *.gz !mv <afile> <afile>:r
+:  autocmd BufWritePost,FileWritePost *.gz !gzip <afile>:r
+
+:  autocmd FileAppendPre              *.gz !gunzip <afile>
+:  autocmd FileAppendPre              *.gz !mv <afile>:r <afile>
+:  autocmd FileAppendPost             *.gz !mv <afile> <afile>:r
+:  autocmd FileAppendPost             *.gz !gzip <afile>:r
+:augroup END
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "gzip" group is used to be able to delete any existing autocommands with
+":autocmd!", for when the file is sourced twice.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+グループ "gzip" は、"@command{:autocmd!}" で既存の自動コマンドを全て削除できるようにするために使われている。これはスクリプトファイルが 2 回読み込まれたときのためである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+("<afile>:r" is the file name without the extension, see |:_%:|)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+("<afile>:r" は拡張子のないファイル名である。|:_%:| を参照)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The commands executed for the BufNewFile, BufRead/BufReadPost, BufWritePost,
+FileAppendPost and VimLeave events do not set or reset the changed flag of the
+buffer.  When you decompress the buffer with the BufReadPost autocommands, you
+can still exit with ":q".  When you use ":undo" in BufWritePost to undo the
+changes made by BufWritePre commands, you can still do ":q" (this also makes
+"ZZ" work).  If you do want the buffer to be marked as modified, set the
+'modified' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+イベント BufNewFile, BufRead/BufReadPost, BufWritePost, FileAppendPost, VimLeave によって実行された自動コマンドは、バッファの被修正フラグを切り替えない。BufReadPost による自動コマンドで、圧縮されているバッファを解凍したときは、"@command{:q}" で Vim を終了することができる。BufWritePre による自動コマンドの起こした変更を戻すために BufWritePost で "@command{:undo}" を使ったときも、"@command{:q}" を使うことができる ("ZZ" も可)。バッファが変更されたことにしたいなら、"@command{:set modified}" とすること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To execute Normal mode commands from an autocommand, use the ":normal"
+command.  Use with care!  If the Normal mode command is not finished, the user
+needs to type characters (e.g., after ":normal m" you need to type a mark
+name).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動コマンドからノーマルモードのコマンドを実行したいときは、コマンド "@command{:normal}" を使うこと。使うときは注意！ノーマルモードのコマンドが完結していないと、ユーザーが文字を打ち込まないといけない (例えば、"@command{:normal m}" の後にはマーク名を打ち込まないといけない)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want the buffer to be unmodified after changing it, reset the
+'modified' option.  This makes it possible to exit the buffer with ":q"
+instead of ":q!".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファの内容を変更した後に、変更されていないことにしたいなら、オプション '@option{modified}' をオフにすること。こうすると "@command{:q!}" ではなく "@command{:q}" でも Vim を終了できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*autocmd-nested* *E218*
+By default, autocommands do not nest.  If you use ":e" or ":w" in an
+autocommand, Vim does not execute the BufRead and BufWrite autocommands for
+those commands.  If you do want this, use the "nested" flag for those commands
+in which you want nesting.  For example: >
+  :autocmd FileChangedShell *.c nested e!
+The nesting is limited to 10 levels to get out of recursive loops.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-nested}
+@anchor{E218}
+@cindex autocmd-nested
+@cindex E218
+既定では、自動コマンドはネストしない (入れ子にならない)。自動コマンド内で "@command{:e}" や "@command{:w}" を使っても、これらに対してはイベント BufRead や BufWrite による自動コマンドは実行されない。もしこれを実行してほしいなら、ネストしてほしいコマンド内でフラグ "nested" を使うこと。例:
+@example
+:autocmd FileChangedShell *.c nested e!
+@end example
+再帰的ループを避けるために、ネストは 10 段階までに制限されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It's possible to use the ":au" command in an autocommand.  This can be a
+self-modifying command!  This can be useful for an autocommand that should
+execute only once.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自動コマンドの中でコマンド "@command{:au}" を使うこともできる。これは自己修正的 @{訳注: 原文 "self-modifying"@} なコマンドになりうる！これは 1 回だけ実行すべき自動コマンドに便利である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to skip autocommands for one command, use the |:noautocmd| command
+modifier or the 'eventignore' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+あるコマンドを実行するときだけ自動コマンドをスキップしたい場合は、修飾子 |:noautocmd| を使うかオプション '@option{eventignore}' を使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: When reading a file (with ":read file" or with a filter command) and the
+last line in the file does not have an <EOL>, Vim remembers this.  At the next
+write (with ":write file" or with a filter command), if the same line is
+written again as the last line in a file AND 'binary' is set, Vim does not
+supply an <EOL>.  This makes a filter command on the just read lines write the
+same file as was read, and makes a write command on just filtered lines write
+the same file as was read from the filter.  For example, another way to write
+a compressed file: >
+
+  :autocmd FileWritePre *.gz   set bin|'[,']!gzip
+  :autocmd FileWritePost *.gz  undo|set nobin
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+("@command{:read file}" やフィルタコマンドで) 読み込んだファイルの最後の行に <EOL> がないとき、Vim はこのことを記憶する。その次の ("@command{:write file}" やフィルタコマンドでの) 書き込みで、先ほどの最後の行が再び最後の行として書き込まれ、かつオプション '@option{binary}' がオンになっていると、<EOL> は付け足されない。
+
+これにより、読み込まれた行に対するフィルタコマンドで、読み込まれた通りに書き出すことができる。また、フィルタ処理された行に対する書き込みのコマンドで、フィルタが出力した通りに書き出すことができる。例えば、圧縮されたファイルを書き込むもう 1 つの例は以下のようになる。
+@example
+:autocmd FileWritePre *.gz   set bin|'[,']!gzip
+:autocmd FileWritePost *.gz  undo|set nobin
+@end example
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*autocommand-pattern*
+You can specify multiple patterns, separated by commas.  Here are some
+examples: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocommand-pattern}
+@cindex autocommand-pattern
+コンマで区切られた複数のパターンを指定することもできる。以下にいくつか例を挙げる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  :autocmd BufRead   *		set tw=79 nocin ic infercase fo=2croq
+  :autocmd BufRead   .letter	set tw=72 fo=2tcrq
+  :autocmd BufEnter  .letter	set dict=/usr/lib/dict/words
+  :autocmd BufLeave  .letter	set dict=
+  :autocmd BufRead,BufNewFile   *.c,*.h	set tw=0 cin noic
+  :autocmd BufEnter  *.c,*.h	abbr FOR for (i = 0; i < 3; ++i)<CR>{<CR>}<Esc>O
+  :autocmd BufLeave  *.c,*.h	unabbr FOR
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:autocmd BufRead   *          set tw=79 nocin ic infercase fo=2croq
+:autocmd BufRead   .letter    set tw=72 fo=2tcrq
+:autocmd BufEnter  .letter    set dict=/usr/lib/dict/words
+:autocmd BufLeave  .letter    set dict=
+:autocmd BufRead,BufNewFile   *.c,*.h set tw=0 cin noic
+:autocmd BufEnter  *.c,*.h    abbr FOR for (i = 0; i < 3; ++i)<CR>{<CR>}<Esc>O
+:autocmd BufLeave  *.c,*.h    unabbr FOR
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For makefiles (makefile, Makefile, imakefile, makefile.unix, etc.): >
+
+  :autocmd BufEnter  ?akefile*	set include=^s\=include
+  :autocmd BufLeave  ?akefile*	set include&
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Makefile (makefile, Makefile, imakefile, makefile.unix 等) にマッチさせるにはこうする。
+@example
+:autocmd BufEnter  ?akefile*	set include=^s\=include
+:autocmd BufLeave  ?akefile*	set include&
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To always start editing C files at the first function: >
+
+  :autocmd BufRead   *.c,*.h	1;/^{
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+C ソースファイルを編集するとき、常に最初の関数から始めるにはこうする。
+@example
+:autocmd BufRead   *.c,*.h      1;/^@{
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Without the "1;" above, the search would start from wherever the file was
+entered, rather than from the start of the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上の "1;" がないと、検索が始まる場所はファイルの最初ではなく、ファイルの挿入された場所になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*skeleton* *template*
+To read a skeleton (template) file when opening a new file: >
+
+  :autocmd BufNewFile  *.c	0r ~/vim/skeleton.c
+  :autocmd BufNewFile  *.h	0r ~/vim/skeleton.h
+  :autocmd BufNewFile  *.java	0r ~/vim/skeleton.java
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{skeleton}
+@anchor{template}
+@cindex skeleton
+@cindex template
+新しいファイルを作るときにスケルトン (テンプレート) ファイルを読み込むにはこうする。
+@example
+:autocmd BufNewFile  *.c      0r ~/vim/skeleton.c
+:autocmd BufNewFile  *.h      0r ~/vim/skeleton.h
+:autocmd BufNewFile  *.java   0r ~/vim/skeleton.java
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To insert the current date and time in a *.html file when writing it: >
+
+  :autocmd BufWritePre,FileWritePre *.html   ks|call LastMod()|'s
+  :fun LastMod()
+  :  if line("$") > 20
+  :    let l = 20
+  :  else
+  :    let l = line("$")
+  :  endif
+  :  exe "1," . l . "g/Last modified: /s/Last modified: .*/Last modified: " .
+  :  \ strftime("%Y %b %d")
+  :endfun
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+HTML ファイルを書き込むときに現在の日付と時刻を挿入したいならこうする @{訳注: KoRoN 氏作成の autodate.vim を使った方がよい@}
+@verbatim
+:autocmd BufWritePre,FileWritePre *.html   ks|call LastMod()|'s
+:fun LastMod()
+:  if line("$") > 20
+:    let l = 20
+:  else
+:    let l = line("$")
+:  endif
+:  exe "1," . l . "g/Last modified: /s/Last modified: .*/Last modified: " .
+:  \ strftime("%Y %b %d")
+:endfun
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You need to have a line "Last modified: <date time>" in the first 20 lines
+of the file for this to work.  Vim replaces <date time> (and anything in the
+same line after it) with the current date and time.  Explanation:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これを機能させるためには、ファイルの先頭から 20 行以内に "Last modified: <date time>" という行を入れる必要がある。Vim は <date time> (とその行内のそれ以後を) を現在の日付と時刻に置き換える。説明:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	ks		mark current position with mark 's'
+	call LastMod()  call the LastMod() function to do the work
+	's		return the cursor to the old position
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item ks @tab 現在の位置をマーク 's' に設定する
+@item call LastMod() @tab 関数 LastMod() を呼び出して実際の作業を行う
+@item 's @tab カーソルを元の位置に戻す
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The LastMod() function checks if the file is shorter than 20 lines, and then
+uses the ":g" command to find lines that contain "Last modified: ".  For those
+lines the ":s" command is executed to replace the existing date with the
+current one.  The ":execute" command is used to be able to use an expression
+for the ":g" and ":s" commands.  The date is obtained with the strftime()
+function.  You can change its argument to get another date string.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+関数 LastMod() はファイルの長さが20行以下であるかを調べ、キーワード "Last modified: " の含まれる行を探すためにコマンド "@command{:g}" を実行する。キーワードの含まれる行に対しては "@command{:s}" が実行され、既存の日付を現在のものに置き換える。"@command{:execute}" は "@command{:g}" や "@command{:s}" で expression を使えるようにするためのものである。日付は関数 strftime() から得られる。strftime() の引数を変更して、別の形の日付を得ることもできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When entering :autocmd on the command-line, completion of events and command
+names may be done (with <Tab>, CTRL-D, etc.) where appropriate.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドラインから自動コマンドを入力すると、(@key{<Tab>} や @kbd{CTRL-D} などで) イベントとコマンド名が適切に補完される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim executes all matching autocommands in the order that you specify them.
+It is recommended that your first autocommand be used for all files by using
+"*" as the file pattern.  This means that you can define defaults you like
+here for any settings, and if there is another matching autocommand it will
+override these.  But if there is no other matching autocommand, then at least
+your default settings are recovered (if entering this file from another for
+which autocommands did match).  Note that "*" will also match files starting
+with ".", unlike Unix shells.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はマッチする全ての自動コマンドをユーザーの指定した順に実行する。ユーザーが実行させる最初の自動コマンドにはファイルパターンに "*" を使い、全てのファイルに適用されるようにするとよい。これはつまり、あらゆる設定のための既定を好きなように定義することができ、もしマッチする自動コマンドが別にあれば、そちらの方が設定を上書きできるということである。しかしマッチする自動コマンドが他になければ、少なくともあなたの設定した既定は回復される (もし自動コマンドがマッチした別のファイルから、マッチしなかったファイルに移っても)。
+@quotation
+@strong{Note:} @*
+Unix のシェルと違い、"*" は "." で始まるファイルにもマッチすることに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						    *autocmd-searchpat*
+Autocommands do not change the current search patterns.  Vim saves the current
+search patterns before executing autocommands then restores them after the
+autocommands finish.  This means that autocommands do not affect the strings
+highlighted with the 'hlsearch' option.  Within autocommands, you can still
+use search patterns normally, e.g., with the "n" command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-searchpat}
+@cindex autocmd-searchpat
+自動コマンドは現在の検索パターンを変更しない。Vim は自動コマンドの実行前に現在の検索パターンを保存し、自動コマンドが終了してから復元する。つまり自動コマンドはオプション '@option{hlsearch}' で強調表示されている文字列に影響しないということである。自動コマンド内でも、例えばコマンド "n" 等で、検索パターンは普通に使用できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+If you want an autocommand to set the search pattern, such that it is used
+after the autocommand finishes, use the ":let @/ =" command.
+The search-highlighting cannot be switched off with ":nohlsearch" in an
+autocommand.  Use the 'h' flag in the 'viminfo' option to disable search-
+highlighting when starting Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もし自動コマンドの中で終了後に使う検索パターンを設定したいなら、":let @/ =" とすること。自動コマンドの中で "@command{:nohlsearch}" を使って、検索語の強調表示を無効にすることはできない。Vim の開始時に検索語の強調表示を行わないためには、'@option{viminfo}' のフラグ '@var{h}' を使うこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*Cmd-event*
+When using one of the "*Cmd" events, the matching autocommands are expected to
+do the file reading, writing or sourcing.  This can be used when working with
+a special kind of file, for example on a remote system.
+CAREFUL: If you use these events in a wrong way, it may have the effect of
+making it impossible to read or write the matching files!  Make sure you test
+your autocommands properly.  Best is to use a pattern that will never match a
+normal file name, for example "ftp://*".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{Cmd-event}
+@cindex Cmd-event
+イベント "*Cmd" のうちどれかを使うと、それによる自動コマンドが読み込み、書き込み、または source を行うものと想定される。これは特殊なファイル、例えばリモートシステム上のファイルに作業をするときに使える。
+@quotation
+@strong{Careful:} @*
+これらのイベントを誤った方法で使うと、そのイベントが発生するファイルの読み書きが不可能になってしまう。自分の自動コマンドをしっかりテストすること。最良の方法は、普通のファイル名には決してマッチしないパターン (例えば "ftp://*") を使うことである。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When defining a BufReadCmd it will be difficult for Vim to recover a crashed
+editing session.  When recovering from the original file, Vim reads only those
+parts of a file that are not found in the swap file.  Since that is not
+possible with a BufReadCmd, use the |:preserve| command to make sure the
+original file isn't needed for recovery.  You might want to do this only when
+you expect the file to be modified.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+BufReadCmd に対して自動コマンドを定義すると、クラッシュしたセッションの復旧が難しくなる。元のファイルから復旧するとき、Vim はスワップファイル内に見つからなかった部分のみを読み込む。それは BufReadCmd の自動コマンドを使ったときは不可能なので、コマンド |:preserve| を使って元のファイルが復旧に必要ないようにすること。そうするのはファイルが変更を受けたと判断したときのみでもよい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For file read and write commands the |v:cmdarg| variable holds the "++enc="
+and "++ff=" argument that are effective.  These should be used for the command
+that reads/writes the file.  The |v:cmdbang| variable is one when "!" was
+used, zero otherwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+読み込みと書き込みのコマンドの場合、Vim 変数 |v:cmdarg| は引数 "++enc=" と "++ff=" の、有効だったものを保持している。これらはファイルを読み書きするコマンドで使われるべきである。Vim 変数 |v:cmdbang|はコマンドに "!" が使われたときに 1、そうでないときに 0 が設定される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See the $VIMRUNTIME/plugin/netrwPlugin.vim for examples.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例は標準プラグイン $VIMRUNTIME/plugin/netrwPlugin.vim を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+11. Disabling autocommands				*autocmd-disable*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-disable}
+@cindex autocmd-disable
+@section 11. 自動コマンドを無効にする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To disable autocommands for some time use the 'eventignore' option.  Note that
+this may cause unexpected behavior, make sure you restore 'eventignore'
+afterwards, using a |:try| block with |:finally|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一時的に自動コマンドを無効にするにはオプション '@option{eventignore}' を使う。これは予期しない振るまいを引き起こす可能性がある。|:finally| つきの |:try| ブロックを使って後で '@option{eventignore}' を元に戻すようにすること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:noautocmd* *:noa*
+To disable autocommands for just one command use the ":noautocmd" command
+modifier.  This will set 'eventignore' to "all" for the duration of the
+following command.  Example: >
+
+	:noautocmd w fname.gz
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:noautocmd}
+@anchor{:noa}
+@cindex :noautocmd
+@cindex :noa
+1 つのコマンドを実行する間だけ自動コマンドを無効にするには修飾子 "@command{:noautocmd}" を使う。これは後に続くコマンドを実行する間だけ、'@option{eventignore}' を "@var{all}" にセットする。例:
+@example
+:noautocmd w fname.gz
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will write the file without triggering the autocommands defined by the
+gzip plugin.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは gzip プラグインで定義された自動コマンドを発生させずにファイルを書き込む。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
