@@ -1,0 +1,1954 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node filetype.txt, , , 目次
+@unnumbered ファイルタイプ別の設定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*filetype.txt*  For Vim version 8.0.  Last change: 2017 Mar 28
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*filetype.txt*  For Vim バージョン 8.0.  Last change: 2017 Mar 28
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Filetypes						*filetype* *file-type*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{filetype}
+@anchor{file-type}
+@cindex filetype
+@cindex file-type
+ファイル形式
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Filetypes					|filetypes|
+2. Filetype plugin				|filetype-plugins|
+3. Docs for the default filetype plugins.	|ftplugin-docs|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item 1. ファイル形式 @tab |@ref{filetypes, , filetypes}|
+@item 2. ファイル形式別プラグイン @tab |@ref{filetype-plugins, , filetype-plugins}|
+@item 3. 標準で付属する形式別プラグインの解説 @tab |@ref{ftplugin-docs, , ftplugin-docs}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Also see |autocmd.txt|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|autocmd.txt| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these commands}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらのコマンドはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Filetypes					*filetypes* *file-types*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{filetypes}
+@anchor{file-types}
+@cindex filetypes
+@cindex file-types
+@section 1. ファイル形式
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim can detect the type of file that is edited.  This is done by checking the
+file name and sometimes by inspecting the contents of the file for specific
+text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は編集しているファイルの形式を検出することができる。これはファイル名をチェックしたり、場合によってはファイル内に特定のテキストがあるかを調べることで実現されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:filetype* *:filet*
+To enable file type detection, use this command in your vimrc: >
+	:filetype on
+Each time a new or existing file is edited, Vim will try to recognize the type
+of the file and set the 'filetype' option.  This will trigger the FileType
+event, which can be used to set the syntax highlighting, set options, etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:filetype}
+@anchor{:filet}
+@cindex :filetype
+@cindex :filet
+ファイル形式の検出を有効化するには、vimrcファイルでこのコマンドを使用する:
+@example
+:filetype on
+@end example
+新しいファイルや既存のファイルを編集する際には必ず、Vim はファイルの形式を認識し '@option{filetype}' オプションを設定しようと試みる。それが構文強調やオプションの設定、その他を行うために使われる FileType イベントのきっかけとなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NOTE: Filetypes and 'compatible' don't work together well, since being Vi
+compatible means options are global.  Resetting 'compatible' is recommended,
+if you didn't do that already.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Vi 互換とは全てのオプションがグローバルであることを意味するので、ファイル形式識別と '@option{compatible}' は同時に使うことはできない。既に '@option{compatible}' を設定している場合には、それを解除する必要がある。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Detail: The ":filetype on" command will load one of these files:
+		Amiga	    $VIMRUNTIME/filetype.vim
+		Mac	    $VIMRUNTIME:filetype.vim
+		MS-DOS	    $VIMRUNTIME\filetype.vim
+		RiscOS	    Vim:Filetype
+		Unix	    $VIMRUNTIME/filetype.vim
+		VMS	    $VIMRUNTIME/filetype.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+詳細: "@command{:filetype on}" コマンドは次のファイルのうち 1 つをロードする。
+@multitable @columnfractions .3 .7
+@item Amiga @tab $VIMRUNTIME/filetype.vim
+@item Mac @tab $VIMRUNTIME:filetype.vim
+@item MS-DOS @tab $VIMRUNTIME\filetype.vim
+@item RiscOS @tab Vim:Filetype
+@item Unix @tab $VIMRUNTIME/filetype.vim
+@item VMS @tab $VIMRUNTIME/filetype.vim
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	This file is a Vim script that defines autocommands for the
+	BufNewFile and BufRead events.  If the file type is not found by the
+	name, the file $VIMRUNTIME/scripts.vim is used to detect it from the
+	contents of the file.
+	When the GUI is running or will start soon, the menu.vim script is
+	also sourced.  See |'go-M'| about avoiding that.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このファイルは BufNewFile と BufRead イベントに対する自動実行コマンドを定義する Vim script ファイルである。ファイル形式がファイル名から決定できない時には、ファイルの内容を検出するために $VIMRUNTIME/@file{scripts.vim} が使用される。
+
+GUI で使用しているとき、または GUI を開始しようとしているときには、@file{menu.vim} も読み込まれる。これを避けるには |'go-M'| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To add your own file types, see |new-filetype| below.  To search for help on a
+filetype prepend "ft-" and optionally append "-syntax", "-indent" or
+"-plugin".  For example: >
+	:help ft-vim-indent
+	:help ft-vim-syntax
+	:help ft-man-plugin
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+独自のファイルタイプを追加するには、下の |new-filetype| を参照。あるファイルタイプについてのヘルプを検索するには、ファイルタイプ名の前に "ft-" をつけ、さらに必要に応じて "-syntax", "-indent", "-plugin" をつける。例:
+@example
+:help ft-vim-indent
+:help ft-vim-syntax
+:help ft-man-plugin
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the file type is not detected automatically, or it finds the wrong type,
+you can either set the 'filetype' option manually, or add a modeline to your
+file.  Example, for an IDL file use the command: >
+	:set filetype=idl
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル形式を自動的に検出できなかった場合や、間違った形式になってしまった場合には、'@option{filetype}' オプションを手動で設定するか、ファイルにモード行 (modeline) を追加する選択肢がある。例として、IDL ファイルに設定するにはこのコマンドを使うか:
+@example
+:set filetype=idl
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+or add this |modeline| to the file:
+	/* vim: set filetype=idl : */ ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この |modeline| をファイルに追加する:
+@verbatim
+/* vim: set filetype=idl : */
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:filetype-plugin-on*
+You can enable loading the plugin files for specific file types with: >
+	:filetype plugin on
+If filetype detection was not switched on yet, it will be as well.
+This actually loads the file "ftplugin.vim" in 'runtimepath'.
+The result is that when a file is edited its plugin file is loaded (if there
+is one for the detected filetype). |filetype-plugin|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:filetype-plugin-on}
+@cindex :filetype-plugin-on
+ファイル形式別プラグインのロードを有効化するには:
+@example
+:filetype plugin on
+@end example
+まだファイル形式検出が有効になっていない時には、同時に有効化される。これは実際には '@option{runtimepath}' にある "@file{ftplugin.vim}" をロードする。結果的にファイルが編集される時に対応するプラグインファイルがロードされる (ただし検出したファイル形式に合致するプラグインファイルがあった時のみ)。|filetype-plugin|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:filetype-plugin-off*
+You can disable it again with: >
+	:filetype plugin off
+The filetype detection is not switched off then.  But if you do switch off
+filetype detection, the plugins will not be loaded either.
+This actually loads the file "ftplugof.vim" in 'runtimepath'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:filetype-plugin-off}
+@cindex :filetype-plugin-off
+ファイル形式別プラグインを無効化するには:
+@example
+:filetype plugin off
+@end example
+ファイル形式の検出自体は無効にならない。しかしながらファイル形式の検出を無効にした場合には、プラグインもロードされなくなる。これは実際には '@option{runtimepath}' にある "@file{ftplugof.vim}" をロードする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:filetype-indent-on*
+You can enable loading the indent file for specific file types with: >
+	:filetype indent on
+If filetype detection was not switched on yet, it will be as well.
+This actually loads the file "indent.vim" in 'runtimepath'.
+The result is that when a file is edited its indent file is loaded (if there
+is one for the detected filetype). |indent-expression|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:filetype-indent-on}
+@cindex :filetype-indent-on
+ファイル形式別インデントのロードを有効化するには:
+@example
+:filetype indent on
+@end example
+まだファイル形式検出が有効になっていない時には、同時に有効化される。これは実際には '@option{runtimepath}' にある "@file{indent.vim}" をロードする。結果的にファイルが編集される時に対応するインデントファイルがロードされる (ただし検出したファイル形式に合致するインデントファイルがあった時のみ)。|filetype-plugin|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:filetype-indent-off*
+You can disable it again with: >
+	:filetype indent off
+The filetype detection is not switched off then.  But if you do switch off
+filetype detection, the indent files will not be loaded either.
+This actually loads the file "indoff.vim" in 'runtimepath'.
+This disables auto-indenting for files you will open.  It will keep working in
+already opened files.  Reset 'autoindent', 'cindent', 'smartindent' and/or
+'indentexpr' to disable indenting in an opened file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:filetype-indent-off}
+@cindex :filetype-indent-off
+ファイル形式別インデントを無効化するには:
+@example
+:filetype indent off
+@end example
+ファイル形式の検出自体は無効にならない。しかしながらファイル形式の検出を無効にした場合には、インデントファイルもロードされなくなる。これは実際には '@option{runtimepath}' にある "@file{indoff.vim}" をロードする。そうすると、これから開くファイルに対して自動インデントが無効になる。すでに開いているファイルに対しては何も変わらない。すでに開いているファイルに対して自動インデントを無効にするには '@option{autoindent}', '@option{cindent}', '@option{smartindent}', '@option{indentexpr}' をオフにする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:filetype-off*
+To disable file type detection, use this command: >
+	:filetype off
+This will keep the flags for "plugin" and "indent", but since no file types
+are being detected, they won't work until the next ":filetype on".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:filetype-off}
+@cindex :filetype-off
+ファイル形式の検出を無効にするには、次のコマンドを使用する:
+@example
+:filetype off
+@end example
+これはプラグイン ("plugin") とインデント ("indent") のフラグを保持はするが、ファイル形式は検出されなくなるので、次に "@command{:filetype on}" をするまではそれらは動作しなくなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Overview:					*:filetype-overview*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:filetype-overview}
+@cindex :filetype-overview
+概要:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+command				detection	plugin		indent ~
+:filetype on			on		unchanged	unchanged
+:filetype off			off		unchanged	unchanged
+:filetype plugin on		on		on		unchanged
+:filetype plugin off		unchanged	off		unchanged
+:filetype indent on		on		unchanged	on
+:filetype indent off		unchanged	unchanged	off
+:filetype plugin indent on	on		on		on
+:filetype plugin indent off	unchanged	off		off
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .2 .2 .2
+@headitem コマンド @tab 検出 @tab プラグイン @tab インデント
+@item :filetype on @tab 有効 @tab 変化なし @tab 変化なし
+@item :filetype off @tab 無効 @tab 変化なし @tab 変化なし
+@item :filetype plugin on @tab 有効 @tab 有効 @tab 変化なし
+@item :filetype plugin off @tab 変化なし @tab 無効 @tab 変化なし
+@item :filetype indent on @tab 有効 @tab 変化なし @tab 有効
+@item :filetype indent off @tab 変化なし @tab 変化なし @tab 無効
+@item :filetype plugin indent on @tab 有効 @tab 有効 @tab 有効
+@item :filetype plugin indent off @tab 変化なし @tab 無効 @tab 無効
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To see the current status, type: >
+	:filetype
+The output looks something like this: >
+	filetype detection:ON  plugin:ON  indent:OFF
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在の状態を知るには次のようにタイプする:
+@example
+:filetype
+@end example
+このような出力が得られる:
+@verbatim
+filetype detection:ON  plugin:ON  indent:OFF
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The file types are also used for syntax highlighting.  If the ":syntax on"
+command is used, the file type detection is installed too.  There is no need
+to do ":filetype on" after ":syntax on".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル形式は構文強調にも利用される。"@command{:syntax on}" コマンドが使用されると、ファイル形式検出もインストールされる。"@command{:syntax on}" の後に "@command{:filetype on}" を実行する必要はない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To disable one of the file types, add a line in your filetype file, see
+|remove-filetype|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特定のファイル形式を無効にするには、自分のファイル形式ファイルに1行追加する。|remove-filetype| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*filetype-detect*
+To detect the file type again: >
+	:filetype detect
+Use this if you started with an empty file and typed text that makes it
+possible to detect the file type.  For example, when you entered this in a
+shell script: "#!/bin/csh".
+   When filetype detection was off, it will be enabled first, like the "on"
+argument was used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{filetype-detect}
+@cindex filetype-detect
+再びファイル検出を有効化するには:
+@example
+:filetype detect
+@end example
+空のファイルから編集を始めて、ファイル形式を判定するのに充分なテキストをタイプしてからコレを使用する。例えば、シェルスクリプトの中で "#!/bin/csh" を入力してからということ。
+
+ファイル形式検出が無効になっていた時には、引数 "on" が指定された時のように、初めに有効化される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*filetype-overrule*
+When the same extension is used for two filetypes, Vim tries to guess what
+kind of file it is.  This doesn't always work.  A number of global variables
+can be used to overrule the filetype used for certain extensions:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{filetype-overrule}
+@cindex filetype-overrule
+同じ拡張子が2つのファイル形式で使用されている時には、Vim はファイルがどのような種類であるかを推測する。これは常に動作するわけではない。ある拡張子に対してどのファイル形式を使うか明示的に指定するのに、幾つかのグローバル変数を使うことができる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	file name	variable ~
+	*.asa		g:filetype_asa	|ft-aspvbs-syntax| |ft-aspperl-syntax|
+	*.asp		g:filetype_asp	|ft-aspvbs-syntax| |ft-aspperl-syntax|
+	*.asm		g:asmsyntax	|ft-asm-syntax|
+	*.prg		g:filetype_prg
+	*.pl		g:filetype_pl
+	*.inc		g:filetype_inc
+	*.w		g:filetype_w	|ft-cweb-syntax|
+	*.i		g:filetype_i	|ft-progress-syntax|
+	*.p		g:filetype_p	|ft-pascal-syntax|
+	*.sh		g:bash_is_sh	|ft-sh-syntax|
+	*.tex		g:tex_flavor	|ft-tex-plugin|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@headitem ファイル名 @tab 変数
+@item *.asa @tab g:filetype_asa |ft-aspvbs-syntax| |ft-aspperl-syntax|
+@item *.asp @tab g:filetype_asp |ft-aspvbs-syntax| |ft-aspperl-syntax|
+@item *.asm @tab g:asmsyntax |ft-asm-syntax|
+@item *.prg @tab g:filetype_prg
+@item *.pl @tab g:filetype_pl
+@item *.inc @tab g:filetype_inc
+@item *.w @tab g:filetype_w |ft-cweb-syntax|
+@item *.i @tab g:filetype_i |ft-progress-syntax|
+@item *.p @tab g:filetype_p |ft-pascal-syntax|
+@item *.sh @tab g:bash_is_sh |ft-sh-syntax|
+@item *.tex @tab g:tex_flavor |ft-tex-plugin|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*filetype-ignore*
+To avoid that certain files are being inspected, the g:ft_ignore_pat variable
+is used.  The default value is set like this: >
+	:let g:ft_ignore_pat = '\.\(Z\|gz\|bz2\|zip\|tgz\)$'
+This means that the contents of compressed files are not inspected.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{filetype-ignore}
+@cindex filetype-ignore
+特定のファイルが検査されないようにするには、g:ft_ignore_pat 変数を使う。この変数はデフォルトで次のように設定されている。
+@example
+:let g:ft_ignroe_pat = '\.\(Z\|gz\|bz2\|zip\|tgz\)$'
+@end example
+この設定は圧縮ファイルを検査しないようにしている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*new-filetype*
+If a file type that you want to use is not detected yet, there are four ways
+to add it.  In any way, it's better not to modify the $VIMRUNTIME/filetype.vim
+file.  It will be overwritten when installing a new version of Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{new-filetype}
+@cindex new-filetype
+使いたいファイル形式が Vim に検出されない (存在しない) 場合には、その形式を追加する 4 つの方法がある。どちらにせよファイル $VIMRUNTIME/@file{filetype.vim} は変更するべきではない。そのファイルは新しい Vim をインストールする際に上書されるのだから。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A. If you want to overrule all default file type checks.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec A. デフォルトのファイルタイプの検査をくつがえす。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   This works by writing one file for each filetype.  The disadvantage is that
+   means there can be many files.  The advantage is that you can simply drop
+   this file in the right directory to make it work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この方法はファイルタイプごとにファイルを作ることで機能する。不便な点は   ファイルがたくさんになってしまうこと。便利な点は適切なディレクトリにファ   イルを置くだけで機能すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*ftdetect*
+   1. Create your user runtime directory.  You would normally use the first
+      item of the 'runtimepath' option.  Then create the directory "ftdetect"
+      inside it.  Example for Unix: >
+	:!mkdir ~/.vim
+	:!mkdir ~/.vim/ftdetect
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ftdetect}
+@cindex ftdetect
+@enumerate
+@item ユーザーランタイムディレクトリを作成する。通常は '@option{runtimepath}' オプションに記載される最初の項目を使えば良い。次にそのディレクトリに "ftdetect" というディレクトリを作成する。UNIX を例に挙げる:
+@example
+:!mkdir ~/.vim
+:!mkdir ~/.vim/ftdetect
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   2. Create a file that contains an autocommand to detect the file type.
+      Example: >
+	au BufRead,BufNewFile *.mine		set filetype=mine
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ファイル形式を検出する自動実行コマンドを含むファイルを作成する。例:
+@example
+au BufRead,BufNewFile *.mine		set filetype=mine
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<     Note that there is no "augroup" command, this has already been done
+      when sourcing your file.  You could also use the pattern "*" and then
+      check the contents of the file to recognize it.
+      Write this file as "mine.vim" in the "ftdetect" directory in your user
+      runtime directory.  For example, for Unix: >
+	:w ~/.vim/ftdetect/mine.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"@command{augroup}" コマンドは要らない。そのファイルを読み込むときに既に定義されている。パターンに "*" を使いファイルの内容から判断することもできる。そのファイルを例えば "@file{mine.vim}" という名前で先程の "ftdetect" ディレクトリに保存する。UNIXを例に挙げる:
+@example
+:w ~/.vim/ftdetect/mine.vim
+@end example
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<  3. To use the new filetype detection you must restart Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 新しいファイル形式の検出を有効化するには Vim を再起動しなければならない。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   The files in the "ftdetect" directory are used after all the default
+   checks, thus they can overrule a previously detected file type.  But you
+   can also use |:setfiletype| to keep a previously detected filetype.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"ftdetect" ディレクトリの中のファイルはデフォルトの検査のあとに使われるので、それ以前に決定したファイルタイプを変更することができる。しかしここで |:setfiletype| を使えば、それ以前に決定したファイルタイプをそのままにしておくこともできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+B. If you want to detect your file after the default file type checks.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec B. デフォルトのファイルタイプの検査の後にファイルタイプを決定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   This works like A above, but instead of setting 'filetype' unconditionally
+   use ":setfiletype".  This will only set 'filetype' if no file type was
+   detected yet.  Example: >
+	au BufRead,BufNewFile *.txt		setfiletype text
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上と同様。ただし、無条件に '@option{filetype}' を設定する代わりに、'@command{:setfiletype}' を使う。これはまだファイルタイプがまだ認識されていないときだけ '@option{filetype}' を設定する。次に例を示す。
+@example
+au BufRead,BufNewFile *.txt             setfiletype text
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   You can also use the already detected file type in your command.  For
+   example, to use the file type "mypascal" when "pascal" has been detected: >
+	au BufRead,BufNewFile *		if &ft == 'pascal' | set ft=mypascal
+								       | endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すでに認識されたファイルタイプをコマンドから使うことができる。例えば、ファイルタイプが "pascal" だった時にファイルタイプを "mypascal" に設定するには:
+@example
+au BufRead,BufNewFile *         if &ft == 'pascal' | set ft=mypascal | endif
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+C. If your file type can be detected by the file name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec C. ファイル形式が名前だけで検出できる場合。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   1. Create your user runtime directory.  You would normally use the first
+      item of the 'runtimepath' option.  Example for Unix: >
+	:!mkdir ~/.vim
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item ユーザーランタイムディレクトリを作成する。通常は '@option{runtimepath}' オプションに記載される最初の項目を使えば良い。UNIX を例に挙げる:
+@example
+:!mkdir ~/.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   2. Create a file that contains autocommands to detect the file type.
+      Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ファイル形式を検出する自動実行コマンドを含むファイルを作成する。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	" my filetype file
+	if exists("did_load_filetypes")
+	  finish
+	endif
+	augroup filetypedetect
+	  au! BufRead,BufNewFile *.mine		setfiletype mine
+	  au! BufRead,BufNewFile *.xyz		setfiletype drawing
+	augroup END
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+" 独自の filetype ファイル
+if exists("did_load_filetypes")
+  finish
+endif
+augroup filetypedetect
+  au! BufRead,BufNewFile *.mine         setfiletype mine
+  au! BufRead,BufNewFile *.xyz          setfiletype drawing
+augroup END
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<     Write this file as "filetype.vim" in your user runtime directory.  For
+      example, for Unix: >
+	:w ~/.vim/filetype.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このファイルを "@file{filetype.vim}" としてユーザーランタイムディレクトリに保存する。UNIX を例にあげる:
+@example
+:w ~/.vim/filetype.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<  3. To use the new filetype detection you must restart Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 新しいファイル形式の検出を有効化するために Vim を再起動する。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   Your filetype.vim will be sourced before the default FileType autocommands
+   have been installed.  Your autocommands will match first, and the
+   ":setfiletype" command will make sure that no other autocommands will set
+   'filetype' after this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+作成した @file{filetype.vim} はデフォルトの FileType 自動実行コマンドがインストールされる前に読み込まれる。そのため新しく作成した自動実行コマンドが先に適合し、"@command{:setfiletype}" コマンドがこれ以後に他の自動実行コマンドにより '@option{filetype}' が設定されないことを保証する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*new-filetype-scripts*
+D. If your filetype can only be detected by inspecting the contents of the
+   file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{new-filetype-scripts}
+@cindex new-filetype-scripts
+@unnumberedsubsec D. ファイル形式がファイルの内容を調べる事によってのみ検出可能な場合。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   1. Create your user runtime directory.  You would normally use the first
+      item of the 'runtimepath' option.  Example for Unix: >
+	:!mkdir ~/.vim
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item ユーザーランタイムディレクトリを作成する。通常は '@option{runtimepath}' オプションに記載される最初の項目を使えば良い。UNIX を例に挙げる:
+@example
+:!mkdir ~/.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   2. Create a vim script file for doing this.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ファイルの内容で形式を決定する Vim script を作成する。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	if did_filetype()	" filetype already set..
+	  finish		" ..don't do these checks
+	endif
+	if getline(1) =~ '^#!.*\<mine\>'
+	  setfiletype mine
+	elseif getline(1) =~? '\<drawing\>'
+	  setfiletype drawing
+	endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if did_filetype()       " 既にファイル形式が決定している
+  finish                " ..その時はこのチェックは行わない
+endif
+if getline(1) =~ '^#!.*\<mine\>'
+  setfiletype mine
+elseif getline(1) =~? '\<drawing\>'
+  setfiletype drawing
+endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<     See $VIMRUNTIME/scripts.vim for more examples.
+      Write this file as "scripts.vim" in your user runtime directory.  For
+      example, for Unix: >
+	:w ~/.vim/scripts.vim
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+より多くの例については $VIMRUNTIME/@file{scripts.vim} を参照。このファイルを "@file{scripts.vim}" としてユーザーランタイムディレクトリに保存する。UNIX を例に挙げる:
+@example
+:w ~/.vim/scripts.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   3. The detection will work right away, no need to restart Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item これだけで検出は正しく動作し、Vim を再起動する必要は無い。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   Your scripts.vim is loaded before the default checks for file types, which
+   means that your rules override the default rules in
+   $VIMRUNTIME/scripts.vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しく作成した @file{scripts.vim} はデフォルトのファイル形式チェックの前に読み込まれるので、$VIMRUNTIME/@file{scripts.vim} に書かれたデフォルトの判定規則を上書きすることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*remove-filetype*
+If a file type is detected that is wrong for you, install a filetype.vim or
+scripts.vim to catch it (see above).  You can set 'filetype' to a non-existing
+name to avoid that it will be set later anyway: >
+	:set filetype=ignored
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{remove-filetype}
+@cindex remove-filetype
+ファイル形式が誤って検出されたならば、(上を参考に) それを補正する @file{filetype.vim} か @file{scripts.vim} をインストールする。'@option{filetype}' に存在しない形式の名前を設定すれば、それ以降の検出スクリプトで別の値が設定されてしまうのを避けることができる:
+@example
+:set filetype=ignored
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are setting up a system with many users, and you don't want each user
+to add/remove the same filetypes, consider writing the filetype.vim and
+scripts.vim files in a runtime directory that is used for everybody.  Check
+the 'runtimepath' for a directory to use.  If there isn't one, set
+'runtimepath' in the |system-vimrc|.  Be careful to keep the default
+directories!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+複数人で使用する環境を設定していて、個々のユーザーにはファイル形式を追加/削除させたくないならば、ランタイムディレクトリに置いて全ユーザーが共有するように @file{filetype.vim} と @file{scripts.vim} を書く必要がある。そのスクリプトを置くディレクトリには '@option{runtimepath}' の示すうちのどれか 1 つを選択する。'@option{runtimepath}' の中に設定を置きたいディレクトリが見あたらなければ、|system-vimrc| 内で正しく追加する必要がある。既に設定されているデフォルトのディレクトリを変更しないように注意。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+						*autocmd-osfiletypes*
+NOTE: this code is currently disabled, as the RISC OS implementation was
+removed.  In the future this will use the 'filetype' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-osfiletypes}
+@cindex autocmd-osfiletypes
+@quotation
+@strong{Note:} @*
+RISC OS サポートが削除されたため、このコードは現在無効化されている。将来これは '@option{filetype}' オプションを使用することになるだろう。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On operating systems which support storing a file type with the file, you can
+specify that an autocommand should only be executed if the file is of a
+certain type.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルと共に「形式」を記録できるオペレーティングシステム (OS) では、ファイルがある「形式」だった時にだけ実行される自動コマンドを設定することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The actual type checking depends on which platform you are running Vim
+on; see your system's documentation for details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実際の「形式」チェックは Vim をどのプラットフォームで使用しているかに依存する; 詳細は使用しているシステムの解説書を参照のこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To use osfiletype checking in an autocommand you should put a list of types to
+match in angle brackets in place of a pattern, like this: >
+
+	:au BufRead *.html,<&faf;HTML>  runtime! syntax/html.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+OS による「形式」を利用するには自動実行コマンドの検出パターンの場所に、次の例に示すように折カッコで囲んだ検出させたい「形式」のリストを書く:
+@example
+:au BufRead *.html,<&faf;HTML>  runtime! syntax/html.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will match:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは以下に適合する:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Any file whose name ends in ".html"
+- Any file whose type is "&faf" or "HTML", where the meaning of these types
+  depends on which version of Vim you are using.
+  Unknown types are considered NOT to match.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item ファイル名が ".html" で終了するあらゆるファイル
+@item 「形式」が "&faf" か "HTML" である全てのファイル。ただしここでいう「形式」とは Vim のバージョン (稼動している OS) によって定義される。未知の形式は適合しないとみなされる。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can also specify a type and a pattern at the same time (in which case they
+must both match): >
+
+	:au BufRead <&fff>diff*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+「形式」とパターンを同時に指定することもできる (そのような場合には、両方共マッチする必要がある):
+@example
+:au BufRead <&fff>diff*
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will match files of type "&fff" whose names start with "diff".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは「形式」が "&fff" で名前が "diff" で始まるファイルに適合する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+							*plugin-details*
+The "plugin" directory can be in any of the directories in the 'runtimepath'
+option.  All of these directories will be searched for plugins and they are
+all loaded.  For example, if this command: >
+
+	set runtimepath
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{plugin-details}
+@cindex plugin-details
+"plugin" ディレクトリは '@option{runtimepath}' オプションに示されているならば、どのディレクトリに置いても良い。そこに示された全てのディレクトリにあるプラグインが検索され読み込まれる。例えば、次のコマンドを実行すると:
+@example
+set runtimepath
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+produces this output:
+
+	runtimepath=/etc/vim,~/.vim,/usr/local/share/vim/vim60 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の内容が出力される:
+@verbatim
+runtimepath=/etc/vim,~/.vim,/usr/local/share/vim/vim60
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+then Vim will load all plugins in these directories and below:
+
+	/etc/vim/plugin/  ~
+	~/.vim/plugin/  ~
+	/usr/local/share/vim/vim60/plugin/  ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この時 Vim は以下に示すディレクトリとそれ以下にある全てのプラグインを読み込む:
+@example
+/etc/vim/plugin/
+~/.vim/plugin/
+/usr/local/share/vim/vim60/plugin/
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the last one is the value of $VIMRUNTIME which has been expanded.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+最後の 1 つは @env{$VIMRUNTIME} が展開されたものであることに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+What if it looks like your plugin is not being loaded?  You can find out what
+happens when Vim starts up by using the |-V| argument: >
+
+	vim -V2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プラグインが読み込まれていないらしい場合はどうすれば良いのか? Vim 起動時に |-V| 引数を使用すれば何が起こっているか知ることができる:
+@example
+vim -V2
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You will see a lot of messages, in between them is a remark about loading the
+plugins.  It starts with:
+
+	Searching for "plugin/**/*.vim" in ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+多くのメッセージが表示されるが、プラグインの読み込みの前には特定の記述がなされる。それは次のように始まる:
+@verbatim
+Searching for "plugin/**/*.vim" in
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There you can see where Vim looks for your plugin scripts.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これを見れば Vim がプラグインスクリプトをどこから探しているのかがわかる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Filetype plugin					*filetype-plugins*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{filetype-plugins}
+@cindex filetype-plugins
+@section 2. ファイル形式別プラグイン
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When loading filetype plugins has been enabled |:filetype-plugin-on|, options
+will be set and mappings defined.  These are all local to the buffer, they
+will not be used for other files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル形式プラグインが有効になっていれば |:filetype-plugin-on|、プラグイン読込時にオプションが設定されキーマップが定義される。それらは全てバッファローカルで、他のファイルに対しては決して作用しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Defining mappings for a filetype may get in the way of the mappings you
+define yourself.  There are a few ways to avoid this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル形式により定義されるキーマップが自分で定義したキーマップの邪魔になることもあり得る。幾つかこれを回避する方法がある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. Set the "maplocalleader" variable to the key sequence you want the mappings
+   to start with.  Example: >
+	:let maplocalleader = ","
+<  All mappings will then start with a comma instead of the default, which
+   is a backslash.  Also see |<LocalLeader>|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item "maplocalleader" にキーマップの先頭に使用するキーシーケンスを設定する。例:
+@example
+:let maplocalleader = ","
+@end example
+デフォルトのバックスラッシュ (\ 記号) に替えてコンマが全てのマップの始まりのキーになる。|<LocalLeader>| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+2. Define your own mapping.  Example: >
+	:map ,p <Plug>MailQuote
+<  You need to check the description of the plugin file below for the
+   functionality it offers and the string to map to.
+   You need to define your own mapping before the plugin is loaded (before
+   editing a file of that type).  The plugin will then skip installing the
+   default mapping.
+						*no_mail_maps*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 独自のマップを定義する。例:
+@example
+:map ,p <Plug>MailQuote
+@end example
+どのような機能が提供され、それにどのような文字列がキーマップされているのか、プラグインファイルの説明をチェックする必要がある。独自のキーマップはプラグインが読み込まれる (つまりその形式のファイルが読み込まれる) 前に定義する必要がある。そうすればプラグインはデフォルトキーマッピングのインストールを行わない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+3. Disable defining mappings for a specific filetype by setting a variable,
+   which contains the name of the filetype.  For the "mail" filetype this
+   would be: >
+	:let no_mail_maps = 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{no_mail_maps}
+@cindex no_mail_maps
+@item 特定のファイル形式についてキーマップを無効化するならば、そのファイル形式名を含むある変数を設定する。ファイル形式 "mail" のキーマップを無効にするには次のようにする:
+@example
+:let no_mail_maps = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<						*no_plugin_maps*
+4. Disable defining mappings for all filetypes by setting a variable: >
+	:let no_plugin_maps = 1
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{no_plugin_maps}
+@cindex no_plugin_maps
+@item ファイル形式による全てのキーマップを無効化するには次の変数を設定する:
+@example
+:let no_plugin_maps = 1
+@end example
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*ftplugin-overrule*
+If a global filetype plugin does not do exactly what you want, there are three
+ways to change this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ftplugin-overrule}
+@cindex ftplugin-overrule
+グローバルな ($VIMRUNTIME にある、システムが提供する) ファイル形式プラグインがキッチリ望むように動作しない場合には、これを変更する方法が 3 通りある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Add a few settings.
+   You must create a new filetype plugin in a directory early in
+   'runtimepath'.  For Unix, for example you could use this file: >
+	vim ~/.vim/ftplugin/fortran.vim
+<  You can set those settings and mappings that you would like to add.  Note
+   that the global plugin will be loaded after this, it may overrule the
+   settings that you do here.  If this is the case, you need to use one of the
+   following two methods.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item 設定を追加する。
+
+新しいファイル形式プラグインを作り、'@option{runtimepath}' の始めのほうに置く。一例として、UNIX ではこのファイルを利用できる:
+@example
+vim ~/.vim/ftplugin/fortran.vim
+@end example
+追加したい設定やキーマップをこのファイルに記述する。グローバルプラグインはこれの後に読み込まれるので、ここで行った設定は上書される可能性がある。そのような場合には以下の2つの方法のどちらかを利用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+2. Make a copy of the plugin and change it.
+   You must put the copy in a directory early in 'runtimepath'.  For Unix, for
+   example, you could do this: >
+	cp $VIMRUNTIME/ftplugin/fortran.vim ~/.vim/ftplugin/fortran.vim
+<  Then you can edit the copied file to your liking.  Since the b:did_ftplugin
+   variable will be set, the global plugin will not be loaded.
+   A disadvantage of this method is that when the distributed plugin gets
+   improved, you will have to copy and modify it again.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item プラグインのコピーを作成し、そちらを変更する。
+
+'@option{runtimepath}' の始めのほうにそのプラグインのコピーを置く。一例として、UNIX ではこのように行う:
+@example
+cp $VIMRUNTIME/ftplugin/fortran.vim ~/.vim/ftplugin/fortran.vim
+@end example
+そうすればコピーしたファイルを好きなように変更できる。これは変数 b:did_ftplugin が設定されていれば、グローバルプラグインは読み込まれない仕組みになっていることによる。この方法には、配布されるプラグインが改良された際に、再びコピーし同じように変更しなければならない、という短所がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+3. Overrule the settings after loading the global plugin.
+   You must create a new filetype plugin in a directory from the end of
+   'runtimepath'.  For Unix, for example, you could use this file: >
+	vim ~/.vim/after/ftplugin/fortran.vim
+<  In this file you can change just those settings that you want to change.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item グローバルプラグインの読み込み後に設定を上書きする。'@option{runtimepath}' の最後に、新しいファイル形式プラグインを作成する。一例として、UNIX ではこのファイルを利用できる:
+@example
+vim ~/.vim/after/ftplugin/fortran.vim
+@end example
+このファイルの中では、変更したい設定だけを変更できる。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3.  Docs for the default filetype plugins.		*ftplugin-docs*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ftplugin-docs}
+@cindex ftplugin-docs
+@section 3.  標準で付属する形式別プラグインの解説
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CHANGELOG						*ft-changelog-plugin*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-changelog-plugin}
+@cindex ft-changelog-plugin
+@unnumberedsubsec チェンジログ (CHANGELOG)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Allows for easy entrance of Changelog entries in Changelog files.  There are
+some commands, mappings, and variables worth exploring:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{訳注: エントリ = 日付ごとの区切り アイテム = 日付内の項目@}
+
+チェンジログファイルを簡単に扱うことを可能にする。いくつかの便利なコマンドやマッピング、変数がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Options:
+'comments'		is made empty to not mess up formatting.
+'textwidth'		is set to 78, which is standard.
+'formatoptions'		the 't' flag is added to wrap when inserting text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec オプション:
+@multitable @columnfractions .3 .7
+@item '@option{comments}' @tab フォーマットを崩さないように空に設定される。
+@item '@option{textwidth}' @tab 標準的な値である 78 に設定される。
+@item '@option{formatoptions}' @tab テキストを折り返すために 't' が加えられる。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Commands:
+NewChangelogEntry	Adds a new Changelog entry in an intelligent fashion
+			(see below).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec コマンド:
+@multitable @columnfractions .4 .6
+@item NewChangelogEntry @tab 適切にアイテムを追加する (以下参照)。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Local mappings:
+<Leader>o		Starts a new Changelog entry in an equally intelligent
+			fashion (see below).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec ローカルマッピング:
+@multitable @columnfractions .3 .7
+@item <Leader>o @tab 上と同様に適切にアイテムを追加する(以下参照)。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Global mappings:
+			NOTE: The global mappings are accessed by sourcing the
+			ftplugin/changelog.vim file first, e.g. with >
+				runtime ftplugin/changelog.vim
+<			in your |.vimrc|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec グローバルマッピング:
+@quotation
+@strong{Note:} @*
+グローバルマッピングはあらかじめ ftplugin/@file{changelog.vim} を実行することで有効になる。例えば 
+@example
+runtime ftplugin/changelog.vim
+@end example
+と |.vimrc| に書くようにして。
+
+@{訳注: この例だと間違えてこのまま書いちゃいそう。@}
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<Leader>o		Switches to the ChangeLog buffer opened for the
+			current directory, or opens it in a new buffer if it
+			exists in the current directory.  Then it does the
+			same as the local <Leader>o described above.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item <Leader>o
+カレントディレクトリに "ChangeLog" というファイルがあれば開き、既に開かれていればバッファを切替える。そして上記のローカルマッピング <Leader>o と同じように働く。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Variables:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec 変数:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+g:changelog_timeformat  Deprecated; use g:changelog_dateformat instead.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item g:changelog_timeformat
+非推奨。g:changelog_dateformat を使うこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+g:changelog_dateformat	The date (and time) format used in ChangeLog entries.
+			The format accepted is the same as for the
+			|strftime()| function.
+			The default is "%Y-%m-%d" which is the standard format
+			for many ChangeLog layouts.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item g:changelog_dateformat
+エントリに入れる日付(と時間)の書式。使えるフォーマットは |strftime()| と同じ。デフォルトでは標準的に使われている "%Y-%m-%d" が設定されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+g:changelog_username	The name and email address of the user.
+			The default is deduced from environment variables and
+			system files.  It searches /etc/passwd for the comment
+			part of the current user, which informally contains
+			the real name of the user up to the first separating
+			comma.  then it checks the $NAME environment variable
+			and finally runs `whoami` and `hostname` to build an
+			email address.  The final form is >
+				Full Name  <user@host>
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item g:changelog_username
+ユーザーの名前とメールアドレス。デフォルトは環境変数とシステムファイルから推定される。まずカレントユーザーについての情報を得るために /etc/@file{passwd} を探す。そこの最初の区切りにユーザーの実名があることを期待している。次に環境変数の @env{$NAME} をチェックする。最後にアドレスを得るために `@command{whoami}` と `@command{hostname}` を実行する。最終的に次のような値を決定する。
+@example
+Full Name <user@@host>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+g:changelog_new_date_format
+			The format to use when creating a new date-entry.
+			The following table describes special tokens in the
+			string:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item g:changelog_new_date_format
+エントリを作成するときの書式。次の特別な文字が使える:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				%%	insert a single '%' character
+				%d	insert the date from above
+				%u	insert the user from above
+                                %p	insert result of b:changelog_entry_prefix
+				%c	where to position cursor when done
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item %% @tab 1 つの '%' が入る
+@item %d @tab 上記で定義した日付
+@item %u @tab 上記で定義したユーザーの名前
+@item %p @tab b:changelog_entry_prefix の結果
+@item %c @tab 作成後のカーソルの位置
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			The default is "%d  %u\n\n\t* %p%c\n\n", which produces
+			something like (| is where cursor will be, unless at
+			the start of the line where it denotes the beginning
+			of the line) >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトは "%d  %u\n\n\t* %p%c\n\n"。これは次のようになる ( | はカーソルの位置を示している。しかし、行頭の | は行の始まりを表す)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				|2003-01-14  Full Name  <user@host>
+				|
+				|        * prefix|
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+|2003-01-14  Full Name  <user@@host>
+|
+|        * prefix|
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+g:changelog_new_entry_format
+			The format used when creating a new entry.
+			The following table describes special tokens in the
+			string:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item g:changelog_new_entry_format
+アイテムを作成するときの書式。次の特別な文字が使える:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+                                %p	insert result of b:changelog_entry_prefix
+				%c	where to position cursor when done
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item %p @tab b:changelog_entry_prefix の結果
+@item %c @tab 作成後のカーソルの位置
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			The default is "\t*%c", which produces something
+			similar to >
+				|        * prefix|
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトは "\t*\c"。これは次のようになる
+@verbatim
+|        * prefix|
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+g:changelog_date_entry_search
+			The search pattern to use when searching for a
+			date-entry.
+			The same tokens that can be used for
+			g:changelog_new_date_format can be used here as well.
+			The default is '^\s*%d\_s*%u' which finds lines
+			matching the form >
+				|2003-01-14  Full Name  <user@host>
+<			and some similar formats.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item g:changelog_date_entry_search
+日付エントリを探すための検索パターン。g:changelog_new_date_formatと同じ特別な文字が使える。デフォルトは '^/\s*%d\_s*%u' で、次のような行
+@example
+|2003-01-14  Full Name  <user@@host>
+@end example
+を見つける。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+g:changelog_date_end_entry_search
+			The search pattern to use when searching for the end
+			of a date-entry.
+			The same tokens that can be used for
+			g:changelog_new_date_format can be used here as well.
+			The default is '^\s*$' which finds lines that contain
+			only whitespace or are completely empty.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item g:changelog_date_end_entry_search
+日付エントリの終端を探すための検索パターン。g:changelog_new_date_format におけるトークンと同じものが使用できる。デフォルトは '^\s*$' で、空白文字のみを含む行または完全な空行を検索する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+b:changelog_name					*b:changelog_name*
+			Name of the ChangeLog file to look for.
+			The default is 'ChangeLog'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{b:changelog_name}
+@cindex b:changelog_name
+@item b:changelog_name
+チェンジログファイルの名前。既定値は 'ChangeLog'。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+b:changelog_path
+			Path of the ChangeLog to use for the current buffer.
+			The default is empty, thus looking for a file named
+			|b:changelog_name| in the same directory as the
+			current buffer.  If not found, the parent directory of
+			the current buffer is searched.  This continues
+			recursively until a file is found or there are no more
+			parent directories to search.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b:changelog_path
+カレントバッファに使うチェンジログのパス。既定では空文字列で、カレントバッファと同じディレクトリから |b:changelog_name| という名前のファイルが検索される。それが見つからない場合は、カレントバッファの親ディレクトリを検索する。ファイルが見つかるか、それ以上上がれなくなるまで、再帰的にこれが繰り返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+b:changelog_entry_prefix
+			Name of a function to call to generate a prefix to a
+			new entry.  This function takes no arguments and
+			should return a string containing the prefix.
+			Returning an empty prefix is fine.
+			The default generates the shortest path between the
+			ChangeLog's pathname and the current buffers pathname.
+			In the future, it will also be possible to use other
+			variable contexts for this variable, for example, g:.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b:changelog_entry_prefix
+新しいエントリのプリフィックスを生成するための関数の名前を指定する。関数は引数を取らず、プリフィックスの文字列を返す。関数は空文字を返しても構わない。デフォルトでは ChangeLog のパスとカレントバッファのパスの間の最短パスが使用される。将来的には他の変数コンテキスト (例えば g:) でも指定できるようになる予定である。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Changelog entries are inserted where they add the least amount of text.
+After figuring out the current date and user, the file is searched for an
+entry beginning with the current date and user and if found adds another item
+under it.  If not found, a new entry and item is prepended to the beginning of
+the Changelog.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+チェンジログエントリは適切な位置に挿入される。現在の日付とユーザーを得た後に、その日付とユーザーのエントリをファイルから探し、見つかればその下にアイテムを加える。なければ新しいエントリとアイテムをファイルの先頭に加える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+FORTRAN							*ft-fortran-plugin*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-fortran-plugin}
+@cindex ft-fortran-plugin
+@unnumberedsubsec フォートラン (FORTRAN)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Options:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec オプション:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+'expandtab'	is switched on to avoid tabs as required by the Fortran
+		standards unless the user has set fortran_have_tabs in .vimrc.
+'textwidth'	is set to 72 for fixed source format as required by the
+		Fortran standards and to 80 for free source format.
+'formatoptions' is set to break code and comment lines and to preserve long
+		lines.  You can format comments with |gq|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item '@option{expandtab}' @tab @file{.vimrc} で fortran_have_tabs が指定されなければ、フォートラン標準に従ってタブ文字を避けるために有効にする。
+@item '@option{textwidth}' @tab フォートラン標準に従って固定形式のソースでは 72 に、自由形式のソースでは 80 に設定される。
+@item '@option{formatoptions}' @tab コードとコメントを分けて、長い行を保持するように設定される。これにより |gq| でコメントを整形できる。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+For further discussion of fortran_have_tabs and the method used for the
+detection of source format see |ft-fortran-syntax|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+fortran_have_tabs についての議論とソース形式の判定法については |ft-fortran-syntax| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+GIT COMMIT                                              *ft-gitcommit-plugin*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-gitcommit-plugin}
+@cindex ft-gitcommit-plugin
+@unnumberedsubsec GIT COMMIT
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+One command, :DiffGitCached, is provided to show a diff of the current commit
+in the preview window.  It is equivalent to calling "git diff --cached" plus
+any arguments given to the command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在のコミットの差分をプレビューウィンドウに表示する @command{:DiffGitCached} というコマンドが提供されている。このコマンドを実行すると、その引数をつけて "git diff --cached" が実行される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MAIL							*ft-mail-plugin*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-mail-plugin}
+@cindex ft-mail-plugin
+@unnumberedsubsec メール (MAIL)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Options:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec オプション:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+'modeline'	is switched off to avoid the danger of trojan horses, and to
+		avoid that a Subject line with "Vim:" in it will cause an
+		error message.
+'textwidth'	is set to 72.  This is often recommended for e-mail.
+'formatoptions'  is set to break text lines and to repeat the comment leader
+		in new lines, so that a leading ">" for quotes is repeated.
+		You can also format quoted text with |gq|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item '@option{modeline}' @tab トロイの木馬の危険を避けるのと、「件名」に含まれる "Vim:" がエラーメッセージの原因となる可能性を排除するために、モード行はオフになる。
+@item '@option{textwidth}' @tab 72 に設定する。e-mail では良く推奨される値。
+@item '@option{formatoptions}' @tab テキストを折返し、新しい行ではコメントリーダーを繰り返すように設定。引用記号の ">" が繰り返される。これにより |gq| で引用文を整形できる。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Local mappings:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec ローカルキーマップ:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<LocalLeader>q   or   \\MailQuote
+	Quotes the text selected in Visual mode, or from the cursor position
+	to the end of the file in Normal mode.  This means "> " is inserted in
+	each line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item <LocalLeader>q または
+@itemx \\MailQuote
+ビジュアルモードでは選択されたテキストを、ノーマルモードではカーソルの位置からファイル末端までのテキストを引用する。これは全ての行に "> " が挿入されることを意味している。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+MAN					*ft-man-plugin* *:Man* *man.vim*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-man-plugin}
+@anchor{:Man}
+@anchor{man.vim}
+@cindex ft-man-plugin
+@cindex :Man
+@cindex man.vim
+@unnumberedsubsec MAN
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Displays a manual page in a nice way.  Also see the user manual
+|find-manpage|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マニュアルページを洗練された方法で表示する。ユーザーマニュアルの |find-manpage| も参照のこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To start using the ":Man" command before any manual page was loaded, source
+this script from your startup vimrc file: >
+
+	runtime ftplugin/man.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マニュアルページを読み込む前に "@command{:Man}" を利用するには、起動 vimrc ファイルでこのスクリプトを読み込む必要がある:
+@example
+runtime ftplugin/man.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Options:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec オプション:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+'iskeyword'	the '.' character is added to be able to use CTRL-] on the
+		manual page name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item '@option{iskeyword}' @tab マニュアルページの名前の上でCTRL-]を使えるようにするために文字 '.' が追加される。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Commands:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec コマンド:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Man {name}	Display the manual page for {name} in a window.
+Man {number} {name}
+		Display the manual page for {name} in a section {number}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item Man @{name@} @tab @{name@} についてのマニュアルページを表示する。
+@item Man @{number@} @{name@} @tab @{number@} セクションの @{name@} についてのマニュアルページを表示する。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Global mapping:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec グローバルキーマップ:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<Leader>K	Displays the manual page for the word under the cursor.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item <Leader>K
+カーソル下の単語についてのマニュアルページを表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<Plug>ManPreGetPage  idem, allows for using a mapping: >
+			nmap <F1> <Plug>ManPreGetPage<CR>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item <Plug>ManPreGetPage
+同上、マッピングを使うことを可能にする:
+@example
+nmap <F1> <Plug>ManPreGetPage<CR>
+@end example
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Local mappings:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec ローカルキーマップ:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+CTRL-]		Jump to the manual page for the word under the cursor.
+CTRL-T		Jump back to the previous manual page.
+q		Same as ":quit"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item @kbd{CTRL-]} @tab カーソルの下の単語についてのマニュアルページへ移動する。
+@item @kbd{CTRL-T} @tab 直前のマニュアルページへ戻る。
+@item q @tab "@command{:quit}" と同じ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To use a vertical split instead of horizontal: >
+	let g:ft_man_open_mode = 'vert'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+水平の代わりに垂直分割を使用するには:
+@example
+let g:ft_man_open_mode = 'vert'
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+To use a new tab: >
+	let g:ft_man_open_mode = 'tab'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しいタブを使うには:
+@example
+let g:ft_man_open_mode = 'tab'
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To enable folding use this: >
+  	let g:ft_man_folding_enable = 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳を有効にするにはこの変数を使う:
+@example
+let g:ft_man_folding_enable = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+If you do not like the default folding, use an autocommand to add your desired
+folding style instead.  For example: >
+        autocmd FileType man setlocal foldmethod=indent foldenable
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしデフォルトの折畳が好みではないのなら、代わりに autocommand を使って望んだ折畳スタイルを追加できる。例:
+@example
+autocmd FileType man setlocal foldmethod=indent foldenable
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You may also want to set 'keywordprg' to make the |K| command open a manual
+page in a Vim window: >
+	set keywordprg=:Man
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{keywordprg}' を設定して、|K| コマンドを Vim ウィンドウのマニュアルページにもできる:
+@example
+set keywordprg=:Man
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MANPAGER				      *manpager.vim*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{manpager.vim}
+@cindex manpager.vim
+@unnumberedsubsec MANPAGER
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The :Man command allows you to turn Vim into a manpager (that syntax highlights
+manpages and follows linked manpages on hitting CTRL-]).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@command{:Man} コマンドを使うと、Vim をマンページにできる (その構文はマンページをハイライト表示し、@kbd{CTRL-]} でヒットしたリンク先のマンページをたどる)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Works on:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+動作する環境:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  - Linux
+  - Mac OS
+  - FreeBSD
+  - Cygwin
+  - Win 10 under Bash
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item Linux
+@item  Mac OS
+@item  FreeBSD
+@item  Cygwin
+@item  Win 10 under Bash
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Untested:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+未テスト:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  - Amiga OS
+  - BeOS
+  - OS/2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item Amiga OS
+@item BeOS
+@item OS/2
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For bash,zsh,ksh or dash by adding to the config file (.bashrc,.zshrc, ...)
+
+	export MANPAGER="env MAN_PN=1 vim -M +MANPAGER -"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+設定ファイル (.bashrc, .zshrc, ...) に bash, zsh, ksh, または dash を追加するには、
+@example
+export MANPAGER="env MAN_PN=1 vim -M +MANPAGER -"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For (t)csh by adding to the config file
+
+	setenv MANPAGER "env MAN_PN=1 vim -M +MANPAGER -"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+設定ファイルに (t)csh を追加するには、
+@example
+setenv MANPAGER "env MAN_PN=1 vim -M +MANPAGER -"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For fish by adding to the config file
+
+	set -x MANPAGER "env MAN_PN=1 vim -M +MANPAGER -"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+設定ファイルに fish を追加するには、
+@example
+set -x MANPAGER "env MAN_PN=1 vim -M +MANPAGER -"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If man sets the $MAN_PN environment variable, like man-db, the most common
+implementation on Linux and Mac OS, then the "env MAN_PN=1 " part above is
+superfluous.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もし man が Linux や Mac OS 上で最も一般的な実装である man-db のような $MAN_PN 環境変数を設定していれば、上の "env MAN_PN = 1" の部分は余計である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+PDF							*ft-pdf-plugin*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-pdf-plugin}
+@cindex ft-pdf-plugin
+@unnumberedsubsec PDF
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Two maps, <C-]> and <C-T>, are provided to simulate a tag stack for navigating
+the PDF.  The following are treated as tags:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+PDF ファイル内をジャンプするため、タグスタックをシミュレートする <C-]> と<C-T> という2つのマップが提供されている。次のものがタグとして扱われる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- The byte offset after "startxref" to the xref table
+- The byte offset after the /Prev key in the trailer to an earlier xref table
+- A line of the form "0123456789 00000 n" in the xref table
+- An object reference like "1 0 R" anywhere in the PDF
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item "startxref" の後から xref テーブルまでのバイトオフセット
+@item トレイラー内の /Prev キーから前の xref テーブルへのバイトオフセット
+@item xref テーブル内の "0123456789 00000 n" という形式の行
+@item PDF 内の任意の位置における "1 0 R" のようなオブジェクト参照
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These maps can be disabled with >
+	:let g:no_pdf_maps = 1
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのマップは次のコマンドで無効化できる
+@example
+:let g:no_pdf_maps = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+PYTHON						*ft-python-plugin* *PEP8*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-python-plugin}
+@anchor{PEP8}
+@cindex ft-python-plugin
+@cindex PEP8
+@unnumberedsubsec PYTHON
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+By default the following options are set, in accordance with PEP8: >
+
+	setlocal expandtab shiftwidth=4 softtabstop=4 tabstop=8
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトでは、PEP8 に従って以下のオプションが設定されている:
+@example
+setlocal expandtab shiftwidth=4 softtabstop=4 tabstop=8
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To disable this behaviour, set the following variable in your vimrc: >
+	
+	let g:python_recommended_style = 0
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この動作を無効にするには、あなたのvimrcに次の変数を設定する:
+@example
+let g:python_recommended_style = 0
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+RPM SPEC						*ft-spec-plugin*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-spec-plugin}
+@cindex ft-spec-plugin
+@unnumberedsubsec RPM SPEC
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Since the text for this plugin is rather long it has been put in a separate
+file: |pi_spec.txt|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このプラグインに関する説明は非常に多いので、別のファイルに記述してある: |pi_spec.txt|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+RUST							*ft-rust*
+
+Since the text for this plugin is rather long it has been put in a separate
+file: |ft_rust.txt|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-rust}
+@cindex ft-rust
+@unnumberedsubsec RUST
+このプラグインに関する説明は非常に多いので、別のファイルに記述してある: |ft_rust.txt|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SQL							*ft-sql*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-sql}
+@cindex ft-sql
+@unnumberedsubsec SQL
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Since the text for this plugin is rather long it has been put in a separate
+file: |ft_sql.txt|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このプラグインについての解説は長くなるので、別のファイルに分割してある: |ft_sql.txt|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+TEX						*ft-tex-plugin* *g:tex_flavor*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-tex-plugin}
+@anchor{g:tex_flavor}
+@cindex ft-tex-plugin
+@cindex g:tex_flavor
+@unnumberedsubsec TEX
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the first line of a *.tex file has the form >
+	%&<format>
+then this determined the file type:  plaintex (for plain TeX), context (for
+ConTeXt), or tex (for LaTeX).  Otherwise, the file is searched for keywords to
+choose context or tex.  If no keywords are found, it defaults to plaintex.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@file{*.tex} ファイルの最初の行が次のような形なら
+@verbatim
+%&<format>
+@end verbatim
+ファイルタイプは次のどれかになる: plaintex (プレーン TeX), context (ConTeXt), tex (LaTeX)。そうでなければ context か tex かを決定するためにファイル内からキーワードを検索する。もしキーワードが見つからなければ既定値として plaintex になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+You can change the default by defining the variable g:tex_flavor to the format
+(not the file type) you use most.  Use one of these: >
+	let g:tex_flavor = "plain"
+	let g:tex_flavor = "context"
+	let g:tex_flavor = "latex"
+Currently no other formats are recognized.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この既定値は、変数 g:tex_flavor を定義すれば変更することができる。次のどれかのようにする:
+@example
+let g:tex_flavor = "plain"
+let g:tex_flavor = "context"
+let g:tex_flavor = "latex"
+@end example
+現在のところこれ以外のフォーマットは識別されない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset

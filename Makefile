@@ -18,7 +18,8 @@ REFMANUALS = \
 	doc/repeat.texi doc/visual.texi doc/various.texi doc/recover.texi \
 	doc/cmdline.texi doc/options.texi doc/pattern.texi doc/map.texi \
 	doc/tagsrch.texi doc/quickfix.texi doc/windows.texi doc/tabpage.texi \
-	doc/syntax.texi doc/spell.texi doc/diff.texi doc/autocmd.texi
+	doc/syntax.texi doc/spell.texi doc/diff.texi doc/autocmd.texi \
+	doc/filetype.texi doc/eval.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
@@ -36,7 +37,8 @@ INCONVENIENTFILES = \
 	$(ORIG)/doc/usr_24.txt \
 	$(ORIG)/doc/quotes.txt \
 	$(ORIG)/doc/map.txt \
-	$(ORIG)/doc/spell.txt
+	$(ORIG)/doc/spell.txt \
+	$(ORIG)/doc/eval.txt
 
 .PHONY: usrhtml refonehtml refhtml usrpdf refpdf kyukana \
 	first diffja nvcheck clean
