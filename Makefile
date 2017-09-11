@@ -50,7 +50,8 @@ first:
 	@echo "	usrpdf:   PDF 版のユーザーマニュアルを生成する"
 	@echo "	refpdf:   PDF 版のリファレンスマニュアルを生成する"
 	@echo "	kyukana:  旧字旧仮名に変換したユーザーマニュアルを生成する"
-	@echo "	diffja:   本家との差分を調べる"
+	@echo "	diffja:   本家との差分を調べる (ja-en)"
+	@echo "	diffen:   本家との差分を調べる (en-en)"
 	@echo "	nvcheck:  表記のゆれをチェックする"
 	@echo "	tagcheck: タグのモレをチェックする"
 	@echo "	clean:    生成したものを削除する"
@@ -96,6 +97,10 @@ diffja:
 	@sh utils/prepare_for_diff.sh -a $(INCONVENIENTFILES)
 	@ruby utils/diff_trans.rb --dir=$(ORIG) $(USRMANUALS) $(REFMANUALS)
 	@sh utils/prepare_for_diff.sh -z $(INCONVENIENTFILES)
+
+diffen:
+	@diff -q -r $(HOME)/dev/vimdoc-ja/en $(ORIG)/doc | grep differ | \
+	sed 's/Files .* and .*\/\(.*\) differ/> \1/'
 
 nvcheck:
 	nvcheck doc/*.texi

@@ -1,6 +1,6 @@
 # Author: nakinor
 # Created: 2017-08-17
-# Revised: 2017-08-18
+# Revised: 2017-09-10
 
 TXTFILES=`find htmls/refman -type file -size +8k`
 BEFORE_TAG_A='<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">'
@@ -25,8 +25,8 @@ do
 	sed -i -e "1,1s|$BEFORE_TAG_A|$AFTER_TAG_A|" $1 $f
 	sed -i -e "1,2s|$BEFORE_TAG_B|$AFTER_TAG_B|" $1 $f
 	sed -i -e "s|$BEFORE_TAG_C|$BEFORE_TAG_C\n$AFTER_TAG_C|" $1 $f
-	sed -i -e "s|$BEFORE_TAG_D|$AFTER_TAG_D|" $1 $f
-	sed -i -e "s|$BEFORE_TAG_E|$AFTER_TAG_E|" $1 $f
+	sed -i -e "s|$BEFORE_TAG_D|$AFTER_TAG_D|g" $1 $f
+	sed -i -e "s|$BEFORE_TAG_E|$AFTER_TAG_E|g" $1 $f
 #	sed -i -e "s|$BEFORE_TAG_F|$AFTER_TAG_F|" $1 $f
 #	sed -i -e "s|$BEFORE_TAG_G|$AFTER_TAG_G|" $1 $f
 done
