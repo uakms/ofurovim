@@ -3,14 +3,14 @@
 @unnumbered 全オプションの説明
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*options.txt*	For Vim version 8.0.  Last change: 2017 Aug 27
+*options.txt*	For Vim version 8.0.  Last change: 2017 Sep 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*options.txt*	For Vim バージョン 8.0.  Last change: 2017 Aug 27
+*options.txt*	For Vim バージョン 8.0.  Last change: 2017 Sep 16
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -1237,11 +1237,34 @@ command, not when assigning a value to an option with ":let".
 							*$HOME-windows*
 On MS-Windows, if $HOME is not defined as an environment variable, then
 at runtime Vim will set it to the expansion of $HOMEDRIVE$HOMEPATH.
+If $HOMEDRIVE is not set then $USERPROFILE is used.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{$HOME-windows}
 @cindex $HOME-windows
-MS-Windows では、@var{$HOME} 環境変数が定義されていない場合は Vim の起動時に @var{$HOMEDRIVE$HOMEPATH} という値で定義される。
+MS-Windows では、@var{$HOME} 環境変数が定義されていない場合は Vim の起動時に @var{$HOMEDRIVE$HOMEPATH} という値で定義される。もしも @var{$HOMEDRIVE} が設定されていなければ @var{$USERPROFILE} が使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This expanded value is not exported to the environment, this matters when
+running an external command: >
+	:echo system('set | findstr ^HOME=')
+and >
+	:echo luaeval('os.getenv("HOME")')
+should echo nothing (an empty string) despite exists('$HOME') being true.
+When setting $HOME to a non-empty string it will be exported to the
+subprocesses.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この展開された値は環境変数には出ていかない。これは外部コマンドを動作しているとにに問題となる:
+@example
+:echo system('set | findstr ^HOME=')
+@end example
+そして
+@example
+:echo luaeval('os.getenv("HOME")')
+@end example
+exists('$HOME') が真であるにも関わらず何も出力しないだろう (空文字列)。@var{$HOME} に空ではない何らかの文字列を設定すると、それはサブプロセスに出力されるだろう。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 
@@ -2042,10 +2065,11 @@ Unicode Standard Annex #11 (@url{http://www.unicode.org/reports/tr11}) を参照
 @ifset EN
 	Vim may set this option automatically at startup time when Vim is
 	compiled with the |+termresponse| feature and if |t_u7| is set to the
-	escape sequence to request cursor position report.
+	escape sequence to request cursor position report.  The response can
+	be found in |v:termu7resp|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-Vim が |+termresponse| 機能付きでコンパイルされ、|t_u7| にカーソル位置取得のためのエスケープシーケンスが設定されているとき、このオプションの値は Vim の起動時に自動的に設定される。
+Vim が |+termresponse| 機能付きでコンパイルされ、|t_u7| にカーソル位置取得のためのエスケープシーケンスが設定されているとき、このオプションの値は Vim の起動時に自動的に設定される。レスポンスは |v:termu7resp| の中に見つけることができる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2480,14 +2504,15 @@ Vim はその値を推測する。GUI 版ならばうまくいくはずだが、
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-	When the t_BG option is set, Vim will use it to request the background
+	When the |t_RB| option is set, Vim will use it to request the background
 	color from the terminal.  If the returned RGB value is dark/light and
 	'background' is not dark/light, 'background' will be set and the
 	screen is redrawn.  This may have side effects, make t_BG empty in
-	your .vimrc if you suspect this problem.
+	your .vimrc if you suspect this problem.  The response to |t_RB| can
+	be found in |v:termrgbresp|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@option{t_BG} オプションが設定されると、Vim はターミナルから背景色をリクエストするために使われる。もしも返された RGB の値が dark/light であり、'@option{background}' が dark/light でなかったなら、'@option{background}' が設定されて画面が再描画される。これは副作用があるかもしれない。問題があると疑わしき場合は、@file{.vimrc} の @option{t_BG} を空にしよう。
+@option{t_RB} オプションが設定されると、Vim はターミナルから背景色をリクエストするために使われる。もしも返された RGB の値が dark/light であり、'@option{background}' が dark/light でなかったなら、'@option{background}' が設定されて画面が再描画される。これは副作用があるかもしれない。問題があると疑わしき場合は、@file{.vimrc} の @option{t_BG} を空にしよう。|t_RB| へのレスポンスは |v:termrgbresp| の中に見つけることができる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -11885,9 +11910,9 @@ set imstatusfunc=ImStatusFunc
 			{not in Vi}
 			{only available when compiled with |+xim| and
 			|+GUI_GTK|}
-	This option specifies the input style of Input Method.
-	Set to zero if you want to use on-the-spot style.
-	Set to one if you want to use over-the-spot style.
+	This option specifies the input style of Input Method:
+	0   use on-the-spot style
+	1   over-the-spot style
 	See: |xim-input-style|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -11905,7 +11930,12 @@ set imstatusfunc=ImStatusFunc
 
 @{Vim が |+xim| と |+GUI_GTK| 機能付きでコンパイルされたときのみ有効@}
 
-このオプションはインプットメソッドの入力スタイルを指定する。もしも on-the-spot スタイルを使いたいのなら 0 に設定する。over-the-spot スタイルを使いたいなら、1 に設定する。|xim-input-style| も参照。
+このオプションはインプットメソッドの入力スタイルを指定する:
+@multitable @columnfractions .1 .9
+@item 0 @tab on-the-spot スタイルを使う
+@item 1 @tab over-the-spot スタイルを使う
+@end multitable
+|xim-input-style| も参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -15631,6 +15661,36 @@ Pasteモードで @key{<F10>} を入力すると "<F10>" が挿入されるの�
 @strong{Note:} @*
 この方法は、$INCL がコンマや空白を含んでいるときには使えないので注意。
 @end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*'perldll'*
+'perldll'		string	(default depends on the build)
+			global
+			{not in Vi}
+			{only available when compiled with the |+perl/dyn|
+			feature}
+	Specifies the name of the Perl shared library. The default is
+	DYNAMIC_PERL_DLL, which was specified at compile time.
+	Environment variables are expanded |:set_env|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{'perldll'}
+@cindex 'perldll'
+@item 'perldll'
+文字列 (既定はビルドに依存する)
+
+グローバル
+
+@{Vi にはない@}
+
+@{Vim が |+perl/dyn| 機能付きでコンパイルされたときのみ有効@}
+
+Perl の共有ライブラリの名前を指定する。既定は DYNAMIC_PERL_DLL で、これはコンパイル時に決められる。環境変数は展開される |:set_env|。
+
+安全上の問題のため、このオプションは |modeline| からの設定も、|sandbox| 中での設定もすることはできない。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
