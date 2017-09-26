@@ -1,0 +1,2357 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node channel.txt, , , 目次
+@unnumbered ジョブ、チャンネル、プロセス間通信
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*channel.txt*      For Vim version 8.0.  Last change: 2017 Aug 11
+
+
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*channel.txt*      For Vim バージョン 8.0.  Last change: 2017 Aug 11
+
+
+		     VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+		      Inter-process communication		*channel*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{channel}
+@cindex channel
+プロセス間通信
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim uses channels to communicate with other processes.
+A channel uses a socket or pipes.			*socket-interface*
+Jobs can be used to start processes and communicate with them.
+The Netbeans interface also uses a channel. |netbeans|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は別のプロセスと通信するのにチャンネルを用います。
+
+チャンネルはソケットまたはパイプを用います。
+
+@anchor{socket-interface}
+@cindex socket-interface
+ジョブはプロセスを開始し、プロセスと通信するために使用できます。
+
+Netbeans インターフェイスもチャンネルを使っています。|netbeans|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Overview				|job-channel-overview|
+2. Channel demo				|channel-demo|
+3. Opening a channel			|channel-open|
+4. Using a JSON or JS channel		|channel-use|
+5. Channel commands			|channel-commands|
+6. Using a RAW or NL channel		|channel-raw|
+7. More channel functions		|channel-more|
+8. Starting a job with a channel	|job-start|
+9. Starting a job without a channel	|job-start-nochannel|
+10. Job options				|job-options|
+11. Controlling a job			|job-control|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item 1. 概要 @tab |@ref{job-channel-overview, , job-channel-overview}|
+@item 2. チャンネルデモ @tab |@ref{channel-demo, , channel-demo}|
+@item 3. チャンネルを開く @tab |@ref{channel-open, , channel-open}|
+@item 4. JSON, JS チャンネルを使う @tab |@ref{channel-use, , channel-use}|
+@item 5. チャンネルコマンド @tab |channel-commands|
+@item 6. RAW, NL チャンネルをつかう @tab |channel-raw|
+@item 7. その他のチャンネル機能 @tab |channel-more|
+@item 8. チャンネルでジョブを開始する @tab |job-start|
+@item 9. チャンネルなしでジョブを開始する @tab |job-start-nochannel|
+@item 10. ジョブオプション @tab |job-options|
+@item 11. ジョブを制御する @tab |job-control|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these features}
+{only when compiled with the |+channel| feature for channel stuff}
+	You can check this with: `has('channel')`
+{only when compiled with the |+job| feature for job stuff}
+	You can check this with: `has('job')`
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらの機能はありません@}
+
+@{Vim が |+channel| 機能付きでコンパイルされたときのみ有効@}
+
+`has('channel')` でこれを確認できる
+
+@{Vim が |+job| 機能付きでコンパイルされたときのみ有効@}
+
+`has('job')` でこれを確認できる
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Overview						*job-channel-overview*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-channel-overview}
+@cindex job-channel-overview
+@section 1. 概要
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are four main types of jobs:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+主に 4 種類のジョブがあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. A daemon, serving several Vim instances.
+   Vim connects to it with a socket.
+2. One job working with one Vim instance, asynchronously.
+   Uses a socket or pipes.
+3. A job performing some work for a short time, asynchronously.
+   Uses a socket or pipes.
+4. Running a filter, synchronously.
+   Uses pipes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item いくつかの Vim インスタンスを扱うデーモン。Vim はソケットで接続します。
+@item 1 つの Vim インスタンスを 1 つのジョブが非同期に処理する。ソケットまたはパイプを使用します。
+@item 短時間、非同期で仕事をするジョブ。ソケットまたはパイプを使用します。
+@item フィルタを同期して実行する。パイプを使用します。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For when using sockets See |job-start|, |job-start-nochannel| and
+|channel-open|.  For 2 and 3, one or more jobs using pipes, see |job-start|.
+For 4 use the ":{range}!cmd" command, see |filter|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ソケットを使用する場合 |job-start|, |job-start-nochannel| および |channel-open| 参照。2 と 3 の場合は、パイプを使用する 1 つ以上のジョブです (|job-start| 参照)。
+
+4 の場合、"@command{:@{range@}!cmd}" コマンドを使用します (|filter| 参照)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Over the socket and pipes these protocols are available:
+RAW	nothing known, Vim cannot tell where a message ends
+NL	every message ends in a NL (newline) character
+JSON	JSON encoding |json_encode()|
+JS	JavaScript style JSON-like encoding |js_encode()|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ソケットとパイプ上でこれらのプロトコルを利用できます:
+@multitable @columnfractions .1 .9
+@item RAW @tab 何も知られていない、Vim はメッセージの終わりを知らせない。
+@item NL @tab すべてのメッセージは NL (改行)文字で終わります。
+@item JSON @tab JSON エンコーディング |json_encode()|
+@item JS @tab JavaScript スタイルの JSON 風のエンコーディング |js_encode()|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Common combination are:
+- Using a job connected through pipes in NL mode.  E.g., to run a style
+  checker and receive errors and warnings.
+- Using a deamon, connecting over a socket in JSON mode.  E.g. to lookup
+  cross-references in a database.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+共通の組み合わせ:
+@itemize @minus
+@item NL モードでパイプを介して接続されたジョブを使用します。例えば、スタイルチェッカーを実行し、エラーと警告を受け取ります。
+@item デーモンを使用して、JSON モードでソケットに接続します。例えば、データベース内の相互参照を参照します。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Channel demo				*channel-demo* *demoserver.py*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{channel-demo}
+@anchor{demoserver.py}
+@cindex channel-demo
+@cindex demoserver.py
+@section 2. チャンネルデモ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This requires Python.  The demo program can be found in
+$VIMRUNTIME/tools/demoserver.py
+Run it in one terminal.  We will call this T1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デモには Python が必要です。デモプログラムは次の場所にあります。
+
+@env{$VIMRUNTIME}/tools/@file{demoserver.py}
+
+それをあるターミナルで実行しましょう。そのターミナルを T1 と呼びます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Run Vim in another terminal.  Connect to the demo server with: >
+	let channel = ch_open('localhost:8765')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次に別のターミナルで Vim を実行します。そして以下のコマンドでサーバーに接続します:
+@example
+let channel = ch_open('localhost:8765')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In T1 you should see:
+	=== socket opened === ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+T1 の中に次のように表示されます:
+@verbatim
+=== socket opened ===
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can now send a message to the server: >
+	echo ch_evalexpr(channel, 'hello!')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ついにサーバーにメッセージを送信できます:
+@example
+echo ch_evalexpr(channel, 'hello!')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The message is received in T1 and a response is sent back to Vim.
+You can see the raw messages in T1.  What Vim sends is:
+	[1,"hello!"] ~
+And the response is:
+	[1,"got it"] ~
+The number will increase every time you send a message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このメッセージは T1 で受信され、Vim には応答が送り返されます。
+
+T1 では Vim が送った生のメッセージを確認できます:
+@verbatim
+[1,"hello!"]
+@end verbatim
+そしてレスポンスはこうなります:
+@verbatim
+[1,"got it"]
+@end verbatim
+この数値はメッセージを送るたびに増加していきます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The server can send a command to Vim.  Type this on T1 (literally, including
+the quotes):
+	["ex","echo 'hi there'"] ~
+And you should see the message in Vim. You can move the cursor a word forward:
+	["normal","w"] ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+サーバーは Vim にコマンドを送信できます。T1 において、次のように正確に (引用符を含めて文字通りに) タイプしてください:
+@verbatim
+["ex","echo 'hi there'"]
+@end verbatim
+するとそのメッセージが Vim に表示されます。カーソルを 1 単語先に移動することができます:
+@verbatim
+["normal","w"]
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To handle asynchronous communication a callback needs to be used: >
+	func MyHandler(channel, msg)
+	  echo "from the handler: " . a:msg
+	endfunc
+	call ch_sendexpr(channel, 'hello!', {'callback': "MyHandler"})
+Vim will not wait for a response.  Now the server can send the response later
+and MyHandler will be invoked.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+非同期通信を取り扱うためにはコールバック(以下ハンドラー)が必要です:
+@verbatim
+func MyHandler(channel, msg)
+  echo "from the handler: " . a:msg
+endfunc
+call ch_sendexpr(channel, 'hello!', {'callback': "MyHandler"})
+@end verbatim
+Vim は応答を待つことはありません。これで、サーバーは応答を後で送信し、MyHandler が呼び出されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Instead of giving a callback with every send call, it can also be specified
+when opening the channel: >
+	call ch_close(channel)
+	let channel = ch_open('localhost:8765', {'callback': "MyHandler"})
+	call ch_sendexpr(channel, 'hello!')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+send を呼ぶたびに毎回コールバックを指定する代わりに、チャンネルを開く際に指定することもできます:
+@verbatim
+call ch_close(channel)
+let channel = ch_open('localhost:8765', {'callback': "MyHandler"})
+call ch_sendexpr(channel, 'hello!')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When trying out channels it's useful to see what is going on.  You can tell
+Vim to write lines in log file: >
+	call ch_logfile('channellog', 'w')
+See |ch_logfile()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+チャンネルを試してみると、何が起こっているのかを知ることができます。あなたは Vim にログファイルに行を書くよう指示することができます:
+@example
+call ch_logfile('channellog', 'w')
+@end example
+|ch_logfile()| 参照.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Opening a channel					*channel-open*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{channel-open}
+@cindex channel-open
+@section 3. チャンネルを開く
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To open a channel: >
+    let channel = ch_open({address} [, {options}])
+    if ch_status(channel) == "open"
+      " use the channel
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+チャンネルを開くには次のようにします:
+@verbatim
+let channel = ch_open({address} [, {options}])
+if ch_status(channel) == "open"
+  " use the channel
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use |ch_status()| to see if the channel could be opened.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|ch_status()| を使用して、チャンネルを開くことができたかどうかを確認します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{address} has the form "hostname:port".  E.g., "localhost:8765".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{address@} は "ホスト名:ポート番号" の形式です。例: "localhost:8765"
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{options} is a dictionary with optional entries:	*channel-open-options*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{channel-open-options}
+@cindex channel-open-options
+@{options@} はオプションのエントリを持つ辞書です:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"mode" can be:						*channel-mode*
+	"json" - Use JSON, see below; most convenient way. Default.
+	"js"   - Use JS (JavaScript) encoding, more efficient than JSON.
+	"nl"   - Use messages that end in a NL character
+	"raw"  - Use raw messages
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{channel-mode}
+@cindex channel-mode
+"mode" でモード (通信フォーマット) を指定します:
+@multitable @columnfractions .1 .9
+@item "json" @tab JSON を使う (詳しくは下記を参照。もっとも使いやすい方法。既定)
+@item "js" @tab JS (JavaScript) エンコーディングを使用し、JSON よりも効率的。
+@item "nl" @tab NL 文字で終わるメッセージを使う
+@item "raw" @tab  raw メッセージを使う
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*channel-callback* *E921*
+"callback"	A function that is called when a message is received that is
+		not handled otherwise.  It gets two arguments: the channel
+		and the received message. Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{channel-callback}
+@anchor{E921}
+@cindex channel-callback
+@cindex E921
+@item "callback"
+メッセージ受信時に他のハンドラーで扱われない時に呼ばれます。これはチャンネルのハンドルと、受信したメッセージの 2 つの引数を取ります。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	func Handle(channel, msg)
+	  echo 'Received: ' . a:msg
+	endfunc
+	let channel = ch_open("localhost:8765", {"callback": "Handle"})
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+func Handle(channel, msg)
+  echo '受信した: ' . a:msg
+endfunc
+let channel = ch_open("localhost:8765", {"callback": "Handle"})
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When "mode" is "json" or "js" the "msg" argument is the body
+		of the received message, converted to Vim types.
+		When "mode" is "nl" the "msg" argument is one message,
+		excluding the NL.
+		When "mode" is "raw" the "msg" argument is the whole message
+		as a string.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"mode" が "json", "js" の時には、"msg" 引数は受信したメッセージの本文で、Vim の型に変換されています。
+
+"mode" が "nl" の時には、"msg" 引数は NL を除く 1 つのメッセージです。
+
+"mode" が "raw" の時には、"msg" 引数はメッセージ全体を格納した文字列です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		For all callbacks: Use |function()| to bind it to arguments
+		and/or a Dictionary.  Or use the form "dict.function" to bind
+		the Dictionary.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべてのコールバック: |function()| を使用して、引数および/または辞書にバインドします。または、"dict.function" という形式を使用して辞書をバインドします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Callbacks are only called at a "safe" moment, usually when Vim
+		is waiting for the user to type a character.  Vim does not use
+		multi-threading.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コールバックは、通常、Vim がユーザーが文字を入力するのを待っているとき、「安全な」瞬間にのみ呼び出されます。Vim はマルチスレッドを使用しません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*close_cb*
+"close_cb"	A function that is called when the channel gets closed, other
+		than by calling ch_close().  It should be defined like this: >
+	func MyCloseHandler(channel)
+<		Vim will invoke callbacks that handle data before invoking
+		close_cb, thus when this function is called no more data will
+		be passed to the callbacks.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{close_cb}
+@cindex close_cb
+@item "close_cb"
+|ch_close()| を呼び出す以外に、チャンネルが閉じられたときに呼び出される関数。このように定義する必要があります:
+@example
+func MyCloseHandler(channel)
+@end example                
+Vim は close_cb を呼び出す前にデータを処理するコールバックを呼び出します。したがって、この関数が呼び出されると、それ以上のデータはコールバックに渡されません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*channel-drop*
+"drop"		Specifies when to drop messages:
+		    "auto"	When there is no callback to handle a message.
+				The "close_cb" is also considered for this.
+		    "never"	All messages will be kept.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{channel-drop}
+@cindex channel-drop
+@item "drop"
+メッセージをいつドロップするかを指定します:
+@multitable @columnfractions .1 .9
+@item "auto" @tab メッセージを処理するコールバックがない場合。 "close_cb" もこのために考慮されます。
+@item "never" @tab すべてのメッセージが保存されます。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*waittime*
+"waittime"	The time to wait for the connection to be made in
+		milliseconds.  A negative number waits forever.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{waittime}
+@cindex waittime
+@item "waittime"
+接続がミリ秒単位で待機する時間。負の数は永遠に待ちます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The default is zero, don't wait, which is useful if a local
+		server is supposed to be running already.  On Unix Vim
+		actually uses a 1 msec timeout, that is required on many
+		systems.  Use a larger value for a remote server, e.g.  10
+		msec at least.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトはゼロで、待機しません。これは、ローカルサーバーがすでに実行されている場合に便利です。Unix Vim では実際には1msのタイムアウトが使われます。多くのシステムではそれが必要なためです。リモートサーバーには大きな値を使用してください。例: 少なくとも 10msec。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*channel-timeout*
+"timeout"	The time to wait for a request when blocking, E.g. when using
+		ch_evalexpr().  In milliseconds.  The default is 2000 (2
+		seconds).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{channel-timeout}
+@cindex channel-timeout
+@item "timeout"
+ブロッキング時にリクエストを待つ時間。例: |ch_evalexpr()| を使用するとき。ミリ秒単位。デフォルトは 2000 (2秒)です。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When "mode" is "json" or "js" the "callback" is optional.  When omitted it is
+only possible to receive a message after sending one.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"mode" が "json" か "js" の時には "callback" はオプションです。これを省略した場合、メッセージを1つ受信するにはメッセージを 1 つ送信する必要があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To change the channel options after opening it use |ch_setoptions()|.  The
+arguments are similar to what is passed to |ch_open()|, but "waittime" cannot
+be given, since that only applies to opening the channel.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+チャンネルオプションを開いた後に変更するには、|ch_setoptions()| を使用します。引数は |ch_open()| に渡されるものと似ていますが、"waittime" は与えられません。これはチャンネルを開く場合にのみ適用されるためです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, the handler can be added or changed: >
+    call ch_setoptions(channel, {'callback': callback})
+When "callback" is empty (zero or an empty string) the handler is removed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、ハンドラーは後から追加したり、変更したりできます:
+@example
+call ch_setoptions(channel, @{'callback': callback@})
+@end example
+"callback" が空の場合 (一度も指定しないか、空文字列を指定した場合) ハンドラーは削除されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+After a callback has been invoked Vim will update the screen and put the
+cursor back where it belongs.  Thus the callback should not need to do
+`:redraw`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コールバックが呼び出された後、Vim は画面を更新し、カーソルをそれが属する場所に戻します。コールバックは `:redraw` を行う必要はありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The timeout can be changed: >
+    call ch_setoptions(channel, {'timeout': msec})
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+タイムアウトは次のように変更できます:
+@example
+call ch_setoptions(channel, @{'timeout': msec@})
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							  *channel-close* *E906*
+Once done with the channel, disconnect it like this: >
+    call ch_close(channel)
+When a socket is used this will close the socket for both directions.  When
+pipes are used (stdin/stdout/stderr) they are all closed.  This might not be
+what you want!  Stopping the job with job_stop() might be better.
+All readahead is discarded, callbacks will no longer be invoked.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{channel-close}
+@anchor{E906}
+@cindex channel-close
+@cindex E906
+チャンネルを使い終わったら、以下のように切断してください:
+@example
+call ch_close(channel)
+@end example
+ソケットが使用されていると、両方向のソケットが閉じられます。パイプが使用されていると (stdin/stdout/stderr)、それらはすべて閉じられます。これはあなたが望むものではないかもしれません! |job_stop()| でジョブを停止する方が良いかもしれません。すべての先読みは破棄され、コールバックは呼び出されなくなります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that a channel is closed in three stages:
+  - The I/O ends, log message: "Closing channel". There can still be queued
+    messages to read or callbacks to invoke.
+  - The readahead is cleared, log message: "Clearing channel".  Some variables
+    may still reference the channel.
+  - The channel is freed, log message: "Freeing channel".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+チャンネルは3つの段階で閉じられることに注意してください:
+@itemize @minus
+@item I/O が終了し、ログメッセージ: "Closing channel" が表示されます。呼び出すための読み込みまたはコールバックのキューに入れられたメッセージがまだ残っている可能性があります。
+@item 先読みがクリアされ、ログメッセージ: "Clearing channel" が表示されます。変数によっては引き続きチャンネルを参照することがあります。
+@item チャンネルが解放され、ログメッセージ： "Freeing channel" が表示されます。
+@end itemize
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the channel can't be opened you will get an error message.  There is a
+difference between MS-Windows and Unix: On Unix when the port doesn't exist
+ch_open() fails quickly.  On MS-Windows "waittime" applies.
+*E898* *E901* *E902*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E898}
+@anchor{E901}
+@anchor{E902}
+@cindex E898
+@cindex E901
+@cindex E902
+チャンネルを開くことができない場合、エラーメッセージが表示されます。MS-Windows と Unix には違いがあります: Unix では、ポートが存在しないとき、|ch_open()| はすぐに失敗します。MS-Windows では "waittime" が適用されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If there is an error reading or writing a channel it will be closed.
+*E630* *E631* 
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E630}
+@anchor{E631}
+@cindex E630
+@cindex E631
+チャンネルを読み書きする際にエラーが発生した場合、チャンネルは閉じられます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Using a JSON or JS channel					*channel-use*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{channel-use}
+@cindex channel-use
+@section 4. JSON、JS チャンネルを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If mode is JSON then a message can be sent synchronously like this: >
+    let response = ch_evalexpr(channel, {expr})
+This awaits a response from the other side.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"mode" が JSON の場合は、以下のようにメッセージを同期的に送信できます:
+@example
+let response = ch_evalexpr(channel, @{expr@})
+@end example
+これは通信相手から応答があるまで待ち合わせます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When mode is JS this works the same, except that the messages use
+JavaScript encoding.  See |js_encode()| for the difference.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+mode が JS の場合は、メッセージが JavaScript エンコーディングを使用する点を除いて、これは同じです。その違いについては、|js_encode()| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To send a message, without handling a response or letting the channel callback
+handle the response: >
+    call ch_sendexpr(channel, {expr})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+応答を処理せずにメッセージを送信する、またはチャンネルコールバックに応答を処理させるには:
+@example
+call ch_sendexpr(channel, @{expr@})
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To send a message and letting the response handled by a specific function,
+asynchronously: >
+    call ch_sendexpr(channel, {expr}, {'callback': Handler})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メッセージを送信し、応答を特別な関数で非同期的に処理する場合には、このようにします:
+@example
+call ch_sendexpr(channel, @{expr@}, @{'callback': Handler@})
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will match the response with the request using the message ID.  Once the
+response is received the callback will be invoked.  Further responses with the
+same ID will be ignored.  If your server sends back multiple responses you
+need to send them with ID zero, they will be passed to the channel callback.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は、メッセージ ID を使用して要求との応答を照合します。応答が受信されると、コールバックが呼び出されます。同じ ID を持つさらなる応答は無視されます。あなたのサーバーが複数の応答を返信する場合、ID ゼロで送信する必要があります。それらはチャンネルコールバックに渡されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The {expr} is converted to JSON and wrapped in an array.  An example of the
+message that the receiver will get when {expr} is the string "hello":
+	[12,"hello"] ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{expr@} は JSON に変換され、配列で包まれます。@{expr@} として文字列 "hello" を送信した場合に、通信相手が受け取るメッセージの例は次のようになります:
+@verbatim
+[12,"hello"]
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The format of the JSON sent is:
+    [{number},{expr}]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+送信される JSON のフォーマットはこのようになっています:
+@verbatim
+[{number},{expr}]
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In which {number} is different every time.  It must be used in the response
+(if any):
+
+    [{number},{response}]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{number@} には毎回異なる値が入ります。これは応答があるならば、必ず使われます:
+@verbatim
+[{number},{response}]
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This way Vim knows which sent message matches with which received message and
+can call the right handler.  Also when the messages arrive out of order.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このようにして、受信したメッセージがどの送信メッセージに対応するかを知ることができ、正しいハンドラーを呼び出すことができます。これによって応答メッセージの到着順序を気にしなくても良くなります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A newline character is terminating the JSON text.  This can be used to
+separate the read text.  For example, in Python:
+	splitidx = read_text.find('\n')
+	message = read_text[:splitidx]
+	rest = read_text[splitidx + 1:]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+改行文字が JSON テキストを終了しています。これは、読み込まれたテキストを区切るために使用できます。例えば Python では:
+@verbatim
+splitidx = read_text.find('\n')
+message = read_text[:splitidx]
+rest = read_text[splitidx + 1:]
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The sender must always send valid JSON to Vim.  Vim can check for the end of
+the message by parsing the JSON.  It will only accept the message if the end
+was received.  A newline after the message is optional.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+送信側はかならず有効な JSON を Vim へ送らなければなりません。Vim は JSON として解釈することで、受信メッセージの終端をチェックします。終端を受信することが、メッセージを受理する唯一の方法です。メッセージ最後の改行はオプションです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the process wants to send a message to Vim without first receiving a
+message, it must use the number zero:
+    [0,{response}]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+サーバープロセスが Vim からのメッセージを受信すること無く、メッセージを送信するには、数値に 0 を使う必要があります。
+@verbatim
+[0,{response}]
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Then channel handler will then get {response} converted to Vim types.  If the
+channel does not have a handler the message is dropped.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+するとチャンネルのハンドラーが @{response@} を Vim の方に変換したものを受け取るでしょう。チャンネルにハンドラーが関連付けられていない場合には、メッセージは破棄されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is also possible to use ch_sendraw() and ch_evalraw() on a JSON or JS
+channel.  The caller is then completely responsible for correct encoding and
+decoding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+JSON または JS チャンネルで |ch_sendraw()| および |ch_evalraw()| を使用することもできます。その場合呼び出し元は、正しくエンコードとデコードを行う完全な責任があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Channel commands					*channel-commands*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{channel-commands}
+@cindex channel-commands
+@section 5. チャンネルコマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+With a JSON channel the process can send commands to Vim that will be
+handled by Vim internally, it does not require a handler for the channel.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+JSON チャンネルを使用すると、サーバープロセス側は Vim へコマンドを送信できます。そのコマンドはチャンネルのハンドラーを介さずに、Vim の内部で実行されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Possible commands are:				*E903* *E904* *E905*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E903}
+@anchor{E904}
+@anchor{E905}
+@cindex E903
+@cindex E904
+@cindex E905
+実行可能なコマンドは以下のとおりです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    ["redraw", {forced}]
+    ["ex",     {Ex command}]
+    ["normal", {Normal mode command}]
+    ["expr",   {expression}, {number}]
+    ["expr",   {expression}]
+    ["call",   {func name}, {argument list}, {number}]
+    ["call",   {func name}, {argument list}]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .9
+@item ["redraw", @{forced@}]
+@item ["ex",     @{Ex コマンド@}]
+@item ["normal", @{ノーマルモードコマンド@}]
+@item ["eval",   @{式@}, @{数値@}]
+@item ["expr",   @{式@}]
+@item ["call",   @{関数名@}, @{引数リスト@}, @{数値@}]
+@item ["call",   @{関数名@}, @{引数リスト@}]
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+With all of these: Be careful what these commands do!  You can easily
+interfere with what the user is doing.  To avoid trouble use |mode()| to check
+that the editor is in the expected state.  E.g., to send keys that must be
+inserted as text, not executed as a command:
+    ["ex","if mode() == 'i' | call feedkeys('ClassName') | endif"] ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらを使うときは、これらのコマンドが何をするかに十分気をつけてください！ユーザーが何をしているかによっては容易に干渉してしまいます。トラブルを避けるには |mode()| を使い、エディタが期待した状態にあるかチェックしてください。例えば、コマンド実行ではなくテキストとして入力させたい文字列を送るには、以下のようにします:
+@example
+["ex","if mode() == 'i' | call feedkeys('ClassName') | endif"]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Errors in these commands are normally not reported to avoid them messing up
+the display.  If you do want to see them, set the 'verbose' option to 3 or
+higher.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのコマンドのエラーは、表示が乱れないようにするため、通常は報告されません。表示したい場合は、'@option{verbose}' オプションを 3 以上に設定してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Command "redraw" ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec コマンド "redraw"
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The other commands do not update the screen, so that you can send a sequence
+of commands without the cursor moving around.  You must end with the "redraw"
+command to show any changed text and show the cursor where it belongs.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他のコマンドは画面を更新しないので、カーソルを動かさずに一連のコマンドを送ることができます。変更されたテキストを表示し、それが属する場所にカーソルを表示するには、"redraw" コマンドで終了する必要があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The argument is normally an empty string:
+	["redraw", ""] ~
+To first clear the screen pass "force":
+	["redraw", "force"] ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数は通常は空の文字列です:
+@example
+["redraw", ""]
+@end example
+最初に画面をクリアするには "force" を渡してください:
+@example
+["redraw", "force"]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Command "ex" ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec コマンド "ex"
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "ex" command is executed as any Ex command.  There is no response for
+completion or error.  You could use functions in an |autoload| script:
+	["ex","call myscript#MyFunc(arg)"]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"ex" コマンドは Ex コマンドを実行します。完了やエラーの応答はありません。|autoload| スクリプトの中の関数を使えます:
+@example
+["ex","call myscript#MyFunc(arg)"]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can also use "call |feedkeys()|" to insert any key sequence.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"call |feedkeys()|" を使用してキーシーケンスを挿入することもできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When there is an error a message is written to the channel log, if it exists,
+and v:errmsg is set to the error.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+エラーが発生すると、チャンネルログにメッセージが書き込まれ、存在する場合は v:errmsg にエラーが設定されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Command "normal" ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec コマンド "normal"
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "normal" command is executed like with ":normal!", commands are not
+mapped.  Example to open the folds under the cursor:
+	["normal" "zO"]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"normal" コマンドは ":normal!" のように実行され、コマンドはマップされません。カーソルの下の折畳を開く例:
+@example
+["normal" "zO"]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Command "expr"  with response ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec コマンド "expr" (応答あり)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "expr" command can be used to get the result of an expression.  For
+example, to get the number of lines in the current buffer:
+	["expr","line('$')", -2] ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"expr" コマンドは、式の結果を得るために使うことができます。たとえば、現在のバッファ内の行数を取得するには、次のようにします:
+@example
+["expr","line('$')", -2]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It will send back the result of the expression:
+	[-2, "last line"] ~
+The format is:
+	[{number}, {result}]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+式の結果を返します:
+@example
+[-2, "last line"]
+@end example
+形式は次のとおりです:
+@example
+[@{number@}, @{result@}]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here {number} is the same as what was in the request.  Use a negative number
+to avoid confusion with message that Vim sends.  Use a different number on
+every request to be able to match the request with the response.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{number@} は、リクエストに指定したのと同じものです。Vim が送信するメッセージとの混乱を避けるには、負の数を使用します。リクエストとレスポンスを一致させるには、リクエストごとに異なる番号を使用します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{result} is the result of the evaluation and is JSON encoded.  If the
+evaluation fails or the result can't be encoded in JSON it is the string
+"ERROR".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{result@} は評価の結果であり、JSON エンコードされています。評価が失敗したり、結果を JSON でエンコードできない場合は、文字列 "ERROR" となります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Command "expr" without a response ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec コマンド "expr" (応答なし)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This command is similar to "expr" above, but does not send back any response.
+Example:
+	["expr","setline('$', ['one', 'two', 'three'])"] ~
+There is no third argument in the request.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドは上記の "expr" に近いのですが、応答を返信しません。例:
+@example
+["expr","setline('$', ['one', 'two', 'three'])"]
+@end example
+リクエストに第 3 引数はありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Command "call" ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec コマンド "call"
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is similar to "expr", but instead of passing the whole expression as a
+string this passes the name of a function and a list of arguments.  This
+avoids the conversion of the arguments to a string and escaping and
+concatenating them.  Example:
+	["call", "line", ["$"], -2] ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは "expr" に似ていますが、式全体を文字列として渡す代わりに、関数の名前と引数のリストを渡します。これは、引数の文字列への変換を避け、エスケープして連結します。例:
+@example
+["call", "line", ["$"], -2]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Leave out the fourth argument if no response is to be sent:
+	["call", "setline", ["$", ["one", "two", "three"]]] ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+応答が送信されない場合は、第 4 引数を省いてください:
+@example
+["call", "setline", ["$", ["one", "two", "three"]]]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Using a RAW or NL channel				*channel-raw*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{channel-raw}
+@cindex channel-raw
+@section 6. RAW、NL チャンネルを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If mode is RAW or NL then a message can be sent like this: >
+    let response = ch_evalraw(channel, {string})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+モードが RAW か NL の場合には、以下のようにしてメッセージを送信します:
+@example
+let response = ch_evalraw(channel, @{string@})
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The {string} is sent as-is.  The response will be what can be read from the
+channel right away.  Since Vim doesn't know how to recognize the end of the
+message you need to take care of it yourself.  The timeout applies for reading
+the first byte, after that it will not wait for anything more.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{string@} はそのまま送信されます。受信した応答メッセージは直ちにチャンネルから読み込み可能になります。この時、Vim にはメッセージの終了をどう判断するかがわかりませんから、あなた自身が面倒を見る必要があります。タイムアウトは、最初のバイトを読み取るために適用され、その後は何も待つことはありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If mode is "nl" you can send a message in a similar way.  You are expected
+to put in the NL after each message.  Thus you can also send several messages
+ending in a NL at once.  The response will be the text up to and including the
+first NL.  This can also be just the NL for an empty response.
+If no NL was read before the channel timeout an empty string is returned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+mode が "nl" の場合、同様の方法でメッセージを送信できます。あなたは各メッセージの後に NL に入れなければなりません。したがって、一度に NL で終わる複数のメッセージを送信することもできます。応答は最初の NL までのテキストとなります。これは空のレスポンスの NL だけでもかまいません。チャンネルタイムアウトの前に NL が読み取られなかった場合、空の文字列が返されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To send a message, without expecting a response: >
+    call ch_sendraw(channel, {string})
+The process can send back a response, the channel handler will be called with
+it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+応答を必要としないメッセージを送信するには以下のようにします:
+@example
+call ch_sendraw(channel, @{string@})
+@end example
+プロセス @{訳注: サーバーのこと@} はレスポンスを返し、チャンネルのハンドラーに渡されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To send a message and letting the response handled by a specific function,
+asynchronously: >
+    call ch_sendraw(channel, {string}, {'callback': 'MyHandler'})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メッセージを送信し、レスポンスを特定の関数で非同期的に取り扱うには以下のようにします:
+@example
+call ch_sendraw(channel, @{string@}, @{'callback': 'MyHandler'@})
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This {string} can also be JSON, use |json_encode()| to create it and
+|json_decode()| to handle a received JSON message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この @{string@} は JSON にもできます。その場合、|json_encode()| でそれを作成し |json_decode()| で受信した JSON メッセージを取り扱います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is not possible to use |ch_evalexpr()| or |ch_sendexpr()| on a raw channel.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+生のチャンネルで |ch_evalexpr()| または |ch_sendexpr()| を使用することはできません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A String in Vim cannot contain NUL bytes.  To send or receive NUL bytes read
+or write from a buffer.  See |in_io-buffer| and |out_io-buffer|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の文字列に NUL バイトを含めることはできません。NUL バイトを送受信するには、バッファから読み書きしてください。|in_io-buffer| と |out_io-buffer| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. More channel functions				*channel-more*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{channel-more}
+@cindex channel-more
+@section 7. その他のチャンネル機能
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To obtain the status of a channel: ch_status(channel).  The possible results
+are:
+	"fail"		Failed to open the channel.
+	"open"		The channel can be used.
+	"buffered"	The channel was closed but there is data to read.
+	"closed"	The channel was closed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+チャンネルのステータスを取得するには、ch_status(channel) を使用します。ありうる結果は次のとおりです:
+@multitable @columnfractions .2 .8
+@item "fail" @tab チャンネルを開くことができませんでした。
+@item "open" @tab チャンネルを使用することができます。
+@item "buffered" @tab チャンネルは閉じられましたが読み込むデータがあります。
+@item "closed" @tab チャンネルが閉じられました。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To obtain the job associated with a channel: ch_getjob(channel)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+チャンネルに関連付けられたジョブを取得するには: ch_getjob(channel)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To read one message from a channel: >
+	let output = ch_read(channel)
+This uses the channel timeout.  To read without a timeout, just get any
+message that is available: >
+	let output = ch_read(channel, {'timeout': 0})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+チャンネルから 1 つのメッセージを読むには:
+@example
+let output = ch_read(channel)
+@end example
+これは、チャンネルのタイムアウトを使用します。タイムアウトなしで読むには、利用可能なメッセージを取得するだけです:
+@example
+let output = ch_read(channel, @{'timeout': 0@})
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When no message was available then the result is v:none for a JSON or JS mode
+channels, an empty string for a RAW or NL channel.  You can use |ch_canread()|
+to check if there is something to read.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メッセージが利用できなかった場合、結果は JSON またはJSモードのチャンネルでは v:none, RAW または NL チャンネルでは空の文字列です。|ch_canread()| を使用して、何かがあるかどうかを調べることができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that when there is no callback, messages are dropped.  To avoid that add
+a close callback to the channel.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+コールバックメッセージがない場合、メッセージは破棄されます。これを回避するには、チャンネルにコールバックを追加します。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To read all output from a RAW channel that is available: >
+	let output = ch_readraw(channel)
+To read the error output: >
+	let output = ch_readraw(channel, {"part": "err"})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使用可能なRAWチャンネルからすべての出力を読み込むには:
+@example
+let output = ch_readraw(channel)
+@end example
+エラー出力を読むには:
+@example
+let output = ch_readraw(channel, @{"part": "err"@})
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ch_read() and ch_readraw() use the channel timeout.  When there is nothing to
+read within that time an empty string is returned.  To specify a different
+timeout in msec use the "timeout" option:
+	{"timeout": 123} ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ch_read() と ch_readraw() はチャンネルタイムアウトを使用します。その時間内に何も読み込めない場合、空の文字列が返されます。別のタイムアウトをミリ秒で指定するには、"timeout" オプションを使用します:
+@example
+@{"timeout": 123@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+To read from the error output use the "part" option:
+	{"part": "err"} ~
+To read a message with a specific ID, on a JS or JSON channel:
+	{"id": 99} ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+エラー出力から読み込むには、"part" オプションを使用します:
+@example
+@{"part": "err"@}
+@end example
+特定の ID を持つメッセージを JS または JSON チャンネルで読み取るには:
+@example
+@{"id": 99@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When no ID is specified or the ID is -1, the first message is returned. This
+overrules any callback waiting for this message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ID が指定されていないか、または ID が -1 の場合、最初のメッセージが返されます。これは、このメッセージを待っているコールバックをすべて無効にします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For a RAW channel this returns whatever is available, since Vim does not know
+where a message ends.
+For a NL channel this returns one message.
+For a JS or JSON channel this returns one decoded message.
+This includes any sequence number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+RAW チャンネルの場合、Vim はメッセージの終わりを知らないので、利用可能なものを返します。
+
+NL チャンネルの場合、これは1つのメッセージを返します。
+
+JS または JSON チャンネルの場合、これは1つのデコードされたメッセージを返します。
+
+これには、任意のシーケンス番号が含まれます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+8. Starting a job with a channel			*job-start* *job*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-start}
+@anchor{job}
+@cindex job-start
+@cindex job
+@section 8. チャンネルでジョブを開始する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To start a job and open a channel for stdin/stdout/stderr: >
+    let job = job_start(command, {options})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブを開始し、stdin/stdout/stderr のチャンネルを開くには:
+@example
+let job = job_start(command, @{options@})
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can get the channel with: >
+    let channel = job_getchannel(job)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+チャンネルを得るには:
+@example
+let channel = job_getchannel(job)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The channel will use NL mode.  If you want another mode it's best to specify
+this in {options}.  When changing the mode later some text may have already
+been received and not parsed correctly.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+チャンネルは NL モードを使用します。別のモードが必要な場合は、@{options@} でこれを指定することをお勧めします。後でモードを変更すると、一部のテキストがすでに受信され、正しく解析されていない可能性があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the command produces a line of output that you want to deal with, specify
+a handler for stdout: >
+    let job = job_start(command, {"out_cb": "MyHandler"})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドが処理したい出力行を生成する場合は、stdout のハンドラを指定します:
+@example
+let job = job_start(command, @{"out_cb": "MyHandler"@})
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The function will be called with the channel and a message. You would define
+it like this: >
+    func MyHandler(channel, msg)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この関数は、チャンネルとメッセージで呼び出されます。あなたはこれをこのように定義します:
+@example
+func MyHandler(channel, msg)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Without the handler you need to read the output with |ch_read()| or
+|ch_readraw()|. You can do this in the close callback, see |read-in-close-cb|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ハンドラがなければ、|ch_read()| または |ch_readraw()| で出力を読み取る必要があります。クローズコールバックでこれを行うことができます。|read-in-close-cb| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that if the job exits before you read the output, the output may be lost.
+This depends on the system (on Unix this happens because closing the write end
+of a pipe causes the read end to get EOF).  To avoid this make the job sleep
+for a short while before it exits.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+出力を読み取る前にジョブが終了すると、出力が失われる可能性があることに注意してください。これはシステムによって異なります (Unix 上では、パイプの書き込み終了を閉じると EOF が得られます)。これを避けるには、ジョブが終了する前にそれをしばらくスリープさせること。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The handler defined for "out_cb" will not receive stderr.  If you want to
+handle that separately, add an "err_cb" handler: >
+    let job = job_start(command, {"out_cb": "MyHandler",
+	    \			  "err_cb": "ErrHandler"})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"out_cb" に定義されたハンドラは stderr を受け取りません。もし個別に扱いたい場合は、"err_cb" ハンドラを追加します:
+@example
+let job = job_start(command, @{"out_cb": "MyHandler",
+        \			  "err_cb": "ErrHandler"@})
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to handle both stderr and stdout with one handler use the
+"callback" option: >
+    let job = job_start(command, {"callback": "MyHandler"}) 
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+1 つのハンドラで stderr と stdout の両方を処理する場合は、"callback" オプションを使用します:
+@example
+let job = job_start(command, @{"callback": "MyHandler"@})
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Depending on the system, starting a job can put Vim in the background, the
+started job gets the focus.  To avoid that, use the `foreground()` function.
+This might not always work when called early, put in the callback handler or
+use a timer to call it after the job has started.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブを Vim のバックグラウンドで起動できるか、ジョブに移行するかはシステムに依存する。これを避けるには `foreground()` 関数を使う。コールバックハンドラーの初期に呼ばれるか、ジョブが起動した後に呼ぶためにタイマーが使われると、常に機能するかはわからない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can send a message to the command with ch_evalraw().  If the channel is in
+JSON or JS mode you can use ch_evalexpr().
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ch_evalraw() でコマンドにメッセージを送ることができます。チャンネルが JSON または JS モードの場合、ch_evalexpr() を使用できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are several options you can use, see |job-options|.
+For example, to start a job and write its output in buffer "dummy": >
+	let logjob = job_start("tail -f /tmp/log",
+			     \ {'out_io': 'buffer', 'out_name': 'dummy'})
+	sbuf dummy
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使用できるオプションがいくつかあります。|job-options| 参照。
+
+例えば、ジョブを開始し、その出力をバッファ "dummy" に書き込むには:
+@example
+let logjob = job_start("tail -f /tmp/log",
+                     \ @{'out_io': 'buffer', 'out_name': 'dummy'@})
+sbuf dummy
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Job input from a buffer ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec バッファからのジョブ入力
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*in_io-buffer*
+To run a job that reads from a buffer: >
+	let job = job_start({command},
+	    \ {'in_io': 'buffer', 'in_name': 'mybuffer'})
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{in_io-buffer}
+@cindex in_io-buffer
+バッファから読み取るジョブを実行するには:
+@example
+let job = job_start(@{command@},
+    \ @{'in_io': 'buffer', 'in_name': 'mybuffer'@})
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*E915* *E918*
+The buffer is found by name, similar to |bufnr()|. The buffer must exist and
+be loaded when job_start() is called.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E915}
+@anchor{E918}
+@cindex E915
+@cindex E918
+バッファは、|bufnr()| と同様の名前で見つけられます。バッファは、job_start() が呼び出されたときに存在し、ロードされていなければなりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+By default this reads the whole buffer.  This can be changed with the "in_top"
+and "in_bot" options.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトでは、これはバッファ全体を読み込みます。これは "in_top" と "in_bot" オプションで変更できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A special mode is when "in_top" is set to zero and "in_bot" is not set: Every
+time a line is added to the buffer, the last-but-one line will be sent to the
+job stdin.  This allows for editing the last line and sending it when pressing
+Enter.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特殊モードは、in_top が 0 に設定され、in_bot が設定されていない場合です。バッファに行が追加されるたびに、最後の 1 行がジョブ stdin に送信されます。これにより、最後の行を編集し、Enter を押したときに送信することができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*channel-close-in*
+When not using the special mode the pipe or socket will be closed after the
+last line has been written.  This signals the reading end that the input
+finished.  You can also use |ch_close_in()| to close it sooner.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{channel-close-in}
+@cindex channel-close-in
+特殊モードを使用しないときは、最後の行が書き込まれた後にパイプまたはソケットが閉じられます。これは、入力が終了した読み取り終了を知らせます。|ch_close_in()| を使用すると、より早く終了することもできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NUL bytes in the text will be passed to the job (internally Vim stores these
+as NL bytes).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストの NUL バイトはジョブに渡されます (内部では Vim はこれらを NL バイトとして格納します)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Reading job output in the close callback ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec クローズコールバックでジョブ出力を読み込む
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*read-in-close-cb*
+If the job can take some time and you don't need intermediate results, you can
+add a close callback and read the output there: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{read-in-close-cb}
+@cindex read-in-close-cb
+ジョブに時間がかかり、中間結果が必要ない場合は、クローズコールバックを追加してそこの出力を読み取ることができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	func! CloseHandler(channel)
+	  while ch_status(a:channel, {'part': 'out'}) == 'buffered'
+	    echomsg ch_read(a:channel)
+	  endwhile
+	endfunc
+	let job = job_start(command, {'close_cb': 'CloseHandler'})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+func! CloseHandler(channel)
+  while ch_status(a:channel, {'part': 'out'}) == 'buffered'
+    echomsg ch_read(a:channel)
+  endwhile
+endfunc
+let job = job_start(command, {'close_cb': 'CloseHandler'})
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You will want to do something more useful than "echomsg".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+あなたは "echomsg" よりも役に立つ何かをしたいでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+9. Starting a job without a channel			*job-start-nochannel*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-start-nochannel}
+@cindex job-start-nochannel
+@section 9. チャンネルなしでジョブを開始する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To start another process without creating a channel: >
+    let job = job_start(command,
+	\ {"in_io": "null", "out_io": "null", "err_io": "null"})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+チャンネルを作成せずに別のプロセスを開始するには:
+@example
+let job = job_start(command,
+    \ @{"in_io": "null", "out_io": "null", "err_io": "null"@})
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This starts {command} in the background, Vim does not wait for it to finish.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはバックグラウンドで @{command@} を開始し、Vim はそれが完了するのを待ちません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When Vim sees that neither stdin, stdout or stderr are connected, no channel
+will be created.  Often you will want to include redirection in the command to
+avoid it getting stuck.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が stdin、stdout、stderr のいずれも接続されていないと判断すると、チャンネルは作成されません。コマンドが停止するのを避けるために、リダイレクションをコマンドに含めることがよくあります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are several options you can use, see |job-options|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使用できるオプションがいくつかあります。|job-options| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*job-start-if-needed*
+To start a job only when connecting to an address does not work, do something
+like this: >
+	let channel = ch_open(address, {"waittime": 0})
+	if ch_status(channel) == "fail"
+	  let job = job_start(command)
+	  let channel = ch_open(address, {"waittime": 1000})
+	endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-start-if-needed}
+@cindex job-start-if-needed
+アドレスへの接続が動作しない時にのみジョブを開始するには、次のような操作を行います:
+@verbatim
+let channel = ch_open(address, {"waittime": 0})
+if ch_status(channel) == "fail"
+  let job = job_start(command)
+  let channel = ch_open(address, {"waittime": 1000})
+endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the waittime for ch_open() gives the job one second to make the port
+available.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ch_open() の待ち時間は、ポートを利用可能にするためにジョブに 1 秒を与えることに注意してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+10. Job options						*job-options*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-options}
+@cindex job-options
+@section 10. ジョブオプション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The {options} argument in job_start() is a dictionary.  All entries are
+optional.  Some options can be used after the job has started, using
+job_setoptions(job, {options}).  Many options can be used with the channel
+related to the job, using ch_setoptions(channel, {options}).
+See |job_setoptions()| and |ch_setoptions()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+job_start() の @{options@} 引数は辞書です。すべての入力はオプションです。job_setoptions(job, @{options@}) を使用して、ジョブの開始後にいくつかのオプションを使用できます。ch_setoptions(channel, @{options@}) を使用して、ジョブに関連するチャンネルで多くのオプションを使用できます。|job_setoptions()| および |ch_setoptions()| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*in_mode* *out_mode* *err_mode*
+"in_mode"		mode specifically for stdin, only when using pipes
+"out_mode"		mode specifically for stdout, only when using pipes
+"err_mode"		mode specifically for stderr, only when using pipes
+			See |channel-mode| for the values.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{in_mode}
+@anchor{out_mode}
+@anchor{err_mode}
+@cindex in_mode
+@cindex out_mode
+@cindex err_mode
+@item "in_mode"
+stdin 用のモード、パイプを使用している場合にのみ。
+@item "out_mode"
+stdout 用のモード、パイプを使用している場合にのみ。
+@item "err_mode"
+stderr 用のモード、パイプを使用している場合にのみ。
+@end table
+値については、|channel-mode| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Note: when setting "mode" the part specific mode is
+			overwritten.  Therefore set "mode" first and the part
+			specific mode later.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"mode" を設定すると、パーツ固有のモードが上書きされます。したがって、最初に "mode" を、後でパーツ固有のモードを設定します。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Note: when writing to a file or buffer and when
+			reading from a buffer NL mode is used by default.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ファイルやバッファに書き込むときやバッファから読み込むときは、NL モードがデフォルトで使用されます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*job-callback*
+"callback": handler	Callback for something to read on any part of the
+			channel.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{job-callback}
+@cindex job-callback
+@item "callback": handler
+チャンネルの任意の部分で何かを読むためのコールバック。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*job-out_cb* *out_cb*
+"out_cb": handler	Callback for when there is something to read on
+			stdout.  Only for when the channel uses pipes.  When
+			"out_cb" wasn't set the channel callback is used.
+			The two arguments are the channel and the message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-out_cb}
+@anchor{out_cb}
+@cindex job-out_cb
+@cindex out_cb
+@item "out_cb": handler
+stdout で読み込むべきものがあるときのコールバック。チャンネルがパイプを使用している場合のみ。"out_cb" が設定されていない場合は、チャンネルコールバックが使用されます。2 つの引数はチャンネルとメッセージです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*job-err_cb* *err_cb*
+"err_cb": handler	Callback for when there is something to read on
+			stderr.  Only for when the channel uses pipes.  When
+			"err_cb" wasn't set the channel callback is used.
+			The two arguments are the channel and the message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-err_cb}
+@anchor{err_cb}
+@cindex job-err_cb
+@cindex err_cb
+@item "err_cb": handler
+stderr で読み込むべきものがあるときのコールバック。チャンネルがパイプを使用している場合のみ。"err_cb" が設定されていない場合は、チャンネルコールバックが使用されます。2 つの引数はチャンネルとメッセージです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*job-close_cb*
+"close_cb": handler	Callback for when the channel is closed.  Same as
+			"close_cb" on |ch_open()|, see |close_cb|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-close_cb}
+@cindex job-close_cb
+@item "close_cb": handler
+チャンネルが閉じられるときのコールバック。|ch_open()| の "close_cb" と同じです。|close_cb| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*job-drop*
+"drop": when		Specifies when to drop messages.  Same as "drop" on
+			|ch_open()|, see |channel-drop|.  For "auto" the
+			exit_cb is not considered.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-drop}
+@cindex job-drop
+@item "drop": when
+メッセージをいつドロップするかを指定します。|ch_open()| の "drop" と同様 (|channel-drop| 参照)。"auto" の場合、exit_cb は考慮されません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*job-exit_cb*
+"exit_cb": handler	Callback for when the job ends.  The arguments are the
+			job and the exit status.
+			Vim checks up to 10 times per second for jobs that
+			ended.  The check can also be triggered by calling
+			|job_status()|, which may then invoke the exit_cb
+			handler.
+			Note that data can be buffered, callbacks may still be
+			called after the process ends.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-exit_cb}
+@cindex job-exit_cb
+@item "exit_cb": handler
+ジョブが終了したときのコールバック。引数はジョブと終了ステータスです。
+
+Vim は、終了したジョブに対して最大 10 回/秒をチェックします。チェックは、|job_status()| を呼び出すことによってトリガーすることもでき、exit_cb ハンドラを呼び出すことができます。
+@quotation
+@strong{Note:} @*
+データがバッファリングされ、プロセスが終了した後もコールバックが呼び出されることに注意してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*job-timeout*
+"timeout": time		The time to wait for a request when blocking, E.g.
+			when using ch_evalexpr().  In milliseconds.  The
+			default is 2000 (2 seconds).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-timeout}
+@cindex job-timeout
+@item "timeout": time
+ブロッキング時にリクエストを待つ時間 (例: ch_evalexpr() を使用するとき。ミリ秒単位。デフォルトは 2000(2 秒) です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*out_timeout* *err_timeout*
+"out_timeout": time	Timeout for stdout.  Only when using pipes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{out_timeout}
+@cindex out_timeout
+@item "out_timeout": time
+stdout のタイムアウト。パイプ使用時のみ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"err_timeout": time	Timeout for stderr.  Only when using pipes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{err_timeout}
+@cindex err_timeout
+@item "err_timeout": time
+stderr のタイムアウト。パイプ使用時のみ。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Note: when setting "timeout" the part specific mode is
+			overwritten.  Therefore set "timeout" first and the
+			part specific mode later.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"timeout" を設定すると、パーツ固有のモードが上書きされます。したがって、最初に "timeout" を設定し、後でパーツ固有のモードを設定します。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*job-stoponexit*
+"stoponexit": {signal}	Send {signal} to the job when Vim exits.  See
+			|job_stop()| for possible values.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{job-stoponexit}
+@cindex job-stoponexit
+@item "stoponexit": @{signal@}
+Vim が終了すると @{signal@} をジョブに送ります。可能な値については、|job_stop()| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"stoponexit": ""	Do not stop the job when Vim exits.
+			The default is "term".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "stoponexit": ""
+Vim が終了してもジョブを停止しません。デフォルトは "term" です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*job-term*
+"term": "open"		Start a terminal in a new window and connect the job
+			stdin/stdout/stderr to it.  Similar to using
+			`:terminal`.
+			NOTE: Not implemented yet!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-term}
+@cindex job-term
+@item "term": "open"
+新しいウィンドウ中でターミナルを起動し、ジョブ stdin/stdout/stderr を接続します。`:terminal` を使うのと似ている。
+@quotation
+@strong{Note:} @*
+まだ実装されていません！
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"channel": {channel}	Use an existing channel instead of creating a new one.
+			The parts of the channel that get used for the new job
+			will be disconnected from what they were used before.
+			If the channel was still used by another job this may
+			cause I/O errors.
+			Existing callbacks and other settings remain.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "channel": @{channel@}
+新しいチャンネルを作成する代わりに、既存のチャンネルを使用します。新しいジョブに使用されるチャンネルの部分は、以前使用された部分から切り離されます。チャンネルが別のジョブで引き続き使用されていた場合、I/O エラーが発生する可能性があります。
+
+既存のコールバックやその他の設定が残っています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"pty": 1		Use a pty (pseudo-tty) instead of a pipe when
+			possible.  This is most useful in combination with a
+			terminal window, see |terminal|.
+			{only on Unix and Unix-like systems}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "pty": 1
+可能ならパイプの代りに pty (pseudo-tty) を使う。ターミナルウィンドウと組み合せるととても有用だ。|terminal| を参照。
+
+@{Unix と Unix系 のシステムでのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				*job-in_io* *in_top* *in_bot* *in_name* *in_buf*
+"in_io": "null"		disconnect stdin (read from /dev/null)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-in_io}
+@cindex job-in_io
+@item "in_io": "null"
+stdin を切断する (/dev/null から読み込む)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"in_io": "pipe"		stdin is connected to the channel (default)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "in_io": "pipe"
+標準入力がチャンネルに接続されている (デフォルト)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"in_io": "file"		stdin reads from a file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "in_io": "file"
+stdin はファイルから読み込む
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"in_io": "buffer"	stdin reads from a buffer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "in_io": "buffer"
+stdin はバッファから読み込む
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"in_top": number	when using "buffer": first line to send (default: 1)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{in_top}
+@cindex in_top
+@item "in_top": number
+"buffer" を使用する場合: 送信する最初の行 (デフォルト: 1)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"in_bot": number	when using "buffer": last line to send (default: last)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{in_bot}
+@cindex in_bot
+@item "in_bot": number
+"buffer" を使用する場合: 送信する最後の行 (デフォルト:最後)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"in_name": "/path/file"	the name of the file or buffer to read from
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{in_name}
+@cindex in_name
+@item "in_name": "/path/file"
+読み込むファイルまたはバッファの名前
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"in_buf": number	the number of the buffer to read from
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{in_buf}
+@cindex in_buf
+@item "in_buf": number
+読み込むバッファの番号
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				*job-out_io* *out_name* *out_buf*
+"out_io": "null"	disconnect stdout (goes to /dev/null)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-out_io}
+@cindex job-out_io
+@item "out_io": "null"
+stdout を切断する (/dev/null に行く)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"out_io": "pipe"	stdout is connected to the channel (default)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item"out_io": "pipe"
+stdout がチャンネルに接続されている (デフォルト)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"out_io": "file"	stdout writes to a file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "out_io": "file"
+stdout がファイルに書き込む
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"out_io": "buffer"	stdout appends to a buffer (see below)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "out_io": "buffer"
+stdout はバッファに追加する (下記参照)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"out_name": "/path/file" the name of the file or buffer to write to
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{out_name}
+@cindex out_name
+@item "out_name": "/path/file"
+書き込むファイルまたはバッファの名前
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"out_buf": number	the number of the buffer to write to
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{out_buf}
+@cindex out_buf
+@item "out_buf": number
+書き込むバッファの番号
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"out_modifiable": 0	when writing to a buffer, 'modifiable' will be off
+			(see below)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "out_modifiable": 0
+バッファに書き込むときに、'@option{modifiable}' はオフになる (下記参照)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"out_msg": 0		when writing to a new buffer, the first line will be
+			set to "Reading from channel output..."
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "out_msg": 0
+新しいバッファに書き込むとき、最初の行は "Reading from channel output..." に設定される
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				*job-err_io* *err_name* *err_buf*
+"err_io": "out"		stderr messages to go to stdout
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-err_io}
+@cindex job-err_io
+@item "err_io": "out"
+stderr のメッセージは stdout に行く
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"err_io": "null"	disconnect stderr  (goes to /dev/null)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "err_io": "null"
+stderr を切断する (/dev/null に行く)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"err_io": "pipe"	stderr is connected to the channel (default)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "err_io": "pipe"
+stderr がチャンネルに接続されている (デフォルト)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"err_io": "file"	stderr writes to a file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "err_io": "file"
+stderr はファイルに書き込む
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"err_io": "buffer"	stderr appends to a buffer (see below)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "err_io": "buffer"
+stderr はバッファに追加する (下記参照)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"err_name": "/path/file" the name of the file or buffer to write to
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{err_name}
+@cindex err_name
+@item "err_name": "/path/file"
+書き込むファイルまたはバッファの名前
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"err_buf": number	the number of the buffer to write to
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{err_buf}
+@cindex err_buf
+@item "err_buf": number
+書き込むバッファの番号
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"err_modifiable": 0	when writing to a buffer, 'modifiable' will be off
+			(see below)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "err_modifiable": 0
+バッファに書き込むときに、'@option{modifiable}' はオフになる (下記参照)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"err_msg": 0		when writing to a new buffer, the first line will be
+			set to "Reading from channel error..."
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "err_msg": 0
+新しいバッファに書き込むとき、最初の行は "Reading from channel error..." に設定される
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"block_write": number	only for testing: pretend every other write to stdin
+			will block
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "block_write": number
+テストのためにのみ: stdin への他のすべての書き込みをブロックするふりをする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"env": dict		environment variables for the new process
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "env": dict
+新しいプロセスのための環境変数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+"cwd": "/path/to/dir"	current working directory for the new process;
+			if the directory does not exist an error is given
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "cwd": "/path/to/dir"
+新しいプロセスのためのカレントディレクトリ。ディレクトリが存在しなければエラーが与えられる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Writing to a buffer ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec バッファへの書き込み
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*out_io-buffer*
+When the out_io or err_io mode is "buffer" and there is a callback, the text
+is appended to the buffer before invoking the callback.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{out_io-buffer}
+@cindex out_io-buffer
+out_io または err_io モードが "buffer" で、コールバックがある場合、コールバックを呼び出す前にテキストがバッファに追加されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When a buffer is used both for input and output, the output lines are put
+above the last line, since the last line is what is written to the channel
+input.  Otherwise lines are appended below the last line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+入力と出力の両方にバッファが使用されている場合、最後の行はチャンネル入力に書き込まれたものなので、出力行は最後の行の上に置かれます。それ以外の場合は最後の行の下に行が追加されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When using JS or JSON mode with "buffer", only messages with zero or negative
+ID will be added to the buffer, after decoding + encoding.  Messages with a
+positive number will be handled by a callback, commands are handled as usual.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"buffer" を指定して JS または JSON モードを使用すると、デコード + エンコーディング後に、ゼロまたは負の ID を持つメッセージのみがバッファに追加されます。正の数を持つメッセージはコールバックによって処理され、コマンドは通常通り処理されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The name of the buffer from "out_name" or "err_name" is compared the full name
+of existing buffers, also after expanding the name for the current directory.
+E.g., when a buffer was created with ":edit somename" and the buffer name is
+"somename" it will use that buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"out_name" または "err_name" のバッファ名は、現在のディレクトリの名前を拡張した後も、既存のバッファの完全名と比較されます。たとえば、"@command{:edit somename}" でバッファが作成され、バッファ名が "somename" の場合、そのバッファが使用されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If there is no matching buffer a new buffer is created.  Use an empty name to
+always create a new buffer.  |ch_getbufnr()| can then be used to get the
+buffer number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一致するバッファがない場合、新しいバッファが作成されます。新しいバッファを常に作成するには、空の名前を使用します。|ch_getbufnr()| を使用してバッファ番号を取得できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For a new buffer 'buftype' is set to "nofile" and 'bufhidden' to "hide".  If
+you prefer other settings, create the buffer first and pass the buffer number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しいバッファの場合、'@option{buftype}' は "nofile" に設定され、'@option{bufhidden}' は "hide" に設定されます。他の設定が必要な場合は、まずバッファを作成し、バッファ番号を渡します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+					*out_modifiable* *err_modifiable*
+The "out_modifiable" and "err_modifiable" options can be used to set the
+'modifiable' option off, or write to a buffer that has 'modifiable' off.  That
+means that lines will be appended to the buffer, but the user can't easily
+change the buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{out_modifiable}
+@anchor{err_modifiable}
+@cindex out_modifiable
+@cindex err_modifiable
+"out_modifiable" と "err_modifiable" オプションは、'@option{modifiable}' オプションをオフにするか、'@option{modifiable}' になっているバッファに書き込むために使用できます。つまり、行がバッファに追加されますが、ユーザーはバッファを簡単に変更できません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+					*out_msg* *err_msg*
+The "out_msg" option can be used to specify whether a new buffer will have the
+first line set to "Reading from channel output...".  The default is to add the
+message.  "err_msg" does the same for channel error.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{out_msg}
+@anchor{err_msg}
+@cindex out_msg
+@cindex err_msg
+"out_msg" オプションは、新しいバッファが最初の行を "Reading from channel output..." に設定するかどうかを指定するために使用できます。デフォルトではメッセージを追加します。"err_msg" はチャンネルエラーでも同じです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When an existing buffer is to be written where 'modifiable' is off and the
+"out_modifiable" or "err_modifiable" options is not zero, an error is given
+and the buffer will not be written to.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+既存のバッファに '@option{modifiable}' が指定されておらず、"out_modifiable" または "err_modifiable" オプションがゼロでない場合、エラーが発生し、バッファに書き込まれません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the buffer written to is displayed in a window and the cursor is in the
+first column of the last line, the cursor will be moved to the newly added
+line and the window is scrolled up to show the cursor if needed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+書き込まれたバッファがウィンドウに表示され、カーソルが最後の行の最初の列にある場合、カーソルは新しく追加された行に移動され、ウィンドウは必要に応じてカーソルを表示するために上にスクロールされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Undo is synced for every added line.  NUL bytes are accepted (internally Vim
+stores these as NL bytes).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+追加されたすべての行に対して、取り消しが同期されます。NUL バイトは受け入れられます(内部では Vim はこれらを NL バイトとして格納します)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Writing to a file ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec ファイルへの書き込み
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*E920*
+The file is created with permissions 600 (read-write for the user, not
+accessible for others).  Use |setfperm()| to change this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E920}
+@cindex E920
+ファイルはアクセス許可 600 (ユーザーに対しては読み書き可能、他のユーザーはアクセス不可)で作成されます。これを変更するには、|setfperm()| を使用してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the file already exists it is truncated.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルがすでに存在する場合は切り捨てられます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+11. Controlling a job					*job-control*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-control}
+@cindex job-control
+@section 11. ジョブを制御する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To get the status of a job: >
+	echo job_status(job)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブの状態を取得するには:
+@example
+echo job_status(job)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To make a job stop running: >
+	job_stop(job)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブの実行を停止するには:
+@example
+job_stop(job)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is the normal way to end a job. On Unix it sends a SIGTERM to the job.
+It is possible to use other ways to stop the job, or even send arbitrary
+signals.  E.g. to force a job to stop, "kill it": >
+	job_stop(job, "kill")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはジョブを終了させる通常の方法です。Unix では、ジョブに SIGTERM を送信します。他の方法でジョブを停止したり、任意の信号を送信したりすることもできます。例えば、ジョブを強制的に停止させるには、"kill it":
+@example
+job_stop(job, "kill")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For more options see |job_stop()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他のオプションについては、|job_stop()| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
