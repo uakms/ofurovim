@@ -19,7 +19,7 @@ REFMANUALS = \
 	doc/cmdline.texi doc/options.texi doc/pattern.texi doc/map.texi \
 	doc/tagsrch.texi doc/quickfix.texi doc/windows.texi doc/tabpage.texi \
 	doc/syntax.texi doc/spell.texi doc/diff.texi doc/autocmd.texi \
-	doc/filetype.texi doc/eval.texi
+	doc/filetype.texi doc/eval.texi doc/channel.texi doc/fold.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
