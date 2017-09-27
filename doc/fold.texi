@@ -1,0 +1,1662 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node fold.txt, , , 目次
+@unnumbered ある範囲を隠す (折り畳む)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*fold.txt*      For Vim version 8.0.  Last change: 2017 Mar 18
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*fold.txt*      For Vim バージョン 8.0.  Last change: 2017 Mar 18
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Folding						*Folding* *folding* *folds*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{Folding}
+@anchor{folding}
+@anchor{folds}
+@cindex Folding
+@cindex folding
+@cindex folds
+折畳 (Folding)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can find an introduction on folding in chapter 28 of the user manual.
+|usr_28.txt|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザーマニュアルの 28 章に折畳についての紹介がされている。|@ref{usr_28.txt, , usr_28.txt}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Fold methods		|fold-methods|
+2. Fold commands	|fold-commands|
+3. Fold options		|fold-options|
+4. Behavior of folds	|fold-behavior|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. 折畳方法 @tab |@ref{fold-methods, , fold-methods}|
+@item 2. 折畳コマンド @tab |@ref{fold-commands, , fold-commands}|
+@item 3. 折畳オプション @tab |@ref{fold-options, , fold-options}|
+@item 4. 折畳の振舞 @tab |@ref{fold-behavior, , fold-behavior}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi has no Folding}
+{not available when compiled without the |+folding| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi には折畳は無い@}
+
+@{|+folding| 機能無しでコンパイルした場合には利用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Fold methods					*fold-methods*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-methods}
+@cindex fold-methods
+@section 1. 折畳方法
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The folding method can be set with the 'foldmethod' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳を行う方法は '@option{foldmethod}' オプションで設定できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When setting 'foldmethod' to a value other than "manual", all folds are
+deleted and new ones created.  Switching to the "manual" method doesn't remove
+the existing folds.  This can be used to first define the folds automatically
+and then change them manually.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{foldmethod}' を "manual" 以外の値に設定すると、存在している折畳は全て削除され新たな折畳が作成される。"manual" に切換えた時には既存の折畳は削除されない。これを利用すればまず自動的に折畳を定義し、それから手動で変更することが可能である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are six methods to select folds:
+	manual		manually define folds
+	indent		more indent means a higher fold level
+	expr		specify an expression to define folds
+	syntax		folds defined by syntax highlighting
+	diff		folds for unchanged text
+	marker		folds defined by markers in the text
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳方法は 6 つの中から選択できる:
+@multitable @columnfractions .2 .8
+@item manual @tab 手動で折畳を定義する
+@item indent @tab インデントの数を折畳のレベル (深さ) とする
+@item expr @tab 折畳を定義する式を指定する
+@item syntax @tab 構文強調により折畳を定義する
+@item diff @tab 変更されていないテキストを折畳対象とする
+@item marker @tab テキスト中の印で折畳を定義する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MANUAL						*fold-manual*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-manual}
+@cindex fold-manual
+@unnumberedsubsec 手動 (MANUAL)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use commands to manually define the fold regions.  This can also be used by a
+script that parses text to find folds.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳領域を定義するためにコマンドを手動で利用する。これはテキスト中の折畳を行う箇所をスクリプトにより解析するのに使うこともできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The level of a fold is only defined by its nesting.  To increase the fold
+level of a fold for a range of lines, define a fold inside it that has the
+same lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳のレベルは折畳の入れ子の深さとなる。ある行範囲の折畳レベルを増やすには、折畳がある同じ範囲に対して再び折畳を設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The manual folds are lost when you abandon the file.  To save the folds use
+the |:mkview| command.  The view can be restored later with |:loadview|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+手動折畳はファイルを放棄すると失われる。折畳を保存するには |:mkview| コマンドを使用する。後に復元するには |:loadview| を使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+INDENT						*fold-indent*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-indent}
+@cindex fold-indent
+@unnumberedsubsec インデント (INDENT)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The folds are automatically defined by the indent of the lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳は各行のインデントにより自動的に定義される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The foldlevel is computed from the indent of the line, divided by the
+'shiftwidth' (rounded down).  A sequence of lines with the same or higher fold
+level form a fold, with the lines with a higher level forming a nested fold.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳レベルは各行のインデント量を、'@option{shiftwidth}' で割る (端数切捨て) ことで計算される。同じかより高い折畳レベルを持った一続きの範囲は 1 つの折畳を形成し、より高いレベルを持った範囲はその中で入れ子の折畳となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The nesting of folds is limited with 'foldnestmax'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳の入れ子は '@option{foldnestmax}' によって制限される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some lines are ignored and get the fold level of the line above or below it,
+whichever is lower.  These are empty or white lines and lines starting
+with a character in 'foldignore'.  White space is skipped before checking for
+characters in 'foldignore'.  For C use "#" to ignore preprocessor lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ある行ではインデントを無視して直ぐ上か下の行のうち、低いほうの折畳レベルが使用される。無視されるのは完全な空行か、空白文字だけからなる行、および '@option{foldignore}' の文字で始まる行である。'@option{foldignore}' の文字の前に空白文字があっても無視される。C ではプリプロセッサー行を無視するために "#" を使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you want to ignore lines in another way, use the "expr" method.  The
+|indent()| function can be used in 'foldexpr' to get the indent of a line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他の方法で無視する行を定義するには、"expr" の方法を使用する。'@option{foldexpr}' の中で、ある行のインデントを取得するのに、関数|indent()|を使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+EXPR						*fold-expr*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-expr}
+@cindex fold-expr
+@unnumberedsubsec 式 (EXPR)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The folds are automatically defined by their foldlevel, like with the "indent"
+method.  The value of the 'foldexpr' option is evaluated to get the foldlevel
+of a line.  Examples:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳は "indent" 方式のように、折畳レベルによって自動的に定義される。'@option{foldexpr}' オプションの値は、各行についてこの折畳レベルを計算するためにスクリプトとして実行される。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This will create a fold for all consecutive lines that start with a tab: >
+	:set foldexpr=getline(v:lnum)[0]==\"\\t\"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+タブで始まる一連の行範囲を 1 つの折畳にまとめる:
+@example
+:set foldexpr=getline(v:lnum)[0]==\"\\t\"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This will call a function to compute the fold level: >
+	:set foldexpr=MyFoldLevel(v:lnum)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳レベルを計算するのに Vim script の関数を呼び出す:
+@example
+:set foldexpr=MyFoldLevel(v:lnum)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This will make a fold out of paragraphs separated by blank lines: >
+	:set foldexpr=getline(v:lnum)=~'^\\s*$'&&getline(v:lnum+1)=~'\\S'?'<1':1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+空行で仕切られた「段落」を折畳とする:
+@example
+:set foldexpr=getline(v:lnum)=~'^\\s*$'&&getline(v:lnum+1)=~'\\S'?'<1':1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This does the same: >
+	:set foldexpr=getline(v:lnum-1)=~'^\\s*$'&&getline(v:lnum)=~'\\S'?'>1':1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同じ事(「段落」を折畳に)をする別の表現:
+@example
+:set foldexpr=getline(v:lnum-1)=~'^\\s*$'&&getline(v:lnum)=~'\\S'?'>1':1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that backslashes must be used to escape characters that ":set" handles
+differently (space, backslash, double quote, etc., see |option-backslash|).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+バックスラッシュ (日本では \ 記号)が ":set" の流儀で、通常とは異なるキャラクタ (空白文字、バックスラッシュ、ダブルクォート、その他、詳細は |option-backslash| 参照) をエスケープしていることに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These are the conditions with which the expression is evaluated:
+- The current buffer and window are set for the line.
+- The variable "v:lnum" is set to the line number.
+- The result is used for the fold level in this way:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+式が評価される際の前提条件は以下の通り:
+@itemize @minus
+@item その行について現在のバッファとウィンドウが常に存在している。
+@item 変数 "v:lnum" には評価対象となる行番号が設定されている。
+@item 式の結果 (戻り値) は以下の形式で折畳レベルを示す:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+  value			meaning ~
+  0			the line is not in a fold
+  1, 2, ..		the line is in a fold with this level
+  -1			the fold level is undefined, use the fold level of a
+			line before or after this line, whichever is the
+			lowest.
+  "="			use fold level from the previous line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@headitem 値 @tab 意味
+@item 0 @tab 対象行は折畳に含まれない
+@item 1, 2, .. @tab 対象行はこのレベルの折畳に含まれる
+@item -1 @tab 折畳レベルを未定義とし、対象行の直前か直後の行のうち低い方を、対象行のレベルとする。
+@item "=" @tab 直前の行と同じレベルを使用する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+  "a1", "a2", ..	add one, two, .. to the fold level of the previous
+			line, use the result for the current line
+  "s1", "s2", ..	subtract one, two, .. from the fold level of the
+			previous line, use the result for the next line
+  "<1", "<2", ..	a fold with this level ends at this line
+  ">1", ">2", ..	a fold with this level starts at this line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "a1", "a2", .. @tab 直前の行のレベルを +1, +2 して、結果を現在の行に適用する。
+@item "s1", "s2", .. @tab 直前の行のレベルを -1, -2 して、結果を現在の行に適用する。
+@item "<1", "<2", .. @tab 指定したレベルの折畳を対象行で終了する
+@item ">1", ">2", .. @tab 指定したレベルの折畳を対象行から開始する
+@end multitable
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is not required to mark the start (end) of a fold with ">1" ("<1"), a fold
+will also start (end) when the fold level is higher (lower) than the fold
+level of the previous line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳は直前の行の折畳レベルより高い (低い) 行から開始 (終了) されるので、折畳の開始 (終了) マーク ">1" ("<1") は明示的に指定する必要は無い。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There must be no side effects from the expression.  The text in the buffer,
+cursor position, the search patterns, options etc. must not be changed.
+You can change and restore them if you are careful.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+式に副作用があってはならない。バッファ内のテキストや、カーソルの位置や、検索パターン、オプションその他。どれひとつ変更してはならない。ただし、注意深く行えば、変更してもそれを復元しておけばよい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If there is some error in the expression, or the resulting value isn't
+recognized, there is no error message and the fold level will be zero.
+For debugging the 'debug' option can be set to "msg", the error messages will
+be visible then.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+式にエラーがあるか、結果が認識できない時には、何のエラーメッセージも表示せずに折畳レベルは 0 に設定される。'@option{debug}' オプションに "@var{msg}" を設定すれば、エラーメッセージが表示されるようになるので、デバッグに利用できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: Since the expression has to be evaluated for every line, this fold
+method can be very slow!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+各行について式評価が実行されるので、この折畳方式は非常に動作が遅くなる可能性がある！
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Try to avoid the "=", "a" and "s" return values, since Vim often has to search
+backwards for a line for which the fold level is defined.  This can be slow.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"=", "a", そして "s" は極力避けるようにする。なぜなら Vim はそれらが使われると、折畳レベルが定義された行が見つかるまで戻って、幾度も検索を行わなければならないからだ。これは動作が遅くなることがある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An example of using "a1" and "s1": For a multi-line C comment, a line
+containing "/*" would return "a1" to start a fold, and a line containing "*/"
+would return "s1" to end the fold after that line: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"a1" と "s1" の使用例: C 言語の複数行コメントを折りたたむ場合、"/*" を含む行では "a1" を返してその開始位置を、"*/" を含む行では "s1" を返してその終了位置を示す:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+  if match(thisline, '/\*') >= 0
+    return 'a1'
+  elseif match(thisline, '\*/') >= 0
+    return 's1'
+  else
+    return '='
+  endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if match(thisline, '/\*') >= 0
+  return 'a1'
+elseif match(thisline, '\*/') >= 0
+  return 's1'
+else
+  return '='
+endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+However, this won't work for single line comments, strings, etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ただし、単一行コメント内、文字列リテラル内などではこれは正しく機能しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|foldlevel()| can be useful to compute a fold level relative to a previous
+fold level.  But note that foldlevel() may return -1 if the level is not known
+yet.  And it returns the level at the start of the line, while a fold might
+end in that line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+フォールドレベルを調べるには |foldlevel()| を使うのが便利である。レベルがわからないときは -1 を返すことに注意すること。フォールドがその行で終わっているときには行頭のレベルを返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It may happen that folds are not updated properly.  You can use |zx| or |zX|
+to force updating folds.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳が適切に更新されない場合がある。その場合は |zx| か |zX| を使って強制的に更新すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SYNTAX						*fold-syntax*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-syntax}
+@cindex fold-syntax
+@unnumberedsubsec 構文 (SYNTAX)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A fold is defined by syntax items that have the "fold" argument. |:syn-fold|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳が "fold" 引数を持つ構文要素によって定義される。|:syn-fold|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The fold level is defined by nesting folds.  The nesting of folds is limited
+with 'foldnestmax'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳レベルは入れ子によって定義される。入れ子の深さは '@option{foldnestmax}' によって制限される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Be careful to specify proper syntax syncing.  If this is not done right, folds
+may differ from the displayed highlighting.  This is especially relevant when
+using patterns that match more than one line.  In case of doubt, try using
+brute-force syncing: >
+	:syn sync fromstart
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+シンタックスの同期の設定に注意すること。これが正しく設定されていないとフォールドが間違ったハイライトで表示される。これは特に複数行にマッチするシンタックスで問題になる。そのようなときには次のような力技がある:
+@example
+:syn sync fromstart
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+DIFF						*fold-diff*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-diff}
+@cindex fold-diff
+@unnumberedsubsec 差分 (DIFF)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The folds are automatically defined for text that is not part of a change or
+close to a change.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストの変更された箇所とその近辺以外が自動的に折畳として定義される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This method only works properly when the 'diff' option is set for the current
+window and changes are being displayed.  Otherwise the whole buffer will be
+one big fold.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この方法は現在のウィンドウに対して '@option{diff}' オプションが設定されている時にだけ正しく働き、変更点が表示される。そうでない場合バッファ全体が 1 つの大きな折畳となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'diffopt' option can be used to specify the context.  That is, the number
+of lines between the fold and a change that are not included in the fold.  For
+example, to use a context of 8 lines: >
+	:set diffopt=filler,context:8
+The default context is six lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コンテキスト (の行数) を指定するのに '@option{diffopt}' を使うことができる。これにより変更点の近辺の折畳に含まない行数を指定できる。下の例では 8 行表示するように設定している:
+@example
+:set diffopt=filler,context:8
+@end example
+省略した場合には 6 行が表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When 'scrollbind' is also set, Vim will attempt to keep the same folds open in
+other diff windows, so that the same text is visible.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{scrollbind}' が設定されているとき、Vim は他のウィンドウと見た目が同じになるようにフォールドを開いた状態に保とうとする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MARKER						*fold-marker*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-marker}
+@cindex fold-marker
+@unnumberedsubsec 印 (MARKER)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Markers in the text tell where folds start and end.  This allows you to
+precisely specify the folds.  This will allow deleting and putting a fold,
+without the risk of including the wrong lines.  The 'foldtext' option is
+normally set such that the text before the marker shows up in the folded line.
+This makes it possible to give a name to the fold.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキスト中の印により折畳の開始と終了地点を指定する。これにより明確に折畳を設定することができる。また誤った行を含むことなく、折畳を削除・設定できる。通常 '@option{foldtext}' オプションは折畳の行に表示されるテキストとして、印の直前のテキスト設定する。これにより折畳に名前を設定することが可能になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Markers can have a level included, or can use matching pairs.  Including a
+level is easier, you don't have to add end markers and avoid problems with
+non-matching marker pairs.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+印には折畳レベルを含むことができ、また開始と終了で対になる文字を使うこともできる。必ずしも終了の印を加える必要はなく、また対がない印が無い場合の問題も避けられるので、レベルを含んだほうがより簡単である。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	/* global variables {{{1 */
+	int varA, varB;
+
+	/* functions {{{1 */
+	/* funcA() {{{2 */
+	void funcA() {}
+
+	/* funcB() {{{2 */
+	void funcB() {}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+/* グローバル変数 {{{1 */
+int varA, varB;
+
+/* 関数 {{{1 */
+/* funcA() {{{2 */
+void funcA() {}
+
+/* funcB() {{{2 */
+void funcB() {}
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A fold starts at a "{{{" marker.  The following number specifies the fold
+level.  What happens depends on the difference between the current fold level
+and the level given by the marker:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳は印 "@{@{@{" で開始する。印の後ろの番号は折畳レベルを示す。現在の折畳レベルと異なるレベルが印によって与えられた時に何が起こるかは、そのレベルの差に依存する:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. If a marker with the same fold level is encountered, the previous fold
+   ends and another fold with the same level starts.
+2. If a marker with a higher fold level is found, a nested fold is started.
+3. If a marker with a lower fold level is found, all folds up to and including
+   this level end and a fold with the specified level starts.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item 同じ折畳レベルの印が与えられた時には、前の折畳は終了し同じレベルの新たな折畳が開始する。
+@item 高い折畳レベルの印を見つけた時には、入れ子の折畳が開始する。
+@item 低い折畳レベルの印を見つけた時には、指定されたレベル以上の全部の折畳を終了し、指定されたレベルで新たな折畳が開始する。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The number indicates the fold level.  A zero cannot be used (a marker with
+level zero is ignored).  You can use "}}}" with a digit to indicate the level
+of the fold that ends.  The fold level of the following line will be one less
+than the indicated level.  Note that Vim doesn't look back to the level of the
+matching marker (that would take too much time).  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+番号は折畳レベルを示す。0 を使うことはできない (レベル 0 の印は無視される)。特定のレベルの折畳を終了させるため "@}@}@}" 数字を付けて使うことができる。その印の直後の行の折畳レベルは示されたレベルよりも 1 つだけ低くなる。Vim は指定されたレベルにマッチする印を検索はしないことに注意 (計算に時間がかかりすぎてしまうので)。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	{{{1
+	fold level here is 1
+	{{{3
+	fold level here is 3
+	}}}3
+	fold level here is 2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+{{{1
+ここからレベル 1 の折畳
+{{{3
+ここからレベル 3 の折畳
+}}}3
+ここからレベル 2 の折畳
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can also use matching pairs of "{{{" and "}}}" markers to define folds.
+Each "{{{" increases the fold level by one, each "}}}" decreases the fold
+level by one.  Be careful to keep the markers matching!  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳を定義するのに対になる "@{@{@{" と "@}@}@}" を使用することもできる。折畳レベルは "@{@{@{" 1 つにつき 1 ずつ増加し、"@}@}@}" 1 つにつき 1 ずつ減少する。印同士の対応関係を維持するように気をつけること！ 例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	{{{
+	fold level here is 1
+	{{{
+	fold level here is 2
+	}}}
+	fold level here is 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+{{{
+ここからレベル 1 の折畳
+{{{
+ここからレベル 2 の折畳
+}}}
+ここからレベル 1 の折畳
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can mix using markers with a number and without a number.  A useful way of
+doing this is to use numbered markers for large folds, and unnumbered markers
+locally in a function.  For example use level one folds for the sections of
+your file like "structure definitions", "local variables" and "functions".
+Use level 2 markers for each definition and function,  Use unnumbered markers
+inside functions.  When you make changes in a function to split up folds, you
+don't have to renumber the markers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+番号付きの印と番号無しの印を混ぜて使用することもできる。大きな折畳には番号付きの印を使用し、関数中の小さな折畳などには番号無しの印を使うと便利だろう。一例を挙げれば、ファイルの "構造体定義" や "ローカル変数" それから "関数定義" のような部分にはレベル 1 (番号付き) の折畳を使用する。
+
+そして 1 つ 1 つの定義や関数実装にはレベル 2 の折畳を使用し、関数内部 (例えばあるブロックなど) には番号無しの印を使用する。こうしておけば関数の中で折畳を分割するような変更を行う時に、印にレベルを付け直す必要はなくなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The markers can be set with the 'foldmarker' option.  It is recommended to
+keep this at the default value of "{{{,}}}", so that files can be exchanged
+between Vim users.  Only change it when it is required for the file (e.g., it
+contains markers from another folding editor, or the default markers cause
+trouble for the language of the file).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+印は '@option{foldmarker}' オプションにより変更できる。Vim ユーザー間でファイルを交換できるようにするためには、このオプションのデフォルトである "@{@{@{,@}@}@}" は変更しないことが推奨される。ファイルによってそれがどうしても必要な時 (例えば別のエディタで作成した折畳を示す異なる印を含んでいる時や、ファイル内容の制約によりデフォルトの印が問題を起こすため、それを使うことができない場合) にだけ変えるように。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*fold-create-marker*
+"zf" can be used to create a fold defined by markers.  Vim will insert the
+markers for you.  Vim will append the start and end marker, as specified with
+'foldmarker'.  The markers are appended to the end of the line.
+'commentstring' is used if it isn't empty.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-create-marker}
+@cindex fold-create-marker
+印による折畳を作成するのに "zf" コマンドを使用することができる。Vim がユーザーに代わって印を挿入する。Vim は '@option{foldmarker}' で指定された開始の印と終了の印を追加する。印は行末に追加される。'@option{commentstring}' が空でなければそれが使用される。これは次のような時には正しく働かない:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This does not work properly when:
+- The line already contains a marker with a level number.  Vim then doesn't
+  know what to do.
+- Folds nearby use a level number in their marker which gets in the way.
+- The line is inside a comment, 'commentstring' isn't empty and nested
+  comments don't work.  For example with C: adding /* {{{ */ inside a comment
+  will truncate the existing comment.  Either put the marker before or after
+  the comment, or add the marker manually.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 既に番号付き折畳が含まれている。Vim はそれをどのように扱えば良いか知らない。
+@item 番号付き折畳の近くで、それらの印が邪魔になる場合。
+@item 行がコメントの中で、'@option{commentstring}' が空ではなく、かつ入れ子コメントを使用できない場合。例えば C 言語: /* @{@{@{ */ を既に存在するコメントを消さずにその中に追加するようなこと。コメントの直前か直後に印を設定するか、もしくは手動で印を追加する必要がある。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Generally it's not a good idea to let Vim create markers when you already have
+markers with a level number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一般的に、既に番号付き折畳が存在する場合には、Vim に印を作成させるのは良いアイデアではない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*fold-delete-marker*
+"zd" can be used to delete a fold defined by markers.  Vim will delete the
+markers for you.  Vim will search for the start and end markers, as specified
+with 'foldmarker', at the start and end of the fold.  When the text around the
+marker matches with 'commentstring', that text is deleted as well.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-delete-marker}
+@cindex fold-delete-marker
+印による折畳を削除するのに "zd" コマンドを使用することができる。Vim がユーザーに代わって印を削除する。Vim は '@option{foldmarker}' で指定された開始の印と終了の印を検索する。印の周りにある '@option{commentstring}' に適合するテキストは可能な限り削除される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This does not work properly when:
+- A line contains more than one marker and one of them specifies a level.
+  Only the first one is removed, without checking if this will have the
+  desired effect of deleting the fold.
+- The marker contains a level number and is used to start or end several folds
+  at the same time.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは次のような時には正しく働かない:
+@itemize @minus
+@item ある行に印が 1 つ以上含まれていて、そのうち少なくとも 1 つがレベルを指定している場合。折畳を削除することで期待される効果どうりになるかどうかはチェックされることなく、単に初めの折畳が 1 つ削除される。
+@item 番号付き印で、複数の折畳を同時に開始したり終了するために使用されている場合。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Fold commands				*fold-commands* *E490*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-commands}
+@anchor{E490}
+@cindex fold-commands
+@cindex E490
+@section 2. 折畳コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All folding commands start with "z".  Hint: the "z" looks like a folded piece
+of paper, if you look at it from the side.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+全ての折畳コマンドは "z" で始まっている。ヒント: "z" は紙片を折った様子を横からみた姿に見える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CREATING AND DELETING FOLDS ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 折畳の作成と削除
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*zf* *E350*
+zf{motion}  or
+{Visual}zf	Operator to create a fold.
+		This only works when 'foldmethod' is "manual" or "marker".
+		The new fold will be closed for the "manual" method.
+		'foldenable' will be set.
+		Also see |fold-create-marker|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{zf}
+@anchor{E350}
+@cindex zf
+@cindex E350
+@item zf@{motion@} または
+@itemx @{Visual@}zf
+折畳を作成する操作。
+
+'@option{foldmethod}' が "manual" か "marker" の時だけ動作する。"manual" の時には新しい折畳は閉じられる。'@option{foldenable}' がセット (有効化) される。
+
+|fold-create-marker| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zF*
+zF		Create a fold for [count] lines.  Works like "zf".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zF}
+@cindex zF
+@item zF
+[count] 行を折畳として作成する。"zf" と同じように動作する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:{range}fo[ld]						*:fold* *:fo*
+		Create a fold for the lines in {range}.  Works like "zf".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:fold}
+@anchor{:fo}
+@cindex :fold
+@cindex :fo
+@item :@{range@}fo[ld]
+@{range@} で示された範囲を折畳にする。"zf" と同様に動作する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zd* *E351*
+zd		Delete one fold at the cursor.  When the cursor is on a folded
+		line, that fold is deleted.  Nested folds are moved one level
+		up.  In Visual mode one level of all folds (partially) in the
+		selected area are deleted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zd}
+@anchor{E351}
+@cindex zd
+@cindex E351
+@item zd
+カーソルの位置にある折畳を 1 つ削除する。カーソルが折畳になっている行にある場合には、その折畳が削除される。入れ子になった折畳は 1 レベル分が削除される。ビジュアルモードでは選択された範囲の全ての折畳 (partially) の 1 レベル分が削除される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Careful: This easily deletes more folds than you expect and
+		there is no undo for manual folding.
+		This only works when 'foldmethod' is "manual" or "marker".
+		Also see |fold-delete-marker|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Careful:} @*
+これは期待したよりも余計に折畳を削除し易く、また手動折畳に対してはアンドゥもできないので注意が必要。'@option{foldmethod}' が "manual" か "marker" の時だけ動作する。
+
+|fold-delete-marker| も参照。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zD*
+zD		Delete folds recursively at the cursor.  In Visual mode all
+		folds (partially) in the selected area and all nested folds in
+		them are deleted.
+		This only works when 'foldmethod' is "manual" or "marker".
+		Also see |fold-delete-marker|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zD}
+@cindex zD
+@item zD
+カーソルの位置の折畳を再帰的に削除する。ビジュアルモードでは、選択された範囲内の入れ子も含め全ての折畳 (partially) が削除される。'@option{foldmethod}' が "manual" か "marker" の時だけ動作する。
+
+|fold-delete-marker| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zE* *E352*
+zE		Eliminate all folds in the window.
+		This only works when 'foldmethod' is "manual" or "marker".
+		Also see |fold-delete-marker|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zE}
+@anchor{E352}
+@cindex zE
+@cindex E352
+@item zE
+ウィンドウにある全ての折畳を削除する。'@option{foldmethod}' が "manual" か "marker" の時だけ動作する。
+
+|fold-delete-marker| も参照。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+OPENING AND CLOSING FOLDS ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 折畳を開く・閉じる
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A fold smaller than 'foldminlines' will always be displayed like it was open.
+Therefore the commands below may work differently on small folds.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{foldminlines}' よりも少ない行数の折畳は常に開いたように表示される。従って以下のコマンドは小さな折畳に関しては異なった働きを持つ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zo*
+zo		Open one fold under the cursor.  When a count is given, that
+		many folds deep will be opened.  In Visual mode one level of
+		folds is opened for all lines in the selected area.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{zo}
+@cindex zo
+@item zo
+カーソルの下の折畳を一段階開く。カウントが与えられた場合には、複数の深さの折畳が開かれる。ビジュアルモードでは、選択された範囲にある全ての折畳が 1 レベル開かれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zO*
+zO		Open all folds under the cursor recursively.  Folds that don't
+		contain the cursor line are unchanged.
+		In Visual mode it opens all folds that are in the selected
+		area, also those that are only partly selected.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zO}
+@cindex zO
+@item zO
+カーソルの下の折畳を再帰的に全て開く。カーソルのある行を含まないフォールドは変更されない。
+
+ビジュアルモードでは、選択された範囲の全ての折畳が、部分的に選択されていただけでも全て完全に開かれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zc*
+zc		Close one fold under the cursor.  When a count is given, that
+		many folds deep are closed.  In Visual mode one level of folds
+		is closed for all lines in the selected area.
+		'foldenable' will be set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zc}
+@cindex zc
+@item zc
+カーソルの下の折畳を一段階閉じる。カウントが与えられた場合には、複数の深さの折畳が閉じられる。ビジュアルモードでは、選択された範囲にある全ての折畳が 1 レベル閉じられる。'@option{foldenable}' がセット (有効化) される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zC*
+zC		Close all folds under the cursor recursively.  Folds that
+		don't contain the cursor line are unchanged.
+		In Visual mode it closes all folds that are in the selected
+		area, also those that are only partly selected.
+		'foldenable' will be set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zC}
+@cindex zC
+@item zC
+カーソルの下の折畳を再帰的に全て閉じる。カーソルのある行を含まないフォールドは変更されない。
+
+ビジュアルモードでは、選択された範囲の全ての折畳が、部分的に選択されていただけでも全て完全に閉じられる。'@option{foldenable}' がセット (有効化) される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*za*
+za		When on a closed fold: open it.  When folds are nested, you
+		may have to use "za" several times.  When a count is given,
+		that many closed folds are opened.
+		When on an open fold: close it and set 'foldenable'.  This
+		will only close one level, since using "za" again will open
+		the fold.  When a count is given that many folds will be
+		closed (that's not the same as repeating "za" that many
+		times).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{za}
+@cindex za
+@item za
+折畳が閉じていた場合: それを開く。折畳が入れ子になっている時には、"za" を何度も使う必要がある。カウントが与えられた場合には、複数の閉じられた折畳が開かれる。
+
+折畳が開いていた場合: それを閉じ '@option{foldenable}' をセットする。繰り返し使っても閉じた折畳が開くだけだから、これは 1 レベル開くだけである。カウントが与えられた場合には、複数の折畳が閉じられる (これは "za" を複数回繰り返した場合の動作と同じではない)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zA*
+zA		When on a closed fold: open it recursively.
+		When on an open fold: close it recursively and set
+		'foldenable'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zA}
+@cindex zA
+@item zA
+折畳が閉じていた場合: 再帰的に開く。折畳が開いていた場合: 再帰的に閉じ '@option{foldenable}' をセットする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zv*
+zv		View cursor line: Open just enough folds to make the line in
+		which the cursor is located not folded.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zv}
+@cindex zv
+@item zv
+カーソル行を表示する: カーソルのある行がちょうど表示されるレベルまで折畳を開く。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zx*
+zx		Update folds: Undo manually opened and closed folds: re-apply
+		'foldlevel', then do "zv": View cursor line.
+		Also forces recomputing folds.  This is useful when using
+		'foldexpr' and the buffer is changed in a way that results in
+		folds not to be updated properly.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zx}
+@cindex zx
+@item zx
+折畳を更新する: 手動で行った折畳の開閉操作をアンドゥする: '@option{foldlevel}' を再適用し、"zv" を行う: カーソル行を表示する。
+
+折畳の計算を強制するのにも使える。これは '@option{foldexpr}' を使っていてバッファが変更されたにも関わらず折畳が適切に更新されないような場合に便利である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zX*
+zX		Undo manually opened and closed folds: re-apply 'foldlevel'.
+		Also forces recomputing folds, like |zx|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zX}
+@cindex zX
+@item zX
+手動で行った折畳の開閉操作をアンドゥする: '@option{foldlevel}' を再適用する。折畳の計算を強制するのにも使える (|zx| と同様)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zm*
+zm		Fold more: Subtract |v:count1| from 'foldlevel'.  If 'foldlevel' was
+		already zero nothing happens.
+		'foldenable' will be set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zm}
+@cindex zm
+@item zm
+折畳をより閉じる: '@option{foldlevel}' を |v:count1| 減少させる。'@option{foldlevel}' が既に 0 ならば何も起こらない。'@option{foldenable}' がセット (有効化) される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zM*
+zM		Close all folds: set 'foldlevel' to 0.
+		'foldenable' will be set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zM}
+@cindex zM
+@item zM
+全ての折畳を閉じる: '@option{foldlevel}' に 0 を設定する。'@option{foldenable}' がセット (有効化) される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zr*
+zr		Reduce folding: Add |v:count1| to 'foldlevel'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zr}
+@cindex zr
+@item zr
+折畳をより開く: '@option{foldlevel}' を |v:count1| 増加させる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zR*
+zR		Open all folds.  This sets 'foldlevel' to highest fold level.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zR}
+@cindex zR
+@item zR
+全ての折畳を開く: '@option{foldlevel}' に最大の折畳レベルを設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:foldo* *:foldopen*
+:{range}foldo[pen][!]
+		Open folds in {range}.  When [!] is added all folds are
+		opened.  Useful to see all the text in {range}.  Without [!]
+		one level of folds is opened.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:foldo}
+@anchor{:foldopen}
+@cindex :foldo
+@cindex :foldopen
+@item :@{range@}foldo[pen][!]
+@{range@} の範囲の折畳を開く。[!] が付け加わると全ての折畳が開かれる。@{range@} 範囲内の全てのテキストを見るのに役立つ。[!] が無い時は1レベル分の折畳が開かれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:foldc* *:foldclose*
+:{range}foldc[lose][!]
+		Close folds in {range}.  When [!] is added all folds are
+		closed.  Useful to hide all the text in {range}.  Without [!]
+		one level of folds is closed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:foldc}
+@anchor{:foldclose}
+@cindex :foldc
+@cindex :foldclose
+@item :@{range@}foldc[lose][!]
+@{range@} の範囲の折畳を閉じる。[!] が付け加わると全ての折畳が閉じられる。@{range@} 範囲内の全てのテキストを隠すのに役立つ。[!] が無い時は1レベル分の折畳が閉じられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zn*
+zn		Fold none: reset 'foldenable'.  All folds will be open.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zn}
+@cindex zn
+@item zn
+折畳しない: '@option{foldenable}' をリセットする。全ての折畳が開かれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zN*
+zN		Fold normal: set 'foldenable'.  All folds will be as they
+		were before.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zN}
+@cindex zN
+@item zN
+折畳する: '@option{foldenable}' をセットする。全ての折畳が '@option{foldenable}' がリセットされる以前と同様になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zi*
+zi		Invert 'foldenable'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zi}
+@cindex zi
+@item zi
+'@option{foldenable}' を反転する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MOVING OVER FOLDS ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 折畳を超えて移動する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*[z*
+[z		Move to the start of the current open fold.  If already at the
+		start, move to the start of the fold that contains it.  If
+		there is no containing fold, the command fails.
+		When a count is used, repeats the command [count] times.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{[z}
+@cindex [z
+@item [z
+現在の開いている折畳の先頭へ移動する。既に先頭にいるのならば、それを含む外側の折畳の先頭へ移動する。外側の折畳が無い場合は、コマンドは失敗する。
+
+カウントが与えられた場合には、[count] 回繰り返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*]z*
+]z		Move to the end of the current open fold.  If already at the
+		end, move to the end of the fold that contains it.  If there
+		is no containing fold, the command fails.
+		When a count is used, repeats the command [count] times.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{]z}
+@cindex ]z
+@item ]z
+現在の開いている折畳の末尾へ移動する。既に末尾にいるのならば、それを含む外側の折畳の末尾へ移動する。外側の折畳が無い場合は、コマンドは失敗する。
+
+カウントが与えられた場合には、[count] 回繰り返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zj*
+zj		Move downwards to the start of the next fold.  A closed fold
+		is counted as one fold.
+		When a count is used, repeats the command [count] times.
+		This command can be used after an |operator|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zj}
+@cindex zj
+@item zj
+カーソルより下方の折畳へ移動する。閉じられた折畳が 1 つの折畳として数えられる。
+
+カウントが与えられた場合には、[count] 回繰り返される。このコマンドは |operator| のように使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zk*
+zk		Move upwards to the end of the previous fold.  A closed fold
+		is counted as one fold.
+		When a count is used, repeats the command [count] times.
+		This command can be used after an |operator|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zk}
+@cindex zk
+@item zk
+カーソルより上方の折畳へ移動する。閉じられた折畳が 1 つの折畳として数えられる。
+
+カウントが与えられた場合には、[count] 回繰り返される。このコマンドは |operator| のように使うことができる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+EXECUTING COMMANDS ON FOLDS ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 折畳に対してコマンドを実行する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[range]foldd[oopen] {cmd}			*:foldd* *:folddoopen*
+		Execute {cmd} on all lines that are not in a closed fold.
+		When [range] is given, only these lines are used.
+		Each time {cmd} is executed the cursor is positioned on the
+		line it is executed for.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:foldd}
+@anchor{:folddoopen}
+@cindex :foldd
+@cindex :folddoopen
+@item:[range]foldd[oopen] @{cmd@}
+閉じた折畳の中以外の全ての行に対して @{cmd@} を実行する。[range] が与えられた時は、その範囲だけが対象となる。
+
+コマンドが各行に対して実行される時にはカーソルはその対象となる行に置かれている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		This works like the ":global" command: First all lines that
+		are not in a closed fold are marked.  Then the {cmd} is
+		executed for all marked lines.  Thus when {cmd} changes the
+		folds, this has no influence on where it is executed (except
+		when lines are deleted, of course).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは "@command{:global}" コマンドのように動作する: まず閉じられた折畳に入っていない全ての行がマークされる。それからマークされた全ての行に対して @{cmd@} が実行される。だから @{cmd@} が折畳に対して変更を加えても、コマンドの実行には影響が無い (もちろん行が消された時は除く)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Example: >
+			:folddoopen s/end/loop_end/ge
+<		Note the use of the "e" flag to avoid getting an error message
+		where "end" doesn't match.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@example
+:folddoopen s/end/loop_end/ge
+@end example
+@quotation
+@strong{Note:} @*
+"e" フラグには "end" がマッチしなかった時にエラーメッセージが表示させない効果がある。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[range]folddoc[losed] {cmd}			*:folddoc* *:folddoclosed*
+		Execute {cmd} on all lines that are in a closed fold.
+		Otherwise like ":folddoopen".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:folddoc}
+@anchor{:folddoclosed}
+@cindex :folddoc
+@cindex :folddoclosed
+@item :[range]folddoc[losed] @{cmd@}
+閉じた折畳の中にある全ての行に対して @{cmd@} を実行する。その他は "@command{:folddoopen}" と同じ。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Fold options					*fold-options*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-options}
+@cindex fold-options
+@section 3. 折畳オプション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+COLORS							*fold-colors*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-colors}
+@cindex fold-colors
+@unnumberedsubsec 色 (COLORS)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The colors of a closed fold are set with the Folded group |hl-Folded|.  The
+colors of the fold column are set with the FoldColumn group |hl-FoldColumn|.
+Example to set the colors: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+閉じられた折畳の色は Folded グループによって設定される |hl-Folded|。折畳表示カラムの色は FoldColumn グループによって設定される |hl-FoldColumn|。色の設定例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:highlight Folded guibg=grey guifg=blue
+	:highlight FoldColumn guibg=darkgrey guifg=white
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:highlight Folded guibg=grey guifg=blue
+:highlight FoldColumn guibg=darkgrey guifg=white
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+FOLDLEVEL						*fold-foldlevel*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-foldlevel}
+@cindex fold-foldlevel
+@unnumberedsubsec 折畳レベル (FOLDLEVEL)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'foldlevel' is a number option: The higher the more folded regions are open.
+When 'foldlevel' is 0, all folds are closed.
+When 'foldlevel' is positive, some folds are closed.
+When 'foldlevel' is very high, all folds are open.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{foldlevel}' は数を設定するオプションである: 大きな数を設定するとより多くの折畳が開かれる。
+@itemize @bullet
+@item '@option{foldlevel}' が 0 の時には、全ての折畳が閉じられる。
+@item '@option{foldlevel}' が正の時には、幾つかの折畳が閉じられる。
+@item '@option{foldlevel}' が非常に大きい時は、全ての折畳が開かれる。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+'foldlevel' is applied when it is changed.  After that manually folds can be
+opened and closed.
+When increased, folds above the new level are opened.  No manually opened
+folds will be closed.
+When decreased, folds above the new level are closed.  No manually closed
+folds will be opened.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{foldlevel}' は変更された時に適用される。その後に手動で折畳を開いたり閉じたりできる。
+
+値を増やした時には、新しいレベルの値以上の折畳が開かれる。手動で開かれていた折畳は閉じられない。
+
+値を減らした時には、新しいレベルの値以上の折畳が閉じられる。手動で閉じられていた折畳は開かれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+FOLDTEXT						*fold-foldtext*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-foldtext}
+@cindex fold-foldtext
+@unnumberedsubsec 折畳テキスト (FOLDTEXT)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'foldtext' is a string option that specifies an expression.  This expression
+is evaluated to obtain the text displayed for a closed fold.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{foldtext}' は式を指定する文字列オプションである。この式は閉じられた折畳を示すテキストを得るために評価実行される。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    :set foldtext=v:folddashes.substitute(getline(v:foldstart),'/\\*\\\|\\*/\\\|{{{\\d\\=','','g')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set foldtext=v:folddashes.substitute(getline(v:foldstart),'/\\*\\\|\\*/\\\|@{@{@{\\d\\=','','g')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This shows the first line of the fold, with "/*", "*/" and "{{{" removed.
+Note the use of backslashes to avoid some characters to be interpreted by the
+":set" command.  It's simpler to define a function and call that: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは折畳の最初の1行を、"/*" と "*/" を追加し "@{@{@{" を削除して表示する。
+@quotation
+@strong{Note:} @*
+多めのバックスラッシュ (\ 記号) はある文字が "@command{:set}" コマンドに解釈されてしまうのを避けるために使用されている。これは以下のように関数を定義するとより簡単になる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    :set foldtext=MyFoldText()
+    :function MyFoldText()
+    :  let line = getline(v:foldstart)
+    :  let sub = substitute(line, '/\*\|\*/\|{{{\d\=', '', 'g')
+    :  return v:folddashes . sub
+    :endfunction
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+:set foldtext=MyFoldText()
+:function MyFoldText()
+:  let line = getline(v:foldstart)
+:  let sub = substitute(line, '/\*\|\*/\|{{{\d\=', '', 'g')
+:  return v:folddashes . sub
+:endfunction
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Evaluating 'foldtext' is done in the |sandbox|.  The current window is set to
+the window that displays the line.  Errors are ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{foldtext}' は |sandbox| 環境下で実行評価される。現在のウィンドウはそのラインの属するウィンドウへ設定される。エラーは無視される。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The default value is |foldtext()|.  This returns a reasonable text for most
+types of folding.  If you don't like it, you can specify your own 'foldtext'
+expression.  It can use these special Vim variables:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+省略値は |foldtext()| である。これはほとんどのタイプの折畳に対して妥当なテキストを返す。それが気に入らないのならば、独自の式を '@option{foldtext}' に設定することができる。その式中では以下の特別な Vim 変数を使用することができる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	v:foldstart	line number of first line in the fold
+	v:foldend	line number of last line in the fold
+	v:folddashes	a string that contains dashes to represent the
+			foldlevel.
+	v:foldlevel	the foldlevel of the fold
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item v:foldstart @tab 折畳の先頭の行番号
+@item v:foldend @tab 折畳の末尾の行番号
+@item v:folddashes @tab 折畳レベルを表現したダッシュ (-) 記号を含む文字列。
+@item v:foldlevel @tab 折畳のレベル
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the result a TAB is replaced with a space and unprintable characters are
+made into printable characters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+結果の文字列中のタブ文字は 1 つの空白文字に置き換えられ、表示不可能な文字は表示可能な文字に作り変えられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The resulting line is truncated to fit in the window, it never wraps.
+When there is room after the text, it is filled with the character specified
+by 'fillchars'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+結果の文字列はウィンドウに合うように切り捨てられ、折り返されることはない。テキストの後ろに余白があれば、'@option{fillchars}' で指定された文字で充たされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that backslashes need to be used for characters that the ":set" command
+handles differently: Space, backslash and double-quote. |option-backslash|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"@command{:set}" コマンドが解釈してしまう文字: 空白、バックスラッシュ (\ 記号) そしてダブルクォートを使う場合にはバックスラッシュが必要である。|option-backslash|
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+FOLDCOLUMN						*fold-foldcolumn*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-foldcolumn}
+@cindex fold-foldcolumn
+@unnumberedsubsec 折畳表示カラム (FOLDCOLUMN)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'foldcolumn' is a number, which sets the width for a column on the side of the
+window to indicate folds.  When it is zero, there is no foldcolumn.  A normal
+value is 4 or 5.  The minimal useful value is 2, although 1 still provides
+some information.  The maximum is 12.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{foldcolumn}' は、ウィンドウの端に確保される折畳を示すカラムの幅を指定する数。0 ならば、折畳表示カラムは確保されない。通常は 4 から 5 が一般的。使い物になる最小値は 2 であるが、1 にしてもいくらかの情報を提供する。最大値は 12。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An open fold is indicated with a column that has a '-' at the top and '|'
+characters below it.  This column stops where the open fold stops.  When folds
+nest, the nested fold is one character right of the fold it's contained in.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳表示カラムには、開いた折畳の先頭に '-' が続いて '|' が表示される。このカラムは開いた折畳が終了した位置で終了する。入れ子になった折畳では、それを含む折畳の1つ左側に表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A closed fold is indicated with a '+'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+閉じた折畳は '+' で表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Where the fold column is too narrow to display all nested folds, digits are
+shown to indicate the nesting level.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+全ての折畳を表示できないほど折畳表示カラムが狭いときには、入れ子のレベルが数字で表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The mouse can also be used to open and close folds by clicking in the
+fold column:
+- Click on a '+' to open the closed fold at this row.
+- Click on any other non-blank character to close the open fold at this row.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳表示カラムをクリックすることで、マウスにより折畳を開閉することができる:
+@itemize @minus
+@item 閉じた折畳を開くにはその行の '+' をクリックする。
+@item 開いた折畳を閉じるにはそれ以外の非空白文字をクリックする。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+OTHER OPTIONS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec その他のオプション (OTHER OPTIONS)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'foldenable'  'fen':	Open all folds while not set.
+'foldexpr'    'fde':	Expression used for "expr" folding.
+'foldignore'  'fdi':	Characters used for "indent" folding.
+'foldmarker'  'fmr':	Defined markers used for "marker" folding.
+'foldmethod'  'fdm':	Name of the current folding method.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item '@option{foldenable}' '@option{fen}': @tab 無効に設定すると全ての折畳が開く。
+@item '@option{foldexpr}' '@option{fde}': @tab 式 ("expr') による折畳で使用される。
+@item '@option{foldignore}' '@option{fdi}': @tab インデントによる折畳で使用される。
+@item '@option{foldmarker}' '@option{fmr}': @tab 印による折畳で使用される印を定義する。
+@item '@option{foldmethod}' '@option{fdm}': @tab 現在の折畳方法の名称。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+'foldminlines' 'fml':	Minimum number of screen lines for a fold to be
+			displayed closed.
+'foldnestmax' 'fdn':	Maximum nesting for "indent" and "syntax" folding.
+'foldopen'    'fdo':	Which kinds of commands open closed folds.
+'foldclose'   'fcl':	When the folds not under the cursor are closed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item '@option{foldminlines}' '@option{fml}': @tab 閉じた状態で表示されるべき折畳の、スクリーン上での最小行数
+@item '@option{foldnestmax}' '@option{fdn}': @tab インデント及び構文折畳での最大入れ子数
+@item '@option{foldopen}' '@option{fdo}': @tab 閉じている折畳を開くコマンドの種類
+@item '@option{foldclose}' '@option{fcl}': @tab カーソルの下ではない折畳をいつ閉じるか。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Behavior of folds					*fold-behavior*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fold-behavior}
+@cindex fold-behavior
+@section 4. 折畳の振舞
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When moving the cursor upwards or downwards and when scrolling, the cursor
+will move to the first line of a sequence of folded lines.  When the cursor is
+already on a folded line, it moves to the next unfolded line or the next
+closed fold.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カーソルを上下に移動させたりスクロールさせると、カーソルは一連の折畳行の先頭へ移動する。カーソルが既に折畳の行にあれば、カーソルは次の折畳ではない行か、閉じられた折畳へ移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+While the cursor is on folded lines, the cursor is always displayed in the
+first column.  The ruler does show the actual cursor position, but since the
+line is folded, it cannot be displayed there.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折畳の行にカーソルがある時には、カーソルは常に先頭のカラムに表示される。ルーラーは実際のカーソルの位置を示すが、行が折畳の場合には、そこに実際に表示することはできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Many movement commands handle a sequence of folded lines like an empty line.
+For example, the "w" command stops once in the first column.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+移動コマンドは一連の折畳を空行として扱う。例えば、"w" コマンドは一旦先頭のカラムで停止する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When in Insert mode, the cursor line is never folded.  That allows you to see
+what you type!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+挿入モードでは、カーソルのある行は決して折畳にならない。このため何を入力しているかわからなくなることはない！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When using an operator, a closed fold is included as a whole.  Thus "dl"
+deletes the whole closed fold under the cursor.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オペレータを使用したときには、閉じた折畳は全体が含まれる。だから "dl" はカーソルの下の閉じた折畳の全体を削除してしまう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For Ex commands that work on buffer lines the range is adjusted to always
+start at the first line of a closed fold and end at the last line of a closed
+fold.  Thus this command: >
+	:s/foo/bar/g
+when used with the cursor on a closed fold, will replace "foo" with "bar" in
+all lines of the fold.
+This does not happen for |:folddoopen| and |:folddoclosed|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファの行に作用するExコマンドの作用範囲は、開始位置と終了位置ともに閉じられた折畳のそれらへ、それぞれ補正される。よって以下のコマンドを:
+@example
+:s/foo/bar/g
+@end example
+閉じた折畳へカーソルを合わせて実行すると、折畳内の全ての行にある "foo" が "bar"へ置き換えられてしまう。
+
+これは |:folddoopen| と |:folddoclosed| に対してはあてはまらない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When editing a buffer that has been edited before, the last used folding
+settings are used again.  For manual folding the defined folds are restored.
+For all folding methods the manually opened and closed folds are restored.
+If this buffer has been edited in this window, the values from back then are
+used.  Otherwise the values from the window where the buffer was edited last
+are used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+(同一セッション中で) 以前に編集したバッファに対しては、最後の折畳設定が再び使用される。手動折畳では以前に定義された折畳が復元される。全ての折畳方法で、手動で開閉した折畳は復元される。同じウィンドウで同じバッファが編集される時は、以前の編集時の値が使用される。そうでなければそのウィンドウで最後に編集されていたバッファの値が使用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
