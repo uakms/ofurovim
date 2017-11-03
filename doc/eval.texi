@@ -3,14 +3,14 @@
 @unnumbered 式の評価、条件式 (Vim script リファレンス)
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Sep 17
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Oct 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*eval.txt*	For Vim バージョン 8.0.  Last change: 2017 Sep 17
+*eval.txt*	For Vim バージョン 8.0.  Last change: 2017 Oct 28
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -402,14 +402,13 @@ To test for a non-empty string, use empty(): >
 Function arguments often behave slightly different from |TRUE|: If the
 argument is present and it evaluates to a non-zero Number, |v:true| or a
 non-empty String, then the value is considered to be TRUE.
-Note that " " and "0" are also non-empty strings, thus cause the mode to be
-cleared.  A List, Dictionary or Float is not a Number or String, thus
-evaluates to FALSE.
+Note that " " and "0" are also non-empty strings, thus considered to be TRUE.
+A List, Dictionary or Float is not a Number or String, thus evaluate to FALSE.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{non-zero-arg}
 @cindex non-zero-arg
-関数の引数は、|TRUE| とは少し異なる場合がある: 引数が存在し、それが非ゼロの Number, |v:true| または空でない String に評価される場合、値は TRUE と見なされる。" " と "0" も空文字列ではないので、モードをクリアするのに注意すること。List, Dictionary または Float は数値または文字列ではないため、FALSE と評価される。
+関数の引数は、|TRUE| とは少し異なる場合がある: 引数が存在し、それが非ゼロの Number, |v:true| または空でない String に評価される場合、値は TRUE と見なされる。" " と "0" も空文字列ではないので、TRUE と見なされることに注意すること。List, Dictionary または Float は数値または文字列ではないため、FALSE と評価される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2441,9 +2440,9 @@ Examples:
 
 @ifset EN
 							*E691* *E692*
-A |List| can only be compared with a |List| and only "equal", "not equal" and
-"is" can be used.  This compares the values of the list, recursively.
-Ignoring case means case is ignored when comparing item values.
+A |List| can only be compared with a |List| and only "equal", "not equal",
+"is" and "isnot" can be used.  This compares the values of the list,
+recursively.  Ignoring case means case is ignored when comparing item values.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{E691}
@@ -2456,8 +2455,9 @@ Ignoring case means case is ignored when comparing item values.
 @ifset EN
 							*E735* *E736*
 A |Dictionary| can only be compared with a |Dictionary| and only "equal", "not
-equal" and "is" can be used.  This compares the key/values of the |Dictionary|
-recursively.  Ignoring case means case is ignored when comparing item values.
+equal", "is" and "isnot" can be used.  This compares the key/values of the
+|Dictionary| recursively.  Ignoring case means case is ignored when comparing
+item values.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{E735}
@@ -6596,7 +6596,7 @@ searchpos({pattern} [, {flags} [, {stopline} [, {timeout}]]])
 server2client({clientid}, {string})
 				Number	send reply string
 serverlist()			String	get a list of available servers
-setbufline( {expr}, {lnum}, {line})
+setbufline({expr}, {lnum}, {line})
 				Number	set line {lnum} to {line} in buffer
 					{expr}
 setbufvar({expr}, {varname}, {val})
@@ -8090,12 +8090,25 @@ ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
 		correct contents.  Also does not add a newline for a channel
 		in NL mode, the caller must do that.  The NL in the response
 		is removed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|ch_evalexpr()| と同様に動作する。しかしリクエストをエンコードしたり応答をデコードしたりはしない。呼び出しは正しいコンテンツである事が保証される。また NL モードでは改行が行われるが、ここでは改行が付与されない。NL は応答から削除される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Note that Vim does not know when the text received on a raw
+		channel is complete, it may only return the first part and you 
+		need to use ch_readraw() to fetch the rest.
 		See |channel-use|.
 
 		{only available when compiled with the |+channel| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-|ch_evalexpr()| と同様に動作する。しかしリクエストをエンコードしたり応答をデコードしたりはしない。呼び出しは正しいコンテンツである事が保証される。また NL モードでは改行が行われるが、ここでは改行が付与されない。NL は応答から削除される。|channel-use| を参照。
+@quotation
+@strong{Note:} @*
+Vim は生チャンネルで受け取ったテキストが完全なものなのかわからないことに注意。
+最初の部分だけが返されているのかもしれないし、残りの部分を取り込むために ch_readraw() を使う必要がある。
+@end quotation
+|channel-use| を参照。
 
 @{|+channel| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -17155,10 +17168,6 @@ remote_expr({server}, {string} [, {idvar} [, {timeout}]])
 		{only available when compiled with the |+clientserver| feature}
 		Note: Any errors will cause a local error message to be issued
 		and the result will be the empty string.
-		Examples: >
-			:echo remote_expr("gvim", "2+2")
-			:echo remote_expr("gvim1", "b:current_syntax")
-<
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 |sandbox|の中ではこの関数は利用できない。
@@ -17167,13 +17176,31 @@ remote_expr({server}, {string} [, {idvar} [, {timeout}]])
 @quotation
 @strong{Note:} @*
 なんらかのエラーが発生した場合は、ローカルでエラーメッセージが表示され、戻り値は空文字列となる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+@ifset EN
+		Variables will be evaluated in the global namespace,
+		independent of a function currently being activel.  Except
+		when in debug mode, then local function variables and
+		arguments can be evaluated.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+関数が現在アクティブであるのとは無関係に、変数はグローバルなスコープで評価されるだろう。デバッグモードを除き、ローカル関数の変数と引数は評価されうる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Examples: >
+			:echo remote_expr("gvim", "2+2")
+			:echo remote_expr("gvim1", "b:current_syntax")
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 例:
 @example
 :echo remote_expr("gvim", "2+2")
 :echo remote_expr("gvim1", "b:current_syntax")
 @end example
-@end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -17954,6 +17981,7 @@ searchpair('\<if\>', '\<else\>', '\<endif\>')
 		When {skip} is omitted or empty, every match is accepted.
 		When evaluating {skip} causes an error the search is aborted
 		and -1 returned.
+		{skip} can be a string, a lambda, a funcref or a partial.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @{start@}、@{middle@}、@{end@} のマッチが見つかると、マッチの開始位置にカーソルを移動し、式 @{skip@} を評価する。このマッチがコメントや文字列の内側にある場合など、無視したいものであれば式 @{skip@} が非 0 を返すようにする。
@@ -17961,6 +17989,8 @@ searchpair('\<if\>', '\<else\>', '\<endif\>')
 @{skip@} を省略した、または空のときはどのマッチも無視しない。
 
 @{skip@} を評価している最中にエラーが発生すると、検索は異常終了し -1 を返す。
+
+@{skip@} は文字列、ラムダ、関数参照、部分適用になることができる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -21516,6 +21546,16 @@ term_start({cmd}, {options})				*term_start()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+		{cmd} can be a string or a List, like with |job_start()|. The
+		string "NONE" can be used to open a terminal window without
+		starting a job, the pty of the terminal can be used by a
+		command like gdb.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{cmd@} は文字列もしくは |job_start()| のようなリストになりうる。文字列 "NONE" はジョブを開始することなくターミナルウィンドウを開くのに使われる。ターミナルの pty は gdb のようなコマンドによって使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 		Returns the buffer number of the terminal window.  If {cmd}
 		cannot be executed the window does open and shows an error
 		message.
@@ -23400,14 +23440,12 @@ lua			Compiled with Lua interface |Lua|.
 @item lua @tab Lua インターフェイスをサポート |Lua|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-mac			Any Macintosh version of Vim, but not all OS X.
-macunix			Compiled for OS X, with |mac-darwin-feature|
-osx			Compiled for OS X, with or w/o |mac-darwin-feature|
+mac			Any Macintosh version of Vim  cf. osx
+macunix			Synonym for osxdarwin
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item mac @tab すべてのマッキントッシュ版 Vim。しかしすべての OS X ではない。
-@item macunix @tab |mac-darwin-feature| つきの OS X
-@item osx @tab |mac-darwin-feature| ありもしくはなしの OS X
+@item mac @tab すべてのマッキントッシュ版 Vim。osx を参照
+@item macunix @tab osxdarwin と同義語
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 menu			Compiled with support for |:menu|.
@@ -23464,14 +23502,22 @@ mzscheme		Compiled with MzScheme interface |mzscheme|.
 netbeans_enabled	Compiled with support for |netbeans| and connected.
 netbeans_intg		Compiled with support for |netbeans|.
 num64			Compiled with 64-bit |Number| support.
-ole			Compiled with OLE automation support for Win32.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item mzscheme @tab MzScheme インターフェイスをサポート |mzscheme|
 @item netbeans_enabled @tab |netbeans| をサポートし、現在接続している
 @item netbeans_intg @tab |netbeans| をサポート
 @item num64 @tab 64 ビット数値をサポート |Number|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ole			Compiled with OLE automation support for Win32.
+osx			Compiled for macOS  cf. mac
+osxdarwin		Compiled for macOS, with |mac-darwin-feature|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item ole @tab Win32 にて OLE オートメーションをサポート
+@item osx @tab macOS 向け。mac を参照
+@item osxdarwin @tab macOS 向け。|mac-darwin-feature| をサポート
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 packages		Compiled with |packages| support.
@@ -23876,13 +23922,9 @@ See |:verbose-cmd| for more information.
 @ifset EN
 						*E124* *E125* *E853* *E884*
 :fu[nction][!] {name}([arguments]) [range] [abort] [dict] [closure]
-			Define a new function by the name {name}.  The name
-			must be made of alphanumeric characters and '_', and
-			must start with a capital or "s:" (see above).  Note
-			that using "b:" or "g:" is not allowed. (since patch
-			7.4.260 E884 is given if the function name has a colon
-			in the name, e.g. for "foo:bar()".  Before that patch
-			no error was given).
+			Define a new function by the name {name}.  The body of
+			the function follows in the next lines, until the
+			matching |:endfunction|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @table @asis
@@ -23895,7 +23937,19 @@ See |:verbose-cmd| for more information.
 @cindex E853
 @cindex E884
 @item :fu[nction][!] @{name@}([arguments]) [range] [abort] [dict] [closure]
-@{name@} という名前で新しい関数を定義する。関数名はアルファベットと数字と '_' からなり、通常の関数はアルファベットの大文字、スクリプトローカル関数は "s:" で始まらなければならない。
+@{name@} という名前で新しい関数を定義する。関数の本体は、宣言の次の行から始まり、対応する |:endfunction| までになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+			
+@ifset EN
+			The name must be made of alphanumeric characters and
+			'_', and must start with a capital or "s:" (see
+			above).  Note that using "b:" or "g:" is not allowed.
+			(since patch 7.4.260 E884 is given if the function
+			name has a colon in the name, e.g. for "foo:bar()".
+			Before that patch no error was given).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+関数名はアルファベットと数字と '_' からなり、通常の関数はアルファベットの大文字、スクリプトローカル関数は "s:" で始まらなければならない。
 @quotation
 @strong{Note:} @*
 "b:" や "g:" は使用できない (7.4.260 からは関数名にコロンが含まれる場合は E884 エラーが発生する。例 "foo:bar()"。このパッチ以前はエラーにはならない)。
@@ -24266,12 +24320,13 @@ may be larger.
 
 @ifset EN
 It is also possible to define a function without any arguments.  You must
-still supply the () then.  The body of the function follows in the next lines,
-until the matching |:endfunction|.  It is allowed to define another function
-inside a function body.
+still supply the () then.
+
+It is allowed to define another function inside a function
+body.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-関数を引数無しで定義することも可能である。その時でも()は付けなければならない。関数の本体は、宣言の次の行から始まり、対応する |:endfunction| までになる。関数の中で別の関数を定義することも可能である。
+関数を引数無しで定義することも可能である。その時でも()は付けなければならない。関数の中で別の関数を定義することも可能である。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
