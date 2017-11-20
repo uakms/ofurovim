@@ -3,14 +3,14 @@
 @unnumbered 式の評価、条件式 (Vim script リファレンス)
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Oct 28
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Nov 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*eval.txt*	For Vim バージョン 8.0.  Last change: 2017 Oct 28
+*eval.txt*	For Vim バージョン 8.0.  Last change: 2017 Nov 16
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -5962,12 +5962,14 @@ atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 balloon_show({msg})		none	show {msg} inside the balloon
+balloon_split({msg})		List	split {msg} as used for a balloon
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{balloon_show(), , balloon_show}(@{msg@}) @tab なし @tab @{msg@} をバルーン内に表示
+@item @ref{balloon_split(), , balloon_split}(@{msg@}) @tab リスト @tab バルーンで使うために @{msg@} を分割する
 @item @ref{browse(), , browse}(@{save@}, @{title@}, @{initdir@}, @{default@}) @tab 文字列 @tab ファイル選択ダイアログを表示
 @item @ref{browsedir(), , browsedir}(@{title@}, @{initdir@}) @tab 文字列 @tab ディレクトリ選択ダイアログを表示
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -7443,8 +7445,12 @@ atan2({expr1}, {expr2})					*atan2()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-balloon_show({msg})					*balloon_show()*
-		Show {msg} inside the balloon.
+balloon_show({expr})					*balloon_show()*
+		Show {expr} inside the balloon.  For the GUI {expr} is used as
+		a string.  For a terminal {expr} can be a list, which contains
+		the lines of the balloon.  If {expr} is not a list it will be
+		split with |balloon_split()|.
+
 		Example: >
 			func GetBalloonContent()
 			   " initiate getting the content
@@ -7460,8 +7466,8 @@ balloon_show({msg})					*balloon_show()*
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{balloon_show()}
 @cindex balloon_show()
-@item balloon_show(@{msg@})
-@{msg@} をバルーン内に表示する。
+@item balloon_show(@{expr@})
+@{expr@} をバルーン内に表示する。GUI のために @{expr@} は文字列として使われる。端末のために @{expr@} はバルーンの行を含むリストになることができる。もしも @{expr@} がリストでなければ、|balloon_split()| で分割されるだろう。
 
 例:
 @verbatim
@@ -7490,12 +7496,32 @@ endfunc
 @ifset EN
 		When showing a balloon is not possible nothing happens, no
 		error message.
-		{only available when compiled with the +balloon_eval feature}
+		{only available when compiled with the +balloon_eval or
+		+balloon_eval_term feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 バルーンを表示できないときは何も起こらず、エラーメッセージも表示されない。
 
-@{Vim が |+balloon_eval| 機能付きでコンパイルされたときのみ有効@}
+@{Vim が |+balloon_eval| もしくは |+balloon_eval_term| 機能付きでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+balloon_split({msg})					*balloon_split()*
+		Split {msg} into lines to be displayed in a balloon.  The
+		splits are made for the current window size and optimize to
+		show debugger output.
+		Returns a |List| with the split lines.
+		{only available when compiled with the +balloon_eval_term
+		feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{balloon_split()}
+@cindex balloon_split()
+@item balloon_split(@{msg@})
+バルーンで表示できるようにするため、行内のメッセージを分割する。
+分割されたものは、現在のウィンドウサイズになっており、デバッガの出力用に最適化されている。分割された行として |List| を返す。
+
+@{Vim が |+balloon_eval_term| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -22978,7 +23004,7 @@ winwidth({nr})						*winwidth()*
 		Examples: >
   :echo "The current window has " . winwidth(0) . " columns."
   :if winwidth(0) <= 50
-  :  exe "normal 50\<C-W>|"
+  :  50 wincmd |
   :endif
 <		For getting the terminal or screen size, see the 'columns'
 		option.
@@ -22989,7 +23015,7 @@ winwidth({nr})						*winwidth()*
 @example
 :echo "The current window has " . winwidth(0) . " columns."
 :if winwidth(0) <= 50
-:  exe "normal 50\<C-W>|"
+:  50 wincmd |
 :endif
 @end example
 端末または画面サイズを取得するには、'@option{columns}' オプション参照。
@@ -23074,6 +23100,7 @@ writefile({list}, {fname} [, {flags}])
 		appended to the file: >
 			:call writefile(["foo"], "event.log", "a")
 			:call writefile(["bar"], "event.log", "a")
+<
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @{flags@} が "a" を含むときは追記モードとなり、ファイルに行が追記される。
@@ -23082,9 +23109,26 @@ writefile({list}, {fname} [, {flags}])
 :call writefile(["bar"], "event.log", "a")
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When {flags} contains "s" then fsync() is called after writing
+		the file.  This flushes the file to disk, if possible.  This
+		takes more time but avoids losing the file if the system
+		crashes.
+		When {flags} does not contain "S" or "s" then fsync is called
+		if the 'fsync' option is set.
+		When {flags} contains "S" then fsync() is not called, even
+		when 'fsync' is set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{flags@} が "s" を含むときはファイルを書き込んだ後に fsync() が呼ばれる。もしも可能ならば、ファイルをディスクにフラッシュする。これには時間がかかるけれども、例えシステムがクラッシュしたとしても、ファイルを失うことを回避する。
+
+@{flags@} が "S" も "s" も含まないときに 'fsync' オプションが設定されていると fsync() は呼ばれる。
+
+@{flags@} が "S" を含むときは 'fsync' が設定されていても fsync() は呼ばれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-<		All NL characters are replaced with a NUL character.
+		All NL characters are replaced with a NUL character.
 		Inserting CR characters needs to be done before passing {list}
 		to writefile().
 		An existing file is overwritten, if possible.
