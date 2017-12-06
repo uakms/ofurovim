@@ -16066,6 +16066,7 @@ MS-Windows の Vista 以降のバージョンで '@option{encoding}' が "@var{u
 		  geom	    pixelGeometry	int	0 - 2 (see below)
 		  renmode   renderingMode	int	0 - 6 (see below)
 		  taamode   textAntialiasMode	int	0 - 3 (see below)
+		  scrlines  Scroll Lines	int	>= 0  (see below)
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 オプション:
@@ -16077,17 +16078,18 @@ MS-Windows の Vista 以降のバージョンで '@option{encoding}' が "@var{u
 @item geom @tab pixelGeometry @tab int @tab 0 - 2 (see below)
 @item renmode @tab renderingMode @tab int @tab 0 - 6 (see below)
 @item taamode @tab textAntialiasMode @tab int @tab 0 - 3 (see below)
+@item scrlines @tab Scroll Lines @tab int @tab >= 0  (see below)
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-		See this URL for detail:
-		  http://msdn.microsoft.com/en-us/library/dd368190.aspx
+		See this URL for detail (except for scrlines):
+		  https://msdn.microsoft.com/en-us/library/dd368190.aspx
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 詳細は次の URL を参照:
 
-@url{http://msdn.microsoft.com/en-us/library/dd368190.aspx}
+@url{https://msdn.microsoft.com/en-us/library/dd368190.aspx}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -16107,12 +16109,12 @@ geom: デバイスピクセルの内部構造。
 
 @ifset EN
 		See this URL for detail:
-		  http://msdn.microsoft.com/en-us/library/dd368114.aspx
+		  https://msdn.microsoft.com/en-us/library/dd368114.aspx
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 詳細は次の URL を参照:
 
-@url{http://msdn.microsoft.com/en-us/library/dd368114.aspx}
+@url{https://msdn.microsoft.com/en-us/library/dd368114.aspx}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -16140,12 +16142,12 @@ renmode: 文字レンダリングの方法。
 
 @ifset EN
 		See this URL for detail:
-		  http://msdn.microsoft.com/en-us/library/dd368118.aspx
+		  https://msdn.microsoft.com/en-us/library/dd368118.aspx
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 詳細は次の URL を参照:
 
-@url{http://msdn.microsoft.com/en-us/library/dd368118.aspx}
+@url{https://msdn.microsoft.com/en-us/library/dd368118.aspx}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -16167,12 +16169,49 @@ taamode: テキスト描画に使われるアンチエイリアスモード。
 
 @ifset EN
 		See this URL for detail:
-		  http://msdn.microsoft.com/en-us/library/dd368170.aspx
+		  https://msdn.microsoft.com/en-us/library/dd368170.aspx
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 詳細は次の URL を参照:
 
-@url{http://msdn.microsoft.com/en-us/library/dd368170.aspx}
+@url{https://msdn.microsoft.com/en-us/library/dd368170.aspx}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		For scrlines: threshold for lines to be scrolled.
+		    0 - Always use scrolling. (default)
+		    1 - Use full page redrawing.
+		  > 1 - If the lines to be scrolled is grater or equal to the
+			specified value, use redrawing.  Otherwise use
+			scrolling.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+scrlines: スクロールされる行の閾値。
+@multitable @columnfractions .15 .85
+@item 0 - @tab 常にスクロールする。(既定)
+@item 1 - @tab ページ全体を再描画する。
+@item > 1 - @tab スクロールされる行が設定された値以上ならば再描画する。そうでなければスクロールする。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If you feel scrolling a page (CTRL-F) is too slow with DirectX
+		renderer, try this "scrlines" option.
+		When set it "1", Vim uses full page redrawing instead of
+		scrolling.  Redrawing a page is faster than scrolling a
+		page in some environments.
+		After that, when you feel scrolling lines (CTRL-Y) becomes
+		slow, please try "2" or greater value for this option.
+		It works threshold line number to switch scrolling to
+		redrawing.  Scrolling a few lines might be faster than
+		redrawing a page in some environments.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしも DirectX レンダリングによるページスクロール (CTRL-F) が遅いと感じるのであれば、この "scrlines" オプションを使ってみること。
+
+"1" に設定した場合、Vim はスクロールの代りに全画面の再描画を使う。ページの再描画はいくつかの環境ではページスクロールよりも速い。
+
+これを設定した後に、行スクロール (CTRL-Y) が遅くなったと感じたなら、値を "2" 以上に設定してみよ。それがスクロールを再描画に変更するための行数の閾値となる。いくつかの環境では、数行のスクロールがページの再描画よりも速くなるだろう。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -16193,18 +16232,17 @@ set rop=type:directx
 @ifset EN
 		If select a raster font (Courier, Terminal or FixedSys which
 		have ".fon" extension in file name) to 'guifont', it will be
-		drawn by GDI as a fallback.  This fallback will cause
-		significant slow down on drawing.
+		drawn by GDI as a fallback.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-'@option{guifont}' にラスターフォント (Courier、Terminal、FixedSys など拡張子に ".fon" が付いているもの) が選択されているときは、自動的に GDI による描画に切り替わる。この切り替わりが発生したときは大幅な描画の速度低下が発生する。
+'@option{guifont}' にラスターフォント (Courier、Terminal、FixedSys など拡張子に ".fon" が付いているもの) が選択されているときは、自動的に GDI による描画に切り替わる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 		NOTE: It is known that some fonts and options combination
 		causes trouble on drawing glyphs.
 
-		  - 'rendmode:5' and 'renmode:6' will not work with some
+		  - 'renmode:5' and 'renmode:6' will not work with some
 		    special made fonts (True-Type fonts which includes only
 		    bitmap glyphs).
 		  - 'taamode:3' will not work with some vector fonts.
@@ -16214,7 +16252,7 @@ set rop=type:directx
 @strong{Note:} @*
 一部のフォントとオプションの組み合わせによってはグリフが描画されない場合があることに注意。
 @itemize @minus
-@item '@option{rendmode:5}' と '@option{renmode:6}' は、一部の特製フォント (ビットマップしか含まない TrueType フォントなど) に対して動作しない。
+@item '@option{renmode:5}' と '@option{renmode:6}' は、一部の特製フォント (ビットマップしか含まない TrueType フォントなど) に対して動作しない。
 @item '@option{taamode:3}' は一部のベクターフォントに対して動作しない。
 @end itemize
 @end quotation
