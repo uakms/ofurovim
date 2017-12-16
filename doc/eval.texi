@@ -3,14 +3,14 @@
 @unnumbered 式の評価、条件式 (Vim script リファレンス)
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Nov 24
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Dec 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*eval.txt*	For Vim バージョン 8.0.  Last change: 2017 Nov 24
+*eval.txt*	For Vim バージョン 8.0.  Last change: 2017 Dec 09
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -5961,14 +5961,14 @@ atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
 @item @ref{atan2(), , atan2}(@{expr@}, @{expr@}) @tab 浮動小数点数 @tab @{expr1@} / @{expr2@} のアークタンジェント
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-balloon_show({msg})		none	show {msg} inside the balloon
+balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item @ref{balloon_show(), , balloon_show}(@{msg@}) @tab なし @tab @{msg@} をバルーン内に表示
+@item @ref{balloon_show(), , balloon_show}(@{expr@}) @tab なし @tab @{expr@} をバルーン内に表示
 @item @ref{balloon_split(), , balloon_split}(@{msg@}) @tab リスト @tab バルーンで使うために @{msg@} を分割する
 @item @ref{browse(), , browse}(@{save@}, @{title@}, @{initdir@}, @{default@}) @tab 文字列 @tab ファイル選択ダイアログを表示
 @item @ref{browsedir(), , browsedir}(@{title@}, @{initdir@}) @tab 文字列 @tab ディレクトリ選択ダイアログを表示
@@ -8337,6 +8337,8 @@ ch_open({address} [, {options}])				*ch_open()*
 ch_read({handle} [, {options}])					*ch_read()*
 		Read from {handle} and return the received message.
 		{handle} can be a Channel or a Job that has a Channel.
+		For a NL channel this waits for a NL to arrive, except when
+		there is nothing more to read (channel was closed).
 		See |channel-more|.
 		{only available when compiled with the |+channel| feature}
 @end ifset
@@ -8344,7 +8346,7 @@ ch_read({handle} [, {options}])					*ch_read()*
 @anchor{ch_read()}
 @cindex ch_read()
 @item ch_read(@{handle@} [, @{options@}])
-@{handle@} から読み込みメッセージを受信する。@{handle@} はチャンネルもしくはチャンネルを持つジョブであっても良い。|channel-more| を参照。
+@{handle@} から読み込みメッセージを受信する。@{handle@} はチャンネルもしくはチャンネルを持つジョブであっても良い。NL チャンネルのために、これ以上読み込むものが無い場合 (チャンネルが閉じられた) を除き、これは NL の到着を待つ。|channel-more| を参照。
 
 @{|+channel| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -8352,14 +8354,16 @@ ch_read({handle} [, {options}])					*ch_read()*
 @ifset EN
 ch_readraw({handle} [, {options}])			*ch_readraw()*
 		Like ch_read() but for a JS and JSON channel does not decode
-		the message.  See |channel-more|.
+		the message.  For a NL channel it does not block waiting for
+		the NL to arrive, but otherwise works like ch_read().
+		See |channel-more|.
 		{only available when compiled with the |+channel| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{ch_readraw()}
 @cindex ch_readraw()
 @item ch_readraw(@{handle@} [, @{options@}])
-ch_read() と同様に動作するが JS や JSON の場合でもメッセージはデコードされない。|channel-more| を参照。
+ch_read() と同様に動作するが JS や JSON の場合でもメッセージはデコードされない。NL チャンネルのために、これは NL の到着を待つことをブロックしないが、ch_read() と同様に動作する。|channel-more| を参照。
 
 @{|+channel| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -11164,12 +11168,14 @@ getbufinfo([{dict}])
 		be specified in {dict}:
 			buflisted	include only listed buffers.
 			bufloaded	include only loaded buffers.
+			bufmodified	include only modified buffers.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 引数が辞書の場合、指定された条件を満たすバッファのみが返される。@{dict@} には以下のキーを指定できる：
 @multitable @columnfractions .2 .8
 @item buflisted @tab リストされたバッファのみを含む。
 @item bufloaded @tab ロードされたバッファのみを含む。
+@item bufmodified @tab 変更されたバッファのみを含む。
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -12466,19 +12472,20 @@ getqflist([{what}])					*getqflist()*
 				the last quickfix list
 			size	number of entries in the quickfix list
 			title	get the list title
-			winid	get the |window-ID| (if opened)
+			winid	get the quickfix |window-ID|
 			all	all of the above quickfix properties
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item nr @tab この quickfix リストの情報を取得。0 は現在の quickfix リストを意味する。"$" は quickfix リストの最後を意味する
 @item size @tab quickfix リスト内のエントリ数
 @item title @tab リストタイトルを取得
-@item winid @tab |window-ID| を取得 (もし開かれていれば)
+@item winid @tab quickfix の |window-ID| を取得
 @item all @tab 上記の quickfix のすべてのプロパティ
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-		Non-string items in {what} are ignored.
+		Non-string items in {what} are ignored. To get the value of a
+		particular item, set it to zero.
 		If "nr" is not present then the current quickfix list is used.
 		If both "nr" and a non-zero "id" are specified, then the list
 		specified by "id" is used.
@@ -12488,11 +12495,9 @@ getqflist([{what}])					*getqflist()*
 		When "lines" is specified, all the other items except "efm"
 		are ignored.  The returned dictionary contains the entry
 		"items" with the list of entries.
-		In case of error processing {what}, an empty dictionary is
-		returned.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{what@} の文字列以外の項目は無視される。
+@{what@} の文字列以外の項目は無視される。特別なアイテムの値を取得するために、0 に設定する。
 
 "nr" が存在しない場合、現在の quickfix リストが使用される。
 
@@ -12501,32 +12506,36 @@ getqflist([{what}])					*getqflist()*
 quickfix スタックのリスト数を得るために、@{what@} の "nr" を "$" に設定する。返された辞書内の "nr" の値は quickfix スタックのサイズを含む。
 
 "lines" が指定された場合、"efm" を除く他の全ての項目は無視される。返された辞書はエントリリストの "items" エントリを含む。
-
-@{what@} の処理中にエラーとなった場合、空の辞書が返される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 		The returned dictionary contains the following entries:
-			context	context information stored with |setqflist()|
-			id	quickfix list ID |quickfix-ID|
-			idx	index of the current entry in the list
-			items	quickfix list entries
-			nr	quickfix list number
-			size	number of entries in the quickfix list
-			title	quickfix list title text
-			winid	quickfix |window-ID| (if opened)
+			context	context information stored with |setqflist()|.
+				If not present, set to "".
+			id	quickfix list ID |quickfix-ID|. If not
+				present, set to 0.
+			idx	index of the current entry in the list. If not
+				present, set to 0.
+			items	quickfix list entries. If not present, set to
+				an empty list.
+			nr	quickfix list number. If not present, set to 0
+			size	number of entries in the quickfix list. If not
+				present, set to 0.
+			title	quickfix list title text. If not present, set
+				to "".
+			winid	quickfix |window-ID|. If not present, set to 0
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 返される辞書には、次のエントリが含まれる:
 @multitable @columnfractions .2 .8
-@item context @tab |setqflist()| に格納されたコンテキスト情報
-@item id @tab quickfix リストの ID |quickfix-ID|
-@item idx @tab リスト内の現在のエントリのインデックス
-@item items @tab quickfix リストのエントリ
-@item nr @tab quickfix リスト番号
-@item size @tab quickfix リスト内のエントリ数
-@item title @tab quickfix リストのタイトルテキスト
-@item winid @tab quickfix の |window-ID| (もし開かれていれば)
+@item context @tab |setqflist()| に格納されたコンテキスト情報。もし存在しなければ "" に設定する。
+@item id @tab quickfix リストの ID |quickfix-ID|。もし存在しなければ 0 に設定する。
+@item idx @tab リスト内の現在のエントリのインデックス。もし存在しなければ 0 に設定する。
+@item items @tab quickfix リストのエントリ。もし存在しなければ空リストに設定する。
+@item nr @tab quickfix リスト番号。もし存在しなければ 0 に設定する。
+@item size @tab quickfix リスト内のエントリ数。もし存在しなければ 0 に設定する。
+@item title @tab quickfix リストのタイトルテキスト。もし存在しなければ "" に設定する。
+@item winid @tab quickfix の |window-ID|。もし存在しなければ 0 に設定する。
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -23145,8 +23154,8 @@ writefile({list}, {fname} [, {flags}])
 		the file.  This flushes the file to disk, if possible.  This
 		takes more time but avoids losing the file if the system
 		crashes.
-		When {flags} does not contain "S" or "s" then fsync is called
-		if the 'fsync' option is set.
+		When {flags} does not contain "S" or "s" then fsync() is
+		called if the 'fsync' option is set.
 		When {flags} contains "S" then fsync() is not called, even
 		when 'fsync' is set.
 @end ifset
