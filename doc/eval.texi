@@ -3,14 +3,14 @@
 @unnumbered 式の評価、条件式 (Vim script リファレンス)
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*eval.txt*	For Vim version 8.0.  Last change: 2017 Dec 09
+*eval.txt*	For Vim version 8.0.  Last change: 2017 Dec 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*eval.txt*	For Vim バージョン 8.0.  Last change: 2017 Dec 09
+*eval.txt*	For Vim バージョン 8.0.  Last change: 2017 Dec 16
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -6502,11 +6502,15 @@ mzeval({expr})			any	evaluate |MzScheme| expression
 @ifset EN
 nextnonblank({lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF8 value {expr}
+option_restore({list})		none	restore options saved by option_save()
+option_save({list})		List	save options values
 or({expr}, {expr})		Number	bitwise OR
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{nextnonblank(), , nextnonblank}(@{lnum@}) @tab 数値 @tab @{lnum@} 行目以降で空行でない行の行番号
 @item @ref{nr2char(), , nr2char}(@{expr@} [, @{utf8@}]) @tab 文字列 @tab ASCII/UTF8 コード @{expr@} で示される文字
+@item @ref{option_restore(), , option_restore}(@{list@}) @tab なし @tab option_save() によって保存されたオプションをリストアする
+@item @ref{option_save(), ,option_save}(@{list@}) @tab リスト @tab オプションの値を保存する
 @item @ref{or(), , or}(@{expr@}, @{expr@}) @tab 数値 @tab ビット論理和
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -16238,6 +16242,74 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 @strong{Note:} @*
 Vim 内部では、ファイル中の NUL 文字を改行文字 (0x0A) に変換して保持している。そのため、nr2char(10) とすれば NUL 文字を指定できる。nr2char(0) は真の NUL 文字 (文字列の終端) となるので、空文字列を返す。
 @end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+option_restore({list})					*option_restore()*
+		Restore options previously saved by option_save().
+		When buffer-local options have been saved, this function must
+		be called when the same buffer is the current buffer.
+		When window-local options have been saved, this function must
+		be called when the same window is the current window.
+		When in the wrong buffer and/or window an error is given and
+		the local options won't be restored.
+		NOT IMPLEMENTED YET!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{option_restore()}
+@cindex option_restore()
+@item option_restore(@{list@})
+option_save() によって以前に保存されたオプションをリストアする。
+
+バッファローカルオプションが保存されている時、同じバッファがカレントバッファである時に、この関数は呼ばれなければならない。
+
+ウィンドウローカルオプションが保存されている時、同じウィンドウがカレントウィンドウである時に、この関数は呼ばれなければならない。
+
+不適切なバッファ かつ/もしくは ウィンドウでエラーが与えられた時は、ローカルオプションはリストアされないだろう。
+
+まだ実装されていない！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+option_save({list})					*option_save()*
+		Saves the options named in {list}.  The returned value can be
+		passed to option_restore().  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{option_save()}
+@cindex option_save()
+@item option_save(@{list@})
+@{list@} で名付けられたオプションを保存する。戻り値は option_restore() に渡される。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			let s:saved_options = option_save([
+			    \ 'ignorecase',
+			    \ 'iskeyword',
+			    \ ])
+			 au <buffer> BufLeave *
+			    \ call option_restore(s:saved_options)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+let s:saved_options = option_save([
+    \ 'ignorecase',
+    \ 'iskeyword',
+    \ ])
+ au <buffer> BufLeave *
+    \ call option_restore(s:saved_options)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		The advantage over using `:let` is that global and local
+		values are handled and the script ID is restored, so that
+		`:verbose set` will show where the option was originally set,
+		not where it was restored.
+		NOT IMPLEMENTED YET!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+`:let` を使うことの優位性は、グローバル値とローカルの値が取り扱われ、スクリプト IS が戻されることだ。それゆえ `:verbose set` は、オプションが戻された場所ではなく、最初に設定された場所を示すだろう。
+
+まだ実装されていない！
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
