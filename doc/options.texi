@@ -17290,8 +17290,9 @@ Unix では、このオプションはファイル "@file{.vimrc}" または "@f
 	It is allowed to give an argument to the command, e.g.  "csh -f".
 	See |option-backslash| about including spaces and backslashes.
 	Environment variables are expanded |:set_env|.
+
 	If the name of the shell contains a space, you might need to enclose
-	it in quotes.  Example: >
+	it in quotes or escape the space.  Example with quotes: >
 		:set shell=\"c:\program\ files\unix\sh.exe\"\ -f
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -17312,9 +17313,11 @@ Unix では、このオプションはファイル "@file{.vimrc}" または "@f
 
 "!" や ":!" 等のコマンドで使うシェルの名前。この値を変えたときは、以下のオプションも調べること: 'shelltype', 'shellpipe', 'shellslash', 'shellredir', 'shellquote', 'shellxquote', 'shellcmdflag' コマンドには引数を与えることができる。例えば "csh -f" である。
 
-値に空白や '\' を含める方法については、|option-backslash| を参照。環境変数は展開される |:set_env|。シェルの名前が空白を含むときは、それを引用符で挟む必要があるだろう。
+値に空白や '\' を含める方法については、|option-backslash| を参照。環境変数は展開される |:set_env|。
 
-例:
+シェルの名前が空白を含むときは、それを引用符で挟むかスペースをエスケープ必要があるだろう。
+
+クォートの例:
 @example
 :set shell=\"c:\program\ files\unix\sh.exe\"\ -f
 @end example
@@ -17323,8 +17326,14 @@ Unix では、このオプションはファイル "@file{.vimrc}" または "@f
 <	Note the backslash before each quote (to avoid starting a comment) and
 	each space (to avoid ending the option value).  Also note that the
 	"-f" is not inside the quotes, because it is not part of the command
-	name.  And Vim automagically recognizes the backslashes that are path
+	name.  Vim automagically recognizes the backslashes that are path
 	separators.
+	Example with escaped space (Vim will do this when initializing the
+	option from $SHELL): >
+		:set shell=/bin/with\\\ space/sh
+<	The resulting value of 'shell' is  "/bin/with\ space/sh", two
+	backslashes are consumed by `:set`.
+
 	Under MS-Windows, when the executable ends in ".com" it must be
 	included.  Thus setting the shell to "command.com" or "4dos.com"
 	works, but "command" and "4dos" do not work for all commands (e.g.,
@@ -17342,7 +17351,13 @@ Unix では、このオプションはファイル "@file{.vimrc}" または "@f
 @end quotation
 @quotation
 @strong{Note:} @*
-また "-f" は引用符の中に入っていないことにも注意。それはコマンド名の一部ではないからである。またVimはパスの区切りに使われている '\' を自動的に認識する。
+また "-f" は引用符の中に入っていないことにも注意。それはコマンド名の一部ではないからである。Vim はパスの区切りに使われている '\' を自動的に認識する。
+
+スペースをエスケープする例 (Vim は $SHELL からのオプションの初期化の際にこのようにするだろう): >
+@example
+:set shell=/bin/with\\\ space/sh
+@end example
+'shell' の値の結果は "/bin/with\ space/sh" で、`:set` のために 2 つのバックスラッシュが浪費されている。
 
 MS-Windows では、実行ファイルの名前が ".com" で終わるときは ".com" まで含めなければならない。つまりシェルを "command.com" や "4dos.com" に設定すると正しく機能するが、"command" や "4dos" に設定すると、必ずしも全てのコマンドに対しては動作しなくなる (例えばフィルタコマンド)。
 
