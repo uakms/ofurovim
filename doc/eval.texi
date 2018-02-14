@@ -5936,6 +5936,7 @@ argv()				List	the argument list
 @item @ref{argv(), , argv}() @tab リスト @tab 引数リスト
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+assert_beeps({cmd})		none	assert {cmd} causes a beep
 assert_equal({exp}, {act} [, {msg}])
 				none	assert {exp} is equal to {act}
 assert_exception({error} [, {msg}])
@@ -5955,6 +5956,7 @@ assert_report({msg})		none	report a test failure
 assert_true({actual} [, {msg}])	none	assert {actual} is true
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{assert_beeps(), , assert_beeps}(@{cmd@}) @tab なし @tab @{cmd@} がビープを引き起すかテストする
 @item @ref{assert_equal(), , assert_equal}(@{exp@}, @{act@} [, @{msg@}]) @tab なし @tab @{exp@} と @{act@} が等しいかどうかテストする
 @item @ref{assert_exception(), , assert_exception}(@{error@} [, @{msg@}]) @tab なし @tab |v:exception| が @{error@} であるかテストする
 @item @ref{assert_fails(), , assert_fails}(@{cmd@} [, @{error@}]) @tab なし @tab @{cmd@} が失敗するかどうかテストする
@@ -6230,6 +6232,7 @@ getbufvar({expr}, {varname} [, {def}])
 @item @ref{getbufvar(), , getbufvar}(@{expr@}, @{varname@} [, @{def@}]) @tab 任意 @tab バッファ @{expr@} の変数 @{varname@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+getchangelist({expr})		List	list of change list items
 getchar([expr])			Number	get one character from the user
 getcharmod()			Number	modifiers for the last typed character
 getcharsearch()			Dict	last character search
@@ -6243,6 +6246,7 @@ getcurpos()			List	position of the cursor
 getcwd([{winnr} [, {tabnr}]])	String	get the current working directory
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{getchangelist(), , getchangelist}(@{expr@}) @tab リスト @tab 変更リストのリスト
 @item @ref{getchar(), , getchar}([expr]) @tab 数値 @tab ユーザーから 1 文字を取得する
 @item @ref{getcharmod(), , getcharmod}() @tab 数値 @tab 修飾キーの状態を表す数値を取得
 @item @ref{getcharsearch(), , getcharsearch}() @tab 辞書 @tab 最後の文字検索を取得
@@ -7175,6 +7179,19 @@ argv([{nr}])	The result is the {nr}th file in the argument list of the
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+assert_beeps({cmd})					*assert_beeps()*
+		Run {cmd} and add an error message to |v:errors| if it does
+		NOT produce a beep or visual bell.
+		Also see |assert_fails()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{assert_beeps()}
+@cindex assert_beeps()
+@item assert_beeps(@{cmd@})
+@{cmd@} を実行し、もしもビープやビジュアルベルを@strong{生じない}ならば、エラーメッセージを |v:errors| に追加する。|assert_fails()| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 							*assert_equal()*
 assert_equal({expected}, {actual} [, {msg}])
 		When {expected} and {actual} are not equal an error message is
@@ -7244,12 +7261,18 @@ assert_fails({cmd} [, {error}])					*assert_fails()*
 		Run {cmd} and add an error message to |v:errors| if it does
 		NOT produce an error.
 		When {error} is given it must match in |v:errmsg|.
+		Note that beeping is not considered an error, and some failing
+		commands only beep.  Use |assert_beeps()| for those.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{assert_fails()}
 @cindex assert_fails()
 @item assert_fails(@{cmd@} [, @{error@}])
 @{cmd@} を実行しエラーを生成しなかった場合、|v:errors| にエラーメッセージを追加する。@{error@} が渡された場合、|v:errmsg| の一部にマッチしなければならない。
+@quotation
+@strong{Note:} @*
+ビープはエラーとはみなされない。またビープのみを実行する失敗もある。これらには |assert_beeps()| を使うことに注意。
+@end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -11418,6 +11441,41 @@ getbufvar({expr}, {varname} [, {def}])				*getbufvar()*
 :echo "todo myvar = " . getbufvar("todo", "myvar")
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+getchangelist({expr})					*getchangelist()*
+		Returns the |changelist| for the buffer {expr}. For the use
+		of {expr}, see |bufname()| above. If buffer {expr} doesn't
+		exist, an empty list is returned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{getchangelist()}
+@cindex getchangelist()
+@item getchangelist(@{expr@})
+バッファの @{expr@} の |changelist| を返す。@{expr@} の使用は、上記の |bufname()| を参照。もしもバッファの @{expr@} が存在しないのなら、空リストが返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The returned list contains two entries: a list with the change
+		locations and the current position in the list.  Each
+		entry in the change list is a dictionary with the following
+		entries:
+			col		column number
+			coladd		column offset for 'virtualedit'
+			lnum		line number
+		If buffer {expr} is the current buffer, then the current
+		position refers to the position in the list. For other
+		buffers, it is set to the length of the list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+返されるリストは 2 つのエントリを含んでいる: それは、変更ロケーションリストとリスト内の現在のポジションである。変更リストのそれぞれのエントリは、次の項目を持つ辞書である:
+@multitable @columnfractions .3 .7
+@item col @tab 桁番号
+@item coladd @tab '@option{virtualedit}' のための桁番号
+@item lnum @tab 行番号
+@end multitable
+もしもバッファ @{expr@} がカレンノバッファなら、現在の位置はリスト内の場所を示す。他のバッファなら、リストの長さに設定される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
 getchar([expr])						*getchar()*
 		Get a single character from the user or input stream.
