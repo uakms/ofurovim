@@ -3,14 +3,14 @@
 @unnumbered 式の評価、条件式 (Vim script リファレンス)
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*eval.txt*	For Vim version 8.0.  Last change: 2018 Feb 10
+*eval.txt*	For Vim version 8.0.  Last change: 2018 Feb 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*eval.txt*	For Vim バージョン 8.0.  Last change: 2018 Feb 10
+*eval.txt*	For Vim バージョン 8.0.  Last change: 2018 Feb 18
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -5939,6 +5939,8 @@ argv()				List	the argument list
 assert_beeps({cmd})		none	assert {cmd} causes a beep
 assert_equal({exp}, {act} [, {msg}])
 				none	assert {exp} is equal to {act}
+assert_equalfile({fname-one}, {fname-two})
+				none	assert file contents is equal
 assert_exception({error} [, {msg}])
 				none	assert {error} is in v:exception
 assert_fails({cmd} [, {error}])	none	assert {cmd} fails
@@ -5958,6 +5960,7 @@ assert_true({actual} [, {msg}])	none	assert {actual} is true
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{assert_beeps(), , assert_beeps}(@{cmd@}) @tab なし @tab @{cmd@} がビープを引き起すかテストする
 @item @ref{assert_equal(), , assert_equal}(@{exp@}, @{act@} [, @{msg@}]) @tab なし @tab @{exp@} と @{act@} が等しいかどうかテストする
+@item @ref{assert_equalfile(), , assert_equalfile}(@{fname-one@}, @{fname-two@}) @tab なし @tab ファイルの内容が等しいかどうかテストする
 @item @ref{assert_exception(), , assert_exception}(@{error@} [, @{msg@}]) @tab なし @tab |v:exception| が @{error@} であるかテストする
 @item @ref{assert_fails(), , assert_fails}(@{cmd@} [, @{error@}]) @tab なし @tab @{cmd@} が失敗するかどうかテストする
 @item @ref{assert_false(), , assert_false}(@{actual@} [, @{msg@}]) @tab なし @tab @{actual@} が false かどうかテストする
@@ -6792,6 +6795,12 @@ tempname()			String	name for a temporary file
 @item @ref{tempname(), , tempname}() @tab 文字列 @tab テンポラリファイルの名前
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+term_dumpdiff({filename}, {filename} [, {options}])
+				Number  display difference between two dumps
+term_dumpload({filename} [, {options}])
+				Number	displaying a screen dump
+term_dumpwrite({buf}, {filename} [, {max-height} [, {max-width}]])
+				none	dump terminal window contents
 term_getaltscreen({buf})	Number	get the alternate screen flag
 term_getattr({attr}, {what})	Number	get the value of attribute {what}
 term_getcursor({buf})		List	get the cursor position of a terminal
@@ -6809,6 +6818,9 @@ term_start({cmd}, {options})	Job	open a terminal window and run a job
 term_wait({buf} [, {time}])	Number  wait for screen to be updated
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{term_dumpdiff(), , term_dumpdiff}(@{filename@}, @{filename@} [, @{options@}]) @tab 数値 @tab 2 つのダンプファイルの差分を表示する
+@item @ref{term_dumpload(), , term_dumpload}(@{filename@} [, @{options@}])  @tab 数値 @tab スクリーンダンプを表示する
+@item @ref{term_dumpwrite(), , term_dumpwrite}(@{buf@}, @{filename@} [, @{max-height@} [, @{max-width@}]]) @tab なし @tab ターミナルウィンドウの内容をダンプする
 @item @ref{term_getaltscreen(), , term_getaltscreen}(@{buf@}) @tab 数値 @tab 代替スクリーンのフラグを取得する
 @item @ref{term_getattr(), , term_getattr}(@{attr@}, @{what@}) @tab 数値 @tab @{what@} 属性の値を取得する
 @item @ref{term_getcursor(), , term_getcursor}(@{buf@}) @tab リスト @tab ターミナルのカーソル位置を取得する
@@ -7221,6 +7233,22 @@ assert_equal('foo', 'bar')
 @example
 test.vim line 12: Expected 'foo' but got 'bar'
 @end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*assert_equalfile()*
+assert_equalfile({fname-one}, {fname-two})
+		When the files {fname-one} and {fname-two} do not contain
+		exactly the same text an error message is added to |v:errors|.
+		When {fname-one} or {fname-two} does not exist the error will
+		mention that.
+		Mainly useful with |terminal-diff|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{assert_equalfile()}
+@cindex assert_equalfile()
+@item assert_equalfile(@{fname-one@}, @{fname-two@})
+@{fname-one@} と @{fname-two@} ファイルが厳密に同じテキストを含んでいない時に、エラーメッセージが |v:errors| に追加される。@{fname-one@} もしくは @{fname-two@} が存在しない時は、エラーはそれについて述べる。主に |terminal-diff| で役立つ。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -12223,8 +12251,7 @@ getftype("/home")
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-							*getjumplist()*
-getjumplist([{winnr} [, {tabnr}]])
+getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
 		Returns the |jumplist| for the specified window.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -21419,6 +21446,120 @@ tempname()					*tempname()* *temp-file-name*
 Unix では、ファイルはプライベートなディレクトリに置かれる。|tempfile|
 
 MS-Windows では、'@option{shellslash}' がオンのときか '@option{shellcmdflag}' が '-' で始まるときはスラッシュが使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*term_dumpdiff()*
+term_dumpdiff({filename}, {filename} [, {options}])
+		Open a new window displaying the difference between the two
+		files.  The files must have been created with
+		|term_dumpwrite()|.
+		Returns the buffer number or zero when the diff fails.
+		Also see |terminal-diff|.
+		NOTE: this does not work with double-width characters yet.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{term_dumpdiff()}
+@cindex term_dumpdiff()
+@item term_dumpdiff(@{filename@}, @{filename@} [, @{options@}])
+2 ファイルの差分を表示している新しいウィンドウを開く。ファイルは |term_dumpwrite()| で作成されていなければならない。
+
+diff に失敗した場合はバッファ番号もしくは 0 を返す。|terminal-diff| も参照。
+
+@quotation
+@strong{Note:} @*
+これは 2 バイト文字ではまだ動作しないことに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The top part of the buffer contains the contents of the first
+		file, the bottom part of the buffer contains the contents of
+		the second file.  The middle part shows the differences.
+		The parts are separated by a line of dashes.
+
+		{options} are not implemented yet.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファの上部は最初のファイルの内容を含み、下部は 2 番目のファイルの内容を含む。真ん中の部分は差分を表示する。それぞれのパートはダッシュのラインで区切られる。
+
+@{options@} はまだ実装されていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Each character in the middle part indicates a difference. If
+		there are multiple differences only the first in this list is
+		used:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+真ん中のそれぞれの文字は差異を示している。もしも複数の差異があるのなら、このリストの最初のものだけが使われる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			X	different character
+			w	different width
+			f	different foreground color
+			b	different background color
+			a	different attribute
+			+	missing position in first file
+			-	missing position in second file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .9
+@item X @tab 文字が異なる
+@item w @tab 幅が異なる
+@item f @tab 前景色が異なる
+@item b @tab 背景色が異なる
+@item a @tab 属性が異なる
+@item + @tab 1 つ目のファイルの位置が欠損している
+@item - @tab 2 つ目のファイルの位置が欠損している
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Using the "s" key the top and bottom parts are swapped.  This
+		makes it easy to spot a difference.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"s" キーを使うと上と下の部分が交換される。これは差異を見つけやすくする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*term_dumpload()*
+term_dumpload({filename} [, {options}])
+		Open a new window displaying the contents of {filename}
+		The file must have been created with |term_dumpwrite()|.
+		Returns the buffer number or zero when it fails.
+		Also see |terminal-diff|.
+
+		{options} are not implemented yet.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{term_dumpload()}
+@cindex term_dumpload()
+@item term_dumpload(@{filename@} [, @{options@}])
+@{filename@} の内容を表示している新しいウィンドウを開く。ファイルは |term_dumpwrite()| で作成されていなければならない。失敗した場合はバッファ番号もしくは 0 を返す。|terminal-diff| も参照。
+
+@{options@} はまだ実装されていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*term_dumpwrite()*
+term_dumpwrite({buf}, {filename} [, {max-height} [, {max-width}]])
+		Dump the contents of the terminal screen of {buf} in the file
+		{filename}.  This uses a format that can be used with
+		|term_dumpread()| and |term_dumpdiff()|.
+		If {filename} already exists an error is given.	*E953*
+		Also see |terminal-diff|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{term_dumpwrite()}
+@cindex term_dumpwrite()
+@item term_dumpwrite(@{buf@}, @{filename@} [, @{max-height@} [, @{max-width@}]])
+ファイル @{filename@} 内の @{buf@} のターミナル画面の内容をダンプする。これは |term_dumpread()| と |term_dumpdiff()| で使われるフォーマットを使う。
+
+@anchor{E953}
+@cindex E953
+もしも @{filename@} がすでに存在しているならエラーが与えられる。|terminal-diff| も参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
