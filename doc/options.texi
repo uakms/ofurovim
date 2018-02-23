@@ -3,14 +3,14 @@
 @unnumbered 全オプションの説明
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*options.txt*	For Vim version 8.0.  Last change: 2018 Feb 03
+*options.txt*	For Vim version 8.0.  Last change: 2018 Feb 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*options.txt*	For Vim バージョン 8.0.  Last change: 2018 Feb 03
+*options.txt*	For Vim バージョン 8.0.  Last change: 2018 Feb 22
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -13694,8 +13694,11 @@ endif
 			{not in Vi}
 	Maximum amount of memory (in Kbyte) to use for one buffer.  When this
 	limit is reached allocating extra memory for a buffer will cause
-	other memory to be freed.  The maximum usable value is about 2000000.
-	Use this to work without a limit.  Also see 'maxmemtot'.
+	other memory to be freed.
+	The maximum usable value is about 2000000.  Use this to work without a
+	limit.
+	The value is ignored when 'swapfile' is off.
+	Also see 'maxmemtot'.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{'maxmem'}
@@ -13707,7 +13710,7 @@ endif
 グローバル @*
 @{Vi にはない@}
 
-1 つのバッファに使用できるメモリの最大値 (キロバイト単位)。この限界に達すると、バッファにさらにメモリを割り当てるときには、他のメモリを解放する。このオプションの最大値は約 2000000 である。限界を設けないときにはこの値に設定すること。'@option{maxmemtot}' も参照。
+1 つのバッファに使用できるメモリの最大値 (キロバイト単位)。この限界に達すると、バッファにさらにメモリを割り当てるときには、他のメモリを解放する。このオプションの最大値は約 2000000 である。限界を設けないときにはこの値に設定すること。'@option{swapfile}' がオフの時、値は無視される。'@option{maxmemtot}' も参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -13763,6 +13766,8 @@ endif
 	need more than 2 Gbyte for text editing?  Keep in mind that text is
 	stored in the swap file, one can edit files > 2 Gbyte anyway.  We do
 	need the memory to store undo info.
+	Buffers with 'swapfile' off still count to the total amount of memory
+	used.
 	Also see 'maxmem'.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -13778,6 +13783,8 @@ endif
 全てのバッファで使用するメモリの合計の最大値 (キロバイト単位)。このオプションの最大値は約 2000000 (2 ギガバイト)である。限界を設けないときにはこの値に設定すること。
 
 64 ビットマシンではもっと高くしても動作するかもしれない。けれど、本当にテキストの編集に 2 ギガバイト以上も必要ですか? テキスト自体はスワップファイルに保存されるので、この設定でも 2 ギガバイト以上のファイルは編集できることを、忘れないこと。メモリはアンドゥ情報を記憶するのに必要なのだ。
+
+'@option{swapfile}' がオフのバッファは、なおも使用されているメモリの総量をカウントする。
 
 '@option{maxmem}' も参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -15662,14 +15669,13 @@ Perl の共有ライブラリの名前を指定する。既定は DYNAMIC_PERL_D
 
 @ifset EN
 						*'pumwidth'* *'pw'*
-'pumwidth' 'pw'		number	(default 0)
+'pumwidth' 'pw'		number	(default 15)
 			global
 			{not available when compiled without the
 			|+insert_expand| feature}
 			{not in Vi}
 	Determines the minium width to use for the popup menu for Insert mode
-	completion.  When zero the default of 15 screen cells is used.
-	|ins-completion-menu|.
+	completion.  |ins-completion-menu|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{'pumwidth'}
@@ -15678,12 +15684,12 @@ Perl の共有ライブラリの名前を指定する。既定は DYNAMIC_PERL_D
 @cindex 'pw'
 @item 'pumwidth' または
 @itemx 'pw'
-数値 (既定では 0) @*
+数値 (既定では 15) @*
 グローバル @*
 @{Vim が |+insert_expand| 機能付きでコンパイルされたときのみ利用可能@} @*
 @{Vi にはない@}
 
-挿入モード補完のポップアップメニューに表示される幅の最小値。0 のときは既定の 15 スクリーンセル (文字のこと？) が使われる。|ins-completion-menu|
+挿入モード補完のポップアップメニューに表示される幅の最小値。|ins-completion-menu|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -20406,25 +20412,33 @@ Win32 GUI とコンソールでは '@option{termencoding}' は使用されない
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-						*'termguicolors'* *'tgc'*
+					*'termguicolors'* *'tgc'* *E954*
 'termguicolors' 'tgc'	boolean (default off)
 			global
 			{not in Vi}
 			{not available when compiled without the
 			|+termguicolors| feature}
 	When on, uses |highlight-guifg| and |highlight-guibg| attributes in
-	the terminal (thus using 24-bit color). Requires a ISO-8613-3
-	compatible terminal.
-	If setting this option does not work (produces a colorless UI)
-	reading |xterm-true-color| might help.
+	the terminal (thus using 24-bit color).
+	
+	Requires a ISO-8613-3 compatible terminal.  If setting this option
+	does not work (produces a colorless UI) reading |xterm-true-color|
+	might help.
+
+	For Win32 console, Windows 10 version 1703 (Creators Update) or later
+	is required. Use this check to find out: >
+		if has('vcon')
+<
 	Note that the "cterm" attributes are still used, not the "gui" ones.
 	NOTE: This option is reset when 'compatible' is set.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{'termguicolors'}
 @anchor{'tgc'}
+@anchor{E954}
 @cindex 'termguicolors'
 @cindex 'tgc'
+@cindex E954
 @item 'termguicolors' 'tgc'
 切替 (既定ではオフ) @*
 グローバル @*
@@ -20434,6 +20448,11 @@ Win32 GUI とコンソールでは '@option{termencoding}' は使用されない
 オンのとき、|highlight-guifg| と |highlight-guibg| がターミナル内で使われる (24 ビットカラー)。ISO-8613-3 互換なターミナルが必要。
 
 このオプションを設定しても機能しない (色が UI に付かない) 場合は、|xterm-true-color| を読むと助けになるかもしれない。
+
+Win32 コンソールのためには、Windows 10 バージョン 1703 (Creators Update) もしくはそれ以降が必要。調べるには次を使う:
+@example
+if has('vcon')
+@end example
 @quotation
 @strong{Note:} @*
 "cterm" の特徴はまだ使われているが、"gui" はそうではないことに注意。
