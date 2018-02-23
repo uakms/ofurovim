@@ -1,5 +1,6 @@
 PRG = /usr/local/bin/texi2any
 PRG_MTO = $(HOME)/project/mto/src/mto.py
+NVCHECK_DICT = $(HOME)/dev/vimdoc-ja/dict.yml
 HTML_OPT_NS = --html --no-split --css-include=style.css
 HTML_OPT_S = --html --css-ref=style.css
 ORIG = $(HOME)/dev/vim/runtime
@@ -103,7 +104,7 @@ diffen:
 	sed 's/Files .* and .*\/\(.*\) differ/> \1/'
 
 nvcheck:
-	nvcheck doc/*.texi
+	nvcheck -d $(NVCHECK_DICT) doc/*.texi
 
 tagcheck:
 	@ruby utils/check_tag.rb
