@@ -1,0 +1,4501 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node spell.txt, , , 目次
+@unnumbered スペルチェック
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*spell.txt*	For Vim version 8.0.  Last change: 2017 Oct 26
+
+
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*spell.txt*	For Vim バージョン 8.0.  Last change: 2017 Oct 26
+
+
+		  VIMリファレンスマニュアル       by Bram Moolenaar
+
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Spell checking						*spell*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell}
+@cindex spell
+スペルチェック
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Quick start			|spell-quickstart|
+2. Remarks on spell checking	|spell-remarks|
+3. Generating a spell file	|spell-mkspell|
+4. Spell file format		|spell-file-format|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. はじめに @tab |@ref{spell-quickstart, , spell-quickstart}|
+@item 2. スペルチェックの注意点 @tab |@ref{spell-remarks, , spell-remarks}|
+@item 3. スペルファイルの生成 @tab |@ref{spell-mkspell, , spell-mkspell}|
+@item 4. スペルファイルの形式 @tab |@ref{spell-file-format, , spell-file-format}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these commands}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらのコマンドはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Spell checking is not available when the |+syntax| feature has been disabled
+at compile time.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コンパイル時に |+syntax| 機能を無効にした場合にはスペルチェックは利用することができない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: There also is a vimspell plugin.  If you have it you can do ":help
+vimspell" to find about it.  But you will probably want to get rid of the
+plugin and use the 'spell' option instead, it works better.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+他にも vimspell プラグインがある。そのプラグインを入れていれば "@command{:help vimspell}" を実行することでそれについて調べることができる。しかし、おそらくそのプラグインを削除し、代わりにオプション '@option{spell}' を使いたいと思うだろう。そちらのほうがうまくいく。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Quick start					*spell-quickstart* *E756*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-quickstart}
+@anchor{E756}
+@cindex spell-quickstart
+@cindex E756
+@section 1. はじめに
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This command switches on spell checking: >
+
+	:setlocal spell spelllang=en_us
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドで、スペルチェックがオンになる:
+@example
+:setlocal spell spelllang=en_us
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This switches on the 'spell' option and specifies to check for US English.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはオプション '@option{spell}' をオンにし、アメリカ英語のチェックを指定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The words that are not recognized are highlighted with one of these:
+	SpellBad	word not recognized			|hl-SpellBad|
+	SpellCap	word not capitalised			|hl-SpellCap|
+	SpellRare	rare word				|hl-SpellRare|
+	SpellLocal	wrong spelling for selected region	|hl-SpellLocal|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+認識されない単語は以下のようにハイライトされる:
+@multitable @columnfractions .2 .4 .2
+@item SpellBad @tab 認識されない単語 @tab |hl-SpellBad|
+@item SpellCap @tab 頭文字が大文字になっていない単語 @tab |hl-SpellCap|
+@item SpellRare @tab まれな単語 @tab |hl-SpellRare|
+@item SpellLocal @tab 選択された地域では間違った綴り @tab |hl-SpellLocal|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim only checks words for spelling, there is no grammar check.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は単語の綴りのみをチェックし、文法はチェックしない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the 'mousemodel' option is set to "popup" and the cursor is on a badly
+spelled word or it is "popup_setpos" and the mouse pointer is on a badly
+spelled word, then the popup menu will contain a submenu to replace the bad
+word.  Note: this slows down the appearance of the popup menu.  Note for GTK:
+don't release the right mouse button until the menu appears, otherwise it
+won't work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしも 'mousemodel' オプションが "popup" に設定されてカーソルが間違った単語の上にあるか、オプションが "popup_setpos" に設定されてマウスポインタが間違った単語の上にあるなら、ポップアップメニューは間違った単語を置き換えるサブメニューが含まれるようになる。
+@quotation
+@strong{Note:} @*
+これはポップアップメニューの表示を遅くする。
+@end quotation
+@quotation
+@strong{Note:}
+GTK では: メニューが表示されるまではマウスの右ボタンを離してはいけない。そうしないと機能しない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To search for the next misspelled word:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の綴りの間違った単語を探すには:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*]s*
+]s			Move to next misspelled word after the cursor.
+			A count before the command can be used to repeat.
+			'wrapscan' applies.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{]s}
+@cindex ]s
+@item ]s
+カーソルの後の、次の綴りの間違った単語に移動する。コマンドの前に count を指定することで、繰り返しができる。'@option{wrapscan}' が適用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*[s*
+[s			Like "]s" but search backwards, find the misspelled
+			word before the cursor.  Doesn't recognize words
+			split over two lines, thus may stop at words that are
+			not highlighted as bad.  Does not stop at word with
+			missing capital at the start of a line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{[s}
+@cindex [s
+@item [s
+"]s" と同様だが後方検索を行い、カーソルより前の綴りの間違った単語を探す。2 行に渡った単語は認識しないため、間違いとしてハイライトされていない単語で止まることがある。行頭が大文字になっていない単語では止まらない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*]S*
+]S			Like "]s" but only stop at bad words, not at rare
+			words or words for another region.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{]S}
+@cindex ]S
+@item ]S
+"]s" と同様だが、間違った単語のみで止まり、まれな単語や他の地域の単語では止まらない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*[S*
+[S			Like "]S" but search backwards.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{[S}
+@cindex [S
+@item [S
+"]S" と同様だが、後方検索を行う。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+To add words to your own word list:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+単語をあなた自身の単語リストに追加するには:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zg*
+zg			Add word under the cursor as a good word to the first
+			name in 'spellfile'.  A count may precede the command
+			to indicate the entry in 'spellfile' to be used.  A
+			count of two uses the second entry.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{zg}
+@cindex zg
+@item zg
+カーソルの下の単語を正しい (good) 単語として、'@option{spellfile}' の最初のファイルに追加する。コマンドの前に count を指定することで、'@option{spellfile}' 内の項目を指定することができる。count として 2 を指定すると、2 番目の項目が使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			In Visual mode the selected characters are added as a
+			word (including white space!).
+			When the cursor is on text that is marked as badly
+			spelled then the marked text is used.
+			Otherwise the word under the cursor, separated by
+			non-word characters, is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビジュアルモードで選択された文字は単語として追加される (スペースを含む！)。カーソルが間違った綴りとしてマークされた文章の上にある時、そのマークされた文章が使われる。そうでなければ、単語ではない文字で分けられたカーソルの下の単語が使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			If the word is explicitly marked as bad word in
+			another spell file the result is unpredictable.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしその単語が明示的に別のスペルファイルで間違った単語としてマークされているなら、その結果は予測できない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zG*
+zG			Like "zg" but add the word to the internal word list
+			|internal-wordlist|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zG}
+@cindex zG
+@item zG
+"zg" と同様であるが、その単語を内部単語リスト |internal-wordlist| に加える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zw*
+zw			Like "zg" but mark the word as a wrong (bad) word.
+			If the word already appears in 'spellfile' it is
+			turned into a comment line.  See |spellfile-cleanup|
+			for getting rid of those.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zw}
+@cindex zw
+@item zw
+"zg" と同様であるが、間違った (wrong) 単語としてマークする。もしその単語がすでに '@option{spellfile}' にある場合は、コメント行に変更される。それらを取り除くには |spellfile-cleanup| を参照する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*zW*
+zW			Like "zw" but add the word to the internal word list
+			|internal-wordlist|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zW}
+@cindex zW
+@item zW
+"zw" と同様であるが、その単語を内部単語リスト |internal-wordlist| に加える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+zuw							*zug* *zuw*
+zug			Undo |zw| and |zg|, remove the word from the entry in
+			'spellfile'.  Count used as with |zg|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zug}
+@anchor{zuw}
+@cindex zug
+@cindex zuw
+@item zuw または
+@itemx zug
+|zw| や |zg| を undo して、'@option{spellfile}' の項目からその単語を削除する。count は |zg| と同様に使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+zuW							*zuG* *zuW*
+zuG			Undo |zW| and |zG|, remove the word from the internal
+			word list.  Count used as with |zg|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{zuG}
+@anchor{zuW}
+@cindex zuG
+@cindex zuW
+@item zuW または
+@itemx zuG
+|zW| や |zG| を undo して、内部単語リストからその単語を削除する。count は |zg| と同様に使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:spe* *:spellgood*
+:[count]spe[llgood] {word}
+			Add {word} as a good word to 'spellfile', like with
+			|zg|.  Without count the first name is used, with a
+			count of two the second entry, etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:spe}
+@anchor{:spellgood}
+@cindex :spe
+@cindex :spellgood
+@item :[count]spe[llgood] @{word@}
+|zg| と同様に、@{word@} を正しい単語として '@option{spellfile}' に加える。count が無いときは最初の名前が使われ、count に 2 を指定したときは 2 番目の項目が使われる。以下同様。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:spe[llgood]! {word}	Add {word} as a good word to the internal word list,
+			like with |zG|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :spe[llgood]! @{word@}
+|zG| と同様に、@{word@} を正しい単語として内部単語リストに加える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:spellw* *:spellwrong*
+:[count]spellw[rong] {word}
+			Add {word} as a wrong (bad) word to 'spellfile', as
+			with |zw|.  Without count the first name is used, with
+			a count of two the second entry, etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:spellw}
+@anchor{:spellwrong}
+@cindex :spellw
+@cindex :spellwrong
+@item :[count]spellw[rong] @{word@}
+|zw| と同様に、@{word@} を間違った (wrong) 単語として '@option{spellfile}' に加える。count が無いときは最初の名前が使われ、count に 2 を指定したときは 2 番目の項目が使われる。以下同様。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:spellw[rong]! {word}	Add {word} as a wrong (bad) word to the internal word
+			list, like with |zW|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :spellw[rong]! @{word@}
+|zW| と同様に、@{word@} を間違った (wrong) 単語として内部単語リストに追加する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[count]spellu[ndo] {word}				*:spellu* *:spellundo*
+			Like |zuw|.  [count] used as with |:spellgood|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:spellu}
+@anchor{:spellundo}
+@cindex :spellu
+@cindex :spellundo
+@item :[count]spellu[ndo] @{word@}
+|zuw| と同様である。[count] は |:spellgood| と同様に使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:spellu[ndo]! {word}	Like |zuW|.  [count] used as with |:spellgood|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :spellu[ndo]! @{word@}
+|zuW| と同様である。[count] は |:spellgood| と同様に使われる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+After adding a word to 'spellfile' with the above commands its associated
+".spl" file will automatically be updated and reloaded.  If you change
+'spellfile' manually you need to use the |:mkspell| command.  This sequence of
+commands mostly works well: >
+	:edit <file in 'spellfile'>
+<	(make changes to the spell file) >
+	:mkspell! %
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上記のコマンドで '@option{spellfile}' に単語を追加した後、 その関連付けられた "@file{.spl}" ファイルは自動的に更新され再読み込みされる。もし手動で '@option{spellfile}' を変更するなら |:mkspell| コマンドを用いる必要がある。このコマンドの順序でたいていうまくいく:
+@example
+:edit <'spellfile' にあるファイル>
+(スペルファイルに変更を加える)
+:mkspell! %
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+More details about the 'spellfile' format below |spell-wordlist-format|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{spellfile}' の形式に関する詳細は下記の |spell-wordlist-format| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*internal-wordlist*
+The internal word list is used for all buffers where 'spell' is set.  It is
+not stored, it is lost when you exit Vim.  It is also cleared when 'encoding'
+is set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{internal-wordlist}
+@cindex internal-wordlist
+内部単語リストは '@option{spell}' がセットされた全てのバッファで使われる。内部単語リストは蓄えられず、Vim が終了する時に失われる。また '@option{encoding}' がセットされた時にクリアされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Finding suggestions for bad words:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+間違った単語に対してのサジェストを調べるには:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*z=*
+z=			For the word under/after the cursor suggest correctly
+			spelled words.  This also works to find alternatives
+			for a word that is not highlighted as a bad word,
+			e.g., when the word after it is bad.
+			In Visual mode the highlighted text is taken as the
+			word to be replaced.
+			The results are sorted on similarity to the word being
+			replaced.
+			This may take a long time.  Hit CTRL-C when you get
+			bored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{z=}
+@cindex z=
+@item z=
+カーソルの下や後の単語に対して正しい綴りの単語を提案する。これはまた間違った単語としてハイライトされていない単語に対しての代わりを調べることもできる。例えば、その後の単語が間違っている場合など。ビジュアルモードでハイライトされたテキストは置換される単語として見なされる。結果は、置換されようとしている単語との類似度でソートされる。これには長い時間が掛かることがある。うんざりした場合は @kbd{CTRL-C} を打つこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			If the command is used without a count the
+			alternatives are listed and you can enter the number
+			of your choice or press <Enter> if you don't want to
+			replace.  You can also use the mouse to click on your
+			choice (only works if the mouse can be used in Normal
+			mode and when there are no line wraps).  Click on the
+			first line (the header) to cancel.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+count なしでこのコマンドを使う場合、選択肢がリストアップされ、選びたい選択肢の番号を入力することができる。置き換えたくない場合は @key{<Enter>} を押す。また、マウスを使って選択肢をクリックすることもできる (マウスがノーマルモードで使われ、行の折り返しがない時のみ働く)。キャンセルするには最初の行 (ヘッダー) をクリックする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			The suggestions listed normally replace a highlighted
+			bad word.  Sometimes they include other text, in that
+			case the replaced text is also listed after a "<".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+リストアップされた提案はふつうハイライトされた間違った単語を置き換える。そのサジェストは時々他のテキストを含むことがあるが、その場合は置き換えられるテキストが "<" の後にリストアップされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			If a count is used that suggestion is used, without
+			prompting.  For example, "1z=" always takes the first
+			suggestion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+count を用いた場合、プロンプトは出ずにその提案が使われる。例えば、"1z=" は常に最初の提案を利用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			If 'verbose' is non-zero a score will be displayed
+			with the suggestions to indicate the likeliness to the
+			badly spelled word (the higher the score the more
+			different).
+			When a word was replaced the redo command "." will
+			repeat the word replacement.  This works like "ciw",
+			the good word and <Esc>.  This does NOT work for Thai
+			and other languages without spaces between words.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{verbose}' が 0 以外の場合、間違った単語との類似度を示すスコアがサジェストと共に表示される (高いスコアは、違いが大きいことを示す)。単語が置換された後は、リドゥコマンド "." はその単語の置換を繰り返す。これは、"ciw" の後に正しい単語を入力し <Esc> を入力したように動作する。これは、単語の間にスペースを含まないタイ語やその他の言語に対しては動かない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*:spellr* *:spellrepall* *E752* *E753*
+:spellr[epall]		Repeat the replacement done by |z=| for all matches
+			with the replaced word in the current window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:spellr}
+@anchor{:spellrepall}
+@anchor{E752}
+@anchor{E753}
+@cindex :spellr
+@cindex :spellrepall
+@cindex E752
+@cindex E753
+@item :spellr[epall]
+|z=| によって行われた置換を、現在のウィンドウの全てのマッチする単語に対して繰り返す。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In Insert mode, when the cursor is after a badly spelled word, you can use
+CTRL-X s to find suggestions.  This works like Insert mode completion.  Use
+CTRL-N to use the next suggestion, CTRL-P to go back. |i_CTRL-X_s|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+挿入モードでは、カーソルが間違った綴りの単語の後にある場合、サジェストを見つけるために @kbd{CTRL-X} s を使うことができる。これは挿入モード補完のように動作する。次の提案を使うには @kbd{CTRL-N} を、戻るには @kbd{CTRL-P} を使うこと。|i_CTRL-X_s|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'spellsuggest' option influences how the list of suggestions is generated
+and sorted.  See |'spellsuggest'|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{spellsuggest}' は候補のリストがどのように生成、ソートされるかに影響する。|'spellsuggest'| を参照せよ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'spellcapcheck' option is used to check the first word of a sentence
+starts with a capital.  This doesn't work for the first word in the file.
+When there is a line break right after a sentence the highlighting of the next
+line may be postponed.  Use |CTRL-L| when needed.  Also see |set-spc-auto| for
+how it can be set automatically when 'spelllang' is set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{spellcapcheck}' は文の最初の単語が大文字で始まるかをチェックするのに用いる。これはファイルの最初の単語には働かない。文の直後に改行があるとき、次の行のハイライティングが後回しにされるかもしれない。必要であれば |CTRL-L| を使用せよ。また、'@option{spelllang}' が設定される時にどのように自動で設定されるのかについては |set-spc-auto| を参照せよ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim counts the number of times a good word is encountered.  This is used to
+sort the suggestions: words that have been seen before get a small bonus,
+words that have been seen often get a bigger bonus.  The COMMON item in the
+affix file can be used to define common words, so that this mechanism also
+works in a new or short file |spell-COMMON|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は見つけた正しい単語を数える。これはサジェストする単語をソートするのに使われる: 前に見つけた単語は小さな評価、よく見られる単語は評価を大きくする。添付ファイル内の COMMON 項目は共通する単語を定義するのに使うことができる。そのため、この機構はまた新規もしくは小さいファイルでも機能する |spell-COMMON|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Remarks on spell checking				*spell-remarks*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-remarks}
+@cindex spell-remarks
+@section 2. スペルチェックの注意点
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+PERFORMANCE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 性能
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim does on-the-fly spell checking.  To make this work fast the word list is
+loaded in memory.  Thus this uses a lot of memory (1 Mbyte or more).  There
+might also be a noticeable delay when the word list is loaded, which happens
+when 'spell' is set and when 'spelllang' is set while 'spell' was already set.
+To minimize the delay each word list is only loaded once, it is not deleted
+when 'spelllang' is made empty or 'spell' is reset.  When 'encoding' is set
+all the word lists are reloaded, thus you may notice a delay then too.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はオンザフライのスペルチェックをする。スペルチェックを速くするために単語リストはメモリにロードされる。だがこのために多くのメモリ (1Mbyte 以上) が使われる。さらに、単語リストがロードされている時に著しい遅延が生じるかもしれない。これは'@option{spell}' が既に設定されていたのに、'@option{spell}' を設定する時や '@option{spelllang}' を設定する時に発生する。遅延を最小限にするには各単語リストが 1 回だけ読み込まれるようにする。そうすれば、'@option{spelllang}' が空になる時か '@option{spell}' がリセットされる時に単語リストは削除されない。'@option{encoding}' を設定して全ての単語リストが再読み込みされる時に、上のようにまた遅延に気づくかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+REGIONS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 地域
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A word may be spelled differently in various regions.  For example, English
+comes in (at least) these variants:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+単語はそれぞれの地域で綴りが異なるかもしれない。例えば、英語は少なくともこれらの差異がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	en		all regions
+	en_au		Australia
+	en_ca		Canada
+	en_gb		Great Britain
+	en_nz		New Zealand
+	en_us		USA
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item en @tab 全ての地域
+@item en_au @tab オーストラリア
+@item en_ca @tab カナダ
+@item en_gb @tab イギリス
+@item en_nz @tab ニュージーランド
+@item en_us @tab アメリカ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Words that are not used in one region but are used in another region are
+highlighted with SpellLocal |hl-SpellLocal|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ある地域では使われないが別の地域では使われる単語は SpellLocal |hl-SpellLocal| でハイライトされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Always use lowercase letters for the language and region names.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+常に言語名や地域名には小文字を使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When adding a word with |zg| or another command it's always added for all
+regions.  You can change that by manually editing the 'spellfile'.  See
+|spell-wordlist-format|.  Note that the regions as specified in the files in
+'spellfile' are only used when all entries in 'spelllang' specify the same
+region (not counting files specified by their .spl name).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|zg| や他のコマンドで単語が追加された時、その単語は常に全ての地域に追加される。これは '@option{spellfile}' を手動で編集することで変更できる。|spell-wordlist-format| を参照せよ。
+@quotation
+@strong{Note:} @*
+'@option{spellfile}' のファイル内で指定される地域は、'@option{spelllang}' 内の全てのエントリが同じ地域を明示しているときに使われるだけである(その .spl 名により明示されたファイルはカウントしない)。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-german*
+Specific exception: For German these special regions are used:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-german}
+@cindex spell-german
+特有の例外: ドイツ語ではこれらの特別な地域が使われる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	de		all German words accepted
+	de_de		old and new spelling
+	de_19		old spelling
+	de_20		new spelling
+	de_at		Austria
+	de_ch		Switzerland
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item de @tab 全てのドイツ語単語を許容する
+@item de_de @tab 新旧正書法
+@item de_19 @tab 旧正書法
+@item de_20 @tab 新正書法
+@item de_at @tab オーストリア
+@item de_ch @tab スイス
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-russian*
+Specific exception: For Russian these special regions are used:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-russian}
+@cindex spell-russian
+特有の例外: ロシア語ではこれらの特別な地域が使われる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	ru		all Russian words accepted
+	ru_ru		"IE" letter spelling
+	ru_yo		"YO" letter spelling
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item ru @tab 全てのロシア語単語を許容する
+@item ru_ru @tab "IE (e)" 文字を用いる単語
+@item ru_yo @tab "YO (ё)" 文字を用いる単語
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-yiddish*
+Yiddish requires using "utf-8" encoding, because of the special characters
+used.  If you are using latin1 Vim will use transliterated (romanized) Yiddish
+instead.  If you want to use transliterated Yiddish with utf-8 use "yi-tr".
+In a table:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-yiddish}
+@cindex spell-yiddish
+イディッシュ語は特有の文字が使われるため、"utf-8" エンコーディングを使う必要がある。もしもあなたが latin1 を使っているのなら、Vim は代わりに (ローマ字に) 字訳されたイディッシュ語を使う。もしも utf-8 で字訳されたイディッシュ語を使いたいのであれば、"yi-tr" を使うこと。一覧:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	'encoding'	'spelllang'
+	utf-8		yi		Yiddish
+	latin1		yi		transliterated Yiddish
+	utf-8		yi-tr		transliterated Yiddish
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .2 .6
+@headitem '@option{encoding}' @tab '@option{spelllang}' @tab
+@item utf-8 @tab yi @tab イディッシュ語
+@item latin1 @tab yi @tab ローマ字に字訳されたイディッシュ語
+@item utf-8 @tab yi-tr @tab ローマ字に字訳されたイディッシュ語
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-cjk*
+Chinese, Japanese and other East Asian characters are normally marked as
+errors, because spell checking of these characters is not supported. If
+'spelllang' includes "cjk", these characters are not marked as errors.  This
+is useful when editing text with spell checking while some Asian words are
+present.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-cjk}
+@cindex spell-cjk
+中国語、日本語、あるいはその他の東アジアの文字に対するスペルチェックはサポートされていないため、これらの文字は通常、エラーとしてマークされる。'@option{spelllang}' が "@var{cjk}" を含んでいる場合、これらの文字はエラーとしてマークされなくなる。これは、いくつかのアジアの単語が含まれるテキストを、スペルチェックを有効にして編集する際に有用である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SPELL FILES						*spell-load*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-load}
+@cindex spell-load
+@unnumberedsubsec スペルファイル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim searches for spell files in the "spell" subdirectory of the directories in
+'runtimepath'.  The name is: LL.EEE.spl, where:
+	LL	the language name
+	EEE	the value of 'encoding'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は '@option{runtimepath}' のディレクトリの中の "spell" という名前のサブディレクトリにあるスペルファイルを探す。ファイル名は @file{LL.EEE.spl} のようになる:
+@multitable @columnfractions .3 .7
+@item LL @tab 言語名
+@item EEE @tab '@option{encoding}' の値
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The value for "LL" comes from 'spelllang', but excludes the region name.
+Examples:
+	'spelllang'	LL ~
+	en_us		en
+	en-rare		en-rare
+	medical_ca	medical
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"LL" の値は '@option{spelllang}' の値が使われるが、地域名は除外される。
+
+例:
+@multitable @columnfractions .3 .5
+@item '@option{spelllang}' @tab LL
+@item en_us @tab en
+@item en-rare @tab en-rare
+@item medical_ca @tab medical
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Only the first file is loaded, the one that is first in 'runtimepath'.  If
+this succeeds then additionally files with the name LL.EEE.add.spl are loaded.
+All the ones that are found are used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{runtimepath}' の中の最初のファイルだけがロードされる。これが成功した場合、@file{LL.EEE.add.spl} という名前のファイルが追加でロードされる。追加ファイルは、見つかったものが全てロードされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If no spell file is found the |SpellFileMissing| autocommand event is
+triggered.  This may trigger the |spellfile.vim| plugin to offer you
+downloading the spell file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スペルファイルが見つからなければ、自動コマンドイベント |SpellFileMissing| が発生する。これによってスペルファイルをダウンロードする |spellfile.vim| プラグインを呼び出せる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Additionally, the files related to the names in 'spellfile' are loaded.  These
+are the files that |zg| and |zw| add good and wrong words to.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+加えて、'@option{spellfile}' の名前に関連したファイルは読み込まれる。これらは |zg| や |zw| で正しい単語や間違った単語を追加するファイルである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Exceptions:
+- Vim uses "latin1" when 'encoding' is "iso-8859-15".  The euro sign doesn't
+  matter for spelling.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例外:
+@itemize @minus
+@item Vim は、'@option{encoding}' が "iso-8859-15" のとき "latin1" を使う。ユーロマークはスペルチェックに影響しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- When no spell file for 'encoding' is found "ascii" is tried.  This only
+  works for languages where nearly all words are ASCII, such as English.  It
+  helps when 'encoding' is not "latin1", such as iso-8859-2, and English text
+  is being edited.  For the ".add" files the same name as the found main
+  spell file is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item '@option{encoding}' 用のスペルファイルが見つからないときには、"ascii" を使おうとする。これはすべての単語が英語のように ASCII であるような言語に対してだけ機能する。'@option{encoding}' が iso-8859-2 のように "latin1" ではないときや、英文で始まっているときに役に立つ。"@file{.add}" ファイルのために、見つかったメインのスペルファイルと同じ名前が使われる。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, with these values:
+	'runtimepath' is "~/.vim,/usr/share/vim70,~/.vim/after"
+	'encoding'    is "iso-8859-2"
+	'spelllang'   is "pl"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、以下の値が設定されている場合:
+@multitable @columnfractions .99
+@item '@option{runtimepath}' が "~/.vim,/usr/share/vim70,~/.vim/after"
+@item '@option{encoding}' が "iso-8859-2"
+@item '@option{spelllang}' が "pl"
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will look for:
+1. ~/.vim/spell/pl.iso-8859-2.spl
+2. /usr/share/vim70/spell/pl.iso-8859-2.spl
+3. ~/.vim/spell/pl.iso-8859-2.add.spl
+4. /usr/share/vim70/spell/pl.iso-8859-2.add.spl
+5. ~/.vim/after/spell/pl.iso-8859-2.add.spl
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は以下を探す:
+@enumerate
+@item ~/.vim/spell/pl.iso-8859-2.spl
+@item /usr/share/vim70/spell/pl.iso-8859-2.spl
+@item ~/.vim/spell/pl.iso-8859-2.add.spl
+@item /usr/share/vim70/spell/pl.iso-8859-2.add.spl
+@item ~/.vim/after/spell/pl.iso-8859-2.add.spl
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This assumes 1. is not found and 2. is found.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ここでは、1. が見つからず、2. が見つかったと仮定している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If 'encoding' is "latin1" Vim will look for:
+1. ~/.vim/spell/pl.latin1.spl
+2. /usr/share/vim70/spell/pl.latin1.spl
+3. ~/.vim/after/spell/pl.latin1.spl
+4. ~/.vim/spell/pl.ascii.spl
+5. /usr/share/vim70/spell/pl.ascii.spl
+6. ~/.vim/after/spell/pl.ascii.spl
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もし '@option{encoding}' が "@var{latin1}" ならば Vim は以下を探す:
+@enumerate
+@item ~/.vim/spell/pl.latin1.spl
+@item /usr/share/vim70/spell/pl.latin1.spl
+@item ~/.vim/after/spell/pl.latin1.spl
+@item ~/.vim/spell/pl.ascii.spl
+@item /usr/share/vim70/spell/pl.ascii.spl
+@item ~/.vim/after/spell/pl.ascii.spl
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This assumes none of them are found (Polish doesn't make sense when leaving
+out the non-ASCII characters).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはこれらが見つからないことを想定する (ポーランド語は non-ASCII 文字を抜くと意味を成さない)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Spelling for EBCDIC is currently not supported.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+EBCDIC 向けのスペルチェックは現在サポートされていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A spell file might not be available in the current 'encoding'.  See
+|spell-mkspell| about how to create a spell file.  Converting a spell file
+with "iconv" will NOT work!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在の '@option{encoding}' でスペルファイルが利用できないかもしれない。スペルファイルの作成の仕方については |spell-mkspell| を参照せよ。"iconv" でスペルファイルを変換するのは機能しないだろう！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: on VMS ".{enc}.spl" is changed to "_{enc}.spl" to avoid trouble with
+filenames.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+VMS ではファイル名によるトラブルを避けるため、".@{enc@}.spl" は "_@{enc@}.spl" に変更されている。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						    *spell-sug-file* *E781*
+If there is a file with exactly the same name as the ".spl" file but ending in
+".sug", that file will be used for giving better suggestions.  It isn't loaded
+before suggestions are made to reduce memory use.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-sug-file}
+@anchor{E781}
+@cindex spell-sug-file
+@cindex E781
+もしまさしく同じ名前の "@file{.spl}" ファイルがあり、それの最後に ".sug" が付いていないのであれば、このファイルはより良いサジェスションを与えるのに使われる。メモリの使用量を減らすため、サジェスションが作られる前には読み込まれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				    *E758* *E759* *E778* *E779* *E780* *E782*
+When loading a spell file Vim checks that it is properly formatted.  If you
+get an error the file may be truncated, modified or intended for another Vim
+version.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E758}
+@anchor{E759}
+@anchor{E778}
+@anchor{E779}
+@anchor{E780}
+@anchor{E782}
+@cindex E758
+@cindex E759
+@cindex E778
+@cindex E779
+@cindex E780
+@cindex E782
+スペルファイルを読み込む時、Vim はそれが正しくフォーマットされているかチェックする。もしエラーが生じたなら、そのファイルは不完全であるか、変更されているか、Vim の他のバージョン向けのものなのかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SPELLFILE CLEANUP					*spellfile-cleanup*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spellfile-cleanup}
+@cindex spellfile-cleanup
+@unnumberedsubsec スペルファイルのクリーンアップ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The |zw| command turns existing entries in 'spellfile' into comment lines.
+This avoids having to write a new file every time, but results in the file
+only getting longer, never shorter.  To clean up the comment lines in all
+".add" spell files do this: >
+	:runtime spell/cleanadd.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|zw| コマンドは '@option{spellfile}' 内に存在するエントリをコメント行に変える。これは毎回新しいファイルに書き込むことを避けるが、ファイル内の結果は長くなるだけで短くなることはない。すべての "@file{.add}" スペルファイル内のコメント行をクリーンアップするには次のようにする:
+@example
+:runtime spell/cleanadd.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This deletes all comment lines, except the ones that start with "##".  Use
+"##" lines to add comments that you want to keep.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは "##" ではじまるものを除いて、すべてのコメント行を削除する。保持しておきたいコメントには "##" を使おう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can invoke this script as often as you like.  A variable is provided to
+skip updating files that have been changed recently.  Set it to the number of
+seconds that has passed since a file was changed before it will be cleaned.
+For example, to clean only files that were not changed in the last hour: >
+      let g:spell_clean_limit = 60 * 60
+The default is one second.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+好きなときにいつでもこのスクリプトを呼び出すことができる。直近で変更されたファイルのアップデートをスキップする変数を提供している。ファイルが変更されてからクリーンアップされるまでの経過する秒数を設定する。例えば、この 1 時間で変更されることのなかったファイルのみをクリーンアップするには次のようにする:
+@example
+let g:spell_clean_limit = 60 * 60
+@end example
+このデフォルトは 1 秒。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+WORDS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 単語
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim uses a fixed method to recognize a word.  This is independent of
+'iskeyword', so that it also works in help files and for languages that
+include characters like '-' in 'iskeyword'.  The word characters do depend on
+'encoding'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は単語を認識するのに定型的な方法を使う。これは '@option{iskeyword}' とは独立しているので、ヘルプファイル内で機能するし、'@option{iskeyword}' 内に '-' のような文字が含まれている言語でも機能する。単語の文字は '@option{encoding}' に依存する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The table with word characters is stored in the main .spl file.  Therefore it
+matters what the current locale is when generating it!  A .add.spl file does
+not contain a word table though.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+単語の文字テーブルはメインの @file{.spl} ファイルに保存される。それゆえ、@file{.spl} ファイルが生成する時に現在のロケールが何であるのかが問題になる！それゆえ @file{.add.spl} ファイルは含まない単語テーブルを含まない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For a word that starts with a digit the digit is ignored, unless the word as a
+whole is recognized.  Thus if "3D" is a word and "D" is not then "3D" is
+recognized as a word, but if "3D" is not a word then only the "D" is marked as
+bad.  Hex numbers in the form 0x12ab and 0X12AB are recognized.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ディジットではじまる単語のために、単語のすべてを認識するまではディジットは無視される。それゆえ、もし "3D" が単語で、"D" が単語でなければ、"3D" は単語として認識される。しかし、"3D" が単語でなければ、"D" は不正としてマークされるだけである。0x12ab や 0X12AB の 16 進数は認識される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+WORD COMBINATIONS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 単語の組み合わせ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is possible to spell-check words that include a space.  This is used to
+recognize words that are invalid when used by themselves, e.g. for "et al.".
+It can also be used to recognize "the the" and highlight it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スペースを含む単語のスペルチェックが可能。それらによって使われた時に無効な単語を評価するのに使われる。例えば、"et al."。これはまた "the the" を評価したり、ハイライトするのに使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The number of spaces is irrelevant.  In most cases a line break may also
+appear.  However, this makes it difficult to find out where to start checking
+for spelling mistakes.  When you make a change to one line and only that line
+is redrawn Vim won't look in the previous line, thus when "et" is at the end
+of the previous line "al." will be flagged as an error.  And when you type
+"the<CR>the" the highlighting doesn't appear until the first line is redrawn.
+Use |CTRL-L| to redraw right away.  "[s" will also stop at a word combination
+with a line break.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スペースの数は無関係だ。多くの場合で改行があるかもしれない。しかしながら、これはスペルミスのチェックを開始する場所を見つけるのを困難にする。一行の変更をしてその行が再描画されただけでは、Vim は前の行を見ない。それゆえ、"et" が前の行の最後にあると "al." はエラーと見なされる。また、"the<CR>the" と入力すると、最初の行が再描画されるまでハイライトされない。直ちに再描画をするには |CTRL-L| を使う。"[s" は改行を持つ単語にも止まる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When encountering a line break Vim skips characters such as '*', '>' and '"',
+so that comments in C, shell and Vim code can be spell checked.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+改行があると、Vim は '*', '>' や '"' のような文字をスキップする。そのため、C, シェル, Vim コードでのコメントはスペルチェックをすることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SYNTAX HIGHLIGHTING					*spell-syntax*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-syntax}
+@cindex spell-syntax
+@unnumberedsubsec 構文ハイライト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Files that use syntax highlighting can specify where spell checking should be
+done:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+構文ハイライトを使用するファイルでは、どこでスペルチェックを行うべきか指定することができる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1.  everywhere			   default
+2.  in specific items		   use "contains=@Spell"
+3.  everywhere but specific items  use "contains=@NoSpell"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@item 1.  どこでも @tab 既定
+@item 2.  指定の要素 @tab "contains=@@Spell" を使用する
+@item 3.  指定の要素以外どこでも @tab "contains=@@NoSpell" を使用する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For the second method adding the @NoSpell cluster will disable spell checking
+again.  This can be used, for example, to add @Spell to the comments of a
+program, and add @NoSpell for items that shouldn't be checked.
+Also see |:syn-spell| for text that is not in a syntax item.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@@NoSpell クラスタを追加する二番目の方法は、スペルチェックを再度無効にするだろう。これは例えば @@Spell をプログラムのコメントに追加し、チェックすべきではないアイテムを @@NoSpell に追加するために使うことができる。シンタックスアイテムにないテキストについては |:syn-spell| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+VIM SCRIPTS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec Vim script
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to write a Vim script that does something with spelling, you may
+find these functions useful:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スペルに関する Vim script を書きたいと思うと、これらの関数が役に立つことが分かるだろう:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    spellbadword()	find badly spelled word at the cursor
+    spellsuggest()	get list of spelling suggestions
+    soundfold()		get the sound-a-like version of a word
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item spellbadword() @tab カーソル下の間違ったつづりの単語を見つける
+@item spellsuggest() @tab 正しいつづりの候補を得る
+@item soundfold() @tab 同音 (sound-a-like) の単語を得る
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SETTING 'spellcapcheck' AUTOMATICALLY			*set-spc-auto*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{set-spc-auto}
+@cindex set-spc-auto
+@unnumberedsubsec '@option{spellcapcheck}' の自動設定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+After the 'spelllang' option has been set successfully, Vim will source the
+files "spell/LANG.vim" in 'runtimepath'.  "LANG" is the value of 'spelllang'
+up to the first comma, dot or underscore.  This can be used to set options
+specifically for the language, especially 'spellcapcheck'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{spelllang}' オプションがうまく設定されたあとは、Vim は '@option{runtimepath}' から "spell/@file{LANG.vim}" ファイルを読み込む。"LANG" は最初のコンマ、ドット、またはアンダースコアーまでの '@option{spelllang}' の値。これは言語のための特別なオプション、とりわけ '@option{spellcapcheck}' を設定することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The distribution includes a few of these files.  Use this command to see what
+they do: >
+	:next $VIMRUNTIME/spell/*.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ディストリビューションはこれらのファイルがいくつか含んでいる。これらが何をしているのかを見るには次のコマンドを使う:
+@example
+:next $VIMRUNTIME/spell/*.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the default scripts don't set 'spellcapcheck' if it was changed from
+the default value.  This assumes the user prefers another value then.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+デフォルトのスクリプトは初期値が変更されているならば、'@option{spellcapcheck}' を設定しない。これはその時のユーザーが好む値を想定する。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+DOUBLE SCORING						*spell-double-scoring*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-double-scoring}
+@cindex spell-double-scoring
+@unnumberedsubsec 二重スコア付け
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'spellsuggest' option can be used to select "double" scoring.  This
+mechanism is based on the principle that there are two kinds of spelling
+mistakes:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"double" 方式のスコア付けを選択するために '@option{spellsuggest}' オプションを使用できる。この機構は、綴り間違いには 2 種類あるという原則に基づいている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. You know how to spell the word, but mistype something.  This results in a
+   small editing distance (character swapped/omitted/inserted) and possibly a
+   word that sounds completely different.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item 単語の綴りは知っているが、何らかのミスタイプをする場合。(文字の入れ替り・文字の抜け・文字の混入)という差異は、小さく完全に間違っているとわかる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+2. You don't know how to spell the word and type something that sounds right.
+   The edit distance can be big but the word is similar after sound-folding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 単語の綴りを知らず、単語が正しく聞こえるようにタイプする場合。差異は大きく、単語は後にあげる sound-folding に似ている。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Since scores for these two mistakes will be very different we use a list
+for each and mix them.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これら 2 つの間違いのスコアは大きく異なるので、リストをそれぞれ使い組み合わせる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The sound-folding is slow and people that know the language won't make the
+second kind of mistakes.  Therefore 'spellsuggest' can be set to select the
+preferred method for scoring the suggestions.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+sound-folding は遅く、言語を知っている人は間違いのようなものを 2 度としたくはないだろう。それゆえ '@option{spellsuggest}' はスコアリングの方法を選択することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Generating a spell file				*spell-mkspell*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-mkspell}
+@cindex spell-mkspell
+@section 3. スペルファイルの生成
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim uses a binary file format for spelling.  This greatly speeds up loading
+the word list and keeps it small.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はつづりのためのバイナリフォーマットを使用する。このことにより単語リストの読み込みを大幅に速くし、単語リストを小さく保つ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						    *.aff* *.dic* *Myspell*
+You can create a Vim spell file from the .aff and .dic files that Myspell
+uses.  Myspell is used by OpenOffice.org and Mozilla. The OpenOffice .oxt
+files are zip files which contain the .aff and .dic files. You should be able
+to find them here:
+	http://extensions.services.openoffice.org/dictionary
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{.aff}
+@anchor{.dic}
+@anchor{Myspell}
+@cindex .aff
+@cindex .dic
+@cindex Myspell
+Vim スペルファイルを Myspell 用に @file{.aff} や @file{.dic} ファイルから生成することができる。Myspell は OpenOffice.org と Mozilla で使われている。OpenOffice の @file{.oxt} ファイルは @file{.aff} と @file{.dic} ファイルを含んだファイルを zip されている。次の場所で見つけることができる:
+
+@url{http://extensions.services.openoffice.org/dictionary}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The older, OpenOffice 2 files may be used if this doesn't work:
+	http://wiki.services.openoffice.org/wiki/Dictionaries
+You can also use a plain word list.  The results are the same, the choice
+depends on what word lists you can find.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+もしも動作しないなら、古い OpenOffice 2 のファイルが使われているのかもしれない:
+
+@url{http://wiki.services.openoffice.org/wiki/Dictionaries}
+
+プレーンテキストを使うこともできる。結果は同じで、あなたの見つけた単語リストに依存する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you install Aap (from www.a-a-p.org) you can use the recipes in the
+runtime/spell/??/ directories.  Aap will take care of downloading the files,
+apply patches needed for Vim and build the .spl file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Aap (@url{www.a-a-p.org}) をインストールするなら、runtime/spell/??/ ディレクトリのレシピを使うことができる。Aap は注意深くフィアルをダウンロードし、Vim に必要とされるパッチを適用し、@file{.spl} ファイルをビルドする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Make sure your current locale is set properly, otherwise Vim doesn't know what
+characters are upper/lower case letters.  If the locale isn't available (e.g.,
+when using an MS-Windows codepage on Unix) add tables to the .aff file
+|spell-affix-chars|.  If the .aff file doesn't define a table then the word
+table of the currently active spelling is used.  If spelling is not active
+then Vim will try to guess.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ロケールが正しく設定されているか確認しよう。そうでないと Vim は大文字/小文字の区別ができなくなる。ロケールが利用できない (例えば Unix 上で MS-Windows コードページを使っている) と、@file{.aff} ファイル |spell-affix-chars| にテーブルを追加する。
+もし @file{.aff} フィアルがテーブルを定義していないと、現在有効な単語テーブルのスペリングが使われる。スペリングが有効でなければ、Vim は推測しようとする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:mksp* *:mkspell*
+:mksp[ell][!] [-ascii] {outname} {inname} ...
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:mksp}
+@anchor{:mkspell}
+@cindex :mksp
+@cindex :mkspell
+@item :mksp[ell][!] [-ascii] @{outname@} @{inname@} ...
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Generate a Vim spell file from word lists.  Example: >
+		:mkspell /tmp/nl nl_NL.words
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+単語リストから Vim スペルファイルを生成する。例:
+@example
+:mkspell /tmp/nl nl_NL.words
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<								*E751*
+			When {outname} ends in ".spl" it is used as the output
+			file name.  Otherwise it should be a language name,
+			such as "en", without the region name.  The file
+			written will be "{outname}.{encoding}.spl", where
+			{encoding} is the value of the 'encoding' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E751}
+@cindex E751
+@{outname@} が ".spl" で終っている場合、出力ファイル名として使われる。そうでなければ、地域名を除いた "en" のような言語名となる。"@{outname@}.@{encoding@}.spl" というファイルがあるとしよう。ここで @{encoding@} は '@option{encoding}' オプションの値。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			When the output file already exists [!] must be used
+			to overwrite it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+出力ファイルがすでに存在する場合は、上書きするために [!] を使わなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			When the [-ascii] argument is present, words with
+			non-ascii characters are skipped.  The resulting file
+			ends in "ascii.spl".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[-ascii] 引数が与えられた場合、非 ASCII 文字を持つ単語はスキップされる。結果のファイルは "ascii.spl" で終る。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			The input can be the Myspell format files {inname}.aff
+			and {inname}.dic.  If {inname}.aff does not exist then
+			{inname} is used as the file name of a plain word
+			list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{inname@}.aff や @{inname@}.dic への入力は、Myspell フォーマットにすることができる。@{inname@}.aff が存在しなければ、プレーン単語リストの名前として @{inname@} が使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Multiple {inname} arguments can be given to combine
+			regions into one Vim spell file.  Example: >
+		:mkspell ~/.vim/spell/en /tmp/en_US /tmp/en_CA /tmp/en_AU
+<			This combines the English word lists for US, CA and AU
+			into one en.spl file.
+			Up to eight regions can be combined. *E754* *E755*
+			The REP and SAL items of the first .aff file where
+			they appear are used. |spell-REP| |spell-SAL|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+複数の @{inname@} 引数を使うと、ひとつの Vim スペルファイルの中に地域の組み合せを与えることができる。例:
+@example
+:mkspell ~/.vim/spell/en /tmp/en_US /tmp/en_CA /tmp/en_AU
+@end example
+これはひとつの @file{en.spl} ファイルの中に、US と CA と AU のための英単語リストを合わせる。8 つの地域までを合わせることができる。
+@anchor{E754}
+@anchor{E755}
+@cindex E754
+@cindex E755
+上記コマンドで出現する @file{.aff} ファイルのはじめにある REP と SAL 項目が使われる。|spell-REP| |spell-SAL|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*E845*
+			This command uses a lot of memory, required to find
+			the optimal word tree (Polish, Italian and Hungarian
+			require several hundred Mbyte).  The final result will
+			be much smaller, because compression is used.  To
+			avoid running out of memory compression will be done
+			now and then.  This can be tuned with the 'mkspellmem'
+			option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E845}
+@cindex E845
+
+このコマンドは多くのメモリを使用する。最適な単語ツリーを見つけるために必要とするのだ (ポーランド語、イタリア語、ハンガリー語は数百メガバイト必要)。最終的な結果は圧縮されるのでとても小さい。メモリを使い果たすのを防ぐため、圧縮は適宜行なわれる。これは '@option{mkspellmem}' オプションで切り替えることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			After the spell file was written and it was being used
+			in a buffer it will be reloaded automatically.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファ内でスペルファイルが書き込まれて使われはじめると、自動的に再読み込みされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:mksp[ell] [-ascii] {name}.{enc}.add
+			Like ":mkspell" above, using {name}.{enc}.add as the
+			input file and producing an output file in the same
+			directory that has ".spl" appended.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :mksp[ell] [-ascii] @{name@}.@{enc@}.add
+上記の "@command{:mkspell}" と似ている。入力ファイルとして @{name@}.@{enc@}.add を使い、同じディレクトリ内に ".spl" を付加して出力する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:mksp[ell] [-ascii] {name}
+			Like ":mkspell" above, using {name} as the input file
+			and producing an output file in the same directory
+			that has ".{enc}.spl" appended.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :mksp[ell] [-ascii] @{name@}
+上記の "@command{:mkspell}" と似ている。入力ファイルとして @{name@} を使い、同じディレクトリ内に ".@{enc@}.spl" を付加して出力する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will report the number of duplicate words.  This might be a mistake in the
+list of words.  But sometimes it is used to have different prefixes and
+suffixes for the same basic word to avoid them combining (e.g. Czech uses
+this).  If you want Vim to report all duplicate words set the 'verbose'
+option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は重複している単語の数を報告する。これは単語リスト中の誤りであるかもしれない。頻繁ではないが、これらが連続することを回避するために、同じ基本語のための接頭辞と接尾語の差異が使われる (例えばチェコ語はこれを使う)。Vim に重複するすべての単語をレポートしてもらいたければ、'@option{verbose}' オプションを設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Since you might want to change a Myspell word list for use with Vim the
+following procedure is recommended:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim で使うために Myspell スペルチェッカーの単語リストを変更したいなら、次のようにすることをお薦めする:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Obtain the xx_YY.aff and xx_YY.dic files from Myspell.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item Myspell スペルチェッカーから @file{xx_YY.aff} と @file{xx_YY.dic} ファイルを入手する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+2. Make a copy of these files to xx_YY.orig.aff and xx_YY.orig.dic.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item これらのファイルを @file{xx_YY.orig.aff} と @file{xx_YY.orig.dic} のようにコピーする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+3. Change the xx_YY.aff and xx_YY.dic files to remove bad words, add missing
+   words, define word characters with FOL/LOW/UPP, etc.  The distributed
+   "*.diff" files can be used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 良くない語を除くために @file{xx_YY.aff} と @file{xx_YY.dic} ファイルを変更し、足りない単語を加え、FOL/LOW/UPP の単語を定義したりする。配布されている "@file{*.diff}" ファイルも使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+4. Start Vim with the right locale and use |:mkspell| to generate the Vim
+   spell file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item Vim を正しいロケールで起動し、Vim スペルファイルを生成するために |:mkspell| を使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+5. Try out the spell file with ":set spell spelllang=xx" if you wrote it in
+   a spell directory in 'runtimepath', or ":set spelllang=xx.enc.spl" if you
+   wrote it somewhere else.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item '@option{runtimepath}' のスペルディレクトリに書き込むなら、"@command{:set spell spelllang=xx}" でスペルファイルを試してみる。その他に書き込むなら "@command{:set spelllang=xx.enc.spl}" を使う。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the Myspell files are updated you can merge the differences:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Myspell ファイルがアップデートされたとき、差異をマージすることができる：
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. Obtain the new Myspell files as xx_YY.new.aff and xx_UU.new.dic.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item xx_YY.new.aff や xx_UU.new.dic として、新しい Myspell スペルチェックファイルを取得する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+2. Use Vimdiff to see what changed: >
+	vimdiff xx_YY.orig.dic xx_YY.new.dic
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 変更点を見るために Vimdiff を使う:
+@example
+vimdiff xx_YY.orig.dic xx_YY.new.dic
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+3. Take over the changes you like in xx_YY.dic.
+   You may also need to change xx_YY.aff.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item xx_YY.dic の好みの変更点を持ってくる。xx_YY.aff の変更点も必要とするかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+4. Rename xx_YY.new.dic to xx_YY.orig.dic and xx_YY.new.aff to xx_YY.new.aff.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item xx_YY.new.dic を xx_YY.orig.dic へ、xx_YY.new.aff を xx_YY.new.aff へリネームする。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SPELL FILE VERSIONS					*E770* *E771* *E772*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E770}
+@anchor{E771}
+@anchor{E772}
+@cindex E770
+@cindex E771
+@cindex E772
+@unnumberedsubsec スペルファイルのバージョン
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Spell checking is a relatively new feature in Vim, thus it's possible that the
+.spl file format will be changed to support more languages.  Vim will check
+the validity of the spell file and report anything wrong.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スペルチェックは Vim の比較的新しい機能なので、より多くの言語をサポートするために @file{.spl} ファイルのフォーマットを変更することができる。Vim はスペルファイルの妥当性をチェックし、おかしなところをレポートする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	E771: Old spell file, needs to be updated ~
+This spell file is older than your Vim.  You need to update the .spl file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@display
+E771: Old spell file, needs to be updated
+@end display
+このスペルファイルはあなたの使っている Vim にとっては古いものなので、@file{.spl} ファイルをアップデートする必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	E772: Spell file is for newer version of Vim ~
+This means the spell file was made for a later version of Vim.  You need to
+update Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@display
+E772: Spell file is for newer version of Vim
+@end display
+このスペルファイルはあなたの使っている Vim よりも新しい Vim で作成されたものなので、Vim をアップデートする必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	E770: Unsupported section in spell file ~
+This means the spell file was made for a later version of Vim and contains a
+section that is required for the spell file to work.  In this case it's
+probably a good idea to upgrade your Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@display
+E770: Unsupported section in spell file
+@end display
+このスペルファイルは最新の Vim 用に作成されていて、動作するには必要とされるセクションを含んでいる。この場合はおそらく、あなたの Vim をアップグレードするのが良い考えだ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SPELL FILE DUMP
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec スペルファイルのダンプ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If for some reason you want to check what words are supported by the currently
+used spelling files, use this command:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もし何らかの理由で、現在使っているスペルファイルでどんな単語がサポートされているかをチェックしたい場合、以下のコマンドを使用できる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:spelldump* *:spelld*
+:spelld[ump]		Open a new window and fill it with all currently valid
+			words.  Compound words are not included.
+			Note: For some languages the result may be enormous,
+			causing Vim to run out of memory.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:spelldump}
+@anchor{:spelld}
+@cindex :spelldump
+@cindex :spelld
+@item :spelld[ump]
+新しいウィンドウを開いて、現在妥当であるすべての単語で埋め尽す。複合語は含まれない。
+@quotation
+@strong{Note:} @*
+いくつかの言語では Vim がメモリ不足になるような、非常の大きな結果となるかもしれない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:spelld[ump]!		Like ":spelldump" and include the word count.  This is
+			the number of times the word was found while
+			updating the screen.  Words that are in COMMON items
+			get a starting count of 10.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :spelld[ump]!
+"@command{:spelldump}" と同様、単語の数を含む。これは画面がアップデートする間に見つかった単語の数。COMMON アイテムの中にある単語は 10 から数えられる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The format of the word list is used |spell-wordlist-format|.  You should be
+able to read it with ":mkspell" to generate one .spl file that includes all
+the words.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+単語リストのフォーマットは |spell-wordlist-format| が使われる
+すべての単語を含んでいる、ひとつの @file{.spl} ファイルを生成するために、"@command{:mkspell}" で読み込むことができるようにするべきだ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When all entries to 'spelllang' use the same regions or no regions at all then
+the region information is included in the dumped words.  Otherwise only words
+for the current region are included and no "/regions" line is generated.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{spelllang}' へのすべてのエントリが同じ地域、もしくはまったく地域を使っている場合、地域情報はダンプワードの中に含まれている。そうでなければ、現在の地域のための単語のみが含まれ、"/regions" のない行が生成される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Comment lines with the name of the .spl file are used as a header above the
+words that were generated from that .spl file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@file{.spl} ファイルの名を持つコメント行は、その @file{.spl} ファイルから生成された単語の上位のヘッダーとして使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SPELL FILE MISSING		*spell-SpellFileMissing* *spellfile.vim*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-SpellFileMissing}
+@anchor{spellfile.vim}
+@cindex spell-SpellFileMissing
+@cindex spellfile.vim
+@unnumberedsubsec スペルファイルがないとき
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the spell file for the language you are using is not available, you will
+get an error message.  But if the "spellfile.vim" plugin is active it will
+offer you to download the spell file.  Just follow the instructions, it will
+ask you where to write the file (there must be a writable directory in
+'runtimepath' for this).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしあなたの使用している言語向けのスペルファイルが利用できないのであれば、エラーメッセージを受け取るだろう。しかし、"spellfile.vim" プラグインを有効にしているのであれば、スペルファイルのダウンロードをあなたに提案するだろう。ただ指示に従うだけ。それは書き込むファイルはどこにあるのかという質問をするだろう (ファイルの置き場所は '@option{runtimepath}' の中にあって書き込み可能なディレクトリでなければならない)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The plugin has a default place where to look for spell files, on the Vim ftp
+server.  If you want to use another location or another protocol, set the
+g:spellfile_URL variable to the directory that holds the spell files.  The
+|netrw| plugin is used for getting the file, look there for the specific
+syntax of the URL.  Example: >
+	let g:spellfile_URL = 'http://ftp.vim.org/vim/runtime/spell'
+You may need to escape special characters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このプラグインはスペルファイルを探すためのデフォルトの場所を Vim FTP サーバー上に持っている。もしも他の場所やプロトコルを使いたいのなら、g:spellfile_URL 変数をスペルファイルを持っているディレクトリに設定する。|netrw| プラグインはファイルを取得するために使われる。URL の具体的なシンタックスを見てみよう。例:
+@example
+let g:spellfile_URL = 'http://ftp.vim.org/vim/runtime/spell'
+@end example
+特殊文字をエスケープする必要があるかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The plugin will only ask about downloading a language once.  If you want to
+try again anyway restart Vim, or set g:spellfile_URL to another value (e.g.,
+prepend a space).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このプラグインは一度だけ、言語のダウンロードについてのみ質問するだろう。もしも再試行したいのなら、とにかく Vim を再起動するか、もしくは、g:spellfile_URL を別の値にする (例えば先頭にスペースを追加する)。
+
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To avoid using the "spellfile.vim" plugin do this in your vimrc file: >
+
+	let loaded_spellfile_plugin = 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@file{spellfile.vim}" プラグインを使うのを回避するためには @file{vimrc} ファイルを次のようにする:
+@example
+let loaded_spellfile_plugin = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Instead of using the plugin you can define a |SpellFileMissing| autocommand to
+handle the missing file yourself.  You can use it like this: >
+
+	:au SpellFileMissing * call Download_spell_file(expand('<amatch>'))
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プラグインを使う代わりに、自身で missing ファイルを扱うために |SpellFileMissing| オートコマンドを定義することができる。次のように使える:
+@example
+:au SpellFileMissing * call Download_spell_file(expand('<amatch>'))
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Thus the <amatch> item contains the name of the language.  Another important
+value is 'encoding', since every encoding has its own spell file.  With two
+exceptions:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+それゆえ、<amatch> アイテムは 言語名を含んでいる。他に重要な値は '@option{encoding}'。これはすべてのエンコーディングがそれ自身のスペルファイルを持っているからだ。2 つの例外がある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- For ISO-8859-15 (latin9) the name "latin1" is used (the encodings only
+  differ in characters not used in dictionary words).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item ISO-8859-15 (latin9) のために "latin1" が使われる (このエンコーディングは辞書の単語で使われていない文字だけが異なる)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- The name "ascii" may also be used for some languages where the words use
+  only ASCII letters for most of the words.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+"ascii" は、ほとんどの単語が ASCII 文字だけを使う、いくつかの言語で使われるかもしれない。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The default "spellfile.vim" plugin uses this autocommand, if you define your
+autocommand afterwards you may want to use ":au! SpellFileMissing" to overrule
+it.  If you define your autocommand before the plugin is loaded it will notice
+this and not do anything.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトの "spellfile.vim" プラグインはこのオートコマンドを使う。もしも後で自分のオートコマンドを定義するなら、これを無効にするために "@command{:au! SpellFileMissing}" を使いたいかもしれない。プラグインが読み込まれる前にオートコマンドを定義した場合はこれを警告し、また何もしないだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*E797*
+Note that the SpellFileMissing autocommand must not change or destroy the
+buffer the user was editing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E797}
+@cindex E797
+@quotation
+@strong{Note:} @*
+SpellFileMissing オートコマンドはユーザーが編集しているバッファを変更や破棄してはいけないことに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Spell file format					*spell-file-format*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-file-format}
+@cindex spell-file-format
+@section 4. スペルファイルの形式
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is the format of the files that are used by the person who creates and
+maintains a word list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは単語リストを作成、管理する人が使うファイルのフォーマットである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that we avoid the word "dictionary" here.  That is because the goal of
+spell checking differs from writing a dictionary (as in the book).  For
+spelling we need a list of words that are OK, thus should not be highlighted.
+Person and company names will not appear in a dictionary, but do appear in a
+word list.  And some old words are rarely used while they are common
+misspellings.  These do appear in a dictionary but not in a word list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ここでは辞書 ("dictionary") という単語を使うのを避ける。スペルチェックのゴールは (本のような) 辞書を書くようなものとは違うからだ。スペルチェックのために、OK である単語のリストが必要になる。それゆえ、ハイライトされるべきではない。人と会社の名前は辞書内には現れることはないだろう。しかし、単語リストの中には現れる。そして、共通のミススペルとしてまれに古い単語が使われる。これらは辞書に現れるけれども、単語リストには現れない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are two formats: A straight list of words and a list using affix
+compression.  The files with affix compression are used by Myspell (Mozilla
+and OpenOffice.org).  This requires two files, one with .aff and one with .dic
+extension.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+2 つのフォーマットがある: それは単語の率直なリストと接辞圧縮を使ったリストだ。接辞圧縮を使ったファイルは Myspell (Mozilla と OpenOffice.org) で使われる。2 つのファイルが必要で、1 つは .aff、もう 1 つは .dic の拡張子を持つファイルだ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+FORMAT OF STRAIGHT WORD LIST				*spell-wordlist-format*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-wordlist-format}
+@cindex spell-wordlist-format
+@unnumberedsubsec 率直な単語リストのフォーマット
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The words must appear one per line.  That is all that is required.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+単語は一行ごとに現われなければならない。これが必要とされることのすべてだ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Additionally the following items are recognized:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+加えて次の項目が評価される:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Empty and blank lines are ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 何もない、もしくは空行は無視される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	# comment ~
+- Lines starting with a # are ignored (comment lines).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item # で始まる行は無視される (コメント行)。
+@example
+# comment
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/encoding=utf-8 ~
+- A line starting with "/encoding=", before any word, specifies the encoding
+  of the file.  After the second '=' comes an encoding name.  This tells Vim
+  to setup conversion from the specified encoding to 'encoding'.  Thus you can
+  use one word list for several target encodings.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item
+どんな単語よりも前で "/encoding=" で始まる行はファイルのエンコーディングを指定るう。'=' の後にはエンコーディング名がくる。これは Vim に、指定されたエンコーディングから 'encoding' に変換のセットアップをするように伝える。それゆえ、複数のエンコーディング向けに、ひとつの単語リストを使うことができる。
+@example
+/encoding=utf-8
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	/regions=usca ~
+- A line starting with "/regions=" specifies the region names that are
+  supported.  Each region name must be two ASCII letters.  The first one is
+  region 1.  Thus "/regions=usca" has region 1 "us" and region 2 "ca".
+  In an addition word list the region names should be equal to the main word
+  list!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "/regions=" ではじまる行は、サポートされている地域名を指定する。それぞれの地域名は 2 つの ASCII 文字でなければならない。その 1 つ目は 地域 1。それゆえ "/regions=usca" は 地域 1 の "us" と 地域 2 の "ca" を持っていることになる。もう 1 つ加えると、単語リストの地域名は主となる単語リストと同じでなければならない！
+@example
+/regions=usca
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Other lines starting with '/' are reserved for future use.  The ones that
+  are not recognized are ignored.  You do get a warning message, so that you
+  know something won't work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item それ以外の '/' からはじまる行は、今後使うために予約されている。その行は認められていないので無視される。エラーメッセージを受け取るので、動作しないのが何かがわかる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- A "/" may follow the word with the following items:
+    =		Case must match exactly.
+    ?		Rare word.
+    !		Bad (wrong) word.
+    1 to 9	A region in which the word is valid.  If no regions are
+		specified the word is valid in all regions.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "/" は下記の項目に続けた単語を伴うことができる:
+@multitable @columnfractions .1 .9
+@item = @tab ケースは正確にマッチしなければならない
+@item ? @tab 珍しい単語
+@item ! @tab 悪い (誤った) 単語
+@item 1 から 9 @tab 単語が妥当である地域。地域が指定されていないなら、すべての地域を指定する。
+@end multitable
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	# This is an example word list		comment
+	/encoding=latin1			encoding of the file
+	/regions=uscagb				regions "us", "ca" and "gb"
+	example					word for all regions
+	blah/12					word for regions "us" and "ca"
+	vim/!					bad word
+	Campbell/?3				rare word in region 3 "gb"
+	's mornings/=				keep-case word
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@headitem # 単語リストの例 @tab コメント
+@item /encoding=latin1 @tab ファイルのエンコーディング
+@item /regions=uscagb @tab 地域 "us", "ca" や "gb"
+@item example @tab すべての地域の単語
+@item blah/12 @tab "us" と "ca" 地域の単語
+@item vim/! @tab 誤った単語
+@item Campbell/?3 @tab 地域 3 "gb" での珍しい単語
+@item 's mornings/= @tab ケースを保った単語
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that when "/=" is used the same word with all upper-case letters is not
+accepted.  This is different from a word with mixed case that is automatically
+marked as keep-case, those words may appear in all upper-case letters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"/=" が使われたときに、すべてが大文字の同じ単語は無視されることに注意。
+これは自動的にケースを保ったものしてマークされた大文字小文字が混ざった単語とは異なる。これらの単語はすべてが大文字であるように見えるだろう。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+FORMAT WITH .AFF AND .DIC FILES				*aff-dic-format*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{aff-dic-format}
+@cindex aff-dic-format
+@unnumberedsubsec .AFF と .DIC ファイルのフォーマット
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are two files: the basic word list and an affix file.  The affix file
+specifies settings for the language and can contain affixes.  The affixes are
+used to modify the basic words to get the full word list.  This significantly
+reduces the number of words, especially for a language like Polish.  This is
+called affix compression.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+2 つのファイルがある: 基本の単語リストと接辞ファイルだ。接辞ファイルは言語の設定を指定し、接辞を包含することができる。接辞は十分な単語リストを得るために、基本単語を変更するのに使われる。このことは特にポーランド語のような言語では単語数を著しく減らす。これは接辞圧縮 (affix compression) と呼ばれる
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The basic word list and the affix file are combined with the ":mkspell"
+command and results in a binary spell file.  All the preprocessing has been
+done, thus this file loads fast.  The binary spell file format is described in
+the source code (src/spell.c).  But only developers need to know about it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+基本の単語リスト接辞ファイルは、"@command{:mkspell}" コマンドで結び付けられ、その結果はバイナリのスペルファイルになる。すべての前処理が終了すると、このファイルの読み込みは速くなる。バイナリのスペルファイルのフォーマットはソースコード (src/spell.c) に記述されている。しかし、このことについて知る必要があるのは開発者だけだ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The preprocessing also allows us to take the Myspell language files and modify
+them before the Vim word list is made.  The tools for this can be found in the
+"src/spell" directory.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+前処理はまた、私達が Myspell スペルチェック言語ファイルを取得し、Vim の単語リストが作られる前に変更することを許す。これらのツールは "src/spell" ディレクトリで見つけることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The format for the affix and word list files is based on what Myspell uses
+(the spell checker of Mozilla and OpenOffice.org).  A description can be found
+here:
+	http://lingucomponent.openoffice.org/affix.readme ~
+Note that affixes are case sensitive, this isn't obvious from the description.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+接辞と単語リストファイルのフォーマットは、Myspell スペルチェックが使うもの (Mozilla と OpenOffice.org のスペルチェッカー) に基いている。説明書は以下で見つけることができる:
+
+@url{http://lingucomponent.openoffice.org/affix.readme}
+
+@quotation
+@strong{Note:} @*
+接辞は大文字小文字を区別することに注意。これは説明書からははっきりとわからない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim supports quite a few extras.  They are described below |spell-affix-vim|.
+Attempts have been made to keep this compatible with other spell checkers, so
+that the same files can often be used.  One other project that offers more
+than Myspell is Hunspell ( http://hunspell.sf.net ).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はかなり多数のおまけをサポートしている。これらは下記の |spell-affix-vim| で説明されている。この試みは他のスペルチェッカーと互換性を保つように作られているので、同じファイルを使うこともできる。
+Myspell スペルチェックを超えるプロジェクトのひとつとして Hunspell スペルチェックがある (@url{http://hunspell.sf.net})。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+WORD LIST FORMAT				*spell-dic-format*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-dic-format}
+@cindex spell-dic-format
+@unnumberedsubsec 単語リストのフォーマット
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A short example, with line numbers:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+行番号をつけたちょっとした例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	1	1234 ~
+	2	aan ~
+	3	Als ~
+	4	Etten-Leur ~
+	5	et al. ~
+	6	's-Gravenhage ~
+	7	's-Gravenhaags ~
+	8	# word that differs between regions ~
+	9	kado/1 ~
+	10	cadeau/2 ~
+	11	TCP,IP ~
+	12	/the S affix may add a 's' ~
+	13	bedel/S ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .9
+@item 1 @tab 1234
+@item 2 @tab aan
+@item 3 @tab Als
+@item 4 @tab Etten-Leur
+@item 5 @tab et al.
+@item 6 @tab 's-Gravenhage
+@item 7 @tab 's-Gravenhaags
+@item 8 @tab # word that differs between regions
+@item 9 @tab kado/1
+@item 10 @tab cadeau/2
+@item 11 @tab TCP,IP
+@item 12 @tab /the S affix may add a 's'
+@item 13 @tab bedel/S
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first line contains the number of words.  Vim ignores it, but you do get
+an error message if it's not there.  *E760*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E760}
+@cindex E760
+最初の行には単語の数が含まれている。Vim はこれを無視するが、ここに無い場合はエラーメッセージを受け取る。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+What follows is one word per line.  White space at the end of the line is
+ignored, all other white space matters.  The encoding is specified in the
+affix file |spell-SET|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これに続くのは 1 行につき 1 つの単語。行の終わりの空白は無視され、その他の空白は問題となる。エンコーディングは接辞ファイル内で指定される |spell-SET|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Comment lines start with '#' or '/'.  See the example lines 8 and 12.  Note
+that putting a comment after a word is NOT allowed:
+
+		someword   # comment that causes an error! ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コメント行は '#' か '/' ではじまる。8 行目と 12 行目を参照。
+@quotation
+@strong{Note:} @*
+単語のうしろにコメントを置くことは認められていないことに注意:
+@verbatim
+someword   # このコメントはエラーになる！
+@end verbatim
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+After the word there is an optional slash and flags.  Most of these flags are
+letters that indicate the affixes that can be used with this word.  These are
+specified with SFX and PFX lines in the .aff file, see |spell-SFX| and
+|spell-PFX|.  Vim allows using other flag types with the FLAG item in the
+affix file |spell-FLAG|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+単語のうしろにはオプションのスラッシュとフラグがある。これらフラグのほとんどは、その単語で使うことのできる接辞を示す文字である。@file{.aff} ファイルの SFX や PFX 行で指定されている。|spell-SFX| と |spell-PFX| を参照。Vim では接辞ファイルの FLAG 項目で、他の形式のフラグを使ってよい |spell-FLAG|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the word only has lower-case letters it will also match with the word
+starting with an upper-case letter.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+単語が小文字のみの場合、大文字で始まる単語にもマッチするだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the word includes an upper-case letter, this means the upper-case letter
+is required at this position.  The same word with a lower-case letter at this
+position will not match. When some of the other letters are upper-case it will
+not match either.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+単語が大文字を含んでいる場合、その場所に大文字が必要とされていることを意味する。その場所が小文字である同じ単語はマッチしない。他の文字が大文字である場合もマッチしない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The word with all upper-case characters will always be OK,
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべてが大文字の単語はいつも OK になるだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	word list	matches			does not match ~
+	als		als Als ALS		ALs AlS aLs aLS
+	Als		Als  ALS		als ALs AlS aLs aLS
+	ALS		ALS			als Als ALs AlS aLs aLS
+	AlS		AlS ALS			als Als ALs aLs aLS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .3 .4
+@headitem 単語リスト @tab マッチする @tab マッチしない
+@item als @tab als Als ALS @tab ALs AlS aLs aLS
+@item Als @tab Als  ALS @tab als ALs AlS aLs aLS
+@item ALS @tab ALS @tab als Als ALs AlS aLs aLS
+@item AlS @tab AlS ALS @tab als Als ALs aLs aLS
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The KEEPCASE affix ID can be used to specifically match a word with identical
+case only, see below |spell-KEEPCASE|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+KEEPCASE の接辞 ID は まったく同じ単語のみのマッチ指定に使うことができる。下記の |spell-KEEPCASE| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: in line 5 to 7 non-word characters are used.  You can include any
+character in a word.  When checking the text a word still only matches when it
+appears with a non-word character before and after it.  For Myspell a word
+starting with a non-word character probably won't work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+5 から 7 行目は単語ではない文字が使われていることに注意。単語にはどのような文字でも含めることができる。テキストをチェックしている際に、単語の前後に単語ではない文字が現れた時は単語のみにマッチする。Myspell スペルチェックでは、単語ではない文字で始まる単語はたぶん動作しないだろう。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In line 12 the word "TCP/IP" is defined.  Since the slash has a special
+meaning the comma is used instead.  This is defined with the SLASH item in the
+affix file, see |spell-SLASH|.  Note that without this SLASH item the word
+will be "TCP,IP".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+12 行目では単語 "TCP/IP" が定義されている。スラッシュには特別な意味があるので、代わりにコンマが使われる。これは接辞ファイルの SLASH アイテムに定義されている。|spell-SLASH| を参照。
+@quotation
+@strong{Note:} @*
+この SLASH アイテムが無いと、単語は "TCP,IP" となるだろう。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+AFFIX FILE FORMAT			*spell-aff-format* *spell-affix-vim*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-aff-format}
+@anchor{spell-affix-vim}
+@cindex spell-aff-format
+@cindex spell-affix-vim
+@unnumberedsubsec 接辞 (AFFIX) ファイルフォーマット
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-affix-comment*
+Comment lines in the .aff file start with a '#':
+
+	# comment line ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-affix-comment}
+@cindex spell-affix-comment
+@file{.aff} ファイルのコメント行は '#' で始まる:
+@verbatim
+# コメント行
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Items with a fixed number of arguments can be followed by a comment.  But only
+if none of the arguments can contain white space.  The comment must start with
+a "#" character.  Example:
+
+	KEEPCASE =  # fix case for words with this flag ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数の固定された引数をもつアイテムはコメントとして続けることができる。引数が無い場合に限り空白を含むことができる。
+コメントは "#" から始まらなければならない。例:
+@example
+KEEPCASE =  # このフラグで単語の大文字小文字を固定する
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ENCODING							*spell-SET*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-SET}
+@cindex spell-SET
+@unnumberedsubsec エンコーディング
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The affix file can be in any encoding that is supported by "iconv".  However,
+in some cases the current locale should also be set properly at the time
+|:mkspell| is invoked.  Adding FOL/LOW/UPP lines removes this requirement
+|spell-FOL|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+接辞ファイルは "iconv" によってサポートされているエンコーディングであれば、どのようなものでも良い。しかしながらいくつかの場合で、現在のロケールはまた、プロパティは |:mkspell| が呼び出された時に設定されるべきだ。加えて、FOL/LOW/UPP 行はこの |spell-FOL| の要求を削除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The encoding should be specified before anything where the encoding matters.
+The encoding applies both to the affix file and the dictionary file.  It is
+done with a SET line:
+
+	SET utf-8 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+エンコーディング事項の何よりもまず前にエンコーディングは指定されるべきだ。エンコーディングは接辞ファイルと辞書ファイルのどちらにも適用される。これは SET 行において成される:
+@example
+SET utf-8
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The encoding can be different from the value of the 'encoding' option at the
+time ":mkspell" is used.  Vim will then convert everything to 'encoding' and
+generate a spell file for 'encoding'.  If some of the used characters to not
+fit in 'encoding' you will get an error message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+エンコーディングは "@command{:mkspell}" が使われた時に、'@option{encoding}' オプションの値とは異なってもよい。Vim は '@option{encoding}' の全てを変換し、'@option{encoding}' のためのスペルファイルを生成するだろう。
+もしも '@option{encoding}' に適合していない文字が使われていると、エラーメッセージを受け取るだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*spell-affix-mbyte*
+When using a multi-byte encoding it's possible to use more different affix
+flags.  But Myspell doesn't support that, thus you may not want to use it
+anyway.  For compatibility use an 8-bit encoding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+@anchor{spell-affix-mbyte}
+@cindex spell-affix-mbyte
+マルチバイトのエンコーディングが使われている場合、より多くの異なった接辞フラグを使うことができる。しかし、Myspell スペルチェックはこれをサポートしていない。それゆえ、あなたはこれをいいかげんに使おうとは思わないだろう。互換性のために 8-bit エンコーディングを使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+INFORMATION
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 情報
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These entries in the affix file can be used to add information to the spell
+file.  There are no restrictions on the format, but they should be in the
+right encoding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+接辞ファイルのエントリは、スペルファイルへ情報を追加するのに使うことができる。フォーマットに制限はないが、正しいエンコーディングであるべきだ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				*spell-NAME* *spell-VERSION* *spell-HOME*
+				*spell-AUTHOR* *spell-EMAIL* *spell-COPYRIGHT*
+	NAME		Name of the language
+	VERSION		1.0.1  with fixes
+	HOME		http://www.myhome.eu
+	AUTHOR		John Doe
+	EMAIL		john AT Doe DOT net
+	COPYRIGHT	LGPL
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-NAME}
+@anchor{spell-VERSION}
+@anchor{spell-HOME}
+@anchor{spell-AUTHOR}
+@anchor{spell-EMAIL}
+@anchor{spell-COPYRIGHT}
+@cindex spell-NAME
+@cindex spell-VERSION
+@cindex spell-HOME
+@cindex spell-AUTHOR
+@cindex spell-EMAIL
+@cindex spell-COPYRIGHT
+@multitable @columnfractions .4 .6
+@item NAME @tab 言語名
+@item VERSION @tab 1.0.1 with fixes
+@item HOME @tab http://www.myhome.eu
+@item AUTHOR @tab John Doe
+@item EMAIL @tab john AT Doe DOT net
+@item COPYRIGHT @tab LGPL
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These fields are put in the .spl file as-is.  The |:spellinfo| command can be
+used to view the info.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのフィールドは @file{.spl} ファイルにそのままの状態で置かれる。|@command{:spellinfo}| コマンドは info を閲覧するために使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:spellinfo* *:spelli*
+:spelli[nfo]		Display the information for the spell file(s) used for
+			the current buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:spellinfo}
+@anchor{:spelli}
+@cindex :spellinfo
+@cindex :spelli
+@item :spelli[nfo]
+現在のバッファのために使われているスペルファイルの情報を表示する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CHARACTER TABLES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 文字テーブル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*spell-affix-chars*
+When using an 8-bit encoding the affix file should define what characters are
+word characters.  This is because the system where ":mkspell" is used may not
+support a locale with this encoding and isalpha() won't work.  For example
+when using "cp1250" on Unix.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-affix-chars}
+@cindex spell-affix-chars
+8-bit エンコーディングを使用している時、接辞ファイルは単語の文字が何であるかを定義するべきだ。これはどうしてかというと、":mkspell" が使われたシステムはこのエンコーディングのロケールをサポートしていないかもしれないし、isalpha() が動作しないだろうからだ。例えば Unix 上で "cp1250" を使うとか。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*E761* *E762* *spell-FOL*
+						*spell-LOW* *spell-UPP*
+Three lines in the affix file are needed.  Simplistic example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E761}
+@anchor{E762}
+@anchor{spell-FOL}
+@anchor{spell-LOW}
+@anchor{spell-UPP}
+@cindex E761
+@cindex E762
+@cindex spell-FOL
+@cindex spell-LOW
+@cindex spell-UPP
+接辞ファイルの 3 行は必要だ。簡単な例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	FOL  áëñ ~
+	LOW  áëñ ~
+	UPP  ÁËÑ ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .2
+@item FOL @tab áëñ
+@item LOW @tab áëñ
+@item UPP @tab ÁËÑ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All three lines must have exactly the same number of characters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+3 行のすべては正確に同じ文字番号を持っていなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "FOL" line specifies the case-folded characters.  These are used to
+compare words while ignoring case.  For most encodings this is identical to
+the lower case line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"FOL" 行は case-folded 文字を指定する。これらは大文字小文字を区別しない単語の比較に使われる。ほとんどのエンコーディングでは小文字の行と同じである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "LOW" line specifies the characters in lower-case.  Mostly it's equal to
+the "FOL" line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"LOW" 行は lower-case 文字を指定する。大部分は "FOL" 行と同じである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "UPP" line specifies the characters with upper-case.  That is, a character
+is upper-case where it's different from the character at the same position in
+"FOL".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"UPP" 行は大文字を持つ文字を指定する。この文字は "FOL" と同じ場所にある文字とは異なる大文字である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An exception is made for the German sharp s ß.  The upper-case version is
+"SS".  In the FOL/LOW/UPP lines it should be included, so that it's recognized
+as a word character, but use the ß character in all three.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例外はジャーマンシャープエス ß に役に立っている。大文字のバージョンは "SS" だ。これは FOL/LOW/UPP 行の中に含まれているべきであり、そのため、単語の文字として認識されるのだが、3 行の全てで ß 文字を使う。
+
+@quotation
+@{訳メモ: ジャーマンシャープエス (German sharp s) とは？エスツェット (Eszett) と呼ぶもので、s と z の合字とのこと。ドイツ語で使われている。小文字が ß (U+00DF) で、大文字は ẞ (U+1E9E) となっている。ベータ β (U+03B2) とは違うよ。@}
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ASCII characters should be omitted, Vim always handles these in the same way.
+When the encoding is UTF-8 no word characters need to be specified.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ASCII 文字は省略されるべきだ。Vim は常に同様にこれらを扱う。エンコーディングが UTF-8 の時、単語文字の指定は必要ない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E763*
+Vim allows you to use spell checking for several languages in the same file.
+You can list them in the 'spelllang' option.  As a consequence all spell files
+for the same encoding must use the same word characters, otherwise they can't
+be combined without errors.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E763}
+@cindex E763
+Vim はいくつもの言語のために、同じファイルをスペルチェックに使うことができる。これらは '@option{spelllang}' オプションに列記することができる。ゆえに、同じエンコード用のすべてのスペルファイルは同じ単語文字を使わなければならない。そうでなければ、これらをエラーなしに結合することができない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you get an E763 warning that the word tables differ you need to update your
+".spl" spell files.  If you downloaded the files, get the latest version of
+all spell files you use.  If you are only using one, e.g., German, then also
+download the recent English spell files.  Otherwise generate the .spl file
+again with |:mkspell|.  If you still get errors check the FOL, LOW and UPP
+lines in the used .aff files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしも単語テーブルが異なるという警告 E763 を受け取ったなら、"@file{.spl}" スペルファイルをアップデートする必要がある。ファイルをダウンロードした場合、あなたが使用するスペルファイルすべての最新版を取得しよう。もしも 1 つの言語だけを使っているなら、例えばドイツ語、最新の英語スペルファイルもダウンロードしよう。そうでなければ、|:mkspell| で再度 @file{.spl} ファイルを生成しよう。それでもまだエラーがあるのであれば、使用している @file{.aff} ファイルの FOL, LOW と UPP 行を確認しよう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The XX.ascii.spl spell file generated with the "-ascii" argument will not
+contain the table with characters, so that it can be combine with spell files
+for any encoding.  The .add.spl files also do not contain the table.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"-ascii" 引数で生成される @file{XX.ascii.spl} スペルファイルは文字テーブルを含まないだろう。そのため、どのようなエンコーディングのスペルファイルとも結合することができる。@file{.add.spl} ファイルはまた、テーブルを含むことはできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MID-WORD CHARACTERS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 中間語の文字
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*spell-midword*
+Some characters are only to be considered word characters if they are used in
+between two ordinary word characters.  An example is the single quote: It is
+often used to put text in quotes, thus it can't be recognized as a word
+character, but when it appears in between word characters it must be part of
+the word.  This is needed to detect a spelling error such as they'are.  That
+should be they're, but since "they" and "are" are words themselves that would
+go unnoticed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-midword}
+@cindex spell-midword
+いくつかの文字は、それが 2 つの普通の単語文字の間で使われているなら、単に単語の文字だとみなされることになっている。一例はシングルクォートだ: これはしばしばテキストを引用するのに使われる。それゆえ一語の文字としては認められない。しかしこれが単語文字の間に現れた時、単語の一部にならなければならない。これは they'are のようなスペルミス検出するのに必要だ。they're となるべきだが、"they" と "are" はそれ自身が単語なので、気づかれないだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These characters are defined with MIDWORD in the .aff file.  Example:
+
+	MIDWORD	'- ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらの文字は @file{.aff} ファイルの MIDWORD で定義される。例:
+@example
+MIDWORD	'-
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+FLAG TYPES						*spell-FLAG*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-FLAG}
+@cindex spell-FLAG
+@unnumberedsubsec フラグのタイプ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Flags are used to specify the affixes that can be used with a word and for
+other properties of the word.  Normally single-character flags are used.  This
+limits the number of possible flags, especially for 8-bit encodings.  The FLAG
+item can be used if more affixes are to be used.  Possible values:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+フラグはある単語と共に使われる接辞や単語の他の特徴を明示するのに使われる。通常はシングルキャラクタのフラグが使われる。これは受け入れられるフラグの数、特に 8 ビットエンコーディングを制限する。より多くの接辞が使われるなら、FLAG 項目が使われる。とりうる値:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	FLAG long	use two-character flags
+	FLAG num	use numbers, from 1 up to 65000
+	FLAG caplong	use one-character flags without A-Z and two-character
+			flags that start with A-Z
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item FLAG long @tab 2 文字フラグを使う
+@item FLAG num @tab 1 から 65000 までの数値を使う
+@item FLAG caplong @tab A-Z を除く 1 文字フラグ、A-Z からはじまる 2 文字フラグを使う
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+With "FLAG num" the numbers in a list of affixes need to be separated with a
+comma: "234,2143,1435".  This method is inefficient, but useful if the file is
+generated with a program.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"FLAG num" では、接辞リストの数値はコンマで区切られている必要がある: "234,2143,1435"。この方式は非効率的であるが、ファイルをプログラムで生成する場合に便利だ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When using "caplong" the two-character flags all start with a capital: "Aa",
+"B1", "BB", etc.  This is useful to use one-character flags for the most
+common items and two-character flags for uncommon items.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"caplong" を使うとき、2 文字フラグはすべて大文字からはじまる: "Aa", "B1", "BB" など。これはもっとも一般的なアイテムのために 1 文字フラグを使うのに、そしてまれなアイテムのために 2 文字フラグを使うのに便利だ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: When using utf-8 only characters up to 65000 may be used for flags.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+UTF-8 を使用している場合、65000 までの文字だけがフラグとして使われるだろう。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: even when using "num" or "long" the number of flags available to
+compounding and prefixes is limited to about 250.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"num" や "long" を使用している時でさえ、フラグの数値を混ぜることができ、接頭辞は約 250 に制限される。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+AFFIXES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 接辞
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+					    *spell-PFX* *spell-SFX*
+The usual PFX (prefix) and SFX (suffix) lines are supported (see the Myspell
+documentation or the Aspell manual:
+http://aspell.net/man-html/Affix-Compression.html).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-PFX}
+@anchor{spell-SFX}
+@cindex spell-PFX
+@cindex spell-SFX
+通常の PFX (接頭辞) と SFX (接尾辞) 行がサポートされている。(see the Myspell のドキュメントもしくは Aspell のマニュアルを参照: @url{http://aspell.net/man-html/Affix-Compression.html}).
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Summary:
+	SFX L Y 2 ~
+	SFX L 0 re [^x] ~
+	SFX L 0 ro x ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+概要:
+@example
+SFX L Y 2
+SFX L 0 re [^x]
+SFX L 0 ro x
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first line is a header and has four fields:
+	SFX {flag} {combine} {count}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec 最初の行はヘッダーで 4 つのフィールドを持っている:
+@example
+SFX @{flag@} @{combine@} @{count@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{flag}		The name used for the suffix.  Mostly it's a single letter,
+		but other characters can be used, see |spell-FLAG|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item @{flag@}
+@tab 接尾辞に使われる名前。たいていは 1 文字だが、他の文字も使うことができる。|spell-FLAG| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{combine}	Can be 'Y' or 'N'.  When 'Y' then the word plus suffix can
+		also have a prefix.  When 'N' then a prefix is not allowed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @{combine@}
+@tab 'Y' か 'N' である。'Y' の場合、単語+接尾辞は接頭辞を持つことができる。'N' の場合、接頭辞を持てない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{count}		The number of lines following.  If this is wrong you will get
+		an error message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @{count@}
+@tab 次に続いている行数。もしもこの数値が間違っていると、エラーメッセージを受け取るだろう。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For PFX the fields are exactly the same.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+PFX のためのフィールドはこれとまったく同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The basic format for the following lines is:
+	SFX {flag} {strip} {add} {condition} {extra}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec 続く行の基本的なフォーマットは:
+@example
+SFX @{flag@} @{strip@} @{add@} @{condition@} @{extra@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{flag}		Must be the same as the {flag} used in the first line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item @{flag@}
+@tab 最初の行で使われている @{flag@} と同じでなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{strip}		Characters removed from the basic word.  There is no check if
+		the characters are actually there, only the length is used (in
+		bytes).  This better match the {condition}, otherwise strange
+		things may happen.  If the {strip} length is equal to or
+		longer than the basic word the suffix won't be used.
+		When {strip} is 0 (zero) then nothing is stripped.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @{strip@}
+@tab 基本語から削除された文字。文字が実際にあるならチェックせず、(バイトの) 長さだけが使われる。これは @{condition@} のより良いマッチで、他の方法ではおかしなことが生じる。もしも @{strip@} の長さが基本語と同じかそれ以上なら、接尾語は使われないだろう。@{strip@} が 0 の場合は何も取り除かない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{add}		Characters added to the basic word, after removing {strip}.
+		Optionally there is a '/' followed by flags.  The flags apply
+		to the word plus affix.  See |spell-affix-flags|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @{add@}
+@tab @{strip@} を削除した後の基本単語に加えられた文字。オプションにフラグが続く '/' がある。このフラグは単語に接辞を付け加える。|spell-affix-flags| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{condition}	A simplistic pattern.  Only when this matches with a basic
+		word will the suffix be used for that word.  This is normally
+		for using one suffix letter with different {add} and {strip}
+		fields for words with different endings.
+		When {condition} is a . (dot) there is no condition.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @{condition@}
+@tab 単純なパターン。これが基本単語にマッチした時にだけ、その単語のために接尾辞使われるだろう。通常、これは異なる末尾の単語のための @{add@} や @{strip@} フィールドとは異なり、1 つの接尾文字を使うためのものだ。@{condition@} が . (ドット) の場合は条件はない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The pattern may contain:
+		- Literal characters.
+		- A set of characters in []. [abc] matches a, b and c.
+		  A dash is allowed for a range [a-c], but this is
+		  Vim-specific.
+		- A set of characters that starts with a ^, meaning the
+		  complement of the specified characters. [^abc] matches any
+		  character but a, b and c.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+パターンは次のものを含む:
+@itemize @minus
+@item リテラル文字
+@item [] 内の文字セット。[abc] は a, b と c にマッチする。[a-c] の範囲のためにダッシュを使えるが、これは Vim に特有のもの。
+@item ^ から始まる文字セットは、明示された文字を補完するものを意味する。[^abc] は a, b と c を除いたすべての文字にマッチする。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{extra}		Optional extra text:
+		    # comment		Comment is ignored
+		    -			Hunspell uses this, ignored
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @{extra@}
+@tab オプションの特別なテキスト:
+@multitable @columnfractions .4 .6
+@item # comment @tab コメントは無視される
+@item - @tab Hunspell スペルチェックはこれを使う。無視される
+@end multitable
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For PFX the fields are the same, but the {strip}, {add} and {condition} apply
+to the start of the word.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+PFX 向けにはフィールドについては同じだが、@{strip@}, @{add@} と @{condition@} は単語のはじめに適用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: Myspell ignores any extra text after the relevant info.  Vim requires
+this text to start with a "#" so that mistakes don't go unnoticed.  Example:
+
+	SFX F 0 in   [^i]n      # Spion > Spionin  ~
+	SFX F 0 nen  in		# Bauerin > Bauerinnen ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Myspell スペルチェックは関連情報の後にあるどんな特別なテキストも無視する。Vim はこのテキストを "#" で始めるために必要とする。そのためミスは気づかれずには済まない。例:
+@example
+SFX F 0 in   [^i]n      # Spion > Spionin
+SFX F 0 nen  in         # Bauerin > Bauerinnen
+@end example
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+However, to avoid lots of errors in affix files written for Myspell, you can
+add the IGNOREEXTRA flag.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+しかしながら、Myspell スペルチェック向けに書かれた接辞ファイル中のエラーの多くを回避するために、IGNOREEXTRA フラグを追加することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Apparently Myspell allows an affix name to appear more than once.  Since this
+might also be a mistake, Vim checks for an extra "S".  The affix files for
+Myspell that use this feature apparently have this flag.  Example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+どうも Myspell スペルチェックでは接辞名が一度ならず何度も出現することが認められているようだ。これはまた間違いかもしれないので、Vim は 特別な "S" をチェックする。この機能を使う Myspell スペルチェックのための接辞ファイルは、どうやら次のフラグを持っている。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	SFX a Y 1 S ~
+	SFX a 0 an . ~
+
+	SFX a Y 2 S ~
+	SFX a 0 en . ~
+	SFX a 0 on . ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+SFX a Y 1 S
+SFX a 0 an .
+
+SFX a Y 2 S
+SFX a 0 en .
+SFX a 0 on .
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+AFFIX FLAGS						*spell-affix-flags*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-affix-flags}
+@cindex spell-affix-flags
+@unnumberedsubsec 接辞フラグ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is a feature that comes from Hunspell: The affix may specify flags.  This
+works similar to flags specified on a basic word.  The flags apply to the
+basic word plus the affix (but there are restrictions).  Example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは Hunspell スペルチェック由来の機能です: この接辞はフラグを明記するだろう。基本語を明示するフラグと同じように動作する。フラグは基本語に接辞 (制限はある) を加えるように適用する。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	SFX S Y 1 ~
+	SFX S 0 s . ~
+
+	SFX A Y 1 ~
+	SFX A 0 able/S . ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+SFX S Y 1
+SFX S 0 s .
+
+SFX A Y 1
+SFX A 0 able/S .
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the dictionary file contains "drink/AS" then these words are possible:
+
+	drink
+	drinks		uses S suffix
+	drinkable	uses A suffix
+	drinkables	uses A suffix and then S suffix
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+辞書が "drink/AS" を含んでいると、次の単語が適合する:
+@example
+drink
+drinks          S suffix を使う
+drinkable       A suffix を使う
+drinkables      A suffix を使い、それから S suffix を使う
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Generally the flags of the suffix are added to the flags of the basic word,
+both are used for the word plus suffix.  But the flags of the basic word are
+only used once for affixes, except that both one prefix and one suffix can be
+used when both support combining.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一般に、接尾辞のフラグは基本語のフラグに付加される。どちらのフラグも単語に接尾辞を加えるために使われる。しかし、基本語のフラグは接尾辞のために使われるのは、次を除いて 1 度だけである。その例外とは、双方が結合をサポートしている時に、双方の 1 つの接頭辞と 1 つの接尾辞が使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Specifically, the affix flags can be used for:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特に、接辞フラグは次のために使われる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Suffixes on suffixes, as in the example above.  This works once, thus you
+  can have two suffixes on a word (plus one prefix).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 上記の例中と同じだが、接尾辞の接尾辞。これは一度だけ動作するので、単語に 2 つの接尾辞を持つことができる (それと 1 つの接頭辞)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Making the word with the affix rare, by using the |spell-RARE| flag.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item |spell-RARE| フラグを用いてまれな接辞を持つ単語を作る。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Exclude the word with the affix from compounding, by using the
+  |spell-COMPOUNDFORBIDFLAG| flag.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item |spell-COMPOUNDFORBIDFLAG| フラグを用いて複合語から接辞を持つ単語を除外する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Allow the word with the affix to be part of a compound word on the side of
+  the affix with the |spell-COMPOUNDPERMITFLAG|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 接辞を持つ単語が、|spell-COMPOUNDPERMITFLAG| を持つ接辞として複合語の一部になることを許す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Use the NEEDCOMPOUND flag: word plus affix can only be used as part of a
+  compound word. |spell-NEEDCOMPOUND|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item NEEDCOMPOUND フラグを使う: 接辞を加えた単語は、複合語の一部としてのみ使われる。|spell-NEEDCOMPOUND|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Compound flags: word plus affix can be part of a compound word at the end,
+  middle, start, etc.  The flags are combined with the flags of the basic
+  word.  |spell-compound|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 複合語フラグ: 接辞を加えた単語は、尾、中間、頭などで複合語の一部になることができる。フラグは基本語のフラグと組み合わされる。|spell-compound|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- NEEDAFFIX: another affix is needed to make a valid word.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item NEEDAFFIX: その他の接辞は、妥当な単語を作るのに必要とされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- CIRCUMFIX, as explained just below.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item CIRCUMFIX は直下で説明されている。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+IGNOREEXTRA						*spell-IGNOREEXTRA*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-IGNOREEXTRA}
+@cindex spell-IGNOREEXTRA
+@unnumberedsubsec IGNOREEXTRA
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Normally Vim gives an error for an extra field that does not start with '#'.
+This avoids errors going unnoticed.  However, some files created for Myspell
+or Hunspell may contain many entries with an extra field.  Use the IGNOREEXTRA
+flag to avoid lots of errors.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+通常 Vim は '#' ではじまらない特別なフィールドにはエラーを与える。これは気づかれずに進行しているエラーを回避する。とはいえ、Myspell スペルチェックや Hunspell スペルチェック用に作成されたいくつかのファイルは、特別なフィールドを持つエントリを多く含んでいるかもしれない。たくさんのエラーを回避するためには IGNOREEXTRA フラグを使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+CIRCUMFIX						*spell-CIRCUMFIX*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-CIRCUMFIX}
+@cindex spell-CIRCUMFIX
+@unnumberedsubsec CIRCUMFIX
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The CIRCUMFIX flag means a prefix and suffix must be added at the same time.
+If a prefix has the CIRCUMFIX flag than only suffixes with the CIRCUMFIX flag
+can be added, and the other way around.
+An alternative is to only specify the suffix, and give the that suffix two
+flags: The required prefix and the NEEDAFFIX flag.  |spell-NEEDAFFIX|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+CIRCUMFIX フラグは同時に付加されなければならない接頭辞と接尾辞を意味する。もしも接頭辞が CIRCUMFIX フラグを持つのなら、CIRCUMFIX フラグの接尾辞のみが追加される。そしてその反対も。代替としては接辞を指定し、その接辞に 2 つのフラグを与えることだけである: それは必要とされる接頭辞と NEEDAFFIX フラグである。|spell-NEEDAFFIX|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+PFXPOSTPONE						*spell-PFXPOSTPONE*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-PFXPOSTPONE}
+@cindex spell-PFXPOSTPONE
+@unnumberedsubsec PFXPOSTPONE
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When an affix file has very many prefixes that apply to many words it's not
+possible to build the whole word list in memory.  This applies to Hebrew (a
+list with all words is over a Gbyte).  In that case applying prefixes must be
+postponed.  This makes spell checking slower.  It is indicated by this keyword
+in the .aff file:
+
+	PFXPOSTPONE ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+接辞ファイルが多くの単語に適用する非常に多くの接頭辞を持っている場合、全ての単語リストをメモリ内でビルドするのは不可能である。これはヘブライ語 (滑ての単語リストはギガバイトを超える) に適用する。この場合、適用されている接頭辞は後まわしにされなければならない。これはスペルチェックの動作を遅くする。これは @file{.aff} ファイルの次のキーワードで示される:
+@example
+PFXPOSTPONE
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Only prefixes without a chop string and without flags can be postponed.
+Prefixes with a chop string or with flags will still be included in the word
+list.  An exception if the chop string is one character and equal to the last
+character of the added string, but in lower case.  Thus when the chop string
+is used to allow the following word to start with an upper case letter.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+途切れた文字列やフラグのない接頭辞だけが延期されることができる。途切れた文字列やフラグのある接頭辞は単語リストに含まれたままだろう。もしも途切れた文字列が 1 文字で、加えられた文字列の最後の文字と同じならば、小文字を除いて例外です。それゆえ、途切れた文字列が大文字で始まる単語を続けることは認められている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+WORDS WITH A SLASH					*spell-SLASH*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-SLASH}
+@cindex spell-SLASH
+@unnumberedsubsec スラッシュ付きの単語
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The slash is used in the .dic file to separate the basic word from the affix
+letters and other flags.  Unfortunately, this means you cannot use a slash in
+a word.  Thus "TCP/IP" is not a word but "TCP" with the flags "IP".  To include
+a slash in the word put a backslash before it: "TCP\/IP".  In the rare case
+you want to use a backslash inside a word you need to use two backslashes.
+Any other use of the backslash is reserved for future expansion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スラッシュは @file{.dic} ファイルで基本語と接辞語や他のフラグを区切るのに使われる。悪いことに、これは単語中にスラッシュを使えないことを意味する。そのため、"@samp{TCP/IP}" は単語ではなく、"@samp{IP}" フラグをもつ "@samp{TCP}" ということになる。単語にスラッシュを含めるためには、その前にバックスラッシュを置く: "@samp{TCP\/IP}"。単語中にバックスラッシュを使いたいという稀な場合があるなら、バックスラッシュを 2 つ続ける必要がある。それ以外のバックスラッシュの使用は、今後の拡張のために予約されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+KEEP-CASE WORDS						*spell-KEEPCASE*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-KEEPCASE}
+@cindex spell-KEEPCASE
+@unnumberedsubsec 大文字小文字を保つ単語
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the affix file a KEEPCASE line can be used to define the affix name used
+for keep-case words.  Example:
+
+	KEEPCASE = ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+接辞ファイル内の KEEPCASE 行は、大文字小文字を保つ単語のために使われる接辞名を定義するのに使われる。例:
+@example
+KEEPCASE =
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This flag is not supported by Myspell.  It has the meaning that case matters.
+This can be used if the word does not have the first letter in upper case at
+the start of a sentence.  Example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このフラグは Myspell スペルチェックではサポートされていない。これは大文字小文字問題があることを意味する。もしも文章のはじめの単語が大文字で始まっていないのならば、これを使うことができる。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    word list	    matches		    does not match ~
+    's morgens/=    's morgens		    'S morgens 's Morgens 'S MORGENS
+    's Morgens	    's Morgens 'S MORGENS   'S morgens 's morgens
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .3 .5
+@headitem 単語リスト @tab マッチする @tab マッチしない
+@item 's morgens/= @tab 's morgens @tab 'S morgens 's Morgens 'S MORGENS
+@item 's Morgens @tab 's Morgens 'S MORGENS @tab 'S morgens 's morgens
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The flag can also be used to avoid that the word matches when it is in all
+upper-case letters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+フラグはまた、全てが大文字の文章で単語がマッチすることを回避するのに使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+RARE WORDS						*spell-RARE*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-RARE}
+@cindex spell-RARE
+@unnumberedsubsec 稀な単語
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the affix file a RARE line can be used to define the affix name used for
+rare words.  Example:
+
+	RARE ? ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+接辞ファイル内の RARE 行は、稀な単語のために使われる接辞名を定義するのに使われる。例:
+@example
+RARE ?
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Rare words are highlighted differently from bad words.  This is to be used for
+words that are correct for the language, but are hardly ever used and could be
+a typing mistake anyway.  When the same word is found as good it won't be
+highlighted as rare.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+稀な単語は誤りの単語とは異なったハイライトがされる。これは言語向けの正しい単語のために使われるのだが、めったに使われず、入力ミスとなる。同じ単語が正しい単語として見つかると、稀な単語としてはハイライトされないだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This flag can also be used on an affix, so that a basic word is not rare but
+the basic word plus affix is rare |spell-affix-flags|.  However, if the word
+also appears as a good word in another way (e.g., in another region) it won't
+be marked as rare.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このフラグはまた接辞として使われる。そのため、接辞の付いた基本語が稀な単語であることを除き、基本語は稀な単語ではない |spell-affix-flags|。
+しかしながら、もしも単語が他の方法(例:他の領域で)で正しい単語として現れたなら、稀な単語としてマークされない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+BAD WORDS						*spell-BAD*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-BAD}
+@cindex spell-BAD
+@unnumberedsubsec 誤りの単語
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the affix file a BAD line can be used to define the affix name used for
+bad words.  Example:
+
+	BAD ! ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+接辞ファイル内の BAD 行は、誤った単語のために使われる接辞名を定義するのに使われる。例:
+@example
+BAD !
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This can be used to exclude words that would otherwise be good.  For example
+"the the" in the .dic file:
+
+	the the/! ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは他では正しいであろう単語を除外するのに使われる。例えば、@file{.dic} ファイル内の "the the" である:
+@example
+the the/!
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Once a word has been marked as bad it won't be undone by encountering the same
+word as good.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ひとたび誤った単語としてマークされると、同じ単語が正しいものであるとしても戻すことはできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The flag also applies to the word with affixes, thus this can be used to mark
+a whole bunch of related words as bad.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+フラグはまた単語に接辞を適用する。そのため、これは関連する単語群の全部を誤ったものとしてマークするのに使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-FORBIDDENWORD*
+FORBIDDENWORD can be used just like BAD.  For compatibility with Hunspell.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-FORBIDDENWORD}
+@cindex spell-FORBIDDENWORD
+FORBIDDENWORD は BAD とほとんど同じように使うことができる。Hunspell スペルチェックと互換。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-NEEDAFFIX*
+The NEEDAFFIX flag is used to require that a word is used with an affix.  The
+word itself is not a good word (unless there is an empty affix).  Example:
+
+	NEEDAFFIX + ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-NEEDAFFIX}
+@cindex spell-NEEDAFFIX
+NEEDAFFIX フラグは単語が接辞と共に使われることを要求するのに使われる。単語それ自身は正しい単語ではない(接辞が空でない限り)。例:
+@example
+NEEDAFFIX +
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+COMPOUND WORDS						*spell-compound*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-compound}
+@cindex spell-compound
+@unnumberedsubsec 複合語
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A compound word is a longer word made by concatenating words that appear in
+the .dic file.  To specify which words may be concatenated a character is
+used.  This character is put in the list of affixes after the word.  We will
+call this character a flag here.  Obviously these flags must be different from
+any affix IDs used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+複合語は @file{.dic} ファイル内で見られる単語を連結することによって作られた長い単語です。繋げられているかもしれない単語を明示するために文字が使われる。この文字は単語のうしろの接辞のリストに置かれる。この文字をここではフラグと呼びたい。明らかに、これらのフラグは接辞の ID で使われているどんなものとも異なっていなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-COMPOUNDFLAG*
+The Myspell compatible method uses one flag, specified with COMPOUNDFLAG.  All
+words with this flag combine in any order.  This means there is no control
+over which word comes first.  Example:
+	COMPOUNDFLAG c ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUNDFLAG}
+@cindex spell-COMPOUNDFLAG
+Myspell スペルチェック互換の方式は COMPOUNDFLAG で明示した 1 つのフラグを使う。このフラグを持つすべての単語は任意の順番に結合する。これはどの単語が最初にくるのか制御がないことを意味する。例:
+@example
+COMPOUNDFLAG c
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-COMPOUNDRULE*
+A more advanced method to specify how compound words can be formed uses
+multiple items with multiple flags.  This is not compatible with Myspell 3.0.
+Let's start with an example:
+	COMPOUNDRULE c+ ~
+	COMPOUNDRULE se ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUNDRULE}
+@cindex spell-COMPOUNDRULE
+合成語がどのように合成されるのかを明示するより進んだ方法は、複数のフラグを使うことだ。これは Myspell スペルチェックの 3.0 とは互換性がない。例のようにはじめよう:
+@example
+COMPOUNDRULE c+
+COMPOUNDRULE se
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first line defines that words with the "c" flag can be concatenated in any
+order.  The second line defines compound words that are made of one word with
+the "s" flag and one word with the "e" flag.  With this dictionary:
+	bork/c ~
+	onion/s ~
+	soup/e ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初の行は "c" フラグの単語は任意の順番で繋がれることを定義している。2 番目の行は、"s" フラグの単語 1 つと "e" フラグの単語 1 つからなる合成語を定義している。次の内容の辞書からは:
+@example
+bork/c
+onion/s
+soup/e
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can make these words:
+	bork
+	borkbork
+	borkborkbork
+	(etc.)
+	onion
+	soup
+	onionsoup
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の単語を作ることができる:
+@example
+bork
+borkbork
+borkborkbork
+(etc.)
+onion
+soup
+onionsoup
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The COMPOUNDRULE item may appear multiple times.  The argument is made out of
+one or more groups, where each group can be:
+	one flag			e.g., c
+	alternate flags inside []	e.g., [abc]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+COMPOUNDRULE 項目は何度も目にするかもしれない。引数は 1 つもしくはそれ以上のグループを作りあげる。それぞれのグループは次のようになる:
+@multitable @columnfractions .75 .25
+@item 1 つのフラグ @tab 例: c
+@item [] 内のそれぞれのフラグ @tab 例: [abc]
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Optionally this may be followed by:
+	*	the group appears zero or more times, e.g., sm*e
+	+	the group appears one or more times, e.g., c+
+	?	the group appears zero times or once, e.g., x?
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+任意で次の記号が使える:
+@multitable @columnfractions .1 .65 .25
+@item * @tab ゼロもしくはそれ以上現れる @tab 例: sm*e
+@item + @tab 1 回もしくはそれ以上現れる @tab 例: c+
+@item ? @tab ゼロもしくは 1 回のみ現れる @tab 例: x?
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is similar to the regexp pattern syntax (but not the same!).  A few
+examples with the sequence of word flags they require:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは正規表現の文法と似ている(が同じではない！)。次にいくつかの例をあげる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    COMPOUNDRULE x+	    x xx xxx etc.
+    COMPOUNDRULE yz	    yz
+    COMPOUNDRULE x+z	    xz xxz xxxz etc.
+    COMPOUNDRULE yx+	    yx yxx yxxx etc.
+    COMPOUNDRULE xy?z	    xz xyz
+
+    COMPOUNDRULE [abc]z    az bz cz
+    COMPOUNDRULE [abc]+z   az aaz abaz bz baz bcbz cz caz cbaz etc.
+    COMPOUNDRULE a[xyz]+   ax axx axyz ay ayx ayzz az azy azxy etc.
+    COMPOUNDRULE sm*e	    se sme smme smmme etc.
+    COMPOUNDRULE s[xyz]*e  se sxe sxye sxyxe sye syze sze szye szyxe  etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item COMPOUNDRULE x+ @tab x xx xxx など
+@item COMPOUNDRULE yz @tab yz
+@item COMPOUNDRULE x+z @tab xz xxz xxxz など
+@item COMPOUNDRULE yx+ @tab yx yxx yxxx など
+@item COMPOUNDRULE xy?z @tab xz xyz
+@item @tab
+@item COMPOUNDRULE [abc]z @tab az bz cz
+@item COMPOUNDRULE [abc]+z @tab az aaz abaz bz baz bcbz cz caz cbaz など
+@item COMPOUNDRULE a[xyz]+ @tab ax axx axyz ay ayx ayzz az azy azxy など
+@item COMPOUNDRULE sm*e @tab se sme smme smmme など
+@item COMPOUNDRULE s[xyz]*e @tab se sxe sxye sxyxe sye syze sze szye szyxe など
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A specific example: Allow a compound to be made of two words and a dash:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特別な例: 2 つの語と 1 つのダッシュからの合成を許す:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	In the .aff file:
+	    COMPOUNDRULE sde ~
+	    NEEDAFFIX x ~
+	    COMPOUNDWORDMAX 3 ~
+	    COMPOUNDMIN 1 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+@file{.aff} ファイルで:
+@example
+COMPOUNDRULE sde
+NEEDAFFIX x
+COMPOUNDWORDMAX 3
+COMPOUNDMIN 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	In the .dic file:
+	    start/s ~
+	    end/e ~
+	    -/xd ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@file{.dic} ファイルで:
+@example
+start/s
+end/e
+-/xd
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This allows for the word "start-end", but not "startend".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは単語 "start-end" は認めるが、"startend" は認めない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An additional implied rule is that, without further flags, a word with a
+prefix cannot be compounded after another word, and a word with a suffix
+cannot be compounded with a following word.  Thus the affix cannot appear
+on the inside of a compound word.  This can be changed with the
+|spell-COMPOUNDPERMITFLAG|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さらに含まれるルールには次のようなものがある。これ以上のフラグについては抜きにして、接頭辞を持つ単語は他の単語の後には結合されない。そして、接尾辞を持つ単語は単語の前には結合されない。そのため、接辞は複合語の中には現れない。これは |spell-COMPOUNDPERMITFLAG| で変更することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-NEEDCOMPOUND*
+The NEEDCOMPOUND flag is used to require that a word is used as part of a
+compound word.  The word itself is not a good word.  Example:
+
+	NEEDCOMPOUND & ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-NEEDCOMPOUND}
+@cindex spell-NEEDCOMPOUND
+NEEDCOMPOUND フラグは単語が複合語の一部として使われることを要求するのに使われる。単語それ自身は正しい単語ではない。例:
+@example
+NEEDCOMPOUND &
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-ONLYINCOMPOUND*
+The ONLYINCOMPOUND does exactly the same as NEEDCOMPOUND.  Supported for
+compatibility with Hunspell.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-ONLYINCOMPOUND}
+@cindex spell-ONLYINCOMPOUND
+ONLYINCOMPOUND は 厳密に NEEDCOMPOUND とは同じではない。Hunspell スペルチェックとの互換性をサポートする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-COMPOUNDMIN*
+The minimal character length of a word used for compounding is specified with
+COMPOUNDMIN.  Example:
+	COMPOUNDMIN 5 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUNDMIN}
+@cindex spell-COMPOUNDMIN
+合成するのに使われる単語の最小文字数は COMPOUNDMIN で指定される。例:
+@example
+COMPOUNDMIN 5
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When omitted there is no minimal length.  Obviously you could just leave out
+the compound flag from short words instead, this feature is present for
+compatibility with Myspell.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+省略された時は最小値はない。それよりも、明らかに短い単語から合成フラグを省くだけでよい。この機能は Myspell スペルチェックとの互換性のためにある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-COMPOUNDWORDMAX*
+The maximum number of words that can be concatenated into a compound word is
+specified with COMPOUNDWORDMAX.  Example:
+	COMPOUNDWORDMAX 3 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUNDWORDMAX}
+@cindex spell-COMPOUNDWORDMAX
+複合語の中に結合されうる単語の最大値は COMPOUNDWORDMAX で指定される。例:
+@example
+COMPOUNDWORDMAX 3
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When omitted there is no maximum.  It applies to all compound words.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+省略されたときに最大値はない。すべての複合単語を適用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To set a limit for words with specific flags make sure the items in
+COMPOUNDRULE where they appear don't allow too many words.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特定のフラグを持つ単語の制限を設定するために、COMPOUNDRULE 内の項目を確認する。ここではどうやら多すぎる単語を許可しないように思われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-COMPOUNDSYLMAX*
+The maximum number of syllables that a compound word may contain is specified
+with COMPOUNDSYLMAX.  Example:
+	COMPOUNDSYLMAX 6 ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUNDSYLMAX}
+@cindex spell-COMPOUNDSYLMAX
+複合語が含まれいてるかもしれない音節の最大値は COMPOUNDSYLMAX で指定される。例:
+@example
+COMPOUNDSYLMAX 6
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This has no effect if there is no SYLLABLE item.  Without COMPOUNDSYLMAX there
+is no limit on the number of syllables.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+SYLLABLE の項目がなければ効果はない。COMPOUNDSYLMAX がないと、音節の数に制限はない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If both COMPOUNDWORDMAX and COMPOUNDSYLMAX are defined, a compound word is
+accepted if it fits one of the criteria, thus is either made from up to
+COMPOUNDWORDMAX words or contains up to COMPOUNDSYLMAX syllables.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしも COMPOUNDWORDMAX と COMPOUNDSYLMAX の双方が定義されているのなら、そして基準の 1 つとして適合するのなら、複合語は認められる。それゆえ、COMPOUNDWORDMAX 単語までで作られた、もしくは COMPOUNDSYLMAX 音節までを含んでいるかのどちらかだ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						    *spell-COMPOUNDFORBIDFLAG*
+The COMPOUNDFORBIDFLAG specifies a flag that can be used on an affix.  It
+means that the word plus affix cannot be used in a compound word.  Example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUNDFORBIDFLAG}
+@cindex spell-COMPOUNDFORBIDFLAG
+COMPOUNDFORBIDFLAG は 1 つの接辞で使われるフラグを指定する。接辞を加える単語は複合語の中で使うことができないことを意味する。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	affix file:
+		COMPOUNDFLAG c ~
+		COMPOUNDFORBIDFLAG x ~
+		SFX a Y 2 ~
+		SFX a 0 s   . ~
+		SFX a 0 ize/x . ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+affix ファイル:
+@example
+COMPOUNDFLAG c
+COMPOUNDFORBIDFLAG x
+SFX a Y 2
+SFX a 0 s   .
+SFX a 0 ize/x .
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	dictionary:
+		word/c ~
+		util/ac ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+辞書:
+@example
+word/c
+util/ac
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This allows for "wordutil" and "wordutils" but not "wordutilize".
+Note: this doesn't work for postponed prefixes yet.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは "wordutil" と "wordutils" は認めるが、"wordutilize" は認めない。
+@quotation
+@strong{Note:} @*
+これは延ばされた接頭辞にはまだ作用しないことに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						    *spell-COMPOUNDPERMITFLAG*
+The COMPOUNDPERMITFLAG specifies a flag that can be used on an affix.  It
+means that the word plus affix can also be used in a compound word in a way
+where the affix ends up halfway the word.  Without this flag that is not
+allowed.
+Note: this doesn't work for postponed prefixes yet.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUNDPERMITFLAG}
+@cindex spell-COMPOUNDPERMITFLAG
+COMPOUNDPERMITFLAG は 1 つの接辞で使われるフラグを明示する。接辞を加える単語はまた、接辞が単語の途中で終る、ある程度の複合語の中で使うことができることを意味する。このフラグがないと認められない。
+@quotation
+@strong{Note:} @*
+これは延ばされた接頭辞にはまだ作用しないことに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						    *spell-COMPOUNDROOT*
+The COMPOUNDROOT flag is used for words in the dictionary that are already a
+compound.  This means it counts for two words when checking the compounding
+rules.  Can also be used for an affix to count the affix as a compounding
+word.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUNDROOT}
+@cindex spell-COMPOUNDROOT
+COMPOUNDROOT フラグはすでに合成された辞書の単語のために使われる。これは結合のルールをチェックしたときに、2 つの単語を数えることを意味する。合成された単語として接辞を数えるための接辞としても使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*spell-CHECKCOMPOUNDPATTERN*
+CHECKCOMPOUNDPATTERN is used to define patterns that, when matching at the
+position where two words are compounded together forbids the compound.
+For example:
+	CHECKCOMPOUNDPATTERN o e ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-CHECKCOMPOUNDPATTERN}
+@cindex spell-CHECKCOMPOUNDPATTERN
+CHECKCOMPOUNDPATTERN はパターンを定義するのに使われる。そのパターンというのは、2 つの単語がお互いに合成されている位置が一致しているときに結合を禁止するというものだ。例えば:
+@example
+CHECKCOMPOUNDPATTERN o e
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This forbids compounding if the first word ends in "o" and the second word
+starts with "e".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは、もし最初の単語が "o" で終わり、2 つ目の単語が "e" からはじまるときに、結合することを禁じる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The arguments must be plain text, no patterns are actually supported, despite
+the item name.  Case is always ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数はプレーンテキストでなければならない。項目名であるにも関わらず、実際にサポートされているパターンはない。事例は常に無視される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Hunspell feature to use three arguments and flags is not supported.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Hunspell スペルチェック機能は 3 つの引数が使われ、フラグはサポートされない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-NOCOMPOUNDSUGS*
+This item indicates that using compounding to make suggestions is not a good
+idea.  Use this when compounding is used with very short or one-character
+words.  E.g. to make numbers out of digits.  Without this flag creating
+suggestions would spend most time trying all kind of weird compound words.
+
+	NOCOMPOUNDSUGS ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-NOCOMPOUNDSUGS}
+@cindex spell-NOCOMPOUNDSUGS
+この項目は、提案するために合成を使うことは良いアイデアではないことを示す。合成がとても短い、もしくは 1 文字の単語で使われる時に使用する。例えば、桁外の数字を作るとか。このフラグがないと、提案を作るために奇妙な合成語のすべてを試して無駄な時間を費すことになるだろう。
+@example
+NOCOMPOUNDSUGS
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-SYLLABLE*
+The SYLLABLE item defines characters or character sequences that are used to
+count the number of syllables in a word.  Example:
+	SYLLABLE aáeéiíoóöõuúüûy/aa/au/ea/ee/ei/ie/oa/oe/oo/ou/uu/ui ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-SYLLABLE}
+@cindex spell-SYLLABLE
+SYLLABLE 項目は、文字もしくは単語の音節の数字を数えるのに使われる文字の並びを定義する。例:
+@example
+SYLLABLE aáeéiíoóöõuúüûy/aa/au/ea/ee/ei/ie/oa/oe/oo/ou/uu/ui
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Before the first slash is the set of characters that are counted for one
+syllable, also when repeated and mixed, until the next character that is not
+in this set.  After the slash come sequences of characters that are counted
+for one syllable.  These are preferred over using characters from the set.
+With the example "ideeen" has three syllables, counted by "i", "ee" and "e".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初のスラッシュの前は 1 つの音節として数えられる文字セットで、また、繰り返しや混合された時は、このセット内にはない次の文字までになる。スラッシュの後には  1 つの音節として数えられる文字列が来る。これらは、セットから文字を使うよりも望ましい。例として、"ideeen" は 3 つの音節を持っていて、"i" と "ee" と "e" のように数えられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Only case-folded letters need to be included.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+折り畳まれたケースの文字だけが含まれる必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Another way to restrict compounding was mentioned above: Adding the
+|spell-COMPOUNDFORBIDFLAG| flag to an affix causes all words that are made
+with that affix to not be used for compounding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+合成を制限する他の方法は、上で述べられている: |spell-COMPOUNDFORBIDFLAG| フラグを接辞に加えることは、その接辞から作られる全ての単語が合成のために使われれないことの原因となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+UNLIMITED COMPOUNDING					*spell-NOBREAK*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-NOBREAK}
+@cindex spell-NOBREAK
+@unnumberedsubsec 制限のない合成
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For some languages, such as Thai, there is no space in between words.  This
+looks like all words are compounded.  To specify this use the NOBREAK item in
+the affix file, without arguments:
+	NOBREAK ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+タイ語のようないくつかの言語では分かち書きをしない。これはすべての単語が結合しているように見える。これを明示するために、接辞ファイルで NOBREAK 項目を引数なしで使う:
+@example
+NOBREAK
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will try to figure out where one word ends and a next starts.  When there
+are spelling mistakes this may not be quite right.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は単語の終わりと次のはじまりがどこにあるのかを解決しようとする。スペルにミスがあった場合、この動作は完全には正しく行われないだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+							*spell-COMMON*
+Common words can be specified with the COMMON item.  This will give better
+suggestions when editing a short file.  Example:
+
+	COMMON  the of to and a in is it you that he was for on are ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMMON}
+@cindex spell-COMMON
+共通語は COMMON 項目で明示される。小さなファイルを編集している時ほど、より良い提案をしてくれるだろう。例:
+@example
+COMMON  the of to and a in is it you that he was for on are
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The words must be separated by white space, up to 25 per line.
+When multiple regions are specified in a ":mkspell" command the common words
+for all regions are combined and used for all regions.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+単語は 1 行につき 25 個まで、空白で区切られていなければならない。"@command{:mkspell}" コマンドで 複数の範囲が明示されている時は、すべての範囲の共通語は結合され、すべての範囲で使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-NOSPLITSUGS*
+This item indicates that splitting a word to make suggestions is not a good
+idea.  Split-word suggestions will appear only when there are few similar
+words.
+
+	NOSPLITSUGS ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-NOSPLITSUGS}
+@cindex spell-NOSPLITSUGS
+この項目は、提案を作るための単語の分割は良いアイデアではないことを示す。分割語の提案は、似たような単語がほとんど無い時にだけ出現するだろう。
+@example
+NOSPLITSUGS
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*spell-NOSUGGEST*
+The flag specified with NOSUGGEST can be used for words that will not be
+suggested.  Can be used for obscene words.
+
+	NOSUGGEST % ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-NOSUGGEST}
+@cindex spell-NOSUGGEST
+NOSUGGEST と共に使われるフラグは、提案されることがないであろう単語のために使われる。汚ならしい単語のために使うことができる。
+@example
+NOSUGGEST %
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+REPLACEMENTS						*spell-REP*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-REP}
+@cindex spell-REP
+@unnumberedsubsec 交換
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the affix file REP items can be used to define common mistakes.  This is
+used to make spelling suggestions.  The items define the "from" text and the
+"to" replacement.  Example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+接辞ファイルの REP 項目は、共通の誤りを定義するのに使われる。これはスペルの提案を生成するのに使われる。"from" のテキストと "to" の置換を定義する。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	REP 4 ~
+	REP f ph ~
+	REP ph f ~
+	REP k ch ~
+	REP ch k ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+REP 4
+REP f ph
+REP ph f
+REP k ch
+REP ch k
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first line specifies the number of REP lines following.  Vim ignores the
+number, but it must be there (for compatibility with Myspell).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初の行は続く REP 行の数字を明示する。Vim は数字を無視するが、そこになければならない (Myspell スペルチェックとの互換性のため)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Don't include simple one-character replacements or swaps.  Vim will try these
+anyway.  You can include whole words if you want to, but you might want to use
+the "file:" item in 'spellsuggest' instead.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+簡易な 1 文字の置換や交換を含んでなならない。Vim はこれらをどうにかして実行しようとするだろう。そうしたいのであればすべての単語を含めることができるが、それよりも '@option{spellsuggest}' の "file:" 項目を使いたいと思うかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can include a space by using an underscore:
+
+	REP the_the the ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+アンダースコアーを使ってスペースを含めることができる:
+@example
+REP the_the the
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SIMILAR CHARACTERS					*spell-MAP* *E783*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-MAP}
+@anchor{E783}
+@cindex spell-MAP
+@cindex E783
+@unnumberedsubsec 類義語
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the affix file MAP items can be used to define letters that are very much
+alike.  This is mostly used for a letter with different accents.  This is used
+to prefer suggestions with these letters substituted.  Example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+接辞ファイルの MAP 項目は、非常に良く似た文字を定義するのに使うことができる。これはほとんど異なったアクセント文字のために使われる。これはむしろこれらの文字を置換する提案に使われる。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	MAP 2 ~
+	MAP eéëêè ~
+	MAP uüùúû ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+MAP 2
+MAP eéëêè
+MAP uüùúû
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first line specifies the number of MAP lines following.  Vim ignores the
+number, but the line must be there.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初の行は続く MAP 行の数字を明示する。Vim は数字を無視するが、そこになければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Each letter must appear in only one of the MAP items.  It's a bit more
+efficient if the first letter is ASCII or at least one without accents.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+それぞれの文字は、MAP 項目中に 1 つのみでなければならない。もしも最初の文字が ASCII であるか、少なくともアクセント文字でなければ少しばかり効率が良い。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+.SUG FILE						*spell-NOSUGFILE*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-NOSUGFILE}
+@cindex spell-NOSUGFILE
+@unnumberedsubsec .SUG ファイル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When soundfolding is specified in the affix file then ":mkspell" will normally
+produce a .sug file next to the .spl file.  This file is used to find
+suggestions by their sound-a-like form quickly.  At the cost of a lot of
+memory (the amount depends on the number of words, |:mkspell| will display an
+estimate when it's done).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+soundfolding が接辞ファイルで明示されているとき、
+When soundfolding is specified in the affix file
+"@command{:mkspell}" は通常、@file{.sug} ファイルを、続いて @file{.spl} ファイルを生成する。このファイルは sound-a-like 形式によって、すばやく提案を見つけるのに使われる。多くのメモリを犠牲にする (総計は単語数に依存し、|:mkspell| は終了時に概算を表示するだろう)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To avoid producing a .sug file use this item in the affix file:
+
+	NOSUGFILE ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@file{.sug} ファイルを生成しないようにするには affix ファイル中に次のアイテムを使う:
+@example
+NOSUGFILE
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Users can simply omit the .sug file if they don't want to use it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使うことを望まないのであれば、ユーザーは @file{.sug} ファイルを簡単に取り除くことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SOUND-A-LIKE						*spell-SAL*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-SAL}
+@cindex spell-SAL
+@unnumberedsubsec SOUND-A-LIKE
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the affix file SAL items can be used to define the sounds-a-like mechanism
+to be used.  The main items define the "from" text and the "to" replacement.
+Simplistic example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+接辞ファイルの SAL 項目は、sounds-a-like の仕組みを定義するのに使われる。
+主な項目は "from" テキストと "to" 置換を定義する。とても簡易な例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	SAL CIA			 X ~
+	SAL CH			 X ~
+	SAL C			 K ~
+	SAL K			 K ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+SAL CIA                  X
+SAL CH                   X
+SAL C                    K
+SAL K                    K
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are a few rules and this can become quite complicated.  An explanation
+how it works can be found in the Aspell manual:
+http://aspell.net/man-html/Phonetic-Code.html.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+少しのルールがあるのだが、これはかなり複雑になる。どのように動作するのかの説明は Aspell のマニュアルで見つけることができる:
+
+@url{http://aspell.net/man-html/Phonetic-Code.html}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are a few special items:
+
+	SAL followup		true ~
+	SAL collapse_result	true ~
+	SAL remove_accents	true ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特別な項目がいくつかある:
+@example
+SAL followup            true
+SAL collapse_result     true
+SAL remove_accents      true
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"1" has the same meaning as "true".  Any other value means "false".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"1" は "true" と同じ意味を持っている。それ以外は "false" を意味する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SIMPLE SOUNDFOLDING				*spell-SOFOFROM* *spell-SOFOTO*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-SOFOFROM}
+@anchor{spell-SOFOTO}
+@cindex spell-SOFOFROM
+@cindex spell-SOFOTO
+@unnumberedsubsec SIMPLE SOUNDFOLDING
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The SAL mechanism is complex and slow.  A simpler mechanism is mapping all
+characters to another character, mapping similar sounding characters to the
+same character.  At the same time this does case folding.  You can not have
+both SAL items and simple soundfolding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+SAL の仕組みは複雑で遅い。単純な仕組みは全ての文字を他の文字とマッピングし、似たように聞える文字を同じ文字とマッピングする。同時に、ケースフォールディングをする。SAL 項目も単純な soundfolding も持つことはできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are two items required: one to specify the characters that are mapped
+and one that specifies the characters they are mapped to.  They must have
+exactly the same number of characters.  Example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+要求される 2 つの項目がある: 1 つはマップされた文字を明示するための、もう 1 つはそれらがマップされている文字を明示するためのもの。これらは厳密に文字の同じ番号を持っていなければならない。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ~
+    SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkes ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
+SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkes
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the example all vowels are mapped to the same character 'e'.  Another
+method would be to leave out all vowels.  Some characters that sound nearly
+the same and are often mixed up, such as 'm' and 'n', are mapped to the same
+character.  Don't do this too much, all words will start looking alike.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例では、すべての母音は同じ文字 'e' にマップされている。すべの母音を除去する他の方式もある。いくつかの同じように聞こえ、しばしば混同される 'm' と 'n' のような文字は、同じ文字にマップされている。やり過ぎないこと。すべての単語は同じように見えるだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Characters that do not appear in SOFOFROM will be left out, except that all
+white space is replaced by one space.  Sequences of the same character in
+SOFOFROM are replaced by one.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+SOFOFROM で現れない文字は、全ての空白が 1 つの空白に置き換えられることを除き、除去されるだろう。SOFOFROM の同じ文字の連続は 1 つに置き換えられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use the |soundfold()| function to try out the results.  Or set the
+'verbose' option to see the score in the output of the |z=| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+結果を試すために |soundfold()| 関数を使うことができる。もしくは、|z=| コマンドの出力するスコアを見るために、'@option{verbose}' オプションを設定することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+UNSUPPORTED ITEMS				*spell-affix-not-supported*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-affix-not-supported}
+@cindex spell-affix-not-supported
+@unnumberedsubsec サポートされていないアイテム
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These items appear in the affix file of other spell checkers.  In Vim they are
+ignored, not supported or defined in another way.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのアイテムは他のスペルチェッカーの添付ファイルの中に見られる。Vim ではこれらは無視される、サポートされていない、もしくは他の方法で定義される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ACCENT		(Hunspell)				*spell-ACCENT*
+		Use MAP instead. |spell-MAP|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{spell-ACCENT}
+@cindex spell-ACCENT
+@item ACCENT (Hunspell スペルチェッカー)
+代わりに MAP を使う。|spell-MAP|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+BREAK		(Hunspell)				*spell-BREAK*
+		Define break points.  Unclear how it works exactly.
+		Not supported.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-BREAK}
+@cindex spell-BREAK
+@item BREAK (Hunspell スペルチェッカー)
+ブレークポイントの定義。これが正確にどのような動作をするのかは、はっきりしない。サポートされていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CHECKCOMPOUNDCASE  (Hunspell)			*spell-CHECKCOMPOUNDCASE*
+		Disallow uppercase letters at compound word boundaries.
+		Not supported.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-CHECKCOMPOUNDCASE}
+@cindex spell-CHECKCOMPOUNDCASE
+@item CHECKCOMPOUNDCASE (Hunspell スペルチェッカー)
+複合語の境界の文字について大文字を許さない。サポートされていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CHECKCOMPOUNDDUP  (Hunspell)			*spell-CHECKCOMPOUNDDUP*
+		Disallow using the same word twice in a compound.  Not
+		supported.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-CHECKCOMPOUNDDUP}
+@cindex spell-CHECKCOMPOUNDDUP
+@item CHECKCOMPOUNDDUP (Hunspell スペルチェッカー)
+複合語中で同じ単語を 2 度使うことを許さない。サポートされていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CHECKCOMPOUNDREP  (Hunspell)			*spell-CHECKCOMPOUNDREP*
+		Something about using REP items and compound words.  Not
+		supported.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-CHECKCOMPOUNDREP}
+@cindex spell-CHECKCOMPOUNDREP
+@item CHECKCOMPOUNDREP (Hunspell スペルチェッカー)
+REP アイテムと複合語を使う何か。サポートされていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CHECKCOMPOUNDTRIPLE  (Hunspell)			*spell-CHECKCOMPOUNDTRIPLE*
+		Forbid three identical characters when compounding.  Not
+		supported.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-CHECKCOMPOUNDTRIPLE}
+@cindex spell-CHECKCOMPOUNDTRIPLE
+@item CHECKCOMPOUNDTRIPLE (Hunspell スペルチェッカー)
+3 つ同じ文字で文字を合成するのを許さない。サポートされていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+COMPLEXPREFIXES  (Hunspell)				*spell-COMPLEXPREFIXES*
+		Enables using two prefixes.  Not supported.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPLEXPREFIXES}
+@cindex spell-COMPLEXPREFIXES
+@item COMPLEXPREFIXES (Hunspell スペルチェッカー)
+2 つの接頭辞の使用を許す。サポートされていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+COMPOUND	(Hunspell)				*spell-COMPOUND*
+		This is one line with the count of COMPOUND items, followed by
+		that many COMPOUND lines with a pattern.
+		Remove the first line with the count and rename the other
+		items to COMPOUNDRULE |spell-COMPOUNDRULE|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUND}
+@cindex spell-COMPOUND
+@item COMPOUND (Hunspell スペルチェッカー)
+COMPOUND アイテムの総数を持つ一行。多くの COMPOUND 行はパターンを持つ。総数を持つ最初の行は削除され、他のアイテムは COMPOUNDRULE にリネームされる。|spell-COMPOUNDRULE|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+COMPOUNDFIRST	(Hunspell)				*spell-COMPOUNDFIRST*
+		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUNDFIRST}
+@cindex spell-COMPOUNDFIRST
+@item COMPOUNDFIRST (Hunspell スペルチェッカー)
+代わりに COMPOUNDRULE を使う。|spell-COMPOUNDRULE|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+COMPOUNDBEGIN	(Hunspell)				*spell-COMPOUNDBEGIN*
+		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUNDBEGIN}
+@cindex spell-COMPOUNDBEGIN
+@item COMPOUNDBEGIN (Hunspell スペルチェッカー)
+代わりに COMPOUNDRULE を使う。|spell-COMPOUNDRULE|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+COMPOUNDEND	(Hunspell)				*spell-COMPOUNDEND*
+		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUNDEND}
+@cindex spell-COMPOUNDEND
+@item COMPOUNDEND (Hunspell スペルチェッカー)
+代わりに COMPOUNDRULE を使う。|spell-COMPOUNDRULE|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+COMPOUNDMIDDLE	(Hunspell)				*spell-COMPOUNDMIDDLE*
+		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUNDMIDDLE}
+@cindex spell-COMPOUNDMIDDLE
+@item COMPOUNDMIDDLE (Hunspell スペルチェッカー)
+代わりに COMPOUNDRULE を使う。|spell-COMPOUNDRULE|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+COMPOUNDRULES	(Hunspell)				*spell-COMPOUNDRULES*
+		Number of COMPOUNDRULE lines following.  Ignored, but the
+		argument must be a number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUNDRULES}
+@cindex spell-COMPOUNDRULES
+@item COMPOUNDRULES (Hunspell スペルチェッカー)
+続く COMPOUNDRULE 行の数。無視されるが、引数は 1 つの数値でなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+COMPOUNDSYLLABLE  (Hunspell)			*spell-COMPOUNDSYLLABLE*
+		Use SYLLABLE and COMPOUNDSYLMAX instead. |spell-SYLLABLE|
+		|spell-COMPOUNDSYLMAX|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-COMPOUNDSYLLABLE}
+@cindex spell-COMPOUNDSYLLABLE
+@item COMPOUNDSYLLABLE (Hunspell スペルチェッカー)
+代わりに SYLLABLE と COMPOUNDSYLMAX を使う。|spell-SYLLABLE| |spell-COMPOUNDSYLMAX|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+KEY		(Hunspell)				*spell-KEY*
+		Define characters that are close together on the keyboard.
+		Used to give better suggestions.  Not supported.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-KEY}
+@cindex spell-KEY
+@item KEY (Hunspell スペルチェッカー)
+キーボード上で互いに近接している文字を定義する。より良いサジェストを与えるのに使われる。サポートされていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+LANG		(Hunspell)				*spell-LANG*
+		This specifies language-specific behavior.  This actually
+		moves part of the language knowledge into the program,
+		therefore Vim does not support it.  Each language property
+		must be specified separately.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-LANG}
+@cindex spell-LANG
+@item LANG (Hunspell スペルチェッカー)
+language-specific の挙動を特定する。
+これは自動的にプログラム中の言語情報の部分へ移動する。それゆえ、Vim はサポートしていない。それぞれの言語の特性は個別に明示されていなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+LEMMA_PRESENT	(Hunspell)				*spell-LEMMA_PRESENT*
+		Only needed for morphological analysis.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-LEMMA_PRESENT}
+@cindex spell-LEMMA_PRESENT
+@item LEMMA_PRESENT (Hunspell スペルチェッカー)
+形態素解析のためだけに必要とされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+MAXNGRAMSUGS	(Hunspell)				*spell-MAXNGRAMSUGS*
+		Set number of n-gram suggestions.  Not supported.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-MAXNGRAMSUGS}
+@cindex spell-MAXNGRAMSUGS
+@item MAXNGRAMSUGS (Hunspell スペルチェッカー)
+n-gram サジェストの数を設定する。サポートされていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+PSEUDOROOT	(Hunspell)				*spell-PSEUDOROOT*
+		Use NEEDAFFIX instead. |spell-NEEDAFFIX|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-PSEUDOROOT}
+@cindex spell-PSEUDOROOT
+@item PSEUDOROOT (Hunspell スペルチェッカー)
+代わりに NEEDAFFIX を使う。|spell-NEEDAFFIX|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+SUGSWITHDOTS	(Hunspell)				*spell-SUGSWITHDOTS*
+		Adds dots to suggestions.  Vim doesn't need this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-SUGSWITHDOTS}
+@cindex spell-SUGSWITHDOTS
+@item SUGSWITHDOTS (Hunspell スペルチェッカー)
+サジェストにドットを加える。Vim では必要ない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+SYLLABLENUM	(Hunspell)				*spell-SYLLABLENUM*
+		Not supported.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-SYLLABLENUM}
+@cindex spell-SYLLABLENUM
+@item SYLLABLENUM (Hunspell スペルチェッカー)
+サポートされていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+TRY		(Myspell, Hunspell, others)		*spell-TRY*
+		Vim does not use the TRY item, it is ignored.  For making
+		suggestions the actual characters in the words are used, that
+		is much more efficient.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-TRY}
+@cindex spell-TRY
+@item TRY (Myspell, Hunspell, 他 スペルチェッカー)
+Vim は TRY アイテムを使わない。無視される。
+サジェストを生成するために、実際の単語の文字が使われる。これは効率が良い。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+WORDCHARS	(Hunspell)				*spell-WORDCHARS*
+		Used to recognize words.  Vim doesn't need it, because there
+		is no need to separate words before checking them (using a
+		trie instead of a hashtable).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spell-WORDCHARS}
+@cindex spell-WORDCHARS
+@item WORDCHARS (Hunspell スペルチェッカー)
+単語を評価するのに使われる。Vim は必要としない。なぜなら、これらをチェックする前に単語を分ける必要がないから(ハッシュテーブルの代わりにトライを使っている)。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ vim:tw=78:sw=4:ts=8:ft=help:norl:
+@end ifset
