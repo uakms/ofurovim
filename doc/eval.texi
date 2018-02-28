@@ -3,14 +3,14 @@
 @unnumbered 式の評価、条件式 (Vim script リファレンス)
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*eval.txt*	For Vim version 8.0.  Last change: 2018 Feb 18
+*eval.txt*	For Vim version 8.0.  Last change: 2018 Feb 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*eval.txt*	For Vim バージョン 8.0.  Last change: 2018 Feb 18
+*eval.txt*	For Vim バージョン 8.0.  Last change: 2018 Feb 27
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -3707,13 +3707,13 @@ error function
 							*closure*
 Lambda expressions can access outer scope variables and arguments.  This is
 often called a closure.  Example where "i" and "a:arg" are used in a lambda
-while they exist in the function scope.  They remain valid even after the
-function returns: >
+while they already exist in the function scope.  They remain valid even after
+the function returns: >
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{closure}
 @cindex closure
-ラムダ式は外側のスコープの変数と引数にアクセスできる。これはよくクロージャと呼ばれる。以下の例ではラムダの中で "i" と "a:arg" が使われているが、これらは関数のスコープに存在する。これらは関数から抜けても有効であり続ける:
+ラムダ式は外側のスコープの変数と引数にアクセスできる。これはよくクロージャと呼ばれる。以下の例ではラムダの中で "i" と "a:arg" が使われているが、これらは関数のスコープにすでに存在する。これらは関数から抜けても有効であり続ける:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	:function Foo(arg)
@@ -3737,11 +3737,22 @@ function returns: >
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-See also |:func-closure|.  Lambda and closure support can be checked with: >
+Note that the variables must exist in the outer scope before the lamba is
+defined for this to work.  See also |:func-closure|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+変数はラムダがこれに作用するために定義される前に、外側のスコープに存在していなければならないことに注意。|:func-closure| も参照。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Lambda and closure support can be checked with: >
 	if has('lambda')
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-|:func-closure| も参照。ラムダとクロージャのサポートは以下のように判定できる:
+ラムダとクロージャのサポートは以下のように判定できる:
 @example
 if has('lambda')
 @end example
@@ -6799,7 +6810,7 @@ term_dumpdiff({filename}, {filename} [, {options}])
 				Number  display difference between two dumps
 term_dumpload({filename} [, {options}])
 				Number	displaying a screen dump
-term_dumpwrite({buf}, {filename} [, {max-height} [, {max-width}]])
+term_dumpwrite({buf}, {filename} [, {options}])
 				none	dump terminal window contents
 term_getaltscreen({buf})	Number	get the alternate screen flag
 term_getattr({attr}, {what})	Number	get the value of attribute {what}
@@ -6820,7 +6831,7 @@ term_wait({buf} [, {time}])	Number  wait for screen to be updated
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{term_dumpdiff(), , term_dumpdiff}(@{filename@}, @{filename@} [, @{options@}]) @tab 数値 @tab 2 つのダンプファイルの差分を表示する
 @item @ref{term_dumpload(), , term_dumpload}(@{filename@} [, @{options@}])  @tab 数値 @tab スクリーンダンプを表示する
-@item @ref{term_dumpwrite(), , term_dumpwrite}(@{buf@}, @{filename@} [, @{max-height@} [, @{max-width@}]]) @tab なし @tab ターミナルウィンドウの内容をダンプする
+@item @ref{term_dumpwrite(), , term_dumpwrite}(@{buf@}, @{filename@} [, @{options@}]) @tab なし @tab ターミナルウィンドウの内容をダンプする
 @item @ref{term_getaltscreen(), , term_getaltscreen}(@{buf@}) @tab 数値 @tab 代替スクリーンのフラグを取得する
 @item @ref{term_getattr(), , term_getattr}(@{attr@}, @{what@}) @tab 数値 @tab @{what@} 属性の値を取得する
 @item @ref{term_getcursor(), , term_getcursor}(@{buf@}) @tab リスト @tab ターミナルのカーソル位置を取得する
@@ -17422,7 +17433,7 @@ remote_expr({server}, {string} [, {idvar} [, {timeout}]])
 		between (not at the end), like with join(expr, "\n").
 		If {idvar} is present and not empty, it is taken as the name
 		of a variable and a {serverid} for later use with
-		remote_read() is stored there.
+		|remote_read()| is stored there.
 		If {timeout} is given the read times out after this many
 		seconds.  Otherwise a timeout of 600 seconds is used.
 		See also |clientserver| |RemoteReply|.
@@ -17430,7 +17441,7 @@ remote_expr({server}, {string} [, {idvar} [, {timeout}]])
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 戻り値は文字列かリスト |List| でなければならない。リストの場合は要素を連結して文字列に変換される。要素間の区切りは改行文字となる (join(expr, "\n") と同様)。
 
-もしも @{idvar@} が存在して空でなければ、それは変数名として受け取られれ、後で remote_read() で使われる @{serverid@} がその変数に保存される。
+もしも @{idvar@} が存在して空でなければ、それは変数名として受け取られれ、後で |remote_read()| で使われる @{serverid@} がその変数に保存される。
 
 もしも @{timeout@} が与えられているなら、読み込み時間はその秒数まで待つ。そうでなければ、タイムアウトの時間は 600 秒になる。
 
@@ -21544,22 +21555,32 @@ term_dumpload({filename} [, {options}])
 
 @ifset EN
 							*term_dumpwrite()*
-term_dumpwrite({buf}, {filename} [, {max-height} [, {max-width}]])
+term_dumpwrite({buf}, {filename} [, {options}])
 		Dump the contents of the terminal screen of {buf} in the file
 		{filename}.  This uses a format that can be used with
-		|term_dumpread()| and |term_dumpdiff()|.
+		|term_dumpload()| and |term_dumpdiff()|.
 		If {filename} already exists an error is given.	*E953*
 		Also see |terminal-diff|.
+
+		{options} is a dictionary with these optional entries:
+			"rows"		maximum number of rows to dump
+			"columns"	maximum number of columns to dump
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{term_dumpwrite()}
 @cindex term_dumpwrite()
-@item term_dumpwrite(@{buf@}, @{filename@} [, @{max-height@} [, @{max-width@}]])
-ファイル @{filename@} 内の @{buf@} のターミナル画面の内容をダンプする。これは |term_dumpread()| と |term_dumpdiff()| で使われるフォーマットを使う。
+@item term_dumpwrite(@{buf@}, @{filename@} [, @{options@}])
+ファイル @{filename@} 内の @{buf@} のターミナル画面の内容をダンプする。これは |term_dumpload()| と |term_dumpdiff()| で使われるフォーマットを使う。
 
 @anchor{E953}
 @cindex E953
 もしも @{filename@} がすでに存在しているならエラーが与えられる。|terminal-diff| も参照。
+
+@{options@} は次のオプションを持つ辞書:
+@multitable @columnfractions .3 .7
+@item "rows" @tab ダンプする行の最大値
+@item "columns" @tab ダンプする列の最大値
+@end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -24091,6 +24112,8 @@ user_commands		User-defined commands.
 @item user_commands @tab ユーザー定義コマンドをサポート
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+vcon			Win32: Virtual console support is working, can use
+			'termguicolors'. Also see |+vtp|.
 vertsplit		Compiled with vertically split windows |:vsplit|.
 vim_starting		True while initial source'ing takes place. |startup|
 			*vim_starting*
@@ -24098,6 +24121,7 @@ viminfo			Compiled with viminfo support.
 virtualedit		Compiled with 'virtualedit' option.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item vcon @tab Win32: 仮想コンソールが動作するなら '@option{termguicolors}' を使うことができる。|+vtp| も参照。
 @item vertsplit @tab ウィンドウの垂直分割をサポート |:vsplit|
 @item vim_starting @tab Vim の初期化プロセス中は真となる。|startup|
 @anchor{vim_starting}
