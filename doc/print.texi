@@ -1,0 +1,1962 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node print.txt, , , 目次
+@unnumbered 印刷
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*print.txt*     For Vim version 8.0.  Last change: 2010 Jul 20
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*print.txt*     For Vim バージョン 8.0.  Last change: 2010 Jul 20
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Printing						*printing*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{printing}
+@cindex printing
+印刷
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Introduction				|print-intro|
+2. Print options			|print-options|
+3. PostScript Printing			|postscript-printing|
+4. PostScript Printing Encoding		|postscript-print-encoding|
+5. PostScript CJK Printing		|postscript-cjk-printing|
+6. PostScript Printing Troubleshooting	|postscript-print-trouble|
+7. PostScript Utilities			|postscript-print-util|
+8. Formfeed Characters			|printing-formfeed|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. はじめに @tab |@ref{print-intro, , print-intro}|
+@item 2. 印刷オプション @tab |@ref{print-options, , print-options}|
+@item 3. PostScript 印刷 @tab |@ref{postscript-printing, , postscript-printing}|
+@item 4. PostScript 印字エンコーディング @tab |@ref{postscript-print-encoding, , postscript-print-encoding}|
+@item 5. PostScript CJK 印刷 @tab |@ref{postscript-cjk-printing, , postscript-cjk-printing}|
+@item 6. PostScript 印刷トラブルシューティング @tab |@ref{postscript-print-trouble, , postscript-print-trouble}|
+@item 7. PostScript ユーティリティ @tab |@ref{postscript-print-util, , postscript-print-util}|
+@item 8. 改ページ文字 @tab |@ref{printing-formfeed, , printing-formfeed}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi has None of this}
+{only available when compiled with the |+printer| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはない機能です@}
+
+@{|+printer| 機能付きでコンパイルした場合のみ利用可能@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Introduction						*print-intro*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{print-intro}
+@cindex print-intro
+@section 1. はじめに
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On MS-Windows Vim can print your text on any installed printer.  On other
+systems a PostScript file is produced.  This can be directly sent to a
+PostScript printer.  For other printers a program like ghostscript needs to be
+used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows では、インストールされているプリンタを使ってテキストを印刷することができます。他のシステムでは PostScript ファイルが生成されます。そのファイルは直接 PostScript プリンタに送ることができます。非 PostScript プリンタを使うには ghostscript のようなプログラムが必要です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: If you have problems printing with |:hardcopy|, an alternative is to use
+|:TOhtml| and print the resulting html file from a browser.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+|:hardcopy| による印刷が機能しない場合は、|:TOhtml| で HTML に変換し、それをブラウザーで印刷する方法もあります。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*:ha* *:hardcopy* *E237* *E238* *E324*
+:[range]ha[rdcopy][!] [arguments]
+			Send [range] lines (default whole file) to the
+			printer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ha}
+@anchor{:hardcopy}
+@anchor{E237}
+@anchor{E238}
+@anchor{E324}
+@cindex :ha
+@cindex :hardcopy
+@cindex E237
+@cindex E238
+@cindex E324
+@table @asis
+@item :[range]ha[rdcopy][!] [arguments]
+範囲 [range] の行 (省略時はファイル全体) をプリンタへ出力します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			On MS-Windows a dialog is displayed to allow selection
+			of printer, paper size etc.  To skip the dialog, use
+			the [!].  In this case the printer defined by
+			'printdevice' is used, or, if 'printdevice' is empty,
+			the system default printer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows ではプリンタの選択やページサイズの設定などをするためのダイアログが表示されます。ダイアログを省略するには [!] を付けてください。その場合、'@option{printdevice}' に設定したプリンタが使われます。未設定の場合はシステム標準のプリンタが使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			For systems other than MS-Windows, PostScript is
+			written in a temp file and 'printexpr' is used to
+			actually print it.  Then [arguments] can be used by
+			'printexpr' through |v:cmdarg|.  Otherwise [arguments]
+			is ignored.  'printoptions' can be used to specify
+			paper size, duplex, etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows 以外のシステムでは、PostScript が一時ファイルに書き込まれ、それを実際に印刷するために '@option{printexpr}' が実行されます。そのとき、[arguments] は |v:cmdarg| として '@option{printexpr}' の中で使うことができます。[arguments] は無視することもできます。用紙サイズや両面印刷などの指定を '@option{printoptions}' に設定できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[range]ha[rdcopy][!] >{filename}
+			As above, but write the resulting PostScript in file
+			{filename}.
+			Things like "%" are expanded |cmdline-special|
+			Careful: An existing file is silently overwritten.
+			{only available when compiled with the |+postscript|
+			feature}
+			On MS-Windows use the "print to file" feature of the
+			printer driver.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[range]ha[rdcopy][!] >@{filename@}
+上記と同じですが、PostScript を @{filename@} に保存します。"%" のような文字は展開されます |cmdline-special|。
+@quotation
+@strong{注意:} @*
+すでにファイルが存在する場合は、警告なしに上書きされます。
+@end quotation
+@{|+postscript| が有効な場合のみ利用できます@}
+
+MS-Windows では、プリンタドライバの "ファイルに保存" の機能を使ってください。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Progress is displayed during printing as a page number and a percentage.  To
+abort printing use the interrupt key (CTRL-C or, on MS-systems, CTRL-Break).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+印刷している間、印刷中のページ番号や進行率などの印刷状況が表示されます。印刷を中止するには中断キーを押してください (CTRL-C、MS-Windows では CTRL-Break)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Printer output is controlled by the 'printfont' and 'printoptions' options.
+'printheader' specifies the format of a page header.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プリンタの出力は '@option{printfont}' と '@option{printoptions}' の設定で制御できます。ページヘッダーの書式は '@option{printheader}' に設定します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The printed file is always limited to the selected margins, irrespective of
+the current window's 'wrap' or 'linebreak' settings.  The "wrap" item in
+'printoptions' can be used to switch wrapping off.
+The current highlighting colors are used in the printout, with the following
+considerations:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルの印刷は常に余白の設定に影響を受けます。カレントウィンドウの '@option{wrap}' や '@option{linebreak}' の設定は影響しません。行の折り返しをしないようにするには '@option{printoptions}' の設定で "wrap" をオフにしてください。
+
+印刷には現在の強調表示の色が使われます。次のように処理されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1) The normal background is always rendered as white (i.e. blank paper).
+2) White text or the default foreground is rendered as black, so that it shows
+   up!
+3) If 'background' is "dark", then the colours are darkened to compensate for
+   the fact that otherwise they would be too bright to show up clearly on
+   white paper.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .05 .95
+@item 1) @tab 通常テキストの背景色は常に白色で出力されます (つまり白紙)。
+@item 2) @tab 通常テキストと同じ前景色の文字や、白色の文字は、それが視認できるようにするために、黒色で出力されます。
+@item 3) @tab '@option{background}' が "dark" の場合、文字色が明るすぎて、白紙に印刷するとはっきり視認できなくなるため、文字色は暗い色に調整されます。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Print options					*print-options*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{print-options}
+@cindex print-options
+@section 2. 印刷オプション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here are the details for the options that change the way printing is done.
+For generic info about setting options see |options.txt|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+印刷の動作を変更するためのオプションについて説明します。設定についての大まかな説明は |@ref{options.txt, , options.txt}| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*pdev-option*
+'printdevice' 'pdev'	string	(default empty)
+			global
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{pdev-option}
+@cindex pdev-option
+@item 'printdevice' 'pdev'
+文字列	(初期値は空) @*
+グローバル設定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This defines the name of the printer to be used when the |:hardcopy| command
+is issued with a bang (!) to skip the printer selection dialog.  On Win32, it
+should be the printer name exactly as it appears in the standard printer
+dialog.
+If the option is empty, then vim will use the system default printer for
+":hardcopy!"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+プリンタの名前を設定します。|:hardcopy| が ! 付きで実行され、プリンタ選択ダイアログが省略されたときに使われます。Win32 では、標準印刷ダイアログで表示されるプリンタの名前を正確に指定してください。
+
+このオプションが空のときに ":hardcopy!" が実行されると、システム標準のプリンタが使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*penc-option* *E620*
+'printencoding' 'penc'	String	(default empty, except for:
+					Windows, OS/2: cp1252,
+					Macintosh: mac-roman,
+					VMS: dec-mcs,
+					HPUX: hp-roman8,
+					EBCDIC: ebcdic-uk)
+			global
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{penc-option}
+@anchor{E620}
+@cindex penc-option
+@cindex E620
+@item 'printencoding' 'penc'
+文字列 (初期値は空。あるいは次のとおり:
+@multitable @columnfractions .5 .5
+@item Windows, OS/2: @tab cp1252,
+@item Macintosh: @tab mac-roman,
+@item VMS: @tab dec-mcs,
+@item HPUX: @tab hp-roman8,
+@item EBCDIC:@tab ebcdic-uk)
+@end multitable
+グローバル設定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Sets the character encoding used when printing.  This option tells Vim which
+print character encoding file from the "print" directory in 'runtimepath' to
+use.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+印刷に使う文字エンコーディングを設定します。'@option{runtimepath}' の "print" ディレクトリにある、このオプションに対応した印刷文字エンコーディングファイルが印刷に使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This option will accept any value from |encoding-names|.  Any recognized names
+are converted to Vim standard names - see 'encoding' for more details.  Names
+not recognized by Vim will just be converted to lower case and underscores
+replaced with '-' signs.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このオプションには |encoding-names| に列挙されているエンコーディングを設定できます。エンコーディング名は Vim が規定している名前に変換されます。詳しくは '@option{encoding}' を参照してください。Vim が認識できないエンコーディング名は、すべて小文字に変換され、アンダースコアは '-' に置換されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If 'printencoding' is empty or Vim cannot find the file then it will use
+'encoding' (if Vim is compiled with |+multi_byte| and it is set an 8-bit
+encoding) to find the print character encoding file.  If Vim is unable to find
+a character encoding file then it will use the "latin1" print character
+encoding file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{printencoding}' が空、もしくは印刷エンコーディングファイルが見つからなかった場合は、'@option{encoding}' に対応した印刷エンコーディングファイルを探します (|+multi_byte| が有効で、8-bit エンコーディングが設定されている場合のみ)。それでも印刷エンコーディングファイルが見つからなかった場合は、"latin1" の印刷エンコーディングファイルが使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When 'encoding' is set to a multi-byte encoding, Vim will try to convert
+characters to the printing encoding for printing (if 'printencoding' is empty
+then the conversion will be to latin1).  Conversion to a printing encoding
+other than latin1 will require Vim to be compiled with the |+iconv| feature.
+If no conversion is possible then printing will fail.  Any characters that
+cannot be converted will be replaced with upside down question marks.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{encoding}' にマルチバイトエンコーディングが設定されている場合、印刷のときに、'@option{encoding}' から印刷エンコーディングに文字が変換されます ('@option{printencoding}' が空のときは latin1 に変換されます)。印刷エンコーディングが latin1 以外のときは、|+iconv| が有効になっている必要があります。エンコーディングの変換が利用できないときは、印刷は失敗します。変換できない文字は、逆さクエスチョンマークに置換されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Four print character encoding files are provided to support default Mac, VMS,
+HPUX, and EBCDIC character encodings and are used by default on these
+platforms.  Code page 1252 print character encoding is used by default on
+Windows and OS/2 platforms.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Mac、VMS、HPUX、EBCDIC、環境の標準エンコーディングのための、印刷エンコーディングファイルが用意されています。それは初期設定として使われます。Windows と OS/2 では、コードページ 1252 の印刷エンコーディングファイルが標準で使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*pexpr-option*
+'printexpr' 'pexpr'	String	(default: see below)
+			global
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{pexpr-option}
+@cindex pexpr-option
+@item 'printexpr' 'pexpr'
+文字列 (初期設定は下記参照) @*
+グローバル設定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Expression that is evaluated to print the PostScript produced with
+|:hardcopy|.
+The file name to be printed is in |v:fname_in|.
+The arguments to the ":hardcopy" command are in |v:cmdarg|.
+The expression must take care of deleting the file after printing it.
+When there is an error, the expression must return a non-zero number.
+If there is no error, return zero or an empty string.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:hardcopy| で PostScript を印刷するためのスクリプトを設定します。印刷する PostScript ファイルは |v:fname_in| に設定されます。"@command{:hardcopy}" コマンドの引数は |v:cmdarg| に設定されます。印刷をした後で、スクリプトから PostScript ファイルを削除してください。エラーが起きたときは、スクリプトは 0 以外の値を返す必要があります。エラーがないときは、0 か 空文字列を返してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The default for non MS-Windows or VMS systems is to simply use "lpr" to print
+the file: >
+
+    system('lpr' . (&printdevice == '' ? '' : ' -P' . &printdevice)
+	. ' ' . v:fname_in) . delete(v:fname_in) + v:shell_error
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows と VMS 以外の環境の初期設定では、単純に "lpr" を使ってファイルを印刷します:
+@example
+system('lpr' . (&printdevice == '' ? '' : ' -P' . &printdevice)
+. ' ' . v:fname_in) . delete(v:fname_in) + v:shell_error
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On MS-Dos, MS-Windows and OS/2 machines the default is to copy the file to the
+currently specified printdevice: >
+
+    system('copy' . ' ' . v:fname_in . (&printdevice == ''
+		? ' LPT1:' : (' \"' . &printdevice . '\"')))
+		. delete(v:fname_in)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-DOS、MS-Windows、OS/2、での初期設定は、指定されている印刷デバイスにファイルをコピーします:
+@example
+system('copy' . ' ' . v:fname_in . (&printdevice == ''
+    ? ' LPT1:' : (' \"' . &printdevice . '\"')))
+    . delete(v:fname_in)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On VMS machines the default is to send the file to either the default or
+currently specified printdevice: >
+
+    system('print' . (&printdevice == '' ? '' : ' /queue=' .
+		&printdevice) . ' ' . v:fname_in) . delete(v:fname_in)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+VMS での初期設定は、標準の印刷デバイスか、指定されている印刷デバイスにファイルを送ります:
+@example
+system('print' . (&printdevice == '' ? '' : ' /queue=' .
+    &printdevice) . ' ' . v:fname_in) . delete(v:fname_in)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you change this option, using a function is an easy way to avoid having to
+escape all the spaces.  Example: >
+
+	:set printexpr=PrintFile(v:fname_in)
+	:function PrintFile(fname)
+	:  call system("ghostview " . a:fname)
+	:  call delete(a:fname)
+	:  return v:shell_error
+	:endfunc
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このオプションを設定するときは、関数を使うと、スペースをエスケープしなくてもいいので簡単です。例:
+@example
+:set printexpr=PrintFile(v:fname_in)
+:function PrintFile(fname)
+:  call system("ghostview " . a:fname)
+:  call delete(a:fname)
+:  return v:shell_error
+:endfunc
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Be aware that some print programs return control before they have read the
+file.  If you delete the file too soon it will not be printed.  These programs
+usually offer an option to have them remove the file when printing is done.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルを読み込む前に制御を返す印刷プログラムもあるので注意してください。ファイルをすぐに削除してしまうと、印刷できないかもしれません。ほとんどの場合、そのようなプログラムには、印刷した後でファイルを削除するオプションが用意されています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*E365*
+If evaluating the expression fails or it results in a non-zero number, you get
+an error message.  In that case Vim will delete the file.  In the default
+value for non-MS-Windows a trick is used: Adding "v:shell_error" will result
+in a non-zero number when the system() call fails.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E365}
+@cindex E365
+スクリプトを実行できなかったり、スクリプトが 0 以外の値を返したときは、エラーメッセージが表示されます。その場合は、Vim が PostScript ファイルを削除します。MS-Windows 以外のシステムの初期設定では、"v:shell_error" を足す、というトリックを使っています。"v:shell_error" には system() の呼び出しでエラーが起きたときに 0 以外の値が入ります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This option cannot be set from a |modeline| or in the |sandbox|, for security
+reasons.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+セキュリティ上の理由により、このオプションは、|modeline| や |sandbox| の中では設定できません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*pfn-option* *E613*
+'printfont' 'pfn'	string	(default "courier")
+			global
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{pfn-option}
+@anchor{E613}
+@cindex pfn-option
+@cindex E613
+@item 'printfont' 'pfn'
+文字列 (初期設定は "courier") @*
+グローバル設定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This is the name of the font that will be used for the |:hardcopy| command's
+output.  It has the same format as the 'guifont' option, except that only one
+font may be named, and the special "guifont=*" syntax is not available.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+|:hardcopy| コマンドの出力で使われるフォント名を設定します。このオプションは '@option{guifont}' と同じ書式で指定します。ただし、フォントは 1 つだけ指定可能です。"guifont=*" と同じ特別な指定方法は使えません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the Win32 GUI version this specifies a font name with its extra attributes,
+as with the 'guifont' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Win32 GUI では、'@option{guifont}' と同じように、フォントの属性を追加指定できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For other systems, only ":h11" is recognized, where "11" is the point size of
+the font.  When omitted, the point size is 10.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他のシステムでは、"h11" という指定のみ受け付けます。"11" の所にはフォントのサイズをポイントで指定します。省略時のフォントサイズは 10 です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*pheader-option*
+'printheader' 'pheader'  string  (default "%<%f%h%m%=Page %N")
+			 global
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{pheader-option}
+@cindex pheader-option
+@item 'printheader' 'pheader'
+文字列 (初期値は "%<%f%h%m%=Page %N") @*
+グローバル設定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This defines the format of the header produced in |:hardcopy| output.  The
+option is defined in the same way as the 'statusline' option.  If Vim has not
+been compiled with the |+statusline| feature, this option has no effect and a
+simple default header is used, which shows the page number.  The same simple
+header is used when this option is empty.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:hardcopy| の出力で使われるヘッダーの書式を設定します。このオプションは '@option{statusline}' と同じ書式で指定します。|+statusline| が無効な場合には、このオプションは機能しません。その場合は、初期設定の、ページ番号を表示するだけのシンプルなヘッダーが使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*pmbcs-option*
+'printmbcharset' 'pmbcs'  string (default "")
+			  global
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{pmbcs-option}
+@cindex pmbcs-option
+@item 'printmbcharset' 'pmbcs'
+文字列 (初期設定は "") @*
+グローバル設定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Sets the CJK character set to be used when generating CJK output from
+|:hardcopy|.  The following predefined values are currently recognised by Vim:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+|:hardcopy| で漢字 (CJK文字) を出力するための文字セットを設定します。現在 Vim は、以下で定義されている文字セットを認識します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Value		Description ~
+  Chinese	GB_2312-80
+  (Simplified)	GBT_12345-90
+		MAC		Apple Mac Simplified Chinese
+		GBT-90_MAC	GB/T 12345-90 Apple Mac Simplified
+				  Chinese
+		GBK		GBK (GB 13000.1-93)
+		ISO10646	ISO 10646-1:1993
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .25 .5
+@item @tab 設定値 @tab 説明
+@item Chinese (Simplified) @tab GB_2312-80 @tab
+@item @tab GBT_12345-90 @tab
+@item @tab MAC @tab Apple Mac Simplified Chinese
+@item @tab GBT-90_MAC @tab GB/T 12345-90 Apple Mac Simplified Chinese
+@item @tab GBK @tab GBK (GB 13000.1-93)
+@item @tab ISO10646 @tab ISO 10646-1:1993
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  Chinese	CNS_1993	CNS 11643-1993, Planes 1 & 2
+  (Traditional)	BIG5
+		ETEN		Big5 with ETen extensions
+		ISO10646	ISO 10646-1:1993
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .25 .5
+@item Chinese (Traditional) @tab CNS_1993 @tab CNS 11643-1993, Planes 1 & 2
+@item @tab BIG5 @tab
+@item @tab ETEN @tab Big5 with ETen extensions
+@item @tab ISO10646 @tab ISO 10646-1:1993
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  Japanese	JIS_C_1978
+		JIS_X_1983
+		JIS_X_1990
+		MSWINDOWS	Win3.1/95J (JIS X 1997 + NEC +
+				  IBM extensions)
+		KANJITALK6	Apple Mac KanjiTalk V6.x
+		KANJITALK7	Apple Mac KanjiTalk V7.x
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .25 .5
+@item Japanese @tab JIS_C_1978 @tab
+@item @tab JIS_X_1983 @tab
+@item @tab JIS_X_1990 @tab
+@item @tab MSWINDOWS @tab Win3.1/95J (JIS X 1997 + NEC + IBM extensions)
+@item @tab KANJITALK6 @tab Apple Mac KanjiTalk V6.x
+@item @tab KANJITALK7 @tab Apple Mac KanjiTalk V7.x
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  Korean	KS_X_1992
+		MAC		Apple Macintosh Korean
+		MSWINDOWS	KS X 1992 with MS extensions
+		ISO10646	ISO 10646-1:1993
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .25 .5
+@item  Korean @tab KS_X_1992 @tab
+@item @tab MAC @tab Apple Macintosh Korean
+@item @tab MSWINDOWS @tab KS X 1992 with MS extensions
+@item @tab ISO10646 @tab ISO 10646-1:1993
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Only certain combinations of the above values and 'printencoding' are
+possible.  The following tables show the valid combinations:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上記の文字セットと '@option{printencoding}' は、決められた組合せのみ利用可能です。可能な組合せは以下のとおり:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				euc-cn	 gbk	ucs-2	utf-8 ~
+  Chinese	GB_2312-80	   x
+  (Simplified)	GBT_12345-90	   x
+		MAC		   x
+		GBT-90_MAC	   x
+		GBK			   x
+		ISO10646			  x	  x
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .25 .125 .125 .125 .125
+@item @tab @tab euc-cn @tab gbk @tab ucs-2 @tab utf-8
+@item Chinese (Simplified) @tab GB_2312-80 @tab x @tab @tab @tab
+@item @tab GBT_12345-90 @tab x @tab @tab @tab
+@item @tab MAC @tab x @tab @tab @tab
+@item @tab GBT-90_MAC @tab x @tab @tab @tab 
+@item @tab GBK @tab @tab x @tab @tab
+@item @tab ISO10646 @tab @tab @tab x @tab x
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				euc-tw	 big5	ucs-2	utf-8 ~
+  Chinese	CNS_1993	   x
+  (Traditional)	BIG5			   x
+		ETEN			   x
+		ISO10646			  x	  x
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .25 .125 .125 .125 .125
+@item @tab @tab euc-tw @tab big5 @tab ucs-2 @tab utf-8
+@item Chinese (Traditional) @tab CNS_1993 @tab x @tab @tab @tab
+@item @tab BIG5 @tab @tab x @tab @tab 
+@item @tab ETEN @tab @tab x @tab @tab 
+@item @tab ISO10646 @tab @tab @tab x @tab x
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				euc-jp	 sjis	ucs-2	utf-8 ~
+  Japanese	JIS_C_1978	   x	   x
+		JIS_X_1983	   x	   x
+		JIS_X_1990	   x		  x	  x
+		MSWINDOWS	   x
+		KANJITALK6	   x
+		KANJITALK7	   x
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .25 .125 .125 .125 .125
+@item @tab @tab euc-jp @tab sjis @tab ucs-2 @tab utf-8
+@item Japanese @tab JIS_C_1978 @tab x @tab x @tab @tab
+@item @tab JIS_X_1983 @tab x @tab x @tab @tab
+@item @tab JIS_X_1990 @tab x @tab @tab x @tab x
+@item @tab MSWINDOWS @tab x @tab @tab @tab
+@item @tab KANJITALK6 @tab x @tab @tab @tab
+@item @tab KANJITALK7 @tab x @tab @tab @tab
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				euc-kr	 cp949	ucs-2	utf-8 ~
+  Korean	KS_X_1992	   x
+		MAC		   x
+		MSWINDOWS		   x
+		ISO10646			  x	  x
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .25 .125 .125 .125 .125
+@item @tab @tab euc-kr @tab cp949 @tab ucs-2 @tab utf-8
+@item Korean @tab KS_X_1992 @tab x @tab @tab @tab
+@item @tab MAC @tab x @tab @tab @tab
+@item @tab MSWINDOWS @tab @tab x @tab @tab 
+@item @tab ISO10646 @tab @tab @tab x @tab x
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To set up the correct encoding and character set for printing some
+Japanese text you would do the following; >
+	:set printencoding=euc-jp
+	:set printmbcharset=JIS_X_1983
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+日本語のテキストを印刷するには、次のように、適切なエンコーディングと文字セットを設定してください:
+@example
+:set printencoding=euc-jp
+:set printmbcharset=JIS_X_1983
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If 'printmbcharset' is not one of the above values then it is assumed to
+specify a custom multi-byte character set and no check will be made that it is
+compatible with the value for 'printencoding'.  Vim will look for a file
+defining the character set in the "print" directory in 'runtimepath'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{printmbcharset}' が上記のどれでもないときは、独自のマルチバイト文字セットであると判断されます。'@option{printencoding}' と互換性があるかどうかはチェックされません。Vim は、'@option{runtimepath}' の "print" ディレクトリから、指定された文字セット用のファイルを探します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*pmbfn-option*
+'printmbfont' 'pmbfn'	string (default "")
+			global
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{pmbfn-option}
+@cindex pmbfn-option
+@item 'printmbfont' 'pmbfn'
+文字列 (初期値は "") @*
+グローバル設定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This is a comma-separated list of fields for font names to be used when
+generating CJK output from |:hardcopy|.  Each font name has to be preceded
+with a letter indicating the style the font is to be used for as follows:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+|:hardcopy| で漢字 (CJK) を出力するために使われるフォントのリストを設定します。リストはコンマで区切ります。フォント名には、そのフォントがどのスタイルで使われるかを指示する文字を前置します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  r:{font-name}		font to use for normal characters
+  b:{font-name}		font to use for bold characters
+  i:{font-name}		font to use for italic characters
+  o:{font-name}		font to use for bold-italic characters
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@item r:@{font-name@} @tab 普通文字のフォント
+@item b:@{font-name@} @tab 太字 (bold) のフォント
+@item i:@{font-name@} @tab 斜体文字 (italic) のフォント
+@item o:@{font-name@} @tab 太字斜体文字 (bold-italic) のフォント
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A field with the r: prefix must be specified when doing CJK printing.  The
+other fontname specifiers are optional.  If a specifier is missing then
+another font will be used as follows:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+CJK 印刷をするには r: 指定のフォントを必ず設定してください。その他のフォントの指定は省略できます。省略した場合は次のとおりに処理されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  if b: is missing, then use r:
+  if i: is missing, then use r:
+  if o: is missing, then use b:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .9 .1
+@item b: がないときは、r: を使います。 @tab
+@item i: がないときは、r: を使います。 @tab
+@item o: がないときは、b: を使います。 @tab
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some CJK fonts do not contain characters for codes in the ASCII code range.
+Also, some characters in the CJK ASCII code ranges differ in a few code points
+from traditional ASCII characters.  There are two additional fields to control
+printing of characters in the ASCII code range.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+CJK フォントが ASCII 文字を持っていない場合があります。また、CJK の ASCII 文字のうちいくつかの文字が、通常の ASCII 文字とは違う場合があります。ASCII コードの範囲の文字をどのように印刷するかを指定することができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  c:yes			Use Courier font for characters in the ASCII
+  c:no (default)	code range.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item c:yes @tab ASCII 文字を Courier フォントで出力します。
+@item c:no @tab (初期値)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  a:yes			Use ASCII character set for codes in the ASCII
+  a:no (default)	code range.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item a:yes @tab ASCIIコードの範囲を ASCII 文字セットで出力します。
+@item a:no @tab (初期値)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The following is an example of specifying two multi-byte fonts, one for normal
+and italic printing and one for bold and bold-italic printing, and using
+Courier to print codes in the ASCII code range but using the national
+character set: >
+	:set printmbfont=r:WadaMin-Regular,b:WadaMin-Bold,c:yes
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の例では、2 つのマルチバイトフォントを指定しています。一つは普通文字と斜体文字、もう 1 つは太字と太字斜体文字の印刷に使われます。そして、ASCII コードの範囲の文字は、国内標準文字セットを使って、Courier で印刷されます:
+@example
+:set printmbfont=r:WadaMin-Regular,b:WadaMin-Bold,c:yes
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*popt-option*
+'printoptions' 'popt'	string (default "")
+			global
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{popt-option}
+@cindex popt-option
+@item 'printoptions' 'popt'
+文字列 (初期値は "") @*
+グローバル設定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This is a comma-separated list of items that control the format of the output
+of |:hardcopy|:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:hardcopy| の出力を制御するためのオプションのリストを設定します。リストはコンマで区切ります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  left:{spec}		left margin (default: 10pc)
+  right:{spec}		right margin (default: 5pc)
+  top:{spec}		top margin (default: 5pc)
+  bottom:{spec}		bottom margin (default: 5pc)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@item left:@{spec@} @tab 左余白 (標準設定: 10pc)
+@item right:@{spec@} @tab 右余白 (標準設定: 5pc)
+@item top:@{spec@} @tab 上余白 (標準設定: 5pc)
+@item bottom:@{spec@} @tab 下余白 (標準設定: 5pc)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			{spec} is a number followed by "in" for inches, "pt"
+			for points (1 point is 1/72 of an inch), "mm" for
+			millimeters or "pc" for a percentage of the media
+			size.
+			Weird example:
+			    left:2in,top:30pt,right:16mm,bottom:3pc
+			If the unit is not recognized there is no error and
+			the default value is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{spec@} には数値を指定します。数値には単位を付けてください。インチなら "in"、ポイントなら "pt" (1 ポイントは 1/72 インチ)、ミリメートルなら "mm"、用紙サイズに対する割合なら "pc"、を指定します。
+
+(例示のための) 例:
+@example
+left:2in,top:30pt,right:16mm,bottom:3pc
+@end example
+上記以外の単位を指定した場合は標準設定が使われます。エラーは表示されません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  header:{nr}		Number of lines to reserve for the header.
+			Only the first line is actually filled, thus when {nr}
+			is 2 there is one empty line.  The header is formatted
+			according to 'printheader'.
+  header:0		Do not print a header.
+  header:2  (default)	Use two lines for the header
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item header:@{nr@} @tab ヘッダーの印刷に使う行数を指定します。実際には最初の行だけに文字が印刷されます。つまり、@{nr@} に 2 を指定した場合は空行が印刷されます。ヘッダーの書式は '@option{printheader}' で指定します。
+@item header:0 @tab ヘッダーを印刷しません。
+@item header:2 @tab (標準設定) ヘッダーの印刷に 2 行使います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  syntax:n		Do not use syntax highlighting.  This is faster and
+			thus useful when printing large files.
+  syntax:y		Do syntax highlighting.
+  syntax:a  (default)	Use syntax highlighting if the printer appears to be
+			able to print color or grey.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @tab
+@item syntax:n @tab 構文強調を使わない。大きなファイルでも高速に印刷できます。
+@item syntax:y @tab 構文強調を使う。
+@item syntax:a @tab (標準設定) カラー印刷またはグレースケール印刷が可能なプリンタなら構文強調を使います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  number:y		Include line numbers in the printed output.
+  number:n  (default)	No line numbers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @tab
+@item number:y @tab 行番号を印刷する。
+@item number:n @tab (標準設定) 行番号を印刷しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  wrap:y    (default)	Wrap long lines.
+  wrap:n		Truncate long lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @tab
+@item wrap:y @tab (標準設定) 長い行を折り返す。
+@item wrap:n @tab 長い行を切り詰める。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  duplex:off		Print on one side.
+  duplex:long (default)	Print on both sides (when possible), bind on long
+			side.
+  duplex:short		Print on both sides (when possible), bind on short
+			side.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @tab
+@item duplex:off @tab 片面印刷。
+@item duplex:long @tab (標準設定) 両面印刷 (可能なら)。長い辺で閉じます。
+@item duplex:short @tab 両面印刷 (可能なら)。短い辺で閉じます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  collate:y  (default)	Collating: 1 2 3, 1 2 3, 1 2 3
+  collate:n		No collating: 1 1 1, 2 2 2, 3 3 3
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @tab
+@item collate:y @tab (標準設定) ページを順番にそろえる: 1 2 3, 1 2 3, 1 2 3
+@item collate:n @tab そのまま: 1 1 1, 2 2 2, 3 3 3
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  jobsplit:n (default)	Do all copies in one print job
+  jobsplit:y		Do each copy as a separate print job.  Useful when
+			doing N-up postprocessing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @tab
+@item jobsplit:n @tab (標準設定) すべてを一回で印刷する。
+@item jobsplit:y @tab 印刷ジョブを部ごとに分ける。N-up 印刷をする場合に便利です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  portrait:y (default)	Orientation is portrait.
+  portrait:n		Orientation is landscape.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @tab
+@item portrait:y @tab (標準設定) 縦置きの用紙に印刷する。
+@item portrait:n @tab 横置きの用紙に印刷する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*a4* *letter*
+  paper:A4   (default)	Paper size: A4
+  paper:{name}		Paper size from this table:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{a4}
+@anchor{letter}
+@cindex a4
+@cindex letter
+@item @tab
+@item paper:A4 @tab (標準設定) 用紙サイズ: A4
+@item paper:@{name@} @tab 次の中から用紙サイズを選んでください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			{name}	    size in cm	     size in inch ~
+			10x14	    25.4  x 35.57    10    x 14
+			A3	    29.7  x 42	     11.69 x 16.54
+			A4	    21	  x 29.7      8.27 x 11.69
+			A5	    14.8  x 21	      5.83 x  8.27
+			B4	    25	  x 35.3     10.12 x 14.33
+			B5	    17.6  x 25	      7.17 x 10.12
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .35 .35
+@headitem @{name@} @tab センチメートル単位 @tab インチ単位
+@item 10x14 @tab 25.4x35.57 @tab 10x14
+@item A3 @tab 29.7x42 @tab 11.69x16.54
+@item A4 @tab 21x29.7 @tab 8.27x11.69
+@item A5 @tab 14.8x21 @tab 5.83x8.27
+@item B4 @tab 25x35.3 @tab 10.12x14.33
+@item B5 @tab 17.6x25 @tab 7.17x10.12
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			executive   18.42 x 26.67     7.25 x 10.5
+			folio	    21	  x 33	      8.27 x 13
+			ledger	    43.13 x 27.96    17    x 11
+			legal	    21.59 x 35.57     8.5  x 14
+			letter	    21.59 x 27.96     8.5  x 11
+			quarto	    21.59 x 27.5      8.5  x 10.83
+			statement   13.97 x 21.59     5.5  x  8.5
+			tabloid     27.96 x 43.13    11    x 17
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item executive @tab 18.42x26.67 @tab 7.25x10.5
+@item folio @tab 21x33 @tab 8.27x13
+@item ledger @tab 43.13x27.96 @tab 17x11
+@item legal @tab 21.59x35.57 @tab 8.5x14
+@item letter @tab 21.59x27.96 @tab 8.5x11
+@item quarto @tab 21.59x27.5 @tab 8.5x10.83
+@item statement @tab 13.97x21.59 @tab 5.5x8.5
+@item tabloid @tab 27.96x43.13 @tab 11x17
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  formfeed:n (default)	Treat form feed characters (0x0c) as a normal print
+			character.
+  formfeed:y		When a form feed character is encountered, continue
+			printing of the current line at the beginning of the
+			first line on a new page.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @tab
+@item formfeed:n @tab (標準設定) 改ページ文字 (0x0c) を普通の文字として処理します。
+@item formfeed:y @tab 改ページ文字を処理し、現在の行を新しいページに印刷します。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The item indicated with (default) is used when the item is not present.  The
+values are not always used, especially when using a dialog to select the
+printer and options.
+Example: >
+	:set printoptions=paper:letter,duplex:off
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+設定を省略した場合は、それぞれの設定項目で (標準設定) となっているものが使われます。設定ダイアログでプリンタの選択やオプションを設定したときなど、指定した設定が使われないこともあります。
+
+例:
+@example
+:set printoptions=paper:letter,duplex:off
+@end example
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. PostScript Printing					*postscript-printing*
+						*E455* *E456* *E457* *E624*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{postscript-printing}
+@anchor{E455}
+@anchor{E456}
+@anchor{E457}
+@anchor{E624}
+@cindex postscript-printing
+@cindex E455
+@cindex E456
+@cindex E457
+@cindex E624
+@section 3. PostScript 印刷
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Provided you have enough disk space there should be no problems generating a
+PostScript file.  You need to have the runtime files correctly installed (if
+you can find the help files, they probably are).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+十分なディスクスペースがあれば、問題なく PostScript ファイルを出力できます。ランタイムファイルを正しくインストールする必要もあります (ヘルプを見れるなら正しくインストールされているでしょう)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are currently a number of limitations with PostScript printing:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在、PostScript 印刷には次の制限があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- 'printfont' - The font name is ignored (the Courier family is always used -
+  it should be available on all PostScript printers) but the font size is
+  used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item '@option{printfont}' - フォント名は無視され、フォントサイズだけが使われます。(Courier ファミリが常に使われます。これはすべての PostScript プリンタで利用可能なはずです)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- 'printoptions' - The duplex setting is used when generating PostScript
+  output, but it is up to the printer to take notice of the setting.  If the
+  printer does not support duplex printing then it should be silently ignored.
+  Some printers, however, don't print at all.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item '@option{printoptions}' - PostScript は両面印刷の設定を使って出力されますが、プリンタによっては機能しない場合があります。両面印刷をサポートしていないプリンタの場合、両面印刷の設定は静かに無視されます。何も印刷しないプリンタもあります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- 8-bit support - While a number of 8-bit print character encodings are
+  supported it is possible that some characters will not print.  Whether a
+  character will print depends on the font in the printer knowing the
+  character.  Missing characters will be replaced with an upside down question
+  mark, or a space if that character is also not known by the font.  It may be
+  possible to get all the characters in an encoding to print by installing a
+  new version of the Courier font family.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 8-bit サポート。8-bit エンコーディングの印刷はサポートされていますが、いくつかの文字が印刷されない場合もあります。文字が印刷されるかどうかは、プリンタのフォントにその文字があるかどうかに依存しています。印刷できない文字は逆さのクエスチョンマークに置き換えられます。その文字もない場合にはスペースに置き換えられます。新しい Courier フォントファミリをインストールすれば、エンコーディングのすべての文字を印刷できるようになるかもしれません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Multi-byte support - Currently Vim will try to convert multi-byte characters
+  to the 8-bit encoding specified by 'printencoding' (or latin1 if it is
+  empty).  Any characters that are not successfully converted are shown as
+  unknown characters.  Printing will fail if Vim cannot convert the multi-byte
+  to the 8-bit encoding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item マルチバイトサポート。現在、Vim はマルチバイト文字を '@option{printencoding}' で指定された 8-bit エンコーディングに変換しようとします ('@option{printencoding}' が空のときは latin1 が使われます)。変換できない文字は未知の文字として印刷されます。マルチバイトから 8-bit エンコーディングへの変換を実行できないときは、印刷は失敗します。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Custom 8-bit Print Character Encodings	*postscript-print-encoding*
+								*E618* *E619*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@section 4. 独自 8-bit 印字エンコーディング
+@anchor{postscript-print-encoding}
+@anchor{E618}
+@anchor{E619}
+@cindex postscript-print-encoding
+@cindex E618
+@cindex E619
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+To use your own print character encoding when printing 8-bit character data
+you need to define your own PostScript font encoding vector.  Details on how
+to define a font encoding vector is beyond the scope of this help file, but
+you can find details in the PostScript Language Reference Manual, 3rd Edition,
+published by Addison-Wesley and available in PDF form at
+http://www.adobe.com/.  The following describes what you need to do for Vim to
+locate and use your print character encoding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+独自の 8-bit 印字エンコーディングを使って 8-bit テキストを印刷することができます。それには PostScript フォントエンコーディングベクタを自分で定義する必要があります。フォントエンコーディングベクタの定義方法はこのヘルプの範囲外なので説明しません。詳細は Addison-Wesley から出版されている PostScript リファレンスマニュアル第三版を参照してください。http://www.adobe.com/ には PDF ファイルが用意されています。次に、独自の印字エンコーディングを使用する方法を説明します。
+@{訳注: PostScriptリファレンスマニュアル第3版 ASCII電子出版シリーズ Adobe Systems (著), 桑沢 清志 (翻訳) ISBN: 4756138225@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+i.   Decide on a unique name for your encoding vector, one that does not clash
+     with any of the recognized or standard encoding names that Vim uses (see
+     |encoding-names| for a list), and that no one else is likely to use.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .05 .95
+@item i. @tab エンコーディングベクタのためのユニークな名前を決めてください。Vim が使う標準エンコーディング名 (|encoding-names| 参照) は使えません。他の人が使わないような名前を付けてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ii.  Copy $VIMRUNTIME/print/latin1.ps to the print subdirectory in your
+     'runtimepath' and rename it with your unique name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ii. @tab $VIMRUNTIME/print/latin1.ps をあなたの '@option{runtimepath}' の print ディレクトリにコピーし、ファイル名を自分のエンコーディング名に変更してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+iii. Edit your renamed copy of latin1.ps, replacing all occurrences of latin1
+     with your unique name (don't forget the line starting %%Title:), and
+     modify the array of glyph names to define your new encoding vector.  The
+     array must have exactly 256 entries or you will not be able to print!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item iii. @tab 名前を変更した latin1.ps を編集し、ファイル内に表れる latin1 という文字をすべて、あなたのエンコーディング名に置換してください (%%Title: で始まる行も忘れずに)。そして、グリフ名の配列を変更し、新しいエンコーディングベクタを定義してください。配列の長さは 256 でなければいけません。それ以外では印刷できません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+iv.  Within Vim, set 'printencoding' to your unique encoding name and then
+     print your file.  Vim will now use your custom print character encoding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item iv. @tab '@option{printencoding}' に新しい印字エンコーディングを設定し印刷します。あなたの独自印字エンコーディングを使って印刷されます。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will report an error with the resource file if you change the order or
+content of the first 3 lines, other than the name of the encoding on the line
+starting %%Title: or the version number on the line starting %%Version:.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+リソースファイルの最初の 3 行の内容や順番が変更されているとエラーが表示されます。%%Title: と %%Version: で始まる行は変更しても構いません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+[Technical explanation for those that know PostScript - Vim looks for a file
+with the same name as the encoding it will use when printing.  The file
+defines a new PostScript Encoding resource called /VIM-name, where name is the
+print character encoding Vim will use.]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+PostScript を知っている人への技術的な説明。Vim は印刷に使うエンコーディングと同じ名前のファイルを探します。そのファイルは /Vim-name という名前の新しい PostScript エンコーディングを定義しています。name の部分は Vim が使用する印字エンコーディングの名前です。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. PostScript CJK Printing			*postscript-cjk-printing*
+							*E673* *E674* *E675*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@section 5. PostScript CJK 印刷
+@anchor{postscript-cjk-printing}
+@anchor{E673}
+@anchor{E674}
+@anchor{E675}
+@cindex postscript-cjk-printing
+@cindex E673
+@cindex E674
+@cindex E675
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim supports printing of Chinese, Japanese, and Korean files.  Setting up Vim
+to correctly print CJK files requires setting up a few more options.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+中国語、日本語、韓国語のファイルを印刷することができます。CJK ファイルを正しく印刷するために、いくつかのオプションを設定する必要があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Each of these countries has many standard character sets and encodings which
+require that both be specified when printing.  In addition, CJK fonts normally
+do not have the concept of italic glyphs and use different weight or stroke
+style to achieve emphasis when printing.  This in turn requires a different
+approach to specifying fonts to use when printing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+日中韓の国々には標準文字セットとエンコーディングがたくさんあります。印刷するには、その両方を正しく設定する必要があります。CJK フォントには一般的に、斜体グリフという概念がありません。また、強調して印刷するために、字間や文字の太さが違うフォントを使います。適切なフォントで印刷するためには適切な設定が必要です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The encoding and character set are specified with the 'printencoding' and
+'printmbcharset' options.  If 'printencoding' is not specified then 'encoding'
+is used as normal.  If 'printencoding' is specified then characters will be
+translated to this encoding for printing.  You should ensure that the encoding
+is compatible with the character set needed for the file contents or some
+characters may not appear when printed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+エンコーディングと文字セットはオプションの '@option{printencoding}' と '@option{printmbcharset}' で指定します。'@option{printencoding}' を設定しなかった場合は、'@option{encoding}' が使われます。'@option{printencoding}' を設定した場合は、印刷する文字が、指定したエンコーディングに変換されます。エンコーディングには、ファイルを印刷するための文字セットと互換性のあるエンコーディングを設定してください。あるいは、互換性のない文字が印刷されないようなエンコーディングを設定してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The fonts to use for CJK printing are specified with 'printmbfont'.  This
+option allows you to specify different fonts to use when printing characters
+which are syntax highlighted with the font styles normal, italic, bold and
+bold-italic.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+CJK 印刷に使うフォントは '@option{printmbfont}' に設定します。このオプションでは、構文強調の、普通の文字、斜体文字、太字、斜体太字、に対して別々のフォントを指定できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+No CJK fonts are supplied with Vim.  There are some free Korean, Japanese, and
+Traditional Chinese fonts available at:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+CJK フォントは Vim に付属していません。韓国語、日本語、繁体中国語、の無料で使えるフォントが次の場所にあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  http://examples.oreilly.com/cjkvinfo/adobe/samples/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@url{http://examples.oreilly.com/cjkvinfo/adobe/samples/}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can find descriptions of the various fonts in the read me file at
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+フォントについての説明は readme ファイルを読んでください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  http://examples.oreilly.de/english_examples/cjkvinfo/adobe/00README
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@url{http://examples.oreilly.de/english_examples/cjkvinfo/adobe/00README}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Please read your printer documentation on how to install new fonts.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+フォントのインストール方法については、プリンタの説明書を読んでください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CJK fonts can be large containing several thousand glyphs, and it is not
+uncommon to find that they only contain a subset of a national standard.  It
+is not unusual to find the fonts to not include characters for codes in the
+ASCII code range.  If you find half-width Roman characters are not appearing
+in your printout then you should configure Vim to use the Courier font the
+half-width ASCII characters with 'printmbfont'.  If your font does not include
+other characters then you will need to find another font that does.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+CJK フォントにはたくさんのグリフが含まれていますが、国内標準文字セットだけを持っているフォントも珍しくありません。ASCII 文字を含んでいないこともよくあります。もし、半角英数が印刷されないときは、'@option{printmbfont}' を設定し、Courier フォントを使って、半角 ASCII 文字を印刷するようにしてください。他にも印刷されない文字がある場合は、別のフォントを探す必要があるでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Another issue with ASCII characters, is that the various national character
+sets specify a couple of different glyphs in the ASCII code range.  If you
+print ASCII text using the national character set you may see some unexpected
+characters.  If you want true ASCII code printing then you need to configure
+Vim to output ASCII characters for the ASCII code range with 'printmbfont'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ASCII 文字についてもう 1 つ。国内標準文字セットによっては、ASCII 文字の範囲に ASCII 文字とは別の文字を定義している場合があります。そのため、国内標準文字セットを使って ASCII テキストを印刷すると、予期しない文字が印刷されるかもしれません。ASCII コードの範囲が ASCII 文字として印刷されるようにするには、'@option{printmbfont}' を設定してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is possible to define your own multi-byte character set although this
+should not be attempted lightly.  A discussion on the process if beyond the
+scope of these help files.  You can find details on CMap (character map) files
+in the document 'Adobe CMap and CIDFont Files Specification, Version 1.0',
+available from http://www.adobe.com as a PDF file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+独自のマルチバイト文字セットを定義することができまが、それは簡単ではありません。その方法についてはこのヘルプの範囲を越えるので説明しません。CMap (character map) ファイルについての詳細は、'Adobe CMap and CIDFont Files Specification, Version 1.0' を参照してください。@url{http://www.adobe.com} に PDF ファイルがあります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. PostScript Printing Troubleshooting		*postscript-print-trouble*
+									*E621*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@section 6. PostScript 印刷トラブルシューティング
+@anchor{postscript-print-trouble}
+@anchor{E621}
+@cindex postscript-print-trouble
+@cindex E621
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Usually the only sign of a problem when printing with PostScript is that your
+printout does not appear.  If you are lucky you may get a printed page that
+tells you the PostScript operator that generated the error that prevented the
+print job completing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ほとんどの場合、印刷されない、ということだけが、PostScript 印刷で問題が起きている合図です。運が良ければ、どの PostScript 命令がエラーを起こしたのかが印刷されるかもしれません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are a number of possible causes as to why the printing may have failed:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+印刷が失敗する原因として考えられるものをいくつか上げます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Wrong version of the prolog resource file.  The prolog resource file
+  contains some PostScript that Vim needs to be able to print.  Each version
+  of Vim needs one particular version.  Make sure you have correctly installed
+  the runtime files, and don't have any old versions of a file called prolog
+  in the print directory in your 'runtimepath' directory.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item prolog リソースファイルのバージョンが間違っている。prolog リソースファイルには、印刷に必要な PostScript が含まれています。Vim のバージョンに対応したリソースファイルが必要です。ランタイムファイルが正しくインストールされていることを確認してください。また、古いバージョンの prolog ファイルが '@option{runtimepath}' ディレクトリに残っている場合は除外してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Paper size.  Some PostScript printers will abort printing a file if they do
+  not support the requested paper size.  By default Vim uses A4 paper.  Find
+  out what size paper your printer normally uses and set the appropriate paper
+  size with 'printoptions'.  If you cannot find the name of the paper used,
+  measure a sheet and compare it with the table of supported paper sizes listed
+  for 'printoptions', using the paper that is closest in both width AND height.
+  Note: The dimensions of actual paper may vary slightly from the ones listed.
+  If there is no paper listed close enough, then you may want to try psresize
+  from PSUtils, discussed below.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+用紙サイズ。対応していない用紙サイズを指定すると、印刷を中断する PostScript プリンタがあります。標準設定では、A4 用紙が使われます。プリンタが対応している用紙サイズを確認して '@option{printoptions}' を設定してください。用紙サイズの名前が分からない場合は、使用する紙の寸法を計り、'@option{printoptions}' の説明にある用紙サイズと見比べて、一番近いものを選択してください。
+@quotation
+@strong{Note:} @*
+実際の用紙サイズは、一覧されているものとわずかに違うことがあります。十分に近い用紙サイズがない場合は、下記で説明している PSUtils の psresize を試してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Two-sided printing (duplex).  Normally a PostScript printer that does not
+  support two-sided printing will ignore any request to do it.  However, some
+  printers may abort the job altogether.  Try printing with duplex turned off.
+  Note: Duplex prints can be achieved manually using PS utils - see below.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 両面印刷 (duplex)。両面印刷に対応していないほとんどの PostScript プリンタは、両面印刷の命令を無視しますが、印刷を中断してしまう PostScript プリンタもあります。その場合は、両面印刷の設定をオフにして印刷してください。
+@quotation
+@strong{Note:} @*
+PSUtils を使って手動で両面印刷することもできます。下記参照。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Collated printing.  As with Duplex printing, most PostScript printers that
+  do not support collating printouts will ignore a request to do so.  Some may
+  not.  Try printing with collation turned off.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 丁合 (collate、用紙の整列)。複数部印刷する場合、丁合をサポートしていないほとんどの PostScript プリンタは、丁合の命令を無視しますが、そうでないプリンタもあります。その場合は、丁合の設定をオフにして印刷してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Syntax highlighting.  Some print management code may prevent the generated
+  PostScript file from being printed on a black and white printer when syntax
+  highlighting is turned on, even if solid black is the only color used.  Try
+  printing with syntax highlighting turned off.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 構文強調。構文強調が有効になっているとき、使われている色が黒一色だけの場合でも、生成された PostScript ファイルがモノクロプリンタで印刷されないように、印刷を中断する印刷管理プログラムがあります。その場合は、構文強調をオフにして印刷してください。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A safe printoptions setting to try is: >
+
+	:set printoptions=paper:A4,duplex:off,collate:n,syntax:n
+
+Replace "A4" with the paper size that best matches your printer paper.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+安全な printoptions の設定は次のようなものです:
+@example
+:set printoptions=paper:A4,duplex:off,collate:n,syntax:n
+@end example
+"A4" の部分を適切な用紙サイズに変更してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. PostScript Utilities				*postscript-print-util*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{postscript-print-util}
+@cindex postscript-print-util
+@section 7. PostScript ユーティリティ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+7.1 Ghostscript
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 7.1 Ghostscript
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Ghostscript is a PostScript and PDF interpreter that can be used to display
+and print on non-PostScript printers PostScript and PDF files.  It can also
+generate PDF files from PostScript.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ghostscript は PostScript と PDF のインタープリターです。PostScript と PDF ファイルを表示したり、非 PostScript プリンタで印刷することができます。PostScript から PDF ファイルを生成することもできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Ghostscript will run on a wide variety of platforms.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ghostscript はさまざまな環境で動作します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are three available versions:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の 3 つのバージョンが利用可能です:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- AFPL Ghostscript (formerly Aladdin Ghostscript) which is free for
+  non-commercial use.  It can be obtained from:
+
+    http://www.cs.wisc.edu/~ghost/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item AFPL Ghostscript (かつての Aladdin Ghostscript)。非商用利用ではフリー。次の場所から入手できます:
+
+@url{http://www.cs.wisc.edu/~ghost/}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- GNU Ghostscript which is available under the GNU General Public License.  It
+  can be obtained from:
+
+    ftp://mirror.cs.wisc.edu/pub/mirrors/ghost/gnu/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GNU Ghostscript。GNU General Public License に従って利用可能。次の場所から入手できます:
+
+@url{ftp://mirror.cs.wisc.edu/pub/mirrors/ghost/gnu/}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- A commercial version for inclusion in commercial products.
+
+Additional information on Ghostscript can also be found at:
+
+  http://www.ghostscript.com/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 商用利用可能な販売品。Ghostscript についての詳細は次の場所を見てください:
+
+@url{http://www.ghostscript.com/}
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Support for a number of non PostScript printers is provided in the
+distribution as standard, but if you cannot find support for your printer
+check the Ghostscript site for other printers not included by default.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+標準の配布物には、たくさんの非 PostScript プリンタのサポートが含まれています。あなたのプリンタがサポートされていない場合は、Ghostscript のサイトを確認してみてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+7.2 Ghostscript Previewers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 7.2 Ghostscript プレビューア
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The interface to Ghostscript is very primitive so a number of graphical front
+ends have been created.  These allow easier PostScript file selection,
+previewing at different zoom levels, and printing.  Check supplied
+documentation for full details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ghostscript の操作方法はとても原始的なので、たくさんの GUI フロントエンドが作成されました。PostScript ファイルを選択したり、いろんな大きさで表示したり、印刷したりすることが簡単にできます。詳細は付属の説明書を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+X11
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec X11
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Ghostview.  Obtainable from:
+
+    http://www.cs.wisc.edu/~ghost/gv/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item Ghostview。次の場所から入手できます:
+
+@url{http://www.cs.wisc.edu/~ghost/gv/}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- gv.  Derived from Ghostview.  Obtainable from:
+
+    http://wwwthep.physik.uni-mainz.de/~plass/gv/
+
+  Copies (possibly not the most recent) can be found at:
+
+    http://www.cs.wisc.edu/~ghost/gv/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item gv。Ghostview から派生。次の場所から入手できます:
+
+@url{http://wwwthep.physik.uni-mainz.de/~plass/gv/}
+
+(最新版ではないかもしれませんが) 次の場所からも入手できます:
+
+@url{http://www.cs.wisc.edu/~ghost/gv/}
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+OpenVMS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec OpenVMS
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Is apparently supported in the main code now (untested).  See:
+
+    http://wwwthep.physik.uni-mainz.de/~plass/gv/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item 次のものが利用できます (試してません):
+
+@url{http://wwwthep.physik.uni-mainz.de/~plass/gv/}
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Windows and OS/2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec Windows and OS/2
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- GSview.  Obtainable from:
+
+    http://www.cs.wisc.edu/~ghost/gsview/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item GSview。次の場所から入手できます:
+
+@url{http://www.cs.wisc.edu/~ghost/gsview/}
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+DOS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec DOS
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- ps_view.  Obtainable from:
+
+    ftp://ftp.pg.gda.pl/pub/TeX/support/ps_view/
+    ftp://ftp.dante.de/tex-archive/support/ps_view/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item ps_view。次の場所から入手できます:
+
+@url{ftp://ftp.pg.gda.pl/pub/TeX/support/ps_view/} @*
+@url{ftp://ftp.dante.de/tex-archive/support/ps_view/}
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Linux
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec Linux
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- GSview.  Linux version of the popular Windows and OS/2 previewer.
+  Obtainable from:
+
+    http://www.cs.wisc.edu/~ghost/gsview/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item GSview。Windows や OS/2 で人気のあるプレビューアの Linux 版。次の場所から入手できます:
+
+@url{http://www.cs.wisc.edu/~ghost/gsview/}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- BMV.  Different from Ghostview and gv in that it doesn't use X but svgalib.
+  Obtainable from:
+
+    ftp://sunsite.unc.edu/pub/Linux/apps/graphics/viewers/svga/bmv-1.2.tgz
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item BMV。Ghostview や gv とは違い、X ではなく、svgalib を使用します。次の場所から入手できます:
+
+@url{ftp://sunsite.unc.edu/pub/Linux/apps/graphics/viewers/svga/bmv-1.2.tgz}
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+7.3 PSUtils
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 7.3 PSUtils
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+PSUtils is a collection of utility programs for manipulating PostScript
+documents.  Binary distributions are available for many platforms, as well as
+the full source.  PSUtils can be found at:
+
+  http://knackered.org/angus/psutils
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+PSUtils は、PostScript ドキュメントを処理するための便利なプログラム集です。たくさんのプラットフォーム向けのバイナリが配布されています。ソースも公開されています。PSUtils は次の場所にあります:
+
+@url{http://knackered.org/angus/psutils}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The utilities of interest include:
+
+- psnup.     Convert PS files for N-up printing.
+- psselect.  Select page range and order of printing.
+- psresize.  Change the page size.
+- psbook.    Reorder and lay out pages ready for making a book.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のものは特に便利です:
+@itemize @minus
+@item psnup.     PS ファイルを変換し、N-up 印刷する。
+@item psselect.  印刷する範囲や順番を選択する。
+@item psresize.  用紙サイズを変更する。
+@item psbook.    製本のためにレイアウトを調整する。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The output of one program can be used as the input to the next, allowing for
+complex print document creation.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのプログラムの出力は、他のプログラムに入力にできるので、複雑な印刷物も作成できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+N-UP PRINTING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec N-UP 印刷
+@{訳注: 複数のページを一ページにまとめて印刷。@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The psnup utility takes an existing PostScript file generated from Vim and
+convert it to an n-up version.  The simplest way to create a 2-up printout is
+to first create a PostScript file with: >
+
+	:hardcopy > test.ps
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が生成した PostScript ファイルを psnum で処理し、n-up 版の PostScript を作成できます。2-up 印刷をするには、まず、次のように PostScript を作成します:
+@verbatim
+:hardcopy > test.ps
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Then on your command line execute: >
+
+	psnup -n 2 test.ps final.ps
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そして、シェルのコマンドラインで次のコマンドを実行します:
+@verbatim
+psnup -n 2 test.ps final.ps
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: You may get warnings from some Ghostscript previewers for files produced
+by psnup - these may safely be ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+psnum が生成したファイルを Ghostscript プレビューアで表示すると警告が表示されることがありますが、無視して問題ないでしょう。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Finally print the file final.ps to your PostScript printer with your
+platform's print command.  (You will need to delete the two PostScript files
+afterwards yourself.)  'printexpr' could be modified to perform this extra
+step before printing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そして、環境に合わせた方法で、final.ps を PostScript プリンタで印刷します。(印刷後、必要なら二つの PostScript ファイルを自分で削除してください)。'@option{printexpr}' を設定し、印刷前にこの特別な処理をするように設定できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ALTERNATE DUPLEX PRINTING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec 両面印刷の代用品
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is possible to achieve a poor man's version of duplex printing using the PS
+utility psselect.  This utility has options -e and -o for printing just the
+even or odd pages of a PS file respectively.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+PSUtils の psselect を使って、両面印刷を安価に実現できます。このユーティリティの引数に -e と -o を指定して、偶数ページと奇数ページを別々のファイルに出力できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+First generate a PS file with the 'hardcopy' command, then generate new
+files with all the odd and even numbered pages with: >
+
+	psselect -o test.ps odd.ps
+	psselect -e test.ps even.ps
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+まず、|:hardcopy| コマンドで PostScript ファイルを生成します。そして、そのファイルを偶数ページと奇数ページに分けます:
+@verbatim
+psselect -o test.ps odd.ps
+psselect -e test.ps even.ps
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Next print odd.ps with your platform's normal print command.  Then take the
+print output, turn it over and place it back in the paper feeder.  Now print
+even.ps with your platform's print command.  All the even pages should now
+appear on the back of the odd pages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次に、環境に合わせた方法で odd.ps を印刷します。そして、できあがった印刷物をひっくり返し、再びプリンタの給紙トレーにセットし、even.ps を印刷します。これで、偶数ページが奇数ページの裏面に印刷されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are a couple of points to bear in mind:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のことを気に留めておいてください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Position of the first page.  If the first page is on top of the printout
+   when printing the odd pages then you need to reverse the order that the odd
+   pages are printed.  This can be done with the -r option to psselect.  This
+   will ensure page 2 is printed on the back of page 1.
+   Note: it is better to reverse the odd numbered pages rather than the even
+   numbered in case there are an odd number of pages in the original PS file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item 最初のページの位置。奇数ページを印刷したときに、最初のページが印刷物の上面にある場合、偶数ページの印刷順を逆にする必要があります。これは、psselect に-rを指定すればできます。これで二ページ目が一ページ目の裏に印刷されます。
+@quotation
+@strong{Note:} @*
+元の PostScript ファイルのページ数が奇数の場合は、偶数ページを逆順に印刷するよりも、奇数ページを逆順に印刷したほうがいいでしょう。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+2. Paper flipping.  When turning over the paper with the odd pages printed on
+   them you may have to either flip them horizontally (along the long edge) or
+   vertically (along the short edge), as well as possibly rotating them 180
+   degrees.  All this depends on the printer - it will be more obvious for
+   desktop ink jets than for small office laser printers where the paper path
+   is hidden from view.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 紙のひっくり返し方。奇数ページを印刷した紙をひっくり返すとき、水平方向 (長い辺に沿って)、または垂直方向 (短い辺に沿って) に裏返すだけでなく、180 度回転させる必要があるかもしれません。これはプリンタによって違います。デスクトップ用インクジェットプリンタであれば、紙の通り道が見えないスモールオフィス用レーザープリンタとは違い、確認しやすいでしょう。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+8. Formfeed Characters					*printing-formfeed*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{printing-formfeed}
+@cindex printing-formfeed
+@section 8. 改ページ文字
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+By default Vim does not do any special processing of |formfeed| control
+characters.  Setting the 'printoptions' formfeed item will make Vim recognize
+formfeed characters and continue printing the current line at the beginning
+of the first line on a new page.  The use of formfeed characters provides
+rudimentary print control but there are certain things to be aware of.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+標準設定では、Vim は |formfeed| 制御文字 (改ページ文字) の特別な処理を一切しません。'@option{printoptions}' の formfeed を設定すると、Vim は改ページ文字を認識するようになります。改ページ文字を含む行は新しいページの一行目に印刷されます。改ページ文字を使って原始的な印刷制御ができますが、いくつか気をつけることがあります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will always start printing a line (including a line number if enabled)
+containing a formfeed character, even if it is the first character on the
+line.  This means if a line starting with a formfeed character is the first
+line of a page then Vim will print a blank page.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+たとえ行頭の文字が改ページ文字であっても、その行は常に通常の位置から (設定によっては行番号をともなって) 印刷されます。そのため、そのような行が (たまたま) ページの一行目だった場合、空白のページが印刷されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Since the line number is printed at the start of printing the line containing
+the formfeed character, the remainder of the line printed on the new page
+will not have a line number printed for it (in the same way as the wrapped
+lines of a long line when wrap in 'printoptions' is enabled).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+行番号は、改ページ文字を含む行の印刷が開始したところに印刷されるので、その行の (改ページ文字以降の) 残りの部分が新しいページに印刷されるときには、行番号は印刷されません ('@option{printoptions}' の wrap がオンのときに、長い行が折り返して印刷される場合も同じです)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the formfeed character is the last character on a line, then printing will
+continue on the second line of the new page, not the first.  This is due to
+Vim processing the end of the line after the formfeed character and moving
+down a line to continue printing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+改ページ文字が行の最後の文字だった場合、次の行は、新しいページの二行目に印刷されます。これは、Vim が改ページ文字を処理した後で改行を処理し、カーソルを下へ移動して、次の行を印刷するからです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Due to the points made above it is recommended that when formfeed character
+processing is enabled, printing of line numbers is disabled, and that form
+feed characters are not the last character on a line.  Even then you may need
+to adjust the number of lines before a formfeed character to prevent
+accidental blank pages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上記の理由により、改ページ文字を使用する場合には、行番号印刷をオフにして、改ページ文字を行末に置かないことが望ましいです。その場合でも、予期しない空白ページが印刷されないように、行数を変更して改ページ文字の位置を調整する必要があるかもしれません。
+
+@{訳注: 例:
+@example
+1: aaa<0c>bbb   (<0c> == <C-L> == formfeed)
+2: <0c>ccc<0c>
+3: ddd
+は次のように印刷されます。
+1: aaa
+- new page -
+bbb
+2:
+- new page -
+ccc
+- new page -
+
+3: ddd
+@end example
+@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset

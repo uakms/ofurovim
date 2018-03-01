@@ -1,0 +1,585 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node remote.txt, , , 目次
+@unnumbered 印刷
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*remote.txt*    For Vim version 8.0.  Last change: 2017 Nov 12
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*remote.txt*    For Vim バージョン 8.0.  Last change: 2017 Nov 12
+
+
+		VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Vim client-server communication				*client-server*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{client-server}
+@cindex client-server
+Vim クライアントサーバー通信
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Common functionality		|clientserver|
+2. X11 specific items		|x11-clientserver|
+3. MS-Windows specific items	|w32-clientserver|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. 共通機能 @tab |@ref{clientserver, , clientserver}|
+@item 2. X11特有の項目 @tab |@ref{x11-clientserver, , x11-clientserver}|
+@item 3. Win32特有の項目 @tab |@ref{w32-clientserver, , w32-clientserver}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these commands}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらのコマンドはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Common functionality					*clientserver*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{clientserver}
+@cindex clientserver
+@section 1. 共通機能
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When compiled with the |+clientserver| option, Vim can act as a command
+server.  It accepts messages from a client and executes them.  At the same
+time, Vim can function as a client and send commands to a Vim server.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション |+clientserver| でコンパイルした時には、Vim はコマンドサーバーとして動作することができる。それによりクライアントからメッセージを受け取りそれを実行することができる。同時に、Vim はクライアントの機能も持ち合わせ Vim サーバーへメッセージを送ることもできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The following command line arguments are available:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下のコマンドライン引数が利用できる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    argument			meaning	~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@c    引数			意味
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   --remote [+{cmd}] {file} ...					*--remote*
+				Open the file list in a remote Vim.  When
+				there is no Vim server, execute locally.
+				There is one optional init command: +{cmd}.
+				This must be an Ex command that can be
+				followed by "|".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{--remote}
+@cindex --remote
+@item --remote [+@{cmd@}] @{file@} ...
+ファイルをリモートの Vim で開く。Vim サーバーが無い時には、ローカルで実行される。オプションで +@{cmd@} に 1 つだけ Ex コマンドを指定できる。コマンドは "|" でつなげて複数指定できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				The rest of the command line is taken as the
+				file list.  Thus any non-file arguments must
+				come before this.
+				You cannot edit stdin this way |--|.
+				The remote Vim is raised.  If you don't want
+				this use >
+				 vim --remote-send "<C-\><C-N>:n filename<CR>"
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドラインの残りの部分はファイルのリストとして扱われる。だからファイルではない引数はこれよりも前に書かなければならない。
+
+この方法で標準入力を開くことはできない |--|。
+
+次のようにしなければリモートの Vim が問題を起こすかもしれない。
+@verbatim
+vim --remote-send "<C-\><C-N>:n filename<CR>"
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   --remote-silent [+{cmd}] {file} ...			*--remote-silent*
+				As above, but don't complain if there is no
+				server and the file is edited locally.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{--remote-silent}
+@cindex --remote-silent
+@item --remote-silent [+@{cmd@}] @{file@} ...
+上と同様、しかしサーバーが存在しなくてもエラーを報告しない。指定したファイルがすでにローカルで編集中であっても同様。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   --remote-wait [+{cmd}] {file} ...				*--remote-wait*
+				As --remote, but wait for files to complete
+				(unload) in remote Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{--remote-wait}
+@cindex --remote-wait
+@item --remote-wait [+@{cmd@}] @{file@} ...
+--remote と同様、しかしリモート Vim でファイルが完了 (解放) されるまで待つ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   --remote-wait-silent [+{cmd}] {file} ...		*--remote-wait-silent*
+				As --remote-wait, but don't complain if there
+				is no server.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{--remote-wait-silent}
+@cindex --remote-wait-silent
+@item --remote-wait-silent [+@{cmd@}] @{file@} ...
+--remote-wait と同様、しかしサーバーが存在しなくてもエラーを報告しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*--remote-tab*
+   --remote-tab			Like --remote but open each file in a new
+				tabpage.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{--remote-tab}
+@cindex --remote-tab
+@item --remote-tab
+--remote と同様、しかし各ファイルを新しいタブページで開く。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*--remote-tab-silent*
+   --remote-tab-silent		Like --remote-silent but open each file in a
+				new tabpage.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{--remote-tab-silent}
+@cindex --remote-tab-silent
+@item --remote-tab-silent
+--remote-silent と同様、しかし各ファイルを新しいタブページで開く。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*--remote-tab-wait*
+   --remote-tab-wait		Like --remote-wait but open each file in a new
+				tabpage.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{--remote-tab-wait}
+@cindex --remote-tab-wait
+@item --remote-tab-wait
+--remote-wait と同様、しかし各ファイルを新しいタブページで開く。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*--remote-tab-wait-silent*
+   --remote-tab-wait-silent	Like --remote-wait-silent but open each file
+				in a new tabpage.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{--remote-tab-wait-silent}
+@cindex --remote-tab-wait-silent
+@item --remote-tab-wait-silent
+--remote-wait-silent と同様、しかし各ファイルを新しいタブページで開く。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*--servername*
+   --servername {name}		Become the server {name}.  When used together
+				with one of the --remote commands: connect to
+				server {name} instead of the default (see
+				below).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{--servername}
+@cindex --servername
+@item --servername @{name@}
+サーバー名 @{name@} になる。--remote コマンドのどれか 1 つと併用すると、デフォルトのサーバーではなく @{name@} で指定されるサーバーに接続する (下を参照)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*--remote-send*
+   --remote-send {keys}		Send {keys} to server and exit.  The {keys}
+   				are not mapped.  Special key names are
+				recognized, e.g., "<CR>" results in a CR
+				character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{--remote-send}
+@cindex --remote-send
+@item --remote-send @{keys@}
+サーバーに @{keys@} を送信して終了する。@{keys@} にマップは適用されない。特殊キー名が使用できる。例: "<CR>" は CR 文字になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*--remote-expr*
+   --remote-expr {expr}		Evaluate {expr} in server and print the result
+				on stdout.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{--remote-expr}
+@cindex --remote-expr
+@item --remote-expr @{expr@}
+サーバーに @{expr@} を実行評価させ、その結果を標準出力に印刷する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*--serverlist*
+   --serverlist			Output a list of server names.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{--serverlist}
+@cindex --serverlist
+@item --serverlist
+サーバー名のリストを表示する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Examples ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 使用例
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Edit "file.txt" in an already running GVIM server: >
+    gvim --remote file.txt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+既に起動しているgvimサーバーで "file.txt" を編集する:
+@verbatim
+gvim --remote file.txt
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Edit "file.txt" in an already running server called FOOBAR: >
+    gvim --servername FOOBAR --remote file.txt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+既に起動しているFOOBARという名のサーバーで "file.txt" を編集する:
+@verbatim
+gvim --servername FOOBAR --remote file.txt
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Edit "file.txt" in server "FILES" if it exists, become server "FILES"
+otherwise: >
+    gvim --servername FILES --remote-silent file.txt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+既に起動しているFILESという名のサーバーがあれば、FILES で "file.txt" を編集するが、無ければ自分が FILES になる:
+@verbatim
+gvim --servername FILES --remote-silent file.txt
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This doesn't work, all arguments after --remote will be used as file names: >
+    gvim --remote --servername FOOBAR file.txt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+--remoteの後の全ての引数がファイル名として解釈されるので動作しない:
+@verbatim
+gvim --remote --servername FOOBAR file.txt
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Edit file "+foo" in a remote server (note the use of "./" to avoid the special
+meaning of the leading plus): >
+    vim --remote ./+foo
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+リモートサーバーで "+foo" という名のファイルを編集する ("./" により先頭の "+" の特別な意味が無効化されていることに注目):
+@verbatim
+vim --remote ./+foo
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Tell the remote server "BLA" to write all files and exit: >
+    vim --servername BLA --remote-send '<C-\><C-N>:wqa<CR>'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"BLA" という名のリモートサーバーで編集中の全てのファイルを保存して終了する:
+@verbatim
+vim --servername BLA --remote-send '<C-\><C-N>:wqa<CR>'
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+SERVER NAME						*client-server-name*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{client-server-name}
+@cindex client-server-name
+@unnumberedsubsec サーバー名
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+By default Vim will try to register the name under which it was invoked (gvim,
+egvim ...).  This can be overridden with the --servername argument.  If the
+specified name is not available, a postfix is applied until a free name is
+encountered, i.e. "gvim1" for the second invocation of gvim on a particular
+X-server.  The resulting name is available in the servername builtin variable
+|v:servername|.  The case of the server name is ignored, thus "gvim" and
+"GVIM" are considered equal.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトでは Vim は自分が起動された時の名前 (gvim, egvim ...) のサーバーになろうとする。これは引数 --servername で変更できる。指定した名前が利用できない場合には、利用できる名前になるように後置名が付加される。例えば、1 つの X-Server で 2 つ目の gvim を起動したときには "gvim1" というようになる。その時のサーバー名へは組み込み変数 |v:servername| によりアクセスできる。サーバー名の大文字小文字は区別されないので、"gvim" と "GVIM" は同じとみなされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When Vim is invoked with --remote, --remote-wait or --remote-send it will try
+to locate the server name determined by the invocation name and --servername
+argument as described above.  If an exact match is not available, the first
+server with the number postfix will be used.  If a name with the number
+postfix is specified with the --servername argument, it must match exactly.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が引数 --remote や --remote-wait または --remote-send で起動された時には、上記のようにその名前で起動されたサーバーを探そうと試みる。正確に一致するサーバーがなかった時には、数字の後置名を付けて見つかった最初のサーバーを使用する。引数 --servername に数字の後置を付けた名前を指定した場合には、それは正確に一致するものだけを対象とする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If no server can be located and --remote or --remote-wait was used, Vim will
+start up according to the rest of the command line and do the editing by
+itself.  This way it is not necessary to know whether gvim is already started
+when sending command to it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+サーバーが見つからなく、--remote か --remote-wait が使われた時には、Vim は残りのコマンドラインに従い起動し、そのファイルの編集セッションを自分自身で取り持つ。この方法なら gvim はコマンドを送信する時に、既に別の gvim が起動しているかどうかを知る必要は無い。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The --serverlist argument will cause Vim to print a list of registered command
+servers on the standard output (stdout) and exit.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数 --serverlist は Vim に登録 (実行) されている全てのコマンドサーバーを、標準出力 (stdout) に印刷して終了する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Win32 Note: Making the Vim server go to the foreground doesn't always work,
+because MS-Windows doesn't allow it.  The client will move the server to the
+foreground when using the --remote or --remote-wait argument and the server
+name starts with "g".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Win32 Note:} @*
+Vim サーバーをアクティブアプリケーション (トップウィンドウ) にすることは、MS-Windows がそれを許していないので必ずしも成功するわけではない。クライアントは引数 --remote や --remote-wait を使用しサーバー名が "g" で始まる時には、サーバーをアクティブアプリケーションにすることを試みる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+REMOTE EDITING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec リモート編集
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The --remote argument will cause a |:drop| command to be constructed from the
+rest of the command line and sent as described above.
+The --remote-wait argument does the same thing and additionally sets up to
+wait for each of the files to have been edited.  This uses the BufUnload
+event, thus as soon as a file has been unloaded, Vim assumes you are done
+editing it.
+Note that the --remote and --remote-wait arguments will consume the rest of
+the command line.  I.e. all remaining arguments will be regarded as filenames.
+You can not put options there!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数 --argument は残りのコマンドラインから |:drop| コマンドを構成することを引き起こし、それを上記の方法で送信する。
+
+引数 --remote-wait は同じ事をして、加えて全てのファイルの編集の完了を待つように設定される。これは BufUnload イベントを使用し、だからファイルがアンロードされるとすぐに、Vim はファイルの編集が完了したと判断する。
+
+引数 --remote と --remote-wait は残りのコマンドライン全てを自分のものとして扱うことに注意。言い換えれば残り全ての引数はファイル名とみなされる。そこにオプションを置くことはできない！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+FUNCTIONS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec Vim script 関数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*E240* *E573*
+There are a number of Vim functions for scripting the command server.  See
+the description in |eval.txt| or use CTRL-] on the function name to jump to
+the full explanation.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E240}
+@anchor{E573}
+@cindex E240
+@cindex E573
+Vim script にはコマンドサーバーを操作するために幾つか関数がある。詳細な解説は |eval.txt| を参照するか、関数名の上で @kbd{CTRL-]} を使って完全な解説を参照すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    synopsis				     explanation ~
+    remote_startserver( name)		     run a server
+    remote_expr( server, string, idvar)      send expression
+    remote_send( server, string, idvar)      send key sequence
+    serverlist()			     get a list of available servers
+    remote_peek( serverid, retvar)	     check for reply string
+    remote_read( serverid)		     read reply string
+    server2client( serverid, string)	     send reply string
+    remote_foreground( server)		     bring server to the front
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@headitem 概要 @tab 説明
+@item remote_startserver(name) @tab サーバーを起動する
+@item remote_expr(server, string, idvar) @tab 式を送信する
+@item remote_send(server, string, idvar) @tab キーシーケンスを送信する
+@item serverlist() @tab 利用可能なサーバーのリストを得る
+@item remote_peek(serverid, retvar) @tab 結果文字列の有無確認する
+@item remote_read(serverid) @tab 結果文字列を取得する
+@item server2client(serverid, string) @tab 結果文字列を送信する
+@item remote_foreground(server) @tab サーバーを前面に移動する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See also the explanation of |CTRL-\_CTRL-N|.  Very useful as a leading key
+sequence.
+The {serverid} for server2client() can be obtained with expand("<client>")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|CTRL-\_CTRL-N| の説明も参照。キーシーケンスの先頭に使用すると便利。
+server2client() で使用するサーバー ID @{serverid@} は、@command{expand("<client>")} で取得できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. X11 specific items					*x11-clientserver*
+				    *E247* *E248* *E251* *E258* *E277*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@section 2. X11 特有の項目
+@anchor{x11-clientserver}
+@anchor{E247}
+@anchor{E248}
+@anchor{E251}
+@anchor{E258}
+@anchor{E277}
+@cindex x11-clientserver
+@cindex E247
+@cindex E248
+@cindex E251
+@cindex E258
+@cindex E277
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The communication between client and server goes through the X server.  The
+display of the Vim server must be specified.  The usual protection of the X
+server is used, you must be able to open a window on the X server for the
+communication to work.  It is possible to communicate between different
+systems.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+クライアントとサーバー間の通信はXサーバーにより行われる。Vim サーバーのディスプレイを指定する必要がある。X サーバーの通常の保護機能が使われているは、通信が成り立つためにはその X サーバーでウィンドウを作成できなければならない。異なるマシン間での通信も可能である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+By default, a GUI Vim will register a name on the X-server by which it can be
+addressed for subsequent execution of injected strings.  Vim can also act as
+a client and send strings to other instances of Vim on the same X11 display.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトでは、GUI Vim は X サーバーに名前を登録して送信された文字列を実行できるように備える。Vim はクライアントとしても振舞い、同じ X11 ディスプレイで動作する別の Vim インスタンスに文字列を送ることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When an X11 GUI Vim (gvim) is started, it will try to register a send-server
+name on the 'VimRegistry' property on the root window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+X11 の GUI Vim (gvim) が起動すると、ルートウィンドウの 'VimRegistry' プロパティに送信サーバー名を登録しようと試みる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A non GUI Vim with access to the X11 display (|xterm-clipboard| enabled), can
+also act as a command server if a server name is explicitly given with the
+--servername argument, or when Vim was build with the |+autoservername|
+feature.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+X11 ディスプレイにアクセスできる非 GUI の Vim (|xterm-clipboard| が有効になっている) も、サーバー名が引数 --servername で明示的に与えらるか、もしくは Vim が |+autoservername| 機能を有効にしてビルドされているならば、コマンドサーバーとして振舞うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An empty --servername argument will cause the command server to be disabled.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数 --servername に空のサーバー名を与えればコマンドサーバー機能を無効にできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To send commands to a Vim server from another application, read the source
+file src/if_xcmdsrv.c, it contains some hints about the protocol used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+異なるアプリケーションから Vim サーバーへコマンドを送るには、使われているプロトコルの幾つかのヒントを含むソースコード @file{src/if_xcmdsrv.c} を参照のこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Win32 specific items					*w32-clientserver*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{w32-clientserver}
+@cindex w32-clientserver
+@section 3. Win32 特有の項目
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Every Win32 Vim can work as a server, also in the console.  You do not need a
+version compiled with OLE.  Windows messages are used, this works on any
+version of MS-Windows.  But only communication within one system is possible.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+全ての Win32 版 Vim はコンソールもサーバーとして動作できる。OLE を組み込んでコンパイルする必要は無い。どの MS-Windows でも動作する、Windows メッセージが使用されている。しかしネットワークを通じてやり取りすることはできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Since MS-Windows messages are used, any other application should be able to
+communicate with a Vim server.  An alternative is using the OLE functionality
+|ole-interface|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows メッセージを使っているから、どのようなアプリケーションでも Vim サーバーと通信することができる。加えて OLE の機能を使うこともできる |ole-interface|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When using gvim, the --remote-wait only works properly this way: >
+
+	start /w gvim --remote-wait file.txt
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+gvimを使っている時には、--remote-wait は以下のようにしないと正しく動作しない:
+@verbatim
+start /w gvim --remote-wait file.txt
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ vim:tw=78:sw=4:ts=8:ft=help:norl:
+@end ifset
