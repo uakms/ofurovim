@@ -21,7 +21,7 @@ REFMANUALS = \
 	doc/tagsrch.texi doc/quickfix.texi doc/windows.texi doc/tabpage.texi \
 	doc/syntax.texi doc/spell.texi doc/diff.texi doc/autocmd.texi \
 	doc/filetype.texi doc/eval.texi doc/channel.texi doc/fold.texi \
-	doc/print.texi doc/remote.texi
+	doc/print.texi doc/remote.texi doc/term.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
