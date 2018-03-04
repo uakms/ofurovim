@@ -1,0 +1,3307 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node term.txt, , , 目次
+@unnumbered いろいろな端末やマウスについて
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*term.txt*      For Vim version 8.0.  Last change: 2017 Oct 14
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*term.txt*      For Vim バージョン 8.0.  Last change: 2017 Oct 14
+
+
+                VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Terminal information					*terminal-info*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-info}
+@cindex terminal-info
+端末情報
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim uses information about the terminal you are using to fill the screen and
+recognize what keys you hit.  If this information is not correct, the screen
+may be messed up or keys may not be recognized.  The actions which have to be
+performed on the screen are accomplished by outputting a string of
+characters.  Special keys produce a string of characters.  These strings are
+stored in the terminal options, see |terminal-options|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はユーザーが使っている端末の情報にもとづいて、ユーザーがどのキーを押したかを認識します。この情報が正しくないと、スクリーンは乱れ、キーが認識されなくなってしまいます。スクリーンに対する操作は、キーコードのシーケンスを出力することで実現されています。特殊なキーを押すとコードのシーケンスが出力されます。これらのシーケンスは端末オプションに保存されています。|terminal-options| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NOTE: Most of this is not used when running the |GUI|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+|GUI| で実行しているときは、このドキュメントのほとんどの事柄は関係ありません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Startup			|startup-terminal|
+2. Terminal options		|terminal-options|
+3. Window size			|window-size|
+4. Slow and fast terminals	|slow-fast-terminal|
+5. Using the mouse		|mouse-using|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. 起動 @tab |@ref{startup-terminal, , startup-terminal}|
+@item 2. 端末オプション @tab |@ref{terminal-options, , terminal-options}|
+@item 3. ウィンドウサイズ @tab |@ref{window-size, , window-size}|
+@item 4. 端末の速度 @tab |@ref{slow-fast-terminal, , slow-fast-terminal}|
+@item 5. マウスの使用 @tab |@ref{mouse-using, , mouse-using}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Startup						*startup-terminal*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{startup-terminal}
+@cindex startup-terminal
+@section 1. 起動
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When Vim is started a default terminal type is assumed.  For the Amiga this is
+a standard CLI window, for MS-DOS the pc terminal, for Unix an ansi terminal.
+A few other terminal types are always available, see below |builtin-terms|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の起動時はデフォルトの端末タイプ向けの設定になっています。これは Amiga では標準の CLI ウィンドウ、MS-DOS では PC の端末、Unix では ANSI 端末です。他に 2, 3 の端末が常に使用可能です。後述の |builtin-terms| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can give the terminal name with the '-T' Vim argument.  If it is not given
+Vim will try to get the name from the TERM environment variable.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の引数 '-T' により端末名を指定することができます。これが指定されない場合、環境変数 TERM から端末名を取得しようとします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				*termcap* *terminfo* *E557* *E558* *E559*
+On Unix the terminfo database or termcap file is used.  This is referred to as
+"termcap" in all the documentation.  At compile time, when running configure,
+the choice whether to use terminfo or termcap is done automatically.  When
+running Vim the output of ":version" will show |+terminfo| if terminfo is
+used.  Also see |xterm-screens|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{termcap}
+@anchor{terminfo}
+@anchor{E557}
+@anchor{E558}
+@anchor{E559}
+@cindex termcap
+@cindex terminfo
+@cindex E557
+@cindex E558
+@cindex E559
+Unix では terminfo データベースや termcap ファイルが使われます。全てのドキュメントを通して、これのことを "termcap" と呼びます。コンパイル時に、configure により terminfo と termcap を使うかどうかが自動的に決定されます。"@command{:version}" の出力に |+terminfo| が含まれていれば terminfo を使用しています。|xterm-screens| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On non-Unix systems a termcap is only available if Vim was compiled with
+TERMCAP defined.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unix 以外のシステムでは、TERMCAP を定義してコンパイルしたときのみ termcap を使用できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*builtin-terms* *builtin_terms*
+Which builtin terminals are available depends on a few defines in feature.h,
+which need to be set at compile time:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{builtin-terms}
+@anchor{builtin_terms}
+@cindex builtin-terms
+@cindex builtin_terms
+どの組み込み端末が利用できるかは、feature.h で定義されているマクロに依存します。これらはコンパイル時に設定しなければなりません:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    define		output of ":version"	terminals builtin	~
+NO_BUILTIN_TCAPS	-builtin_terms		none
+SOME_BUILTIN_TCAPS	+builtin_terms		most common ones (default)
+ALL_BUILTIN_TCAPS	++builtin_terms		all available
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .3 .4
+@headitem define @tab ":version" の出力 @tab 組み込まれる端末
+@item NO_BUILTIN_TCAPS @tab -builtin_terms @tab なし
+@item SOME_BUILTIN_TCAPS @tab +builtin_terms @tab 一般的なもの (デフォルト)
+@item ALL_BUILTIN_TCAPS @tab ++builtin_terms @tab 全て使用可能
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can see a list of available builtin terminals with ":set term=xxx" (when
+not running the GUI).  Also see |+builtin_terms|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+利用可能な組み込み端末のリストを見るには "@command{:set term=xxx}" とします (GUI でないときのみ)。|+builtin_terms| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the termcap code is included Vim will try to get the strings for the
+terminal you are using from the termcap file and the builtin termcaps.  Both
+are always used, if an entry for the terminal you are using is present.  Which
+one is used first depends on the 'ttybuiltin' option:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+termcap のコードが組み込まれているときは、termcap ファイルと組み込みの termcap から、使われている端末用のキーシーケンスを取得しようとします。使われている端末のエントリがあるならば、その両方が使われます。どちらが先に使われるかはオプション '@option{ttybuiltin}' に依存します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'ttybuiltin' on		1: builtin termcap	2: external termcap
+'ttybuiltin' off	1: external termcap	2: builtin termcap
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .35 .35
+@item '@option{ttybuiltin}' on @tab 1: 組み込み termcap @tab 2: 外部 termcap
+@item '@option{ttybuiltin}' off @tab 1: 外部 termcap @tab 2: 組み込み termcap
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If an option is missing in one of them, it will be obtained from the other
+one.  If an option is present in both, the one first encountered is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ある端末オプションが片方にないときは、もう一方から取得します。ある端末オプションが両方にあるときは、先に見つかった方が使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Which external termcap file is used varies from system to system and may
+depend on the environment variables "TERMCAP" and "TERMPATH".  See "man
+tgetent".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+どの外部 termcap ファイルが使われるかはシステムによって異なり、環境変数 "@var{TERMCAP}" と "@var{TERMPATH}" に依存します。"man tgetent" を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Settings depending on terminal			*term-dependent-settings*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{term-dependent-settings}
+@cindex term-dependent-settings
+@unnumberedsubsec 端末によって設定を切り替える
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to set options or mappings, depending on the terminal name, you
+can do this best in your .vimrc.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末名によってオプションやマッピングを切り替えるには .vimrc で行うのがベストです。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   if &term == "xterm"
+     ... xterm maps and settings ...
+   elseif &term =~ "vt10."
+     ... vt100, vt102 maps and settings ...
+   endif
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+if &term == "xterm"
+  ... xterm 用のマッピングと設定 ...
+elseif &term =~ "vt10."
+  ... vt100, vt102 用のマッピングと設定 ...
+endif
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*raw-terminal-mode*
+For normal editing the terminal will be put into "raw" mode.  The strings
+defined with 't_ti' and 't_ks' will be sent to the terminal.  Normally this
+puts the terminal in a state where the termcap codes are valid and activates
+the cursor and function keys.  When Vim exits the terminal will be put back
+into the mode it was before Vim started.  The strings defined with 't_te' and
+'t_ke' will be sent to the terminal.  On the Amiga, with commands that execute
+an external command (e.g., "!!"), the terminal will be put into Normal mode
+for a moment.  This means that you can stop the output to the screen by
+hitting a printing key.  Output resumes when you hit <BS>.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{raw-terminal-mode}
+@cindex raw-terminal-mode
+通常の編集に入るとき、端末は raw モードになります。このとき、'@option{t_ti}' と '@option{t_ks}' で定義されるシーケンスが端末に送信されます。これらのシーケンスにより、端末は termcap のコードが有効になり、カーソルキーとファンクションキーが使えるようになります。Vim が終了するとき、端末を起動前のモードに戻します。このとき '@option{t_te}' と '@option{t_ke}' で定義されるシーケンスが端末に送信されます。Amiga では、外部プログラムを起動するコマンド (例: "!!") を実行するとき、一時的に端末が通常モードになります。そのため、@key{print} キーを押してスクリーンへの出力を止めることができます。@key{<BS>} を押すと出力が再開します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*xterm-bracketed-paste*
+When the 't_BE' option is set then 't_BE' will be sent to the
+terminal when entering "raw" mode and 't_BD' when leaving "raw" mode.  The
+terminal is then expected to put 't_PS' before pasted text and 't_PE' after
+pasted text.  This way Vim can separate text that is pasted from characters
+that are typed.  The pasted text is handled like when the middle mouse button
+is used, it is inserted literally and not interpreted as commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{xterm-bracketed-paste}
+@cindex xterm-bracketed-paste
+'@option{t_BE}' がオンの場合、raw モードに入るときに '@option{t_BE}' が端末に送信され、raw モードを抜けるときに '@option{t_BD}' が送信されます。その際、端末はペーストされたテキストの前に '@option{t_PS}' を置き、ペーストされたテキストの後に '@option{t_PE}' を置くことが想定されます。これにより、Vim はタイプされた文字とペーストされたテキストを分離することができます。ペーストされたテキストはマウスの中ボタンを使ったときと同様に扱われ、文字通り挿入され、コマンドとしては扱われません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the cursor is in the first column, the pasted text will be inserted
+before it.  Otherwise the pasted text is appended after the cursor position.
+This means one cannot paste after the first column.  Unfortunately Vim does
+not have a way to tell where the mouse pointer was.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カーソルが最初の桁にある時は、ペーストされたテキストはその前に挿入されます。そうでなければ、ペーストされたテキストはカーソルの位置の後に追加されます。これは最初の桁の後にペーストすることはできないことを意味します。残念ながら Vim にはマウスポイントがどこにあったかを知らせる方法はありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that in some situations Vim will not recognize the bracketed paste and
+you will get the raw text.  In other situations Vim will only get the first
+pasted character and drop the rest, e.g. when using the "r" command.  If you
+have a problem with this, disable bracketed paste by putting this in your
+.vimrc: >
+	set t_BE=
+If this is done while Vim is running the 't_BD' will be sent to the terminal
+to disable bracketed paste.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+いくつかの状況では、Vim は bracketed paste を認識せず、生のテキストが取得される場合があることに注意してください。別のいくつかの状況では Vim はペーストされた最初の文字のみを取得し、残りは切り捨てられます。例: "r" コマンドを使った場合。bracketed paste で何か問題がある場合、.vimrc に以下を書くことで無効化することができます:
+@example
+set t_BE=
+@end example
+もし Vim の実行中にこれを実行した場合、bracketed paste を無効化するため '@option{t_BD}' が端末に送信されます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*cs7-problem*
+Note: If the terminal settings are changed after running Vim, you might have
+an illegal combination of settings.  This has been reported on Solaris 2.5
+with "stty cs8 parenb", which is restored as "stty cs7 parenb".  Use
+"stty cs8 -parenb -istrip" instead, this is restored correctly.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cs7-problem}
+@cindex cs7-problem
+@quotation
+@strong{Note:} @*
+Vim を起動した後で端末の設定を変えると、設定が一貫しない状態になるかもしれません。Solaris 2.5 で "stty cs8 parenb" が "stty cs7 parenb" に復元されてしまうという報告が上がっています。代わりに "stty cs8 -parenb -istrip" を使ってください。これは正しく復元されます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some termcap entries are wrong in the sense that after sending 't_ks' the
+cursor keys send codes different from the codes defined in the termcap.  To
+avoid this you can set 't_ks' (and 't_ke') to empty strings.  This must be
+done during initialization (see |initialization|), otherwise it's too late.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{t_ks}' を送った後では、カーソルキーが termcap で定義されているのとは異なるコードを送るという意味で、ある種の termcap エントリは正しくありません。この問題を避けるには '@option{t_ks}' (と '@option{t_ke}')を空文字列にします。これは初期化の最中に行わねばなりません(|initialization| を参照)。そうでないと手遅れです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some termcap entries assume that the highest bit is always reset.  For
+example: The cursor-up entry for the Amiga could be ":ku=\E[A:".  But the
+Amiga really sends "\233A".  This works fine if the highest bit is reset,
+e.g., when using an Amiga over a serial line.  If the cursor keys don't work,
+try the entry ":ku=\233A:".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+いくつかの termcap エントリは、最上位ビットが常にオフになっていると仮定しています。例: Amiga のカーソル↑エントリは例えば ":ku=\E[A:" です。しかし実際には "\233A" が送られます。これは、シリアル回線上で使っているときなど、最上位ビットがオフならば正しく動作します。カーソルキーが使えない場合はこのエントリを ":ku=\233A:" にしてみてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some termcap entries have the entry ":ku=\E[A:".  But the Amiga really sends
+"\233A".  On output "\E[" and "\233" are often equivalent, on input they
+aren't.  You will have to change the termcap entry, or change the key code with
+the :set command to fix this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+":ku=\E[A:" というエントリをもつ termcap エントリがあります。しかし実際には "\233A" が送られます。出力において "\E[" と "\233" はしばしば同値であり、入力においてはそうでありません。この問題を解決するには、termcap エントリを変更するか、:set コマンドでキーコードを変更するしかありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Many cursor key codes start with an <Esc>.  Vim must find out if this is a
+single hit of the <Esc> key or the start of a cursor key sequence.  It waits
+for a next character to arrive.  If it does not arrive within one second a
+single <Esc> is assumed.  On very slow systems this may fail, causing cursor
+keys not to work sometimes.  If you discover this problem reset the 'timeout'
+option.  Vim will wait for the next character to arrive after an <Esc>.  If
+you want to enter a single <Esc> you must type it twice.  Resetting the
+'esckeys' option avoids this problem in Insert mode, but you lose the
+possibility to use cursor and function keys in Insert mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+多くのカーソルキーのコードは <Esc> から始まります。Vim はこれが 1 つの @key{<Esc>} キーを押下したものか、カーソルキーのシーケンスのはじまりかを判定しなければなりません。そのため、次の文字が届くのを待ちます。1 秒以内に次のキーが届かない場合は @key{<Esc>} が押されたとみなします。非常に遅いシステムではこれが誤判定され、カーソルキーが使えなくなることがあります。この問題に出会った場合は '@option{timeout}' をオフにしてください。Vim は <Esc> の後に届く文字を待ちます。1 つの <Esc> を入力するには 2 回押さなければなりません。'@option{esckeys}' をオフにすると、挿入モードでのこの問題を解決できます。しかし挿入モードでカーソルキーとファンクションキーが使えなくなってしまいます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On the Amiga the recognition of window resizing is activated only when the
+terminal name is "amiga" or "builtin_amiga".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Amiga でウィンドウリサイズを認識するには、端末名が "amiga" か "builtin_amiga" でなければなりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some terminals have confusing codes for the cursor keys.  The televideo 925 is
+such a terminal.  It sends a CTRL-H for cursor-left.  This would make it
+impossible to distinguish a backspace and cursor-left.  To avoid this problem
+CTRL-H is never recognized as cursor-left.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ある種の端末ではカーソルキーに混乱を招きやすいコードを割り当てています。televideo 925 はその一例です。televideo 925 はカーソル左キーで CTRL-H を送ります。そのためバックスペースとカーソル左を区別することは不可能です。この問題のため CTRL-H は常にカーソル左と認識されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*vt100-cursor-keys* *xterm-cursor-keys*
+Other terminals (e.g., vt100 and xterm) have cursor keys that send <Esc>OA,
+<Esc>OB, etc.  Unfortunately these are valid commands in insert mode: Stop
+insert, Open a new line above the new one, start inserting 'A', 'B', etc.
+Instead of performing these commands Vim will erroneously recognize this typed
+key sequence as a cursor key movement.  To avoid this and make Vim do what you
+want in either case you could use these settings: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{vt100-cursor-keys}
+@anchor{xterm-cursor-keys}
+@cindex vt100-cursor-keys
+@cindex xterm-cursor-keys
+vt100 や xterm などの端末ではカーソルキーを押すと <Esc>OA や <Esc>OB などが送られます。不運なことに、これらは「挿入を終了し、上に新規行を作成して 'A' や 'B' を挿入する」という挿入モードでのコマンドでもあります。
+
+このコマンドを実行するのでなく、カーソルキーのシーケンスが入力されたのだと誤認識してしまうかもしれません。これを防ぎ、意図通りの動作をさせるには次の設定を使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:set notimeout		" don't timeout on mappings
+	:set ttimeout		" do timeout on terminal key codes
+	:set timeoutlen=100	" timeout after 100 msec
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set notimeout      " マッピングについてタイムアウトしない
+:set ttimeout       " 端末のキーコードについてタイムアウトする
+:set timeoutlen=100 " 100 ミリ秒後にタイムアウトする
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This requires the key-codes to be sent within 100 msec in order to recognize
+them as a cursor key.  When you type you normally are not that fast, so they
+are recognized as individual typed commands, even though Vim receives the same
+sequence of bytes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この設定をすると、キーコードが 100 ミリ秒以内に送られた場合のみカーソルキーと認識されます。ユーザーが普通に入力するときはそんなに速くないので、たとえまったく同じキーコードのシーケンスを送信しても、個々のコマンドと認識されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				*vt100-function-keys* *xterm-function-keys*
+An xterm can send function keys F1 to F4 in two modes: vt100 compatible or
+not.  Because Vim may not know what the xterm is sending, both types of keys
+are recognized.  The same happens for the <Home> and <End> keys.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{vt100-function-keys}
+@anchor{xterm-function-keys}
+@cindex vt100-function-keys
+@cindex xterm-function-keys
+xterm は vt100 互換モードと非互換モードの両方のモードで F1 から F4 のファンクションキーを送信できます。Vim は xterm がどちらのコードを送信するかわからないので、両方のタイプのキーを認識するようになっています。<Home> と <End> についても同様です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			normal			vt100 ~
+	<F1>	t_k1	<Esc>[11~	<xF1>	<Esc>OP	    *<xF1>-xterm*
+	<F2>	t_k2	<Esc>[12~	<xF2>	<Esc>OQ	    *<xF2>-xterm*
+	<F3>	t_k3	<Esc>[13~	<xF3>	<Esc>OR	    *<xF3>-xterm*
+	<F4>	t_k4	<Esc>[14~	<xF4>	<Esc>OS	    *<xF4>-xterm*
+	<Home>	t_kh	<Esc>[7~	<xHome>	<Esc>OH	    *<xHome>-xterm*
+	<End>	t_@7	<Esc>[4~	<xEnd>	<Esc>OF	    *<xEnd>-xterm*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@headitem 通常 @tab vt100
+@anchor{<xF1>-xterm}
+@cindex <xF1>-xterm
+@item <F1> t_k1 <Esc>[11~ @tab <xF1> <Esc>OP
+@anchor{<xF2>-xterm}
+@cindex <xF2>-xterm
+@item <F2> t_k2 <Esc>[12~ @tab <xF2> <Esc>OQ
+@anchor{<xF3>-xterm}
+@cindex <xF3>-xterm
+@item <F3> t_k3 <Esc>[13~ @tab <xF3> <Esc>OR
+@anchor{<xF4>-xterm}
+@cindex <xF4>-xterm
+@item <F4> t_k4 <Esc>[14~ @tab <xF4> <Esc>OS
+@anchor{<xHome>-xterm}
+@cindex <xHome>-xterm
+@item <Home> t_kh <Esc>[7~ @tab <xHome> <Esc>OH
+@anchor{<xEnd>-xterm}
+@cindex <xEnd>-xterm
+@item <End> t_@@7 <Esc>[4~ @tab <xEnd> <Esc>OF
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When Vim starts, <xF1> is mapped to <F1>, <xF2> to <F2> etc.  This means that
+by default both codes do the same thing.  If you make a mapping for <xF2>,
+because your terminal does have two keys, the default mapping is overwritten,
+thus you can use the <F2> and <xF2> keys for something different.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が起動したときに <xF1> が <F1> へ、<xF2> が <F2> へマッピングされます。これにより、デフォルトではどちらのコードも同じ動作になります。<xF2> へのマッピングを作ると、デフォルトのマッピングが上書きされます。そして <F2> と <xF2> に別の動作をさせることができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*xterm-shifted-keys*
+Newer versions of xterm support shifted function keys and special keys.  Vim
+recognizes most of them.  Use ":set termcap" to check which are supported and
+what the codes are.  Mostly these are not in a termcap, they are only
+supported by the builtin_xterm termcap.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{xterm-shifted-keys}
+@cindex xterm-shifted-keys
+新しいバージョンの xterm はシフトキーとファンクションキー、特殊キーの組み合わせをサポートしています。Vim はこれらのほとんどを認識します。"@command{:set termcap}" によりどれがサポートされているか、そのコードは何かを調べることができます。大抵の場合、これらは termcap には入っていません。builtin_xterm の termcap でのみサポートされています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*xterm-modifier-keys*
+Newer versions of xterm support Alt and Ctrl for most function keys.  To avoid
+having to add all combinations of Alt, Ctrl and Shift for every key a special
+sequence is recognized at the end of a termcap entry: ";*X".  The "X" can be
+any character, often '~' is used.  The ";*" stands for an optional modifier
+argument.  ";2" is Shift, ";3" is Alt, ";5" is Ctrl and ";9" is Meta (when
+it's different from Alt).  They can be combined.  Examples: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{xterm-modifier-keys}
+@cindex xterm-modifier-keys
+新しいバージョンの xterm は Alt と Ctrl キーとほとんどのファンクションキーの組み合わせをサポートしています。全てのキーに対する Alt、Ctrl、Shift の組み合わせ全てを termcap に追加しなくてもいいように、termcap エントリの最後に ";*X" という特殊なシーケンスを追加することができます。この "X" はどんな文字でもよく、'~' がよく使われます。";*" は省略可能な修飾キー引数を意味します。";2" は Shift、";3" は Alt、";5" は Ctrl、";9" は Meta (Alt と異なる場合)。これらを組み合わせることができます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:set <F8>=^[[19;*~
+	:set <Home>=^[[1;*H
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:set <F8>=^[[19;*~
+:set <Home>=^[[1;*H
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Another speciality about these codes is that they are not overwritten by
+another code.  That is to avoid that the codes obtained from xterm directly
+|t_RV| overwrite them.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのコードのもう1つの特殊な性質は、他のコードで上書きできないことです。xterm から直接得られたコードが |t_RV| それらを上書きするのを避けるためです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*xterm-scroll-region*
+The default termcap entry for xterm on Sun and other platforms does not
+contain the entry for scroll regions.  Add ":cs=\E[%i%d;%dr:" to the xterm
+entry in /etc/termcap and everything should work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{xterm-scroll-region}
+@cindex xterm-scroll-region
+Sun などのプラットフォームのデフォルトの xterm 用の termcap エントリには領域のスクロール用のエントリが入っていません。/etc/termcap の xterm エントリに ":cs=\E[%i%d;%dr:" を追加すれば全てうまく動作するでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*xterm-end-home-keys*
+On some systems (at least on FreeBSD with XFree86 3.1.2) the codes that the
+<End> and <Home> keys send contain a <Nul> character.  To make these keys send
+the proper key code, add these lines to your ~/.Xdefaults file:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{xterm-end-home-keys}
+@cindex xterm-end-home-keys
+いくつかのシステム (少なくとも FreeBSD と XFree86 3.1.2) では、@key{<End>} と @key{<Home>} キーが送信するキーに <NUL> 文字が含まれています。これらのキーが適切なキーコードを送信するようにするために、次の行を ~/.Xdefaults に追加してください:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+*VT100.Translations:		#override \n\
+		<Key>Home: string("0x1b") string("[7~") \n\
+		<Key>End: string("0x1b") string("[8~")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+*VT100.Translations:        #override \n\
+        <Key>Home: string("0x1b") string("[7~") \n\
+        <Key>End: string("0x1b") string("[8~")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*xterm-8bit* *xterm-8-bit*
+Xterm can be run in a mode where it uses 8-bit escape sequences.  The CSI code
+is used instead of <Esc>[.  The advantage is that an <Esc> can quickly be
+recognized in Insert mode, because it can't be confused with the start of a
+special key.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{xterm-8bit}
+@anchor{xterm-8-bit}
+@cindex xterm-8bit
+@cindex xterm-8-bit
+xterm は 8 ビットエスケープシーケンスを使うモードで動作させることができます。このモードでは <Esc>[ の代わりに CSI コードが使われます。この利点は、挿入モードで <Esc> が即座に認識されることです。なぜなら、特殊キーの開始と紛らわしくないためです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+For the builtin termcap entries, Vim checks if the 'term' option contains
+"8bit" anywhere.  It then uses 8-bit characters for the termcap entries, the
+mouse and a few other things.  You would normally set $TERM in your shell to
+"xterm-8bit" and Vim picks this up and adjusts to the 8-bit setting
+automatically.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+組み込みの termcap エントリでは、オプション '@option{term}' のどこかに "@var{8bit}" が含まれていないか確認されます。含まれていると、termcap エントリ、マウス等に 8 ビット文字が使われます。シェルにおいて $TERM を "@var{xterm-8bit}" に設定しておくと、Vim はそれに気づいて自動的に 8 ビットの設定を使うようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When Vim receives a response to the |t_RV| (request version) sequence and it
+starts with CSI, it assumes that the terminal is in 8-bit mode and will
+convert all key sequences to their 8-bit variants.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim がシーケンス |t_RV| (バージョン要求) への応答を受け取ったとき、それが CSI で始まっていれば、その端末は 8 ビットモードであると認識し、全てのキーシーケンスを 8 ビット版に変換します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Terminal options		*terminal-options* *termcap-options* *E436*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-options}
+@anchor{termcap-options}
+@anchor{E436}
+@cindex terminal-options
+@cindex termcap-options
+@cindex E436
+@section 2. 端末オプション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The terminal options can be set just like normal options.  But they are not
+shown with the ":set all" command.  Instead use ":set termcap".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末オプションは普通のオプションとまったく同じように設定できます。しかし端末オプションは "@command{:set all}" コマンドでは表示されないので、代わりに "@command{:set termcap}" を使ってください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is always possible to change individual strings by setting the
+appropriate option.  For example: >
+	:set t_ce=^V^[[K	(CTRL-V, <Esc>, [, K)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+termcap コードに対応するオプションを設定することによって、そのシーケンスを変更することができます。例:
+@verbatim
+:set t_ce=^V^[[K    (CTRL-V, <Esc>, [, K)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi: no terminal options.  You have to exit Vi, edit the termcap entry and
+try again}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi: 端末オプションは存在しない。Vi を終了し、termcap エントリを編集して再起動しなければならない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The options are listed below.  The associated termcap code is always equal to
+the last two characters of the option name.  Only one termcap code is
+required: Cursor motion, 't_cm'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末オプションの一覧を後で載せます。対応する termcap のコードと、それに対応するオプション名の最後の2文字が等しくなっています。絶対に必要な termcap コードはカーソルを移動させる '@option{t_cm}' の 1 つだけです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The options 't_da', 't_db', 't_ms', 't_xs', 't_xn' represent flags in the
+termcap.  When the termcap flag is present, the option will be set to "y".
+But any non-empty string means that the flag is set.  An empty string means
+that the flag is not set.  't_CS' works like this too, but it isn't a termcap
+flag.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{t_da}', '@option{t_db}', '@option{t_ms}', '@option{t_xs}', '@option{t_xn}' は termcap におけるフラグに対応しています。termcap にこれらのフラグが存在すると、対応するオプションに "@var{y}" が設定されます。空でない文字列を設定するとオンになり、空文字列を設定するとオフになります。'@option{t_CS}' もこれと同様ですが、termcap フラグではありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+OUTPUT CODES						*terminal-output-codes*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-output-codes}
+@cindex terminal-output-codes
+@unnumberedsubsec 出力コード
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	option	meaning	~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .75
+@headitem オプション @tab 意味
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	t_AB	set background color (ANSI)			*t_AB* *'t_AB'*
+	t_AF	set foreground color (ANSI)			*t_AF* *'t_AF'*
+	t_AL	add number of blank lines			*t_AL* *'t_AL'*
+	t_al	add new blank line				*t_al* *'t_al'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_AB}
+@anchor{'t_AB'}
+@cindex t_AB
+@cindex 't_AB'
+@item t_AB @tab 背景色を設定 (ANSI)
+@anchor{t_AF}
+@anchor{'t_AF'}
+@cindex t_AF
+@cindex 't_AF'
+@item t_AF @tab 文字色を設定 (ANSI)
+@anchor{t_AL}
+@anchor{'t_AL'}
+@cindex t_AL
+@cindex 't_AL'
+@item t_AL @tab 指定数の空行を追加する
+@anchor{t_al}
+@anchor{'t_al'}
+@cindex t_al
+@cindex 't_al'
+@item t_al @tab 空行を追加する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_bc	backspace character				*t_bc* *'t_bc'*
+	t_cd	clear to end of screen				*t_cd* *'t_cd'*
+	t_ce	clear to end of line				*t_ce* *'t_ce'*
+	t_cl	clear screen					*t_cl* *'t_cl'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_bc}
+@anchor{'t_bc'}
+@cindex t_bc
+@cindex 't_bc'
+@item t_bc @tab バックスペース文字
+@anchor{t_cd}
+@anchor{'t_cd'}
+@cindex t_cd
+@cindex 't_cd'
+@item t_cd @tab スクリーンの最後までクリア
+@anchor{t_ce}
+@anchor{'t_ce'}
+@cindex t_ce
+@cindex 't_ce'
+@item t_ce @tab 行末までクリア
+@anchor{t_cl}
+@anchor{'t_cl'}
+@cindex t_cl
+@cindex 't_cl'
+@item t_cl @tab 画面をクリア
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_cm	cursor motion (required!)		  *E437* *t_cm* *'t_cm'*
+	t_Co	number of colors				*t_Co* *'t_Co'*
+	t_CS	if non-empty, cursor relative to scroll region	*t_CS* *'t_CS'*
+	t_cs	define scrolling region				*t_cs* *'t_cs'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E437}
+@anchor{t_cm}
+@anchor{'t_cm'}
+@cindex E437
+@cindex t_cm
+@cindex 't_cm'
+@item t_cm @tab カーソル移動 (必須！)
+@anchor{t_Co}
+@anchor{'t_Co'}
+@cindex t_Co
+@cindex 't_Co'
+@item t_Co @tab 色数
+@anchor{t_CS}
+@anchor{'t_CS'}
+@cindex t_CS
+@cindex 't_CS'
+@item t_CS @tab 空でなければスクロール範囲に対する相対アドレスでカーソルを移動
+@anchor{t_cs}
+@anchor{'t_cs'}
+@cindex t_cs
+@cindex 't_cs'
+@item t_cs @tab スクロール範囲を定義
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_CV	define vertical scrolling region		*t_CV* *'t_CV'*
+	t_da	if non-empty, lines from above scroll down	*t_da* *'t_da'*
+	t_db	if non-empty, lines from below scroll up	*t_db* *'t_db'*
+	t_DL	delete number of lines				*t_DL* *'t_DL'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_CV}
+@anchor{'t_CV'}
+@cindex t_CV
+@cindex 't_CV'
+@item t_CV @tab 縦スクロール範囲を定義
+@anchor{t_da}
+@anchor{'t_da'}
+@cindex t_da
+@cindex 't_da'
+@item t_da @tab 空でない場合は上の行からスクロールダウンする
+@anchor{t_db}
+@anchor{'t_db'}
+@cindex t_db
+@cindex 't_db'
+@item t_db @tab 空でない場合は下の行からスクロールアップする
+@anchor{t_DL}
+@anchor{'t_DL'}
+@cindex t_DL
+@cindex 't_DL'
+@item t_DL @tab 複数行を削除
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_dl	delete line					*t_dl* *'t_dl'*
+	t_fs	set window title end (from status line)		*t_fs* *'t_fs'*
+	t_ke	exit "keypad transmit" mode			*t_ke* *'t_ke'*
+	t_ks	start "keypad transmit" mode			*t_ks* *'t_ks'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_dl}
+@anchor{'t_dl'}
+@cindex t_dl
+@cindex 't_dl'
+@item t_dl @tab 行を削除
+@anchor{t_fs}
+@anchor{'t_fs'}
+@cindex t_fs
+@cindex 't_fs'
+@item t_fs @tab ウィンドウタイトルの終端を設定(ステータスラインから)
+@anchor{t_ke}
+@anchor{'t_ke'}
+@cindex t_ke
+@cindex 't_ke'
+@item t_ke @tab キーパッド使用終了
+@anchor{t_ks}
+@anchor{'t_ks'}
+@cindex t_ks
+@cindex 't_ks'
+@item t_ks @tab キーパッド使用開始
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_le	move cursor one char left			*t_le* *'t_le'*
+	t_mb	blinking mode					*t_mb* *'t_mb'*
+	t_md	bold mode					*t_md* *'t_md'*
+	t_me	Normal mode (undoes t_mr, t_mb, t_md and color)	*t_me* *'t_me'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_le}
+@anchor{'t_le'}
+@cindex t_le
+@cindex 't_le'
+@item t_le @tab カーソルを 1 文字分左へ移動
+@anchor{t_mb}
+@anchor{'t_mb'}
+@cindex t_mb
+@cindex 't_mb'
+@item t_mb @tab 点滅モード
+@anchor{t_md}
+@anchor{'t_md'}
+@cindex t_md
+@cindex 't_md'
+@item t_md @tab 太字モード
+@anchor{t_me}
+@anchor{'t_me'}
+@cindex t_me
+@cindex 't_me'
+@item t_me @tab 通常モード (t_mr, t_mb, t_md, 色設定を解除)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_mr	reverse (invert) mode				*t_mr* *'t_mr'*
+								*t_ms* *'t_ms'*
+	t_ms	if non-empty, cursor can be moved in standout/inverse mode
+	t_nd	non destructive space character			*t_nd* *'t_nd'*
+	t_op	reset to original color pair			*t_op* *'t_op'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_mr}
+@anchor{'t_mr'}
+@cindex t_mr
+@cindex 't_mr'
+@item t_mr @tab 反転モード
+@anchor{t_ms}
+@anchor{'t_ms'}
+@cindex t_ms
+@cindex 't_ms'
+@item t_ms @tab 空でない場合は強調・反転モードでカーソルを移動できる
+@anchor{t_nd}
+@anchor{'t_nd'}
+@cindex t_nd
+@cindex 't_nd'
+@item t_nd @tab 非破壊スペース @{訳注: カーソルを 1 文字分右に移動@}
+@anchor{t_op}
+@anchor{'t_op'}
+@cindex t_op
+@cindex 't_op'
+@item t_op @tab 元の色のペアに戻す
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_RI	cursor number of chars right			*t_RI* *'t_RI'*
+	t_Sb	set background color				*t_Sb* *'t_Sb'*
+	t_Sf	set foreground color				*t_Sf* *'t_Sf'*
+	t_se	standout end					*t_se* *'t_se'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_RI}
+@anchor{'t_RI'}
+@cindex t_RI
+@cindex 't_RI'
+@item t_RI @tab カーソルを指定数右へ移動
+@anchor{t_Sb}
+@anchor{'t_Sb'}
+@cindex t_Sb
+@cindex 't_Sb'
+@item t_Sb @tab 背景色を設定
+@anchor{t_Sf}
+@anchor{'t_Sf'}
+@cindex t_Sf
+@cindex 't_Sf'
+@item t_Sf @tab 文字色を設定
+@anchor{t_se}
+@anchor{'t_se'}
+@cindex t_se
+@cindex 't_se'
+@item t_se @tab 強調終了
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_so	standout mode					*t_so* *'t_so'*
+	t_sr	scroll reverse (backward)			*t_sr* *'t_sr'*
+	t_te	out of "termcap" mode				*t_te* *'t_te'*
+	t_ti	put terminal in "termcap" mode			*t_ti* *'t_ti'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_so}
+@anchor{'t_so'}
+@cindex t_so
+@cindex 't_so'
+@item t_so @tab 強調モード
+@anchor{t_sr}
+@anchor{'t_sr'}
+@cindex t_sr
+@cindex 't_sr'
+@item t_sr @tab 逆スクロール
+@anchor{t_te}
+@anchor{'t_te'}
+@cindex t_te
+@cindex 't_te'
+@item t_te @tab "termcap" モードから抜ける
+@anchor{t_ti}
+@anchor{'t_ti'}
+@cindex t_ti
+@cindex 't_ti'
+@item t_ti @tab 端末を "termcap" モードにする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_ts	set window title start (to status line)		*t_ts* *'t_ts'*
+	t_ue	underline end					*t_ue* *'t_ue'*
+	t_us	underline mode					*t_us* *'t_us'*
+	t_ut	clearing uses the current background color	*t_ut* *'t_ut'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_ts}
+@anchor{'t_ts'}
+@cindex t_ts
+@cindex 't_ts'
+@item t_ts @tab (ステータスラインに) ウィンドウタイトル設定開始
+@anchor{t_ue}
+@anchor{'t_ue'}
+@cindex t_ue
+@cindex 't_ue'
+@item t_ue @tab 下線終了
+@anchor{t_us}
+@anchor{'t_us'}
+@cindex t_us
+@cindex 't_us'
+@item t_us @tab 下線モード
+@anchor{t_ut}
+@anchor{'t_ut'}
+@cindex t_ut
+@cindex 't_ut'
+@item t_ut @tab 現在の背景色を使ってクリア
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_vb	visual bell					*t_vb* *'t_vb'*
+	t_ve	cursor visible					*t_ve* *'t_ve'*
+	t_vi	cursor invisible				*t_vi* *'t_vi'*
+	t_vs	cursor very visible (blink)			*t_vs* *'t_vs'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_vb}
+@anchor{'t_vb'}
+@cindex t_vb
+@cindex 't_vb'
+@item t_vb @tab ビジュアルベル
+@anchor{t_ve}
+@anchor{'t_ve'}
+@cindex t_ve
+@cindex 't_ve'
+@item t_ve @tab カーソル表示
+@anchor{t_vi}
+@anchor{'t_vi'}
+@cindex t_vi
+@cindex 't_vi'
+@item t_vi @tab カーソル非表示
+@anchor{t_vs}
+@anchor{'t_vs'}
+@cindex t_vs
+@cindex 't_vs'
+@item t_vs @tab カーソル強調表示 (点滅)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*t_xs* *'t_xs'*
+	t_xs	if non-empty, standout not erased by overwriting (hpterm)
+								*t_xn* *'t_xn'*
+	t_xn	if non-empty, writing a character at the last screen cell
+		does not cause scrolling
+	t_ZH	italics mode					*t_ZH* *'t_ZH'*
+	t_ZR	italics end					*t_ZR* *'t_ZR'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_xs}
+@anchor{'t_xs'}
+@cindex t_xs
+@cindex 't_xs'
+@item t_xs @tab 空でない場合は強調が上書きによって消されない (hpterm)
+@anchor{t_xn}
+@anchor{'t_xn'}
+@cindex t_xn
+@cindex 't_xn'
+@item t_xn @tab 空ではない場合、画面の右端のセルに書いた文字はスクロールを発生させない
+@anchor{t_ZH}
+@anchor{'t_ZH'}
+@cindex t_ZH
+@cindex 't_ZH'
+@item t_ZH @tab 斜体モード
+@anchor{t_ZR}
+@anchor{'t_ZR'}
+@cindex t_ZR
+@cindex 't_ZR'
+@item t_ZR @tab 斜体終了
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Added by Vim (there are no standard codes for these):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec Vim 独自のもの (標準的なコードはないもの):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_Ce	undercurl end					*t_Ce* *'t_Ce'*
+	t_Cs	undercurl mode					*t_Cs* *'t_Cs'*
+	t_Te	strikethrough end				*t_Te* *'t_Te'*
+	t_Ts	strikethrough mode				*t_Ts* *'t_Ts'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .75
+@anchor{t_Ce}
+@anchor{'t_Ce'}
+@cindex t_Ce
+@cindex 't_Ce'
+@item t_Ce @tab 下波線終了
+@anchor{t_Cs}
+@anchor{'t_Cs'}
+@cindex t_Cs
+@cindex 't_Cs'
+@item t_Cs @tab 下波線モード
+@anchor{t_Te}
+@anchor{'t_Te'}
+@cindex t_Te
+@cindex 't_Te'
+@item t_Te @tab 打ち消し線終了
+@anchor{t_Ts}
+@anchor{'t_Ts'}
+@cindex t_Ts
+@cindex 't_Ts'
+@item t_Ts @tab 打ち消し線モード
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_IS	set icon text start				*t_IS* *'t_IS'*
+	t_IE	set icon text end				*t_IE* *'t_IE'*
+	t_WP	set window position (Y, X) in pixels		*t_WP* *'t_WP'*
+	t_GP	get window position (Y, X) in pixels		*t_GP* *'t_GP'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_IS}
+@anchor{'t_IS'}
+@cindex t_IS
+@cindex 't_IS'
+@item t_IS @tab アイコンテキスト設定開始
+@anchor{t_IE}
+@anchor{'t_IE'}
+@cindex t_IE
+@cindex 't_IE'
+@item t_IE @tab アイコンテキスト設定終了
+@anchor{t_WP}
+@anchor{'t_WP'}
+@cindex t_WP
+@cindex 't_WP'
+@item t_WP @tab ウィンドウ位置 (Y, X) をピクセルで指定
+@anchor{t_GP}
+@anchor{'t_GP'}
+@cindex t_GP
+@cindex 't_GP'
+@item t_GP @tab ウィンドウ位置 (Y, X) をピクセルで取得
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_WS	set window size (height, width in cells)	*t_WS* *'t_WS'*
+	t_VS	cursor normally visible (no blink)		*t_VS* *'t_VS'*
+	t_SI	start insert mode (bar cursor shape)		*t_SI* *'t_SI'*
+	t_SR	start replace mode (underline cursor shape)	*t_SR* *'t_SR'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_WS}
+@anchor{'t_WS'}
+@cindex t_WS
+@cindex 't_WS'
+@item t_WS @tab ウィンドウサイズ (height, width) をセルで指定
+@anchor{t_VS}
+@anchor{'t_VS'}
+@cindex t_VS
+@cindex 't_VS'
+@item t_VS @tab 標準カーソルの見た目 (点滅なし)
+@anchor{t_SI}
+@anchor{'t_SI'}
+@cindex t_SI
+@cindex 't_SI'
+@item t_SI @tab 挿入モード開始 (バー型のカーソル)
+@anchor{t_SR}
+@anchor{'t_SR'}
+@cindex t_SR
+@cindex 't_SR'
+@item t_SR @tab 置換モードの開始 (下線型のカーソル)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_EI	end insert or replace mode (block cursor shape)	*t_EI* *'t_EI'*
+		|termcap-cursor-shape|
+	t_RV	request terminal version string (for xterm)	*t_RV* *'t_RV'*
+		|xterm-8bit| |v:termresponse| |'ttymouse'| |xterm-codes|
+	t_u7	request cursor position (for xterm)		*t_u7* *'t_u7'*
+		see |'ambiwidth'|
+	t_RF	request terminal foreground color		*t_RF* *'t_RF'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_EI}
+@anchor{'t_EI'}
+@cindex t_EI
+@cindex 't_EI'
+@item t_EI @tab 挿入または置換モード終了 (ブロック型カーソル) |termcap-cursor-shape|
+@anchor{t_RV}
+@anchor{'t_RV'}
+@cindex t_RV
+@cindex 't_RV'
+@item t_RV @tab 端末バージョン文字列を要求 (xterm 用) |xterm-8bit| |v:termresponse| |'ttymouse'| |xterm-codes|
+@anchor{t_u7}
+@anchor{'t_u7'}
+@cindex t_u7
+@cindex 't_u7'
+@item t_u7 @tab カーソル位置を要求 (xterm 用) |'ambiwidth'| 参照
+@anchor{t_RF}
+@anchor{'t_RF'}
+@cindex t_RF
+@cindex 't_RF'
+@item t_RF @tab 端末の前景色を要求
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_RB	request terminal background color		*t_RB* *'t_RB'*
+	t_8f	set foreground color (R, G, B)			*t_8f* *'t_8f'*
+		|xterm-true-color|
+	t_8b	set background color (R, G, B)			*t_8b* *'t_8b'*
+		|xterm-true-color|
+	t_BE	enable bracketed paste mode			*t_BE* *'t_BE'*
+		|xterm-bracketed-paste|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_RB}
+@anchor{'t_RB'}
+@cindex t_RB
+@cindex 't_RB'
+@item t_RB @tab 端末の背景色を要求
+@anchor{t_8f}
+@anchor{'t_8f'}
+@cindex t_8f
+@cindex 't_8f'
+@item t_8f @tab 前景色を設定する (R, G, B) |xterm-true-color|
+@anchor{t_8b}
+@anchor{'t_8b'}
+@cindex t_8b
+@cindex 't_8b'
+@item t_8b @tab 背景色を設定する (R, G, B) |xterm-true-color|
+@anchor{t_BE}
+@anchor{'t_BE'}
+@cindex t_BE
+@cindex 't_BE'
+@item t_BE @tab bracketed paste モードを有効化する |xterm-bracketed-paste|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_BD	disable bracketed paste mode			*t_BD* *'t_BD'*
+		|xterm-bracketed-paste|
+	t_SC	set cursor color start				*t_SC* *'t_SC'*
+	t_EC	set cursor color end				*t_EC* *'t_EC'*
+	t_SH	set cursor shape				*t_SH* *'t_SH'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_BD}
+@anchor{'t_BD'}
+@cindex t_BD
+@cindex 't_BD'
+@item t_BD @tab bracketed paste モードを無効化する |xterm-bracketed-paste|
+@anchor{t_SC}
+@anchor{'t_SC'}
+@cindex t_SC
+@cindex 't_SC'
+@item t_SC @tab カーソル色の開始を設定する
+@anchor{t_EC}
+@anchor{'t_EC'}
+@cindex t_EC
+@cindex 't_EC'
+@item t_EC @tab カーソル色の終了を設定する
+@anchor{t_SH}
+@anchor{'t_SH'}
+@cindex t_SH
+@cindex 't_SH'
+@item t_SH @tab カーソルの形を設定する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_RC	request terminal cursor blinking		*t_RC* *'t_RC'*
+	t_RS	request terminal cursor style			*t_RS* *'t_RS'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_RC}
+@anchor{'t_RC'}
+@cindex t_RC
+@cindex 't_RC'
+@item t_RC @tab 端末のカーソルに点滅を要求する
+@anchor{t_RS}
+@anchor{'t_RS'}
+@cindex t_RS
+@cindex 't_RS'
+@item t_RS @tab 端末のカーソルにスタイルを要求する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some codes have a start, middle and end part.  The start and end are defined
+by the termcap option, the middle part is text.
+	set title text:     t_ts {title text} t_fs
+	set icon text:      t_IS {icon text} t_IE
+	set cursor color:   t_SC  {color name}  t_EC
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+いくつかのコードは開始、中間、終了のパートがある。開始と終了は termcap オプションで定義されていて、中間部分はテキストである。
+@example
+set title text:     t_ts @{title text@} t_fs
+set icon text:      t_IS @{icon text@} t_IE
+set cursor color:   t_SC  @{color name@}  t_EC
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+t_SH must take one argument:
+	0, 1 or none  	blinking block cursor
+	2	      	block cursor
+	3		blinking underline cursor
+	4		underline cursor
+	5		blinking vertical bar cursor
+	6		vertical bar cursor
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+t_SH は 1 つの引数を持たなければならない:
+@multitable @columnfractions .2 .8
+@item 0, 1 または none @tab 点滅するブロックカーソル
+@item 2 @tab ブロックカーソル
+@item 3 @tab 点滅する下線カーソル
+@item 4 @tab 下線カーソル
+@item 5 @tab 点滅する縦棒カーソル
+@item 6 @tab 縦棒カーソル
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+t_RS is sent only if the response to t_RV has been received.  It is not used
+on Mac OS when Terminal.app could be recognized from the termresponse.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+t_RS は、t_RV への応答が受け取られた場合のみ送信される。これは termresponse から Terminal.app であると認識されたときには、Mac OS では使用されない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+KEY CODES						*terminal-key-codes*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-key-codes}
+@cindex terminal-key-codes
+@unnumberedsubsec キーコード
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Note: Use the <> form if possible
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+可能なかぎり <> 形式を使ってください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	option	name		meaning	~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@headitem オプション名 @tab 意味
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	t_ku	<Up>		arrow up			*t_ku* *'t_ku'*
+	t_kd	<Down>		arrow down			*t_kd* *'t_kd'*
+	t_kr	<Right>		arrow right			*t_kr* *'t_kr'*
+	t_kl	<Left>		arrow left			*t_kl* *'t_kl'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_ku}
+@anchor{'t_ku'}
+@cindex t_ku
+@cindex 't_ku'
+@item t_ku <Up> @tab カーソル上
+@anchor{t_kd}
+@anchor{'t_kd'}
+@cindex t_kd
+@cindex 't_kd'
+@item t_kd <Down> @tab カーソル下
+@anchor{t_kr}
+@anchor{'t_kr'}
+@cindex t_kr
+@cindex 't_kr'
+@item t_kr <Right> @tab カーソル右
+@anchor{t_kl}
+@anchor{'t_kl'}
+@cindex t_kl
+@cindex 't_kl'
+@item t_kl <Left> @tab カーソル左
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		<xUp>		alternate arrow up		*<xUp>*
+		<xDown>		alternate arrow down		*<xDown>*
+		<xRight>	alternate arrow right		*<xRight>*
+		<xLeft>		alternate arrow left		*<xLeft>*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<xUp>}
+@cindex <xUp>
+@item @ @ @ @ @ <xUp> @tab カーソル上の代替
+@anchor{<xDown>}
+@cindex <xDown>
+@item @ @ @ @ @ <xDown> @tab カーソル下の代替
+@anchor{<xRight>}
+@cindex <xRight>
+@item @ @ @ @ @ <xRight> @tab カーソル右の代替
+@anchor{<xLeft>}
+@cindex <xLeft>
+@item @ @ @ @ @ <xLeft> @tab カーソル左の代替
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		<S-Up>		shift arrow up
+		<S-Down>	shift arrow down
+	t_%i	<S-Right>	shift arrow right		*t_%i* *'t_%i'*
+	t_#4	<S-Left>	shift arrow left		*t_#4* *'t_#4'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @ @ @ @ <S-Up> @tab シフト＋カーソル上
+@item @ @ @ @ @ <S-Down> @tab シフト＋カーソル下
+@anchor{t_%i}
+@anchor{'t_%i'}
+@cindex t_%i
+@cindex 't_%i'
+@item t_%i <S-Right> @tab シフト＋カーソル右
+@anchor{t_#4}
+@anchor{'t_#4'}
+@cindex t_#4
+@cindex 't_#4'
+@item t_#4 <S-Left> @tab シフト＋カーソル左
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_k1	<F1>		function key 1			*t_k1* *'t_k1'*
+		<xF1>		alternate F1			*<xF1>*
+	t_k2	<F2>		function key 2		*<F2>*	*t_k2* *'t_k2'*
+		<xF2>		alternate F2			*<xF2>*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_k1}
+@anchor{'t_k1'}
+@cindex t_k1
+@cindex 't_k1'
+@item t_k1 <F1> @tab F1
+@anchor{<xF1>}
+@cindex <xF1>
+@item @ @ @ @ @ <xF1> @tab もう 1 つの F1
+@anchor{<F2>}
+@anchor{t_k2}
+@anchor{'t_k2'}
+@cindex <F2>
+@cindex t_k2
+@cindex 't_k2'
+@item t_k2 <F2> @tab F2
+@anchor{<xF2>}
+@cindex <xF2>
+@item @ @ @ @ @ <xF2> @tab もう 1 つの F2
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_k3	<F3>		function key 3		*<F3>*	*t_k3* *'t_k3'*
+		<xF3>		alternate F3			*<xF3>*
+	t_k4	<F4>		function key 4		*<F4>*	*t_k4* *'t_k4'*
+		<xF4>		alternate F4			*<xF4>*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<F3>}
+@anchor{t_k3}
+@anchor{'t_k3'}
+@cindex <F3>
+@cindex t_k3
+@cindex 't_k3'
+@item t_k3 <F3> @tab F3
+@anchor{<xF3>}
+@cindex <xF3>
+@item @ @ @ @ @ <xF3> @tab もう 1 つの F3
+@anchor{<F4>}
+@anchor{t_k4}
+@anchor{'t_k4'}
+@cindex <F4>
+@cindex t_k4
+@cindex 't_k4'
+@item t_k4 <F4> @tab F4
+@anchor{<xF4>}
+@cindex <xF4>
+@item @ @ @ @ @ <xF4> @tab もう 1 つの F4
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_k5	<F5>		function key 5		*<F5>*	*t_k5* *'t_k5'*
+	t_k6	<F6>		function key 6		*<F6>*	*t_k6* *'t_k6'*
+	t_k7	<F7>		function key 7		*<F7>*	*t_k7* *'t_k7'*
+	t_k8	<F8>		function key 8		*<F8>*	*t_k8* *'t_k8'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<F5>}
+@anchor{t_k5}
+@anchor{'t_k5'}
+@cindex <F5>
+@cindex t_k5
+@cindex 't_k5'
+@item t_k5 <F5> @tab F5
+@anchor{<F6>}
+@anchor{t_k6}
+@anchor{'t_k6'}
+@cindex <F6>
+@cindex t_k6
+@cindex 't_k6'
+@item t_k6 <F6> @tab F6
+@anchor{<F7>}
+@anchor{t_k7}
+@anchor{'t_k7'}
+@cindex <F7>
+@cindex t_k7
+@cindex 't_k7'
+@item t_k7 <F7> @tab F7
+@anchor{<F8>}
+@anchor{t_k8}
+@anchor{'t_k8'}
+@cindex <F8>
+@cindex t_k8
+@cindex 't_k8'
+@item t_k8 <F8> @tab F8
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_k9	<F9>		function key 9		*<F9>*	*t_k9* *'t_k9'*
+	t_k;	<F10>		function key 10		*<F10>*	*t_k;* *'t_k;'*
+	t_F1	<F11>		function key 11		*<F11>*	*t_F1* *'t_F1'*
+	t_F2	<F12>		function key 12		*<F12>*	*t_F2* *'t_F2'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<F9>}
+@anchor{t_k9}
+@anchor{'t_k9'}
+@cindex <F9>
+@cindex t_k9
+@cindex 't_k9'
+@item t_k9 <F9> @tab F9
+@anchor{<F10>}
+@anchor{t_k;}
+@anchor{'t_k;'}
+@cindex <F10>
+@cindex t_k;
+@cindex 't_k;'
+@item t_k; <F10> @tab F10
+@anchor{<F11>}
+@anchor{t_F1}
+@anchor{'t_F1'}
+@cindex <F11>
+@cindex t_F1
+@cindex 't_F1'
+@item t_F1 <F11> @tab F11
+@anchor{<F12>}
+@anchor{t_F2}
+@anchor{'t_F2'}
+@cindex <F12>
+@cindex t_F2
+@cindex 't_F2'
+@item t_F2 <F12> @tab F12
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_F3	<F13>		function key 13		*<F13>*	*t_F3* *'t_F3'*
+	t_F4	<F14>		function key 14		*<F14>*	*t_F4* *'t_F4'*
+	t_F5	<F15>		function key 15		*<F15>*	*t_F5* *'t_F5'*
+	t_F6	<F16>		function key 16		*<F16>*	*t_F6* *'t_F6'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<F13>}
+@anchor{t_F3}
+@anchor{'t_F3'}
+@cindex <F13>
+@cindex t_F3
+@cindex 't_F3'
+@item t_F3 <F13> @tab F13
+@anchor{<F14>}
+@anchor{t_F4}
+@anchor{'t_F4'}
+@cindex <F14>
+@cindex t_F4
+@cindex 't_F4'
+@item t_F4 <F14> @tab F14
+@anchor{<F15>}
+@anchor{t_F5}
+@anchor{'t_F5'}
+@cindex <F15>
+@cindex t_F5
+@cindex 't_F5'
+@item t_F5 <F15> @tab F15
+@anchor{<F16>}
+@anchor{t_F6}
+@anchor{'t_F6'}
+@cindex <F16>
+@cindex t_F6
+@cindex 't_F6'
+@item t_F6 <F16> @tab F16
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_F7	<F17>		function key 17		*<F17>*	*t_F7* *'t_F7'*
+	t_F8	<F18>		function key 18		*<F18>*	*t_F8* *'t_F8'*
+	t_F9	<F19>		function key 19		*<F19>*	*t_F9* *'t_F9'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<F17>}
+@anchor{t_F7}
+@anchor{'t_F7'}
+@cindex <F17>
+@cindex t_F7
+@cindex 't_F7'
+@item t_F7 <F17> @tab F17
+@anchor{<F18>}
+@anchor{t_F8}
+@anchor{'t_F8'}
+@cindex <F18>
+@cindex t_F8
+@cindex 't_F8'
+@item t_F8 <F18> @tab F18
+@anchor{<F19>}
+@anchor{t_F9}
+@anchor{'t_F9'}
+@cindex <F19>
+@cindex t_F9
+@cindex 't_F9'
+@item t_F9 <F19> @tab F19
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		<S-F1>		shifted function key 1
+		<S-xF1>		alternate <S-F1>		*<S-xF1>*
+		<S-F2>		shifted function key 2		*<S-F2>*
+		<S-xF2>		alternate <S-F2>		*<S-xF2>*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @ @ @ @ <S-F1> @tab シフト＋F1
+@anchor{<S-xF1>}
+@cindex <S-xF1>
+@item @ @ @ @ @ <S-xF1> @tab もう 1 つの <S-F1>
+@anchor{<S-F2>}
+@cindex <S-F2>
+@item @ @ @ @ @ <S-F2> @tab シフト＋F2
+@anchor{<S-xF2>}
+@cindex <S-xF2>
+@item @ @ @ @ @ <S-xF2> @tab もう 1 つの <S-F2>
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		<S-F3>		shifted function key 3		*<S-F3>*
+		<S-xF3>		alternate <S-F3>		*<S-xF3>*
+		<S-F4>		shifted function key 4		*<S-F4>*
+		<S-xF4>		alternate <S-F4>		*<S-xF4>*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<S-F3>}
+@cindex <S-F3>
+@item @ @ @ @ @ <S-F3> @tab シフト＋F3
+@anchor{<S-xF3>}
+@cindex <S-xF3>
+@item @ @ @ @ @ <S-xF3> @tab もう 1 つの <S-F3>
+@anchor{<S-F4>}
+@cindex <S-F4>
+@item @ @ @ @ @ <S-F4> @tab シフト＋F4
+@anchor{<S-xF4>}
+@cindex <S-xF4>
+@item @ @ @ @ @ <S-xF4> @tab もう 1 つの <S-F4>
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		<S-F5>		shifted function key 5		*<S-F5>*
+		<S-F6>		shifted function key 6		*<S-F6>*
+		<S-F7>		shifted function key 7		*<S-F7>*
+		<S-F8>		shifted function key 8		*<S-F8>*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<S-xF5>}
+@cindex <S-xF5>
+@item @ @ @ @ @ <S-F5> @tab シフト＋F5
+@anchor{<S-xF6>}
+@cindex <S-xF6>
+@item @ @ @ @ @ <S-F6> @tab シフト＋F6
+@anchor{<S-xF7>}
+@cindex <S-xF7>
+@item @ @ @ @ @ <S-F7> @tab シフト＋F7
+@anchor{<S-xF8>}
+@cindex <S-xF8>
+@item @ @ @ @ @ <S-F8> @tab シフト＋F8
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		<S-F9>		shifted function key 9		*<S-F9>*
+		<S-F10>		shifted function key 10		*<S-F10>*
+		<S-F11>		shifted function key 11		*<S-F11>*
+		<S-F12>		shifted function key 12		*<S-F12>*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<S-xF9>}
+@cindex <S-xF9>
+@item @ @ @ @ @ <S-F9> @tab シフト＋F9
+@anchor{<S-xF10>}
+@cindex <S-xF10>
+@item @ @ @ @ @ <S-F10> @tab シフト＋F10
+@anchor{<S-xF11>}
+@cindex <S-xF11>
+@item @ @ @ @ @ <S-F11> @tab シフト＋F11
+@anchor{<S-xF12>}
+@cindex <S-xF12>
+@item @ @ @ @ @ <S-F12> @tab シフト＋F12
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_%1	<Help>		help key			*t_%1* *'t_%1'*
+	t_&8	<Undo>		undo key			*t_&8* *'t_&8'*
+	t_kI	<Insert>	insert key			*t_kI* *'t_kI'*
+	t_kD	<Del>		delete key			*t_kD* *'t_kD'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_%1}
+@anchor{'t_%1'}
+@cindex t_%1
+@cindex 't_%1'
+@item t_%1 <Help> @tab ヘルプキー
+@anchor{t_&8}
+@anchor{'t_&8'}
+@cindex t_&8
+@cindex 't_&8'
+@item t_&8 <Undo> @tab アンドゥキー
+@anchor{t_kI}
+@anchor{'t_kI'}
+@cindex t_kI
+@cindex 't_kI'
+@item t_kI <Insert> @tab インサートキー
+@anchor{t_kD}
+@anchor{'t_kD'}
+@cindex t_kD
+@cindex 't_kD'
+@item t_kD <Del> @tab デリートキー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_kb	<BS>		backspace key			*t_kb* *'t_kb'*
+	t_kB	<S-Tab>		back-tab (shift-tab)  *<S-Tab>*	*t_kB* *'t_kB'*
+	t_kh	<Home>		home key			*t_kh* *'t_kh'*
+	t_#2	<S-Home>	shifted home key     *<S-Home>*	*t_#2* *'t_#2'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_kb}
+@anchor{'t_kb'}
+@cindex t_kb
+@cindex 't_kb'
+@item t_kb <BS> @tab バックスペースキー
+@anchor{<S-Tab>}
+@anchor{t_kB}
+@anchor{'t_kB'}
+@cindex <S-Tab>
+@cindex t_kB
+@cindex 't_kB'
+@item t_kB <S-Tab> @tab バックタブ(シフト＋タブ)
+@anchor{t_kh}
+@anchor{'t_kh'}
+@cindex t_kh
+@cindex 't_kh'
+@item t_kh <Home> @tab ホームキー
+@anchor{<S-Home>}
+@anchor{t_#2}
+@anchor{'t_#2'}
+@cindex <S-Home>
+@cindex t_#2
+@cindex 't_#2'
+@item t_#2 <S-Home> @tab シフト＋ホームキー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		<xHome>		alternate home key		*<xHome>*
+	t_@7	<End>		end key				*t_@7* *'t_@7'*
+	t_*7	<S-End>		shifted end key	*<S-End>* *t_star7* *'t_star7'*
+		<xEnd>		alternate end key		*<xEnd>*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<xHome>}
+@cindex <xHome>
+@item @ @ @ @ @ <xHome> @tab もう 1 つのホームキー
+@anchor{t_@@7}
+@anchor{'t_@@7'}
+@cindex t_@@7
+@cindex 't_@@7'
+@item t_@@7 <End> @tab エンドキー
+@anchor{<S-End>}
+@anchor{t_star7}
+@anchor{'t_star7'}
+@cindex <S-End>
+@cindex t_star7
+@cindex 't_star7'
+@item t_*7 <S-End> @tab シフト＋エンドキー
+@anchor{<xEnd>}
+@cindex <xEnd>
+@item @ @ @ @ @ <xEnd> @tab もう 1 つのエンドキー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_kP	<PageUp>	page-up key			*t_kP* *'t_kP'*
+	t_kN	<PageDown>	page-down key			*t_kN* *'t_kN'*
+	t_K1	<kHome>		keypad home key			*t_K1* *'t_K1'*
+	t_K4	<kEnd>		keypad end key			*t_K4* *'t_K4'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_kP}
+@anchor{'t_kP'}
+@cindex t_kP
+@cindex 't_kP'
+@item t_kP <PageUp> @tab ページアップキー
+@anchor{t_kN}
+@anchor{'t_kN'}
+@cindex t_kN
+@cindex 't_kN'
+@item t_kN <PageDown> @tab ページダウンキー
+@anchor{t_K1}
+@anchor{'t_K1'}
+@cindex t_K1
+@cindex 't_K1'
+@item t_K1 <kHome> @tab キーパッドホームキー
+@anchor{t_K4}
+@anchor{'t_K4'}
+@cindex t_K4
+@cindex 't_K4'
+@item t_K4 <kEnd> @tab キーパッドエンドキー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_K3	<kPageUp>	keypad page-up key		*t_K3* *'t_K3'*
+	t_K5	<kPageDown>	keypad page-down key		*t_K5* *'t_K5'*
+	t_K6	<kPlus>		keypad plus key	      *<kPlus>*	*t_K6* *'t_K6'*
+	t_K7	<kMinus>	keypad minus key     *<kMinus>*	*t_K7* *'t_K7'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_K3}
+@anchor{'t_K3'}
+@cindex t_K3
+@cindex 't_K3'
+@item t_K3 <kPageUp> @tab キーパッドページアップキー
+@anchor{t_K5}
+@anchor{'t_K5'}
+@cindex t_K5
+@cindex 't_K5'
+@item t_K5 <kPageDown> @tab キーパッドページダウンキー
+@anchor{<kPlus>}
+@anchor{t_K6}
+@anchor{'t_K6'}
+@cindex <kPlus>
+@cindex t_K6
+@cindex 't_K6'
+@item t_K6 <kPlus> @tab キーパッドプラスキー
+@anchor{<kMinus>}
+@anchor{t_K7}
+@anchor{'t_K7'}
+@cindex <kMinus>
+@cindex t_K7
+@cindex 't_K7'
+@item t_K7 <kMinus> @tab キーパッドマイナスキー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_K8	<kDivide>	keypad divide	    *<kDivide>*	*t_K8* *'t_K8'*
+	t_K9	<kMultiply>	keypad multiply   *<kMultiply>*	*t_K9* *'t_K9'*
+	t_KA	<kEnter>	keypad enter key     *<kEnter>*	*t_KA* *'t_KA'*
+	t_KB	<kPoint>	keypad decimal point *<kPoint>*	*t_KB* *'t_KB'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<kDivide>}
+@anchor{t_K8}
+@anchor{'t_K8'}
+@cindex <kDivide>
+@cindex t_K8
+@cindex 't_K8'
+@item t_K8 <kDivide> @tab キーパッド /
+@anchor{<kMultiply>}
+@anchor{t_K9}
+@anchor{'t_K9'}
+@cindex <kMultiply>
+@cindex t_K9
+@cindex 't_K9'
+@item t_K9 <kMultiply> @tab キーパッド *
+@anchor{<kEnter>}
+@anchor{t_KA}
+@anchor{'t_KA'}
+@cindex <kEnter>
+@cindex t_KA
+@cindex 't_KA'
+@item t_KA <kEnter> @tab キーパッドエンターキー
+@anchor{<kPoint>}
+@anchor{t_KB}
+@anchor{'t_KB'}
+@cindex <kPoint>
+@cindex t_KB
+@cindex 't_KB'
+@item t_KB <kPoint> @tab キーパッド .
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_KC	<k0>		keypad 0		 *<k0>*	*t_KC* *'t_KC'*
+	t_KD	<k1>		keypad 1		 *<k1>*	*t_KD* *'t_KD'*
+	t_KE	<k2>		keypad 2		 *<k2>*	*t_KE* *'t_KE'*
+	t_KF	<k3>		keypad 3		 *<k3>*	*t_KF* *'t_KF'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<k0>}
+@anchor{t_KC}
+@anchor{'t_KC'}
+@cindex <k0>
+@cindex t_KC
+@cindex 't_KC'
+@item t_KC <k0> @tab キーパッド 0
+@anchor{<k1>}
+@anchor{t_KD}
+@anchor{'t_KD'}
+@cindex <k1>
+@cindex t_KD
+@cindex 't_KD'
+@item t_KD <k1> @tab キーパッド 1
+@anchor{<k2>}
+@anchor{t_KE}
+@anchor{'t_KE'}
+@cindex <k2>
+@cindex t_KE
+@cindex 't_KE'
+@item t_KE <k2> @tab キーパッド 2
+@anchor{<k3>}
+@anchor{t_KF}
+@anchor{'t_KF'}
+@cindex <k3>
+@cindex t_KF
+@cindex 't_KF'
+@item t_KF <k3> @tab キーパッド 3
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_KG	<k4>		keypad 4		 *<k4>*	*t_KG* *'t_KG'*
+	t_KH	<k5>		keypad 5		 *<k5>*	*t_KH* *'t_KH'*
+	t_KI	<k6>		keypad 6		 *<k6>*	*t_KI* *'t_KI'*
+	t_KJ	<k7>		keypad 7		 *<k7>*	*t_KJ* *'t_KJ'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<k4>}
+@anchor{t_KG}
+@anchor{'t_KG'}
+@cindex <k4>
+@cindex t_KG
+@cindex 't_KG'
+@item t_KG <k4> @tab キーパッド 4
+@anchor{<k5>}
+@anchor{t_KH}
+@anchor{'t_KH'}
+@cindex <k5>
+@cindex t_KH
+@cindex 't_KH'
+@item t_KH <k5> @tab キーパッド 5
+@anchor{<k6>}
+@anchor{t_KI}
+@anchor{'t_KI'}
+@cindex <k6>
+@cindex t_KI
+@cindex 't_KI'
+@item t_KI <k6> @tab キーパッド 6
+@anchor{<k7>}
+@anchor{t_KJ}
+@anchor{'t_KJ'}
+@cindex <k7>
+@cindex t_KJ
+@cindex 't_KJ'
+@item t_KJ <k7> @tab キーパッド 7
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_KK	<k8>		keypad 8		 *<k8>*	*t_KK* *'t_KK'*
+	t_KL	<k9>		keypad 9		 *<k9>*	*t_KL* *'t_KL'*
+		<Mouse>		leader of mouse code		*<Mouse>*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<k8>}
+@anchor{t_KK}
+@anchor{'t_KK'}
+@cindex <k8>
+@cindex t_KK
+@cindex 't_KK'
+@item t_KK <k8> @tab キーパッド 8
+@anchor{<k9>}
+@anchor{t_KL}
+@anchor{'t_KL'}
+@cindex <k9>
+@cindex t_KL
+@cindex 't_KL'
+@item t_KL <k9> @tab キーパッド 9
+@anchor{<Mouse>}
+@cindex <Mouse>
+@item @ @ @ @ @ <Mouse> @tab マウスコードの先頭部分
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*t_PS* *'t_PS'*
+	t_PS	start of bracketed paste |xterm-bracketed-paste|
+	t_PE	end of bracketed paste |xterm-bracketed-paste|  *t_PE* *'t_PE'*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_PS}
+@anchor{'t_PS'}
+@cindex t_PS
+@cindex 't_PS'
+@item t_PS @tab bracketed paste の開始 |xterm-bracketed-paste|
+@anchor{t_PE}
+@anchor{'t_PE'}
+@cindex t_PE
+@cindex 't_PE'
+@item t_PE @tab bracketed paste の終了 |xterm-bracketed-paste|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note about t_so and t_mr: When the termcap entry "so" is not present the
+entry for "mr" is used.  And vice versa.  The same is done for "se" and "me".
+If your terminal supports both inversion and standout mode, you can see two
+different modes.  If your terminal supports only one of the modes, both will
+look the same.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+t_so と t_mr について: termcap に "so" エントリがない場合は "mr" が使われます。逆に "mr" がない場合は "so" が使われます。"se" と "me" も同じ関係にあります。お使いの端末が反転と強調の両方をサポートしているならば、これらは別々のモードとして表示されます。これらの片方しかサポートしていない場合は、どちらも同じように表示されます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*keypad-comma*
+The keypad keys, when they are not mapped, behave like the equivalent normal
+key.  There is one exception: if you have a comma on the keypad instead of a
+decimal point, Vim will use a dot anyway.  Use these mappings to fix that: >
+	:noremap <kPoint> ,
+	:noremap! <kPoint> ,
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{keypad-comma}
+@cindex keypad-comma
+キーパッドのキーは、何かにマップされていないときは通常のキーと等価です。ただ 1 つだけ例外があります。小数点キーがあるべき場所にコンマキーがあるキーパッドの場合でも Vim では小数点として認識されます。これを修正するには次のマッピングを使ってください:
+@example
+:noremap <kPoint> ,
+:noremap! <kPoint> ,
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<							*xterm-codes*
+There is a special trick to obtain the key codes which currently only works
+for xterm.  When |t_RV| is defined and a response is received which indicates
+an xterm with patchlevel 141 or higher, Vim uses special escape sequences to
+request the key codes directly from the xterm.  The responses are used to
+adjust the various t_ codes.  This avoids the problem that the xterm can
+produce different codes, depending on the mode it is in (8-bit, VT102,
+VT220, etc.).  The result is that codes like <xF1> are no longer needed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{xterm-codes}
+@cindex xterm-codes
+キーコードを取得するトリックがあります。これは現在のところ xterm でだけ動作します。|t_RV| が定義されていて、xterm のパッチレベルが 141 以上であることを示す返信を受け取った場合、Vim は特別なエスケープシーケンスを使って xterm から直接キーコードを要求します。その返信を使って様々な t_ のコードを調整します。これによって xterm がモード (8-bit, VT102, VT220 など) によって異なるコードを出力するという問題に対応することができます。そのため、<xF1> のようなコードは必要なくなります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Note: This is only done on startup.  If the xterm options are changed after
+Vim has started, the escape sequences may not be recognized anymore.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+これは起動時にのみ行われます。Vim が起動した後で xterm のオプションが変更された場合は、これらのエスケープシーケンスはそれ以降、認識されなくなる可能性があります。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*xterm-true-color*
+Vim supports using true colors in the terminal (taken from |highlight-guifg|
+and |highlight-guibg|), given that the terminal supports this. To make this 
+work the 'termguicolors' option needs to be set.
+See https://gist.github.com/XVilka/8346728 for a list of terminals that
+support true colors.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{xterm-true-color}
+@cindex xterm-true-color
+Vim は端末がサポートするならば、トゥルーカラーを使うこと (|highlight-guifg| 及び |highlight-guibg| を流用する) をサポートします。これを機能させるには '@option{termguicolors}' オプションをセットする必要があります。トゥルーカラーをサポートする端末の一覧については @url{https://gist.github.com/XVilka/8346728} を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Sometimes setting 'termguicolors' is not enough and one has to set the |t_8f|
+and |t_8b| options explicitly. Default values of these options are
+"^[[38;2;%lu;%lu;%lum" and "^[[48;2;%lu;%lu;%lum" respectively, but it is only
+set when `$TERM` is `xterm`. Some terminals accept the same sequences, but
+with all semicolons replaced by colons (this is actually more compatible, but
+less widely supported): >
+	 let &t_8f = "\<Esc>[38:2:%lu:%lu:%lum"
+	 let &t_8b = "\<Esc>[48:2:%lu:%lu:%lum"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+場合によっては '@option{termguicolors}' を設定するだけでは不十分で、|t_8f| と |t_8b| オプションを明示的に設定しなければならないことがあります。これらのオプションのデフォルトはそれぞれ "^[[38;2;%lu;%lu;%lum" と "^[[48;2;%lu;%lu;%lum" で、`$TERM` が `xterm` の時にだけ設定されます。幾つかの端末は同じシーケンスを受け付けますが、全てのセミコロンをコロンで置き換える必要があります (実際にはコチラのほうが互換性の高い方法ですが、広くはサポートされていません):
+@example
+let &t_8f = "\<Esc>[38:2:%lu:%lu:%lum"
+let &t_8b = "\<Esc>[48:2:%lu:%lu:%lum"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These options contain printf strings, with |printf()| (actually, its C
+equivalent hence `l` modifier) invoked with the t_ option value and three
+unsigned long integers that may have any value between 0 and 255 (inclusive)
+representing red, green and blue colors respectively.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのオプションは printf 用の文字列を含んでおり、|printf()| (実際には `l` modifier ゆえに C 言語のものと同等) により t_ オプションの値と、赤、青、緑を表現する 0 から 255 の 3 つの符号なし長整数の値が組み合わされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*xterm-resize*
+Window resizing with xterm only works if the allowWindowOps resource is
+enabled.  On some systems and versions of xterm it's disabled by default
+because someone thought it would be a security issue.  It's not clear if this
+is actually the case.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{xterm-resize}
+@cindex xterm-resize
+xterm でのウィンドウサイズ変更はリソース allowWindowOps が有効なときのみ動作します。システムや xterm のバージョンによっては、セキュリティ上の問題になるとの考えにより、既定では無効になっていることがあります。それが本当に問題になるかどうかは明らかではありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To overrule the default, put this line in your ~/.Xdefaults or
+~/.Xresources:
+>
+	XTerm*allowWindowOps: 		true
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+既定値を上書きするには、次の行を ~/.Xdefaults または ~/.Xresources に書きます:
+@example
+XTerm*allowWindowOps:           true
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+And run "xrdb -merge .Xresources" to make it effective.  You can check the
+value with the context menu (right mouse button while CTRL key is pressed),
+there should be a tick at allow-window-ops.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そして "@command{xrdb -merge .Xresources}" を実行し、この設定を有効化します。コンテキストメニュー (@key{CTRL} キーを押しながらマウス右ボタン) でこの値を確認できます。allow-window-pos にチェックが入っているはずです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*termcap-colors*
+Note about colors: The 't_Co' option tells Vim the number of colors available.
+When it is non-zero, the 't_AB' and 't_AF' options are used to set the color.
+If one of these is not available, 't_Sb' and 't_Sf' are used.  't_me' is used
+to reset to the default colors.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{termcap-colors}
+@cindex termcap-colors
+@quotation
+@strong{色についての Note:} @*
+'@option{t_Co}' は利用できる色の数を示します。この値が 0 でなければ '@option{t_AB}' と '@option{t_AF}' の値を使って色を設定します。これらのうちどれかが存在しない場合は '@option{t_Sb}' と '@option{t_Sf}' が使われます。色をデフォルトに戻すのには '@option{t_me}' が使われます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				*termcap-cursor-shape* *termcap-cursor-color*
+When Vim enters Insert mode the 't_SI' escape sequence is sent.  When Vim
+enters Replace mode the 't_SR' escape sequence is sent if it is set, otherwise
+'t_SI' is sent.  When leaving Insert mode or Replace mode 't_EI' is used. This
+can be used to change the shape or color of the cursor in Insert or Replace
+mode. These are not standard termcap/terminfo entries, you need to set them
+yourself.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{termcap-cursor-shape}
+@anchor{termcap-cursor-color}
+@cindex termcap-cursor-shape
+@cindex termcap-cursor-color
+Vim が挿入モードに入るときにはエスケープシーケンス '@option{t_SI}' が送られます。置換モードに入るときにはエスケープシーケンス '@option{t_SR}' が設定されていれば送られます。設定されていない場合には '@option{t_SI}' が送られます。挿入モード及び置換モードを抜けるときには '@option{t_EI}' が送られます。これらは挿入や置換モードにおいてカーソルの形や色を変えるのに利用できます。またこれらは標準的な termcap/terminfo エントリではないので、自分で設定する必要があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Example for an xterm, this changes the color of the cursor: >
+    if &term =~ "xterm"
+	let &t_SI = "\<Esc>]12;purple\x7"
+	let &t_SR = "\<Esc>]12;red\x7"
+	let &t_EI = "\<Esc>]12;blue\x7"
+    endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下は xterm でカーソルの色を変える例です:
+@verbatim
+if &term =~ "xterm"
+    let &t_SI = "\<Esc>]12;purple\x7"
+    let &t_SR = "\<Esc>]12;red\x7"
+    let &t_EI = "\<Esc>]12;blue\x7"
+endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+NOTE: When Vim exits the shape for Normal mode will remain.  The shape from
+before Vim started will not be restored.
+{not available when compiled without the |+cursorshape| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Vim を終了するとき、ノーマルモードでのカーソル設定がそのまま残ります。Vim を起動する前のカーソル設定は復元されません。
+
+@{|+cursorshape| つきでコンパイルしたときのみ利用可能@}
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*termcap-title*
+The 't_ts' and 't_fs' options are used to set the window title if the terminal
+allows title setting via sending strings.  They are sent before and after the
+title string, respectively.  Similar 't_IS' and 't_IE'  are used to set the
+icon text.  These are Vim-internal extensions of the Unix termcap, so they
+cannot be obtained from an external termcap.  However, the builtin termcap
+contains suitable entries for xterm and iris-ansi, so you don't need to set
+them here.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{termcap-title}
+@cindex termcap-title
+文字列を送ってタイトルを変更できる端末の場合は '@option{t_ts}' と '@option{t_fs}' を使ってウィンドウタイトルを変更できます。これらがタイトル文字列の前後に送られます。同様に '@option{t_IS}' と '@option{t_IE}' を使ってアイコンテキストが設定されます。これらの termcap エントリは Vim 独自の拡張であり、外部の termcap からこれらを取得することはできません。しかし組み込みの termcap に xterm と iris-ansi 用のエントリが含まれており、これらを自分で設定する必要はありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*hpterm*
+If inversion or other highlighting does not work correctly, try setting the
+'t_xs' option to a non-empty string.  This makes the 't_ce' code be used to
+remove highlighting from a line.  This is required for "hpterm".  Setting the
+'weirdinvert' option has the same effect as making 't_xs' non-empty, and vice
+versa.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{hpterm}
+@cindex hpterm
+もしも反転などの強調が正常に機能しない場合は、'@option{t_xs}' を空でない文字列に設定してみてください。すると '@option{t_ce}' コードを使って行から強調を取り除くようになります。"hpterm" に対してはこれが必要です。'@option{weirdinvert}' を設定すると '@option{t_xs}' を空でない値にするのと同じ効果があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*scroll-region*
+Some termcaps do not include an entry for 'cs' (scroll region), although the
+terminal does support it.  For example: xterm on a Sun.  You can use the
+builtin_xterm or define t_cs yourself.  For example: >
+	:set t_cs=^V^[[%i%d;%dr
+Where ^V is CTRL-V and ^[ is <Esc>.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{scroll-region}
+@cindex scroll-region
+端末が領域スクロールをサポートしているのに 'cs' エントリを含まない termcap があります。例えば Sun の xterm がそうです。この場合は builtin_xterm を使うか、t_cs を自分で定義します。例:
+@example
+:set t_cs=^V^[[%i%d;%dr
+@end example
+^V は @kbd{CTRL-V}、^[ は @key{<Esc>} を表します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The vertical scroll region t_CV is not a standard termcap code.  Vim uses it
+internally in the GUI.  But it can also be defined for a terminal, if you can
+find one that supports it.  The two arguments are the left and right column of
+the region which to restrict the scrolling to.  Just like t_cs defines the top
+and bottom lines.  Defining t_CV will make scrolling in vertically split
+windows a lot faster.  Don't set t_CV when t_da or t_db is set (text isn't
+cleared when scrolling).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+t_CV (領域縦スクロール) は標準的な termcap コードではありません。Vim はこれを GUI モードで内部的に使っています。しかし、領域縦スクロールに対応している端末があるなら、その端末でもこれを定義することができます。2 つの引数は、スクロールを制限する領域の左右の桁を表します。t_cs が行の上端と下端を定義するのと同じです。t_CV を定義すると垂直分割したウィンドウのスクロールがとても速くなります。t_da または t_db を設定したときは t_CV を設定しないでください(スクロールするときテキストが消去されなくなります)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Unfortunately it is not possible to deduce from the termcap how cursor
+positioning should be done when using a scrolling region: Relative to the
+beginning of the screen or relative to the beginning of the scrolling region.
+Most terminals use the first method.  A known exception is the MS-DOS console
+(pcterm).  The 't_CS' option should be set to any string when cursor
+positioning is relative to the start of the scrolling region.  It should be
+set to an empty string otherwise.  It defaults to "yes" when 'term' is
+"pcterm".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+残念ながら、領域スクロールを使用しているとき、カーソルの位置がどう変わるかを termcap から推測することは不可能です。スクリーンの始点から相対的またはスクロールさせる領域の始点から相対的になります。ほとんどの端末では前者となります。よく知られた例外は MS-DOS コンソール (pcterm) です。カーソル位置がスクロールさせる領域の始点から相対的となる場合は '@option{t_CS}' オプションになんらかの文字列を設定しなければなりません。そうでなければ空文字列となります。'@option{term}' が "@var{pcterm}" のときはデフォルトで "yes" になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note for xterm users: The shifted cursor keys normally don't work.  You can
+	make them work with the xmodmap command and some mappings in Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{xterm ユーザーへの注意:} @*
+通常、Shift + カーソルキーは使用できません。xmodmap コマンドと Vim でマッピングを使えば、これらを使用できるようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Give these commands in the xterm:
+		xmodmap -e "keysym Up = Up F13"
+		xmodmap -e "keysym Down = Down F16"
+		xmodmap -e "keysym Left = Left F18"
+		xmodmap -e "keysym Right = Right F19"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下のコマンドを xterm の中で実行します:
+@example
+xmodmap -e "keysym Up = Up F13"
+xmodmap -e "keysym Down = Down F16"
+xmodmap -e "keysym Left = Left F18"
+xmodmap -e "keysym Right = Right F19"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	And use these mappings in Vim:
+		:map <t_F3> <S-Up>
+		:map! <t_F3> <S-Up>
+		:map <t_F6> <S-Down>
+		:map! <t_F6> <S-Down>
+		:map <t_F8> <S-Left>
+		:map! <t_F8> <S-Left>
+		:map <t_F9> <S-Right>
+		:map! <t_F9> <S-Right>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そして次のマッピングを Vim の中で実行します:
+@example
+:map <t_F3> <S-Up>
+:map! <t_F3> <S-Up>
+:map <t_F6> <S-Down>
+:map! <t_F6> <S-Down>
+:map <t_F8> <S-Left>
+:map! <t_F8> <S-Left>
+:map <t_F9> <S-Right>
+:map! <t_F9> <S-Right>
+@end example
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Instead of, say, <S-Up> you can use any other command that you want to use the
+shift-cursor-up key for.  (Note: To help people that have a Sun keyboard with
+left side keys F14 is not used because it is confused with the undo key; F15
+is not used, because it does a window-to-front; F17 is not used, because it
+closes the window.  On other systems you can probably use them.)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Shift + カーソル上キーに対して <S-Up> 以外のコマンドを割り当てることもできます。
+@quotation
+@strong{Note:} @*
+左側にキーがある Sun のキーボードを使っている人を助けるために、以下のキーは使われません。
+@itemize @bullet
+@item F14 (アンドゥキーと混乱するため)
+@item F15 (ウィンドウを全面に移動するキーであるため)
+@item F17 (ウィンドウを閉じるキーであるため)
+@end itemize
+他のシステムではこれらも使用できるでしょう。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Window size						*window-size*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{window-size}
+@cindex window-size
+@section 3. ウィンドウサイズ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+[This is about the size of the whole window Vim is using, not a window that is
+created with the ":split" command.]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[これは Vim 自身のウィンドウのサイズのことです。"@command{:split}" コマンドで分割できるウィンドウのことではありません。]
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are running Vim on an Amiga and the terminal name is "amiga" or
+"builtin_amiga", the amiga-specific window resizing will be enabled.  On Unix
+systems three methods are tried to get the window size:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Amiga 上では端末名が "amiga" または "builtin_amiga" であればアミーガ固有のウィンドウリサイズ処理が有効になります。Unix ではウィンドウサイズを取得するために 3 種類の方法が試行されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- an ioctl call (TIOCGSIZE or TIOCGWINSZ, depends on your system)
+- the environment variables "LINES" and "COLUMNS"
+- from the termcap entries "li" and "co"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item ioctl 呼び出し (システムによって TIOCGSIZE か TIOCGWINSZ のどちらか)
+@item 環境変数 "@var{LINES}" と "@var{COLUMNS}"
+@item termcap エントリ "li" と "co"
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If everything fails a default size of 24 lines and 80 columns is assumed.  If
+a window-resize signal is received the size will be set again.  If the window
+size is wrong you can use the 'lines' and 'columns' options to set the
+correct values.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これら全てが失敗した場合はデフォルトの 24 行 80 桁とみなされます。ウィンドウサイズ変更のシグナルを受け取るとそのサイズに再設定されます。ウィンドウサイズが正しくない場合は、オプション '@option{lines}' と '@option{columns}' で正しい値を設定することができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+One command can be used to set the screen size:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スクリーンサイズを設定するには次のコマンドを使います:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:mod* *:mode* *E359*
+:mod[e] [mode]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:mod}
+@anchor{:mode}
+@anchor{E359}
+@cindex :mod
+@cindex :mode
+@cindex E359
+@table @asis
+@item :mod[e] [mode]
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Without argument this only detects the screen size and redraws the screen.
+With MS-DOS it is possible to switch screen mode.  [mode] can be one of these
+values:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数が指定されない場合はスクリーンサイズを検出し、スクリーンを再描画します。MS-DOS ではスクリーンモードを切り替えることが可能です。[mode] は以下のうちのどれか 1 つです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	"bw40"		40 columns black&white
+	"c40"		40 columns color
+	"bw80"		80 columns black&white
+	"c80"		80 columns color (most people use this)
+	"mono"		80 columns monochrome
+	"c4350"		43 or 50 lines EGA/VGA mode
+	number		mode number to use, depends on your video card
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item "bw40" @tab 40 桁 白黒
+@item "c40" @tab 40 桁 カラー
+@item "bw80" @tab 80 桁 白黒
+@item "c80" @tab 80 桁 カラー (ほとんどの場合はこれ)
+@item "mono" @tab 80 桁 モノクロ
+@item "c4350" @tab 43 or 50 行 EGA/VGA モード
+@item number @tab モード番号。ビデオカードに依存
+@end multitable
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Slow and fast terminals			*slow-fast-terminal*
+						*slow-terminal*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{slow-fast-terminal}
+@anchor{slow-terminal}
+@cindex slow-fast-terminal
+@cindex slow-terminal
+@section 4. 端末の速度
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you have a fast terminal you may like to set the 'ruler' option.  The
+cursor position is shown in the status line.  If you are using horizontal
+scrolling ('wrap' option off) consider setting 'sidescroll' to a small
+number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+高速な端末を使用している場合はオプション '@option{ruler}' をオンにするとよいでしょう。するとステータスラインにカーソル位置が表示されます。水平スクロールをオンにしている ('@option{wrap}' をオフ) にしているなら '@option{sidescroll}' を小さい値にするとよいでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you have a slow terminal you may want to reset the 'showcmd' option.
+The command characters will not be shown in the status line.  If the terminal
+scrolls very slowly, set the 'scrolljump' to 5 or so.  If the cursor is moved
+off the screen (e.g., with "j") Vim will scroll 5 lines at a time.  Another
+possibility is to reduce the number of lines that Vim uses with the command
+"z{height}<CR>".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+遅い端末を使用している場合はオプション '@option{showcmd}' をオフにするとよいでしょう。するとコマンド文字列がステータスラインに表示されなくなります。端末のスクロールが非常に遅いなら、'@option{scrolljump}' を 5 ぐらいにしてください。("j" などで) カーソルがスクリーンから出たとき、一度に 5 行スクロールするようになります。もう 1 つの方法は、"z@{height@}<CR>" でスクリーンの中で Vim が使う行数を減らすことです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the characters from the terminal are arriving with more than 1 second
+between them you might want to set the 'timeout' and/or 'ttimeout' option.
+See the "Options" chapter |options|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末から文字が届く間隔が1秒以上になる場合は '@option{timeout}' と '@option{ttimeout}' を設定しなおすとよいでしょう。オプションの章を参照してください |options|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If your terminal does not support a scrolling region, but it does support
+insert/delete line commands, scrolling with multiple windows may make the
+lines jump up and down.  If you don't want this set the 'ttyfast' option.
+This will redraw the window instead of scroll it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+お使いの端末が領域のスクロールをサポートしていないが、行の挿入・削除コマンドをサポートしている場合、複数のウィンドウを開いた状態でスクロールすると、行が上下するかもしれません。これが好ましくない場合は '@option{ttyfast}' をオンにしてください。するとウィンドウをスクロールするのでなく再描画するようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If your terminal scrolls very slowly, but redrawing is not slow, set the
+'ttyscroll' option to a small number, e.g., 3.  This will make Vim redraw the
+screen instead of scrolling, when there are more than 3 lines to be scrolled.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+お使いの端末におけるスクロールが非常に遅いが再描画は遅くないという場合は、'@option{ttyscroll}' を 3 などの小さな値にしてください。すると、3 行より多くスクロールする場合はスクロールでなく画面を再描画するようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are using a color terminal that is slow, use this command: >
+	hi NonText cterm=NONE ctermfg=NONE
+This avoids that spaces are sent when they have different attributes.  On most
+terminals you can't see this anyway.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+低速なカラー端末をお使いの場合は、次のコマンドを実行してください:
+@example
+hi NonText cterm=NONE ctermfg=NONE
+@end example
+すると、異なる属性を持つスペースを送信しないようになります。ほとんどの端末ではどちらにせよそれは目に見えません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are using Vim over a slow serial line, you might want to try running
+Vim inside the "screen" program.  Screen will optimize the terminal I/O quite
+a bit.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+低速なシリアル回線上で Vim を使っている場合は、"screen" プログラム上で Vim を実行するとよいかもしれません。screen は端末の入出力をほんの少し最適化します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are testing termcap options, but you cannot see what is happening,
+you might want to set the 'writedelay' option.  When non-zero, one character
+is sent to the terminal at a time (does not work for MS-DOS).  This makes the
+screen updating a lot slower, making it possible to see what is happening.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+termcap オプションをテストする際、何が起こっているかを見たいならば '@option{writedelay}' をオンにするとよいかもしれません。これがゼロでない場合、一度に 1 つの文字が端末に送られます(MS-DOS では機能しません)。そうすると画面の更新がとても遅くなり、何が起こっているかが見えるようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Using the mouse					*mouse-using*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mouse-using}
+@cindex mouse-using
+@section 5. マウスの使用
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This section is about using the mouse on a terminal or a terminal window.  How
+to use the mouse in a GUI window is explained in |gui-mouse|.  For scrolling
+with a mouse wheel see |scroll-mouse-wheel|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この節では端末や端末エミュレータ上でマウスを使う方法を説明します。GUI のウィンドウでマウスを使う方法については |gui-mouse| で説明されています。マウスホイールでスクロールする方法については |scroll-mouse-wheel| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Don't forget to enable the mouse with this command: >
+	:set mouse=a
+Otherwise Vim won't recognize the mouse in all modes (See 'mouse').
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のコマンドでマウスを有効にしてください:
+@example
+:set mouse=a
+@end example
+これを行わないと、Vim はどのモード ('@option{mouse}' を参照) でもマウスを認識できません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Currently the mouse is supported for Unix in an xterm window, in a *BSD
+console with |sysmouse|, in a Linux console (with GPM |gpm-mouse|), for
+MS-DOS and in a Windows console.
+Mouse clicks can be used to position the cursor, select an area and paste.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現時点では Unix の xterm、|sysmouse| つきの *BSD コンソール、Linux コンソール (GPM マウスにも対応 |gpm-mouse|)、MS-DOS、Windows コンソールにおいてマウスがサポートされています。
+
+マウスクリックによってカーソル位置の設定、領域の選択、ペーストを行えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These characters in the 'mouse' option tell in which situations the mouse will
+be used by Vim:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{mouse}' オプションに以下の文字を含めることにより、どの状況でマウスを有効にするかを設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		n	Normal mode
+		v	Visual mode
+		i	Insert mode
+		c	Command-line mode
+		h	all previous modes when in a help file
+		a	all previous modes
+		r	for |hit-enter| prompt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .9
+@item n @tab ノーマルモード
+@item v @tab ビジュアルモード
+@item i @tab 挿入モード
+@item c @tab コマンドラインモード
+@item h @tab ヘルプファイルを閲覧しているときの上記の 4 モード全て
+@item a @tab 上記の 4 モード全て
+@item r @tab |hit-enter| プロンプトが出ているとき
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The default for 'mouse' is empty, the mouse is not used.  Normally you would
+do: >
+	:set mouse=a
+to start using the mouse (this is equivalent to setting 'mouse' to "nvich").
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{mouse}' の既定値は空で、マウスは無効になっています。普通は次のようにしてマウスを有効にします:
+@example
+:set mouse=a
+@end example
+これは '@option{mouse}' の値を "@var{nvich}" にすることと同値です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+If you only want to use the mouse in a few modes or also want to use it for
+the two questions you will have to concatenate the letters for those modes.
+For example: >
+	:set mouse=nv
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+特定のモードでだけマウスを使いたい場合や、2つの質問のために使いたい場合は、これらの文字を組み合わせます。例:
+@example
+:set mouse=nv
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Will make the mouse work in Normal mode and Visual mode. >
+	:set mouse=h
+Will make the mouse work in help files only (so you can use "g<LeftMouse>" to
+jump to tags).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+上の例はノーマルモードとビジュアルモードでのみマウスを有効にします。
+@example
+:set mouse=h
+@end example
+上の例はヘルプファイルでのみマウスを有効にします ("g<LeftMouse>" でタグジャンプができるようになります)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Whether the selection that is started with the mouse is in Visual mode or
+Select mode depends on whether "mouse" is included in the 'selectmode'
+option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マウスで選択を開始した場合、ビジュアルモードと選択モードのどちらになるかは '@option{selectmode}' に "@var{mouse}" が含まれているかどうかによります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In an xterm, with the currently active mode included in the 'mouse' option,
+normal mouse clicks are used by Vim, mouse clicks with the shift or ctrl key
+pressed go to the xterm.  With the currently active mode not included in
+'mouse' all mouse clicks go to the xterm.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+xterm において、現在有効になっているモードが '@option{mouse}' オプションに含まれているときマウスをクリックすると、それは Vim によって処理されます。@key{Shift} や @key{Ctrl} キーを押しながらクリックすると xterm に伝わります。現在有効なモードが '@option{mouse}' に含まれていない場合、すべてのクリックは xterm に伝わります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*xterm-clipboard*
+In the Athena and Motif GUI versions, when running in a terminal and there is
+access to the X-server (DISPLAY is set), the copy and paste will behave like
+in the GUI.  If not, the middle mouse button will insert the unnamed register.
+In that case, here is how you copy and paste a piece of text:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{xterm-clipboard}
+@cindex xterm-clipboard
+Athena と Motif の GUI 版では、端末の中で動作しているときも、X サーバーとの接続があれば (DISPLAY がセットされていれば)、コピーとペーストが GUI 版と同様に動作します。そうでないときは真ん中ボタンクリックで無名レジスタが挿入されます。この場合、テキストをコピー＆ペーストする方法は次の通りです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Copy/paste with the mouse and Visual mode ('mouse' option must be set, see
+above):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ビジュアルモードでマウスを使ってコピー＆ペーストする方法 ('@option{mouse}' がセットされていなければなりません。上記参照):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. Press left mouse button on first letter of text, move mouse pointer to last
+   letter of the text and release the button.  This will start Visual mode and
+   highlight the selected area.
+2. Press "y" to yank the Visual text in the unnamed register.
+3. Click the left mouse button at the insert position.
+4. Click the middle mouse button.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item コピーしたいテキストの最初の文字の上で左ボタンを押して最後の文字の上までマウスポインタを動かし、ボタンを離します。するとビジュアルモードが開始し、選択したテキストが強調されます。
+@item "y" を押して選択したテキストを無名レジスタにヤンクします。
+@item ペーストしたい位置で左ボタンをクリックします。
+@item 真ん中ボタンをクリックします。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Shortcut: If the insert position is on the screen at the same time as the
+Visual text, you can do 2, 3 and 4 all in one: Click the middle mouse button
+at the insert position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ショートカット: ペーストしたい位置が選択したテキストと同時に画面に見えている場合は、ペーストしたい位置で真ん中ボタンをクリックすることにより、2, 3, 4 のステップを一度に行えます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: When the |-X| command line argument is used, Vim will not connect to the
+X server and copy/paste to the X clipboard (selection) will not work.  Use the
+shift key with the mouse buttons to let the xterm do the selection.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+コマンドライン引数 |-X| が指定されていると Vim は X サーバーに接続せず、X のクリップボード(セレクション)へのコピー＆ペーストは機能しません。@key{Shift} キーを押しながらクリックすることにより、xterm に選択を行わせることができます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*xterm-command-server*
+When the X-server clipboard is available, the command server described in
+|x11-clientserver| can be enabled with the --servername command line argument.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{xterm-command-server}
+@cindex xterm-command-server
+X サーバーのクリップボードを利用できるときは、コマンドライン引数 --servername を指定すると |x11-clientserver| で説明されているコマンドサーバーが有効になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*xterm-copy-paste*
+NOTE: In some (older) xterms, it's not possible to move the cursor past column
+95 or 223.  This is an xterm problem, not Vim's.  Get a newer xterm
+|color-xterm|.  Also see |'ttymouse'|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{xterm-copy-paste}
+@cindex xterm-copy-paste
+@quotation
+@strong{Note:} @*
+古い xterm では 95 桁目または 223 桁目を越えてカーソルを移動できない場合があります。これは xterm の問題であり、Vim の問題ではありません。新しい xterm を入手してください |color-xterm|。また |'ttymouse'| を参照してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Copy/paste in xterm with (current mode NOT included in 'mouse'):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+xterm でコピー＆ペーストする方法 ('@option{mouse}' に現在のモードが含まれていないとき):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. Press left mouse button on first letter of text, move mouse pointer to last
+   letter of the text and release the button.
+2. Use normal Vim commands to put the cursor at the insert position.
+3. Press "a" to start Insert mode.
+4. Click the middle mouse button.
+5. Press ESC to end Insert mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item テキストの最初の文字の上で左ボタンを押し、最後の文字までマウスポインタを動かしてからボタンを離します。
+@item 普通の Vim のコマンドを使ってカーソルをペーストしたい位置まで動かします。
+@item "a" を押して挿入モードを開始します。
+@item 真ん中ボタンを押します。
+@item @key{ESC} を押して挿入モードを抜けます。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+(The same can be done with anything in 'mouse' if you keep the shift key
+pressed while using the mouse.)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+('@option{mouse}' に含まれているモードにいる場合も、@key{Shift} キーを押しながらマウスを操作することによりどの操作も同じようにできます)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: if you lose the 8th bit when pasting (special characters are translated
+into other characters), you may have to do "stty cs8 -istrip -parenb" in your
+shell before starting Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ペーストするときに 8 ビット目が失われてしまう (特殊文字が他の文字に変換されてしまう) ときは、Vim を起動する前にシェルで "stty cs8 -istrip -parenb" としなければならないかもしれません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Thus in an xterm the shift and ctrl keys cannot be used with the mouse.  Mouse
+commands requiring the CTRL modifier can be simulated by typing the "g" key
+before using the mouse:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+xterm では @key{Shift} と @key{Ctrl} キーを押しながらマウスを使うことはできません。CTRL 修飾子を必要とするマウスコマンドは、マウス操作の前に "g" を押すことでシミュレートできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	"g<LeftMouse>"	is "<C-LeftMouse>	(jump to tag under mouse click)
+	"g<RightMouse>" is "<C-RightMouse>	("CTRL-T")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item "g<LeftMouse>" は "<C-LeftMouse> @tab (クリックした位置のタグへジャンプ)
+@item "g<RightMouse>" は "<C-RightMouse> @tab ("CTRL-T")
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*mouse-mode-table* *mouse-overview*
+A short overview of what the mouse buttons do, when 'mousemodel' is "extend":
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mouse-mode-table}
+@anchor{mouse-overview}
+@cindex mouse-mode-table
+@cindex mouse-overview
+以下は、'@option{mousemodel}' が "@var{extend}" の場合のマウスボタンの機能の概略です:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Normal Mode:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ノーマルモード:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+event	      position	   selection	  change  action	~
+	       cursor			  window		~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .2 .2 .2 .2
+@headitem イベント @tab カーソル移動 @tab 選択範囲 @tab ウィンドウ切替 @tab 動作
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<LeftMouse>     yes	     end	    yes
+<C-LeftMouse>   yes	     end	    yes	   "CTRL-]" (2)
+<S-LeftMouse>   yes	  no change	    yes	   "*" (2)    *<S-LeftMouse>*
+<LeftDrag>      yes	start or extend (1) no		      *<LeftDrag>*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item <LeftMouse> @tab yes @tab end @tab yes @tab
+@item <C-LeftMouse> @tab yes @tab end @tab yes @tab "CTRL-]" (2)
+@anchor{<S-LeftMouse>}
+@cindex <S-LeftMouse>
+@item <S-LeftMouse> @tab yes @tab no change @tab yes @tab "*" (2)
+@anchor{<LeftDrag>}
+@cindex <LeftDrag>
+@item <LeftDrag> @tab yes @tab start or extend (1) @tab no
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<LeftRelease>   yes	start or extend (1) no
+<MiddleMouse>   yes	  if not active     no	   put
+<MiddleMouse>   yes	  if active	    no	   yank and put
+<RightMouse>    yes	start or extend     yes
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item <LeftRelease> @tab yes @tab start or extend (1) @tab no @tab
+@item <MiddleMouse> @tab yes @tab if not active @tab no @tab put
+@item <MiddleMouse> @tab yes @tab if active @tab no @tab yank and put
+@item <RightMouse> @tab yes @tab start or extend @tab yes @tab
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<A-RightMouse>  yes start or extend blockw. yes		      *<A-RightMouse>*
+<S-RightMouse>  yes	   no change	    yes	   "#" (2)    *<S-RightMouse>*
+<C-RightMouse>  no	   no change	    no	   "CTRL-T"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<A-RightMouse>}
+@cindex <A-RightMouse>
+@item <A-RightMouse> @tab yes @tab start or extend blockw. @tab yes @tab
+@anchor{<S-RightMouse>}
+@cindex <S-RightMouse>
+@item <S-RightMouse> @tab yes @tab no change @tab yes @tab "#" (2)
+@item <C-RightMouse> @tab no @tab no change @tab no @tab "CTRL-T"
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<RightDrag>     yes	    extend	    no		      *<RightDrag>*
+<RightRelease>  yes	    extend	    no		      *<RightRelease>*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<RightDrag>}
+@cindex <RightDrag>
+@item <RightDrag> @tab yes @tab extend @tab no @tab
+@anchor{<RightRelease>}
+@cindex <RightRelease>
+@item <RightRelease> @tab yes @tab extend @tab no @tab 
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Insert or Replace Mode:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+挿入/置換モード:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+event	      position	   selection	  change  action	~
+	       cursor			  window		~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .2 .2 .2 .2
+@headitem イベント @tab カーソル移動 @tab 選択範囲 @tab ウィンドウ切替 @tab 動作
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<LeftMouse>     yes     (cannot be active)  yes
+<C-LeftMouse>   yes     (cannot be active)  yes	   "CTRL-O^]" (2)
+<S-LeftMouse>   yes     (cannot be active)  yes	   "CTRL-O*" (2)
+<LeftDrag>      yes     start or extend (1) no	   like CTRL-O (1)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item <LeftMouse> @tab yes @tab (cannot be active) @tab yes @tab
+@item <C-LeftMouse> @tab yes @tab (cannot be active) @tab yes @tab "CTRL-O^]" (2)
+@item <S-LeftMouse> @tab yes @tab (cannot be active) @tab yes @tab "CTRL-O*" (2)
+@item <LeftDrag> @tab yes @tab start or extend (1) @tab no @tab like CTRL-O (1)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<LeftRelease>   yes     start or extend (1) no	   like CTRL-O (1)
+<MiddleMouse>   no      (cannot be active)  no	   put register
+<RightMouse>    yes     start or extend	    yes	   like CTRL-O
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item <LeftRelease> @tab yes @tab start or extend (1) @tab no @tab like CTRL-O (1)
+@item <MiddleMouse> @tab no @tab (cannot be active) @tab no @tab put register
+@item <RightMouse> @tab yes @tab start or extend @tab yes @tab like CTRL-O
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<A-RightMouse>  yes start or extend blockw. yes
+<S-RightMouse>  yes     (cannot be active)  yes	   "CTRL-O#" (2)
+<C-RightMouse>  no	(cannot be active)  no	   "CTRL-O CTRL-T"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item <A-RightMouse> @tab yes @tab start or extend blockw. @tab yes @tab
+@item <S-RightMouse> @tab yes @tab (cannot be active) @tab yes @tab "CTRL-O#" (2)
+@item <C-RightMouse> @tab no @tab (cannot be active) @tab no @tab "CTRL-O CTRL-T"
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In a help window:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ヘルプウィンドウ:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+event	      position	   selection	  change  action	~
+	       cursor			  window		~
+<2-LeftMouse>   yes     (cannot be active)  no	   "^]" (jump to help tag)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .2 .2 .2 .2
+@headitem イベント @tab カーソル移動 @tab 選択範囲 @tab ウィンドウ切替 @tab 動作
+@item <2-LeftMouse> @tab yes @tab (cannot be active) @tab no @tab "^]" (jump to help tag)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When 'mousemodel' is "popup", these are different:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{mousemodel}' が "@var{popup}" の場合は次のように異なります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Normal Mode:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ノーマルモード:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+event	      position	   selection	  change  action	~
+	       cursor			  window		~
+<S-LeftMouse>	yes	start or extend (1) no
+<A-LeftMouse>   yes start or extend blockw. no		      *<A-LeftMouse>*
+<RightMouse>	no	popup menu	    no
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .2 .2 .2 .2
+@headitem イベント @tab カーソル移動 @tab 選択範囲 @tab ウィンドウ切替 @tab 動作
+@item <S-LeftMouse> @tab yes @tab start or extend (1) @tab no @tab
+@anchor{<A-LeftMouse>}
+@cindex <A-LeftMouse>
+@item <A-LeftMouse> @tab yes @tab start or extend blockw. @tab no @tab
+@item <RightMouse> @tab no @tab popup menu @tab no @tab
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Insert or Replace Mode:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+挿入/置換モード:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+event	      position	   selection	  change  action	~
+	       cursor			  window		~
+<S-LeftMouse>   yes     start or extend (1) no	   like CTRL-O (1)
+<A-LeftMouse>   yes start or extend blockw. no
+<RightMouse>    no	popup menu	    no
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .2 .2 .2 .2
+@headitem イベント @tab カーソル移動 @tab 選択範囲 @tab ウィンドウ切替 @tab 動作
+@item <S-LeftMouse> @tab yes @tab start or extend (1) @tab no @tab like CTRL-O (1)
+@item <A-LeftMouse> @tab yes @tab start or extend blockw. @tab no @tab
+@item <RightMouse> @tab no @tab popup menu @tab no @tab
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+(1) only if mouse pointer moved since press
+(2) only if click is in same buffer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{備考:} @*
+(1) 押してからマウスポインタが移動したときのみ @*
+(2) 同一バッファでクリックしたときのみ
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Clicking the left mouse button causes the cursor to be positioned.  If the
+click is in another window that window is made the active window.  When
+editing the command-line the cursor can only be positioned on the
+command-line.  When in Insert mode Vim remains in Insert mode.  If 'scrolloff'
+is set, and the cursor is positioned within 'scrolloff' lines from the window
+border, the text is scrolled.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+左ボタンをクリックするとカーソルが移動します。他のウィンドウ内でクリックするとそのウィンドウがアクティブになります。コマンドラインを編集中はコマンドライン内でカーソルが移動します。挿入モードでクリックしたときは挿入モードのままです。
+
+'@option{scrolloff}' がセットされている場合は、ウィンドウの境界から '@option{scrolloff}' 行数内の範囲にカーソルが移動し、テキストがスクロールします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A selection can be started by pressing the left mouse button on the first
+character, moving the mouse to the last character, then releasing the mouse
+button.  You will not always see the selection until you release the button,
+only in some versions (GUI, MS-DOS, WIN32) will the dragging be shown
+immediately.  Note that you can make the text scroll by moving the mouse at
+least one character in the first/last line in the window when 'scrolloff' is
+non-zero.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+選択は、左ボタンを押すと始まり、カーソルを移動してボタンを離すことで行います。ボタンを離すまでは選択が見えるようにならない場合もあります。GUI, MS-DOS, WIN32 などいくつかのバージョンでのみドラッグが即座に表示されます。'@option{scrolloff}' がゼロでない場合、ウィンドウの最初/最後の行で1文字以上動かすとテキストがスクロールする可能性があることに注意してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In Normal, Visual and Select mode clicking the right mouse button causes the
+Visual area to be extended.  When 'mousemodel' is "popup", the left button has
+to be used while keeping the shift key pressed.  When clicking in a window
+which is editing another buffer, the Visual or Select mode is stopped.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ノーマルモード、ビジュアルモード、選択モードで右ボタンをクリックすると選択範囲が拡大します。ただし、'@option{mousemodel}' が "@var{popup}" のときは、@key{Shift} キーを押したままで左ボタンをクリックします。他のバッファを開いているウィンドウの中をクリックするとビジュアルモードと選択モードは中止されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In Normal, Visual and Select mode clicking the right mouse button with the alt
+key pressed causes the Visual area to become blockwise.  When 'mousemodel' is
+"popup" the left button has to be used with the alt key.  Note that this won't
+work on systems where the window manager consumes the mouse events when the
+alt key is pressed (it may move the window).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ノーマルモード、ビジュアルモード、選択モードで @key{Alt} キーを押したまま右ボタンをクリックすると、選択範囲が矩形になります。ただし、'@option{mousemodel}' が "@var{popup}" のときは、@key{Alt} キーを押しながら左ボタンをクリックします。@key{Alt} キーを押しているときはマウスイベントをウィンドウマネージャーが処理 (ウィンドウ移動など) してしまうシステムでは機能しないことに注意してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*double-click*
+Double, triple and quadruple clicks are supported when the GUI is active,
+for MS-DOS and Win32, and for an xterm (if the gettimeofday() function is
+available).  For selecting text, extra clicks extend the selection:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{double-click}
+@cindex double-click
+MS-DOS, Win32, xterm (関数 gettimeofday() が使用できるとき) において、GUI が有効なときはダブル、トリプル、クアドラプルクリックが使用できます。テキストを選択しているときさらにクリックすると選択範囲が拡大します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	click		select ~
+	double		word or % match		*<2-LeftMouse>*
+	triple		line			*<3-LeftMouse>*
+	quadruple	rectangular block	*<4-LeftMouse>*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@headitem クリック @tab 選択範囲
+@anchor{<2-LeftMouse>}
+@cindex <2-LeftMouse>
+@item ダブル @tab 単語または % でのマッチ
+@anchor{<3-LeftMouse>}
+@cindex <3-LeftMouse>
+@item トリプル @tab 行
+@anchor{<4-LeftMouse>}
+@cindex <4-LeftMouse>
+@item クアドラプル @tab 矩形範囲
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Exception: In a Help window a double click jumps to help for the word that is
+clicked on.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Exception:} @*
+ヘルプウィンドウでダブルクリックすると、その下にある単語のヘルプへジャンプします。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+A double click on a word selects that word.  'iskeyword' is used to specify
+which characters are included in a word.  A double click on a character
+that has a match selects until that match (like using "v%").  If the match is
+an #if/#else/#endif block, the selection becomes linewise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+単語の上でダブルクリックするとその単語を選択します。単語を構成する文字は '@option{iskeyword}' によって決まります。対応する文字がある文字の上でダブルクリックするとそのマッチまでを選択します("v%" と同様)。そのマッチが #if/#else/#endif である場合、選択は行単位になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+For MS-DOS and xterm the time for double clicking can be set with the
+'mousetime' option.  For the other systems this time is defined outside of
+Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-DOS と xterm ではダブルクリックの間隔は '@option{mousetime}' で設定できます。他のシステムでは、この間隔は Vim の外部で設定されています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+An example, for using a double click to jump to the tag under the cursor: >
+	:map <2-LeftMouse> :exe "tag ". expand("<cword>")<CR>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例: ダブルクリックでカーソル下のタグへジャンプする
+@example
+:map <2-LeftMouse> :exe "tag ". expand("<cword>")<CR>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Dragging the mouse with a double click (button-down, button-up, button-down
+and then drag) will result in whole words to be selected.  This continues
+until the button is released, at which point the selection is per character
+again.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ダブルクリックによるドラッグ (押す、離す、押してドラッグ) をすると単語全体が選択されるようになります。これはボタンが離されるまで続き、ボタンを離すと文字単位に戻ります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*gpm-mouse*
+The GPM mouse is only supported when the |+mouse_gpm| feature was enabled at
+compile time.  The GPM mouse driver (Linux console) does not support quadruple
+clicks.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gpm-mouse}
+@cindex gpm-mouse
+GPM マウスは |+mouse_gpm| 機能を有効にしてコンパイルしたときのみサポートされます。GPM マウスドライバ (Linux コンソール) はクアドラプルクリックに対応していません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In Insert mode, when a selection is started, Vim goes into Normal mode
+temporarily.  When Visual or Select mode ends, it returns to Insert mode.
+This is like using CTRL-O in Insert mode.  Select mode is used when the
+'selectmode' option contains "mouse".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+挿入モードで選択を開始すると、一時的にノーマルモードへ移行します。ビジュアルモードまたは選択モードが終了すると挿入モードへ戻ります。挿入モードにおける @kbd{CTRL-O} と同様です。'@option{selectmode}' オプションが "@var{mouse}" を含んでいると選択モードになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*sysmouse*
+The sysmouse is only supported when the |+mouse_sysmouse| feature was enabled
+at compile time.  The sysmouse driver (*BSD console) does not support keyboard
+modifiers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sysmouse}
+@cindex sysmouse
+sysmouse は、コンパイル時に |+mouse_sysmouse| 機能が有効化されている場合のみサポートされます。sysmouse ドライバ (*BSD コンソール) はキーボード修飾子には対応していません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*drag-status-line*
+When working with several windows, the size of the windows can be changed by
+dragging the status line with the mouse.  Point the mouse at a status line,
+press the left button, move the mouse to the new position of the status line,
+release the button.  Just clicking the mouse in a status line makes that window
+the current window, without moving the cursor.  If by selecting a window it
+will change position or size, the dragging of the status line will look
+confusing, but it will work (just try it).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{drag-status-line}
+@cindex drag-status-line
+ウィンドウを複数に分割しているとき、マウスでステータスラインをドラッグするとウィンドウのサイズを変更できます。マウスをステータスライン上へ持っていき、左ボタンを押し、ステータスラインを望みの位置まで動かしてボタンを離します。単にステータスラインをクリックすると、カーソルを動かさずにそのウィンドウをカレントにします。ステータスラインのドラッグは、ウィンドウを選択して位置やサイズが変わると混乱を招きがちです。しかしこれは確かに動作します (試してみてください)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*<MiddleRelease>* *<MiddleDrag>*
+Mouse clicks can be mapped.  The codes for mouse clicks are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{<MiddleRelease>}
+@anchor{<MiddleDrag>}
+@cindex <MiddleRelease>
+@cindex <MiddleDrag>
+マウスクリックイベントもマップすることができます。マウスクリックに対するコードは次の通りです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+     code	    mouse button	      normal action	~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .35 .35
+@headitem コード @tab マウスボタン @tab 通常の動作
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ <LeftMouse>	 left pressed		    set cursor position
+ <LeftDrag>	 left moved while pressed   extend selection
+ <LeftRelease>	 left released		    set selection end
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item <LeftMouse> @tab  左ボタン押下 @tab カーソル位置設定
+@item <LeftDrag> @tab 左ボタンを押しながら移動 @tab 選択範囲を拡張
+@item <LeftRelease> @tab 左ボタン放す @tab 選択を終了
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ <MiddleMouse>	 middle pressed		    paste text at cursor position
+ <MiddleDrag>	 middle moved while pressed -
+ <MiddleRelease> middle released	    -
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item <MiddleMouse> @tab 中央ボタン押下 @tab カーソル位置にテキストを貼り付け
+@item <MiddleDrag> @tab 中央ボタンを押しながら移動 @tab -
+@item <MiddleRelease> @tab 中央ボタン放す @tab -
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ <RightMouse>	 right pressed		    extend selection
+ <RightDrag>	 right moved while pressed  extend selection
+ <RightRelease>  right released		    set selection end
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item <RightMouse> @tab 右ボタン押下 @tab 選択を拡張
+@item <RightDrag> @tab 右ボタンを押しながら移動 @tab 選択を拡張
+@item <RightRelease> @tab 右ボタン放す @tab 選択を終了
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ <X1Mouse>	 X1 button pressed	    -			*X1Mouse*
+ <X1Drag>	 X1 moved while pressed	    -			*X1Drag*
+ <X1Release>	 X1 button release	    -			*X1Release*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{X1Mouse}
+@cindex X1Mouse
+@item <X1Mouse> @tab X1 ボタン押下 @tab -
+@anchor{X1Drag}
+@cindex X1Drag
+@item <X1Drag> @tab X1 ボタンを押しながら移動 @tab -
+@anchor{X1Release}
+@cindex X1Release
+@item <X1Release> @tab X1 ボタン放す @tab -
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ <X2Mouse>	 X2 button pressed	    -			*X2Mouse*
+ <X2Drag>	 X2 moved while pressed     -			*X2Drag*
+ <X2Release>	 X2 button release	    -			*X2Release*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{X2Mouse}
+@cindex X2Mouse
+@item <X2Mouse> @tab X2 ボタン押下 @tab -
+@anchor{X2Drag}
+@cindex X2Drag
+@item <X2Drag> @tab X2 ボタンを押しながら移動 @tab -
+@anchor{X2Release}
+@cindex X2Release
+@item <X2Release> @tab X2 ボタン放す @tab -
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The X1 and X2 buttons refer to the extra buttons found on some mice.  The
+'Microsoft Explorer' mouse has these buttons available to the right thumb.
+Currently X1 and X2 only work on Win32 and X11 environments.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+X1 ボタンと X2 ボタンは、ある種のマウスについている 4 番目、5 番目のボタンのことです。'Microsoft Explorer' マウスの場合、これらのボタンは右親指の位置についています。現在のところ、X1 と X2 は Win32 と X11 環境でのみ機能します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples: >
+	:noremap <MiddleMouse> <LeftMouse><MiddleMouse>
+Paste at the position of the middle mouse button click (otherwise the paste
+would be done at the cursor position). >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:noremap <MiddleMouse> <LeftMouse><MiddleMouse>
+@end example
+マウス中央ボタンをクリックしたとき、クリックした位置に貼り付けます (通常はカーソル位置に貼り付けます)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:noremap <LeftRelease> <LeftRelease>y
+Immediately yank the selection, when using Visual mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:noremap <LeftRelease> <LeftRelease>y
+@end example
+ビジュアルモードで選択範囲を即座にヤンクします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note the use of ":noremap" instead of "map" to avoid a recursive mapping.
+>
+	:map <X1Mouse> <C-O>
+	:map <X2Mouse> <C-I>
+Map the X1 and X2 buttons to go forwards and backwards in the jump list, see
+|CTRL-O| and |CTRL-I|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+再帰マッピングにならないように "map" でなく "noremap" を使っています。
+@example
+:map <X1Mouse> <C-O>
+:map <X2Mouse> <C-I>
+@end example
+X1 と X2 ボタンでジャンプリストの前後に移動するようにマップします。|CTRL-O| と |CTRL-I| を参照。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*mouse-swap-buttons*
+To swap the meaning of the left and right mouse buttons: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mouse-swap-buttons}
+@cindex mouse-swap-buttons
+左右のマウスボタンの意味を交換するには次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:noremap	<LeftMouse>	<RightMouse>
+	:noremap	<LeftDrag>	<RightDrag>
+	:noremap	<LeftRelease>	<RightRelease>
+	:noremap	<RightMouse>	<LeftMouse>
+	:noremap	<RightDrag>	<LeftDrag>
+	:noremap	<RightRelease>	<LeftRelease>
+	:noremap	g<LeftMouse>	<C-RightMouse>
+	:noremap	g<RightMouse>	<C-LeftMouse>
+	:noremap!	<LeftMouse>	<RightMouse>
+	:noremap!	<LeftDrag>	<RightDrag>
+	:noremap!	<LeftRelease>	<RightRelease>
+	:noremap!	<RightMouse>	<LeftMouse>
+	:noremap!	<RightDrag>	<LeftDrag>
+	:noremap!	<RightRelease>	<LeftRelease>
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:noremap        <LeftMouse>     <RightMouse>
+:noremap        <LeftDrag>      <RightDrag>
+:noremap        <LeftRelease>   <RightRelease>
+:noremap        <RightMouse>    <LeftMouse>
+:noremap        <RightDrag>     <LeftDrag>
+:noremap        <RightRelease>  <LeftRelease>
+:noremap        g<LeftMouse>    <C-RightMouse>
+:noremap        g<RightMouse>   <C-LeftMouse>
+:noremap!       <LeftMouse>     <RightMouse>
+:noremap!       <LeftDrag>      <RightDrag>
+:noremap!       <LeftRelease>   <RightRelease>
+:noremap!       <RightMouse>    <LeftMouse>
+:noremap!       <RightDrag>     <LeftDrag>
+:noremap!       <RightRelease>  <LeftRelease>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset

@@ -1,0 +1,1810 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node terminal.txt, , , 目次
+@unnumbered ターミナルウィンドウのサポート
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*terminal.txt*	For Vim version 8.0.  Last change: 2018 Feb 20
+
+
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*terminal.txt*  For Vim バージョン 8.0.  Last change: 2018 Feb 20
+
+
+                VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Terminal window support					*terminal*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal}
+@cindex terminal
+端末ウィンドウサポート
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+WARNING: THIS IS ONLY PARTLY IMPLEMENTED, ANYTHING CAN STILL CHANGE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{WARNING:} @*
+THIS IS ONLY PARTLY IMPLEMENTED, ANYTHING CAN STILL CHANGE
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The terminal feature is optional, use this to check if your Vim has it: >
+	echo has('terminal')
+If the result is "1" you have it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末機能はオプションなので、あなたの Vim が対応しているかは次のコマンドを使って確認できます:
+@example
+echo has('terminal')
+@end example
+結果が "1" ならば対応しています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1. Basic use			|terminal-use|
+      Typing				|terminal-typing|
+      Size and color			|terminal-size-color|
+      Syntax				|:terminal|
+      Resizing				|terminal-resizing|
+      Terminal Modes			|Terminal-mode|
+      Cursor style			|terminal-cursor-style|
+      Special keys			|terminal-special-keys|
+      Unix				|terminal-unix|
+      MS-Windows			|terminal-ms-windows|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item 1. 基本的な使い方 @tab |@ref{terminal-use, , terminal-use}|
+@item @ @ @ @ キー入力 @tab |@ref{terminal-typing, , terminal-typing}|
+@item @ @ @ @ サイズと色 @tab |@ref{terminal-size-color, , terminal-size-color}|
+@item @ @ @ @ 文法 @tab |@ref{:terminal, , :terminal}|
+@item @ @ @ @ サイズ変更 @tab |@ref{terminal-resizing, , terminal-resizing}|
+@item @ @ @ @ ターミナルモード @tab |@ref{Terminal-mode, , Terminal-mode}|
+@item @ @ @ @ カーソルスタイル @tab |@ref{terminal-cursor-style, , terminal-cursor-style}|
+@item @ @ @ @ スペシャルキー @tab |@ref{terminal-special-keys, , terminal-special-keys}|
+@item @ @ @ @ Unix @tab |@ref{terminal-unix, , terminal-unix}|
+@item @ @ @ @ MS-Windows @tab |@ref{terminal-ms-windows, , terminal-ms-windows}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+2. Remote testing		|terminal-testing|
+3. Diffing screen dumps		|terminal-diff|
+      Writing a screen dump test for Vim  |terminal-dumptest|
+      Creating a screen dump		  |terminal-screendump|
+      Comparing screen dumps		  |terminal-diffscreendump|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 2. リモートテスト @tab |@ref{terminal-testing, , terminal-testing}|
+@item 3. スクリーンダンプの差分 @tab |@ref{terminal-diff, , terminal-diff}|
+@item @ @ @ @ Vim のためのスクリーンダンプテストを書く@tab |@ref{terminal-dumptest, , terminal-dumptest}|
+@item @ @ @ @ スクリーンダンプを作成する @tab |@ref{terminal-screendump, , terminal-screendump}|
+@item @ @ @ @ スクリーンダンプを比較する @tab |@ref{terminal-diffscreendump, , terminal-diffscreendump}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+4. Debugging			|terminal-debug|
+      Starting				|termdebug-starting|
+      Example session			|termdebug-example|
+      Stepping through code		|termdebug-stepping|
+      Inspecting variables		|termdebug-variables|
+      Other commands			|termdebug-commands|
+      Communication			|termdebug-communication|
+      Customizing			|termdebug-customizing|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 4. デバッグ @tab |@ref{terminal-debug, , terminal-debug}|
+@item @ @ @ @ はじめに @tab |@ref{termdebug-starting, , termdebug-starting}|
+@item @ @ @ @ セッション例 @tab |@ref{termdebug-example, , termdebug-example}|
+@item @ @ @ @ コードをステップ実行する @tab |@ref{termdebug-stepping, , termdebug-stepping}|
+@item @ @ @ @ 変数を検査する @tab |@ref{termdebug-variables, , termdebug-variables}|
+@item @ @ @ @ その他のコマンド @tab |@ref{termdebug-commands, , termdebug-commands}|
+@item @ @ @ @ 通信 @tab |@ref{termdebug-communication, , termdebug-communication}|
+@item @ @ @ @ カスタマイズ @tab |@ref{termdebug-customizing, , termdebug-customizing}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these commands}
+{only available when compiled with the |+terminal| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらのコマンドはありません@}
+
+@{|+terminal| の機能は、コンパイル時に有効にされていなければ使えません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The terminal feature requires the |+multi_byte|, |+job| and |+channel| features.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末機能を使うには |+multi_byte|, |+job| そして |+channel| 機能が必要です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Basic use						*terminal-use*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-use}
+@cindex terminal-use
+@section 1. 基本的な使い方
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This feature is for running a terminal emulator in a Vim window.  A job can be
+started connected to the terminal emulator. For example, to run a shell: >
+     :term bash
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは Vim のウィンドウ内で端末エミュレーターを実行する機能です。端末エミュレーターに接続すると 1 つのジョブが開始されます。例としてシェルを実行するならば以下のようになります:
+@example
+:term bash
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Or to run build command: >
+     :term make myprogram
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+またビルドコマンドを実行するにはこうなります:
+@example
+:term make myprogram
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The job runs asynchronously from Vim, the window will be updated to show
+output from the job, also while editing in another window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブは Vim とは非同期的に動作し、他のウィンドウで編集中であってもジョブからの出力は随時端末ウィンドウに反映されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Typing ~
+							*terminal-typing*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-typing}
+@cindex terminal-typing
+@unnumberedsubsec キー入力
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When the keyboard focus is in the terminal window, typed keys will be sent to
+the job.  This uses a pty when possible.  You can click outside of the
+terminal window to move keyboard focus elsewhere.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末ウィンドウにキーボードのフォーカスがある時には、入力したキーはジョブに送られます。これには可能ならば pty を使用します。端末ウィンドウ外をクリックすれば、キーボードフォーカスを外に動かせます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-W can be used to navigate between windows and other CTRL-W commands, e.g.:
+	CTRL-W CTRL-W	move focus to the next window
+	CTRL-W :	enter an Ex command
+See |CTRL-W| for more commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウや他の @kbd{CTRL-W} コマンドを操作するために @kbd{CTRL-W} を使えます。例えば:
+@multitable @columnfractions .4 .6
+@item @kbd{CTRL-W CTRL-W} @tab 次のウィンドウにフォーカスを移動する
+@item @kbd{CTRL-W :} @tab Ex コマンドに入る
+@end multitable
+他のコマンドについては |CTRL-W| 参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Special in the terminal window:			*CTRL-W_.*  *CTRL-W_N* 
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CTRL-W_.}
+@anchor{CTRL-W_N}
+@cindex CTRL-W_.
+@cindex CTRL-W_N
+@unnumberedsubsubsec 端末ウィンドウでの特別な操作:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	CTRL-W .	send a CTRL-W to the job in the terminal
+	CTRL-W N	go to Terminal-Normal mode, see |Terminal-mode|
+	CTRL-\ CTRL-N   go to Terminal-Normal mode, see |Terminal-mode|
+	CTRL-W " {reg}  paste register {reg}		*CTRL-W_quote*
+			Also works with the = register to insert the result of
+			evaluating an expression.
+	CTRL-W CTRL-C	ends the job, see below |t_CTRL-W_CTRL-C|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@item @kbd{CTRL-W .} @tab 端末内のジョブに @kbd{CTRL-W} を送る
+@item @kbd{CTRL-W N} @tab Terminal-Normal モードに移行, |Terminal-mode| を参照
+@item @kbd{CTRL-\ CTRL-N} @tab Terminal-Normal モードに移行, |Terminal-mode| を参照
+@anchor{CTRL-W_quote}
+@cindex CTRL-W_quote
+@item @kbd{CTRL-W "} @{reg@} @tab レジスタ @{reg@} の内容を貼り付け式の評価結果を挿入するためのレジスタ = も機能する。
+@item @kbd{CTRL-W CTRL-C} @tab ジョブを停止する, 下記の |t_CTRL-W_CTRL-C| を参照
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See option 'termkey' for specifying another key instead of CTRL-W that
+will work like CTRL-W.  However, typing 'termkey' twice sends 'termkey' to
+the job.  For example:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@kbd{CTRL-W} の代わりに別のキーを使うにはオプション '@option{termkey}' を参照してください。しかし '@option{termkey}' を 2 回タイプすると '@option{termkey}' が job へ送信されます。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	'termkey' CTRL-W    move focus to the next window
+	'termkey' :	    enter an Ex command
+	'termkey' 'termkey' send 'termkey' to the job in the terminal
+	'termkey' .	    send a CTRL-W to the job in the terminal
+	'termkey' N	    go to terminal Normal mode, see below
+	'termkey' CTRL-N    same as CTRL-W N
+	'termkey' CTRL-C    same as |t_CTRL-W_CTRL-C|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@item '@option{termkey}' @kbd{CTRL-W} @tab 次のウィンドウにフォーカスを移動する
+@item '@option{termkey}' @key{:} @tab Ex コマンドに入る
+@item '@option{termkey}' '@option{termkey}' @tab 端末内のジョブに '@option{termkey}' を送信する
+@item '@option{termkey}' @key{.} @tab 端末内のジョブに @kbd{CTRL-W} を送信する
+@item '@option{termkey}' @key{N} @tab Terminal-Normal モードへ移行、以下を参照
+@item '@option{termkey}' @kbd{CTRL-N} @tab @kbd{CTRL-W N} と同じ
+@item '@option{termkey}' @kbd{CTRL-C} @tab |t_CTRL-W_CTRL-C| と同じ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*t_CTRL-\_CTRL-N*
+The special key combination CTRL-\ CTRL-N can be used to switch to Normal
+mode, just like this works in any other mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_CTRL-\_CTRL-N}
+@cindex t_CTRL-\_CTRL-N
+他のモードと同じように、ノーマルモードへ移行するための特別なキーの組み合わせである @kbd{CTRL-\ CTRL-N} が利用できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*t_CTRL-W_CTRL-C*
+CTRL-W CTRL-C can be typed to forcefully end the job.  On MS-Windows a
+CTRL-BREAK will also kill the job.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{t_CTRL-W_CTRL-C}
+@cindex t_CTRL-W_CTRL-C
+ジョブを強制停止するのに @kbd{CTRL-W CTRL-C} を使えます。MS-Windows では @kbd{CTRL-BREAK} でも同様にジョブを停止できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you type CTRL-C the effect depends on what the pty has been configured to
+do.  For simple commands this causes a SIGINT to be sent to the job, which
+would end it.  Other commands may ignore the SIGINT or handle the CTRL-C
+themselves (like Vim does).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@kbd{CTRL-C} を入力した場合、その効果は pty がどのように構成されているかに従います。シンプルなコマンドにおいては SIGINT がジョブに送られ、結果的にジョブが停止するでしょう。中には SIGINT を無視するコマンドもあるでしょうし、また (Vim がそうしているように) @kbd{CTRL-C} をプログラム自身で取り扱うものもあるでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To change the keys you type use terminal mode mappings, see |:tmap|.
+These are defined like any mapping, but apply only when typing keys that are
+sent to the job running in the terminal.  For example, to make Escape switch
+to Terminal-Normal mode: >
+   tnoremap <Esc> <C-W>N
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+入力したキーを別のものに読み返させるには端末モードマッピング、詳細は |:tmap|を使用してください。これはどのようなマッピングでも定義できますが、端末内で実行されているジョブに送信されるキー入力にのみ作用します。例えば、Terminal-Normal モードに移行するためのエスケープを定義するには:
+@example
+tnoremap <Esc> <C-W>N
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<							*options-in-terminal*
+After opening the terminal window and setting 'buftype' to "terminal" the
+BufWinEnter autocommand event is triggered.  This makes it possible to set
+options specifically for the window and buffer.  Example: >
+   au BufWinEnter * if &buftype == 'terminal' | setlocal bufhidden=hide | endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{options-in-terminal}
+@cindex options-in-terminal
+ターミナルウィンドウを開いて '@option{buftype}' に "@var{terminal}" を設定したあとに、BufWinEnter 自動コマンドイベントが実行される。これはウィンドウはバッファのためのオプションを明確に設定することを可能にする。例:
+@example
+au BufWinEnter * if &buftype == 'terminal' | setlocal bufhidden=hide | endif
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Mouse events (click and drag) are passed to the terminal.  Mouse move events
+are only passed when Vim itself is receiving them.  For a terminal that is
+when 'balloonevalterm' is enabled.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マウスイベント (クリック＆ドラッグ) はターミナルに渡される。マウスの移動は Vim それ自身がこれらを受け取っている時にだけ渡される。'@option{balloonevalterm}' が有効になっているターミナルのみ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Size and color ~
+							*terminal-size-color*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-size-color}
+@cindex terminal-size-color
+@unnumberedsubsec サイズと色
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+See option 'termsize' for controlling the size of the terminal window.
+(TODO: scrolling when the terminal is larger than the window)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末ウィンドウのサイズを制御するにはオプション '@option{termsize}' を参照してください。(TODO: 端末がウィンドウよりも大きい場合にはスクロールすることを記述する)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The job running in the terminal can change the colors.  The default foreground
+and background colors are taken from Vim, the Normal highlight group.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末内のジョブは端末の色を変更できます。デフォルトの前景色及び背景色は Vim の Normal ハイライトグループにより決定されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For a color terminal the 'background' option is used to decide whether the
+terminal window will start with a white or black background.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カラー端末を開始する際に、背景に白と黒どちらの系統の色を使用するかは、オプション '@option{background}' を用いて決定します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To use a different color the Terminal highlight group can be used, for
+example: >
+    hi Terminal ctermbg=lightgrey ctermfg=blue guibg=lightgrey guifg=blue
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+異なる色を使う場合には Terminal ハイライトグループを利用できます:
+@example
+hi Terminal ctermbg=lightgrey ctermfg=blue guibg=lightgrey guifg=blue
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Syntax ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:ter}
+@anchor{:terminal}
+@cindex :ter
+@cindex :terminal
+@unnumberedsubsec 文法
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[range]ter[minal] [options] [command]			*:ter* *:terminal*
+			Open a new terminal window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :[range]ter[minal] [options] [command]
+新しい端末ウィンドウを開きます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			If [command] is provided run it as a job and connect
+			the input and output to the terminal.
+			If [command] is not given the 'shell' option is used.
+			if [command] is NONE no job is started, the pty of the
+			terminal can be used by a command like gdb.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[command] が指定された場合、それをジョブとして実行し、端末の入出力を接続します。
+
+[command] が指定されなかった場合、オプション '@option{shell}' を使用します。
+
+[command] が NONE の場合ジョブは開始されず、端末の pty は gdb のようなコマンドによって利用できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			A new buffer will be created, using [command] or
+			'shell' as the name, prefixed with a "!".  If a buffer
+			by this name already exists a number is added in
+			parentheses.  E.g. if "gdb" exists the second terminal
+			buffer will use "!gdb (1)".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しいバッファが作られ、 [command] もしくは '@option{shell}' に "!" が前置された名前が与えられます。すでに同じ名前のバッファが存在する場合には、カッコに囲まれた番号が付与されます。例えば "gdb" が存在して 2 つ目の端末には "!gdb (1)" という名前が使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			If [range] is given the specified lines are used as
+			input for the job.  It will not be possible to type
+			keys in the terminal window.  For MS-Windows see the
+			++eof argument below.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[range] が与えられた場合は、指定された範囲の行がジョブの入力として使われます。その際の端末ウィンドウではキー入力ができなくなります。MS-Windows においては以下の ++eof オプションも参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*term++close* *term++open*
+			Supported [options] are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{term++close}
+@anchor{term++open}
+@cindex term++close
+@cindex term++open
+サポートされる [options] は以下の通り:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			++close		The terminal window will close
+					automatically when the job terminates.
+			++open		When the job terminates and no window
+					shows it, a window will be opened.
+					Note that this can be interruptive.
+			++curwin	Open the terminal in the current
+					window, do not split the current
+					window.  Fails if the current buffer
+					cannot be |abandon|ed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item ++close @tab ジョブが終了した際には自動的に端末ウィンドウを閉じる。
+@item ++open @tab ジョブが終了した際にウィンドウが表示されていない場合に、ウィンドウを表示する。割り込み的に発生しうることに留意。
+@item ++curwin @tab 現在のウィンドウで端末を開き、現在のウィンドウを分割しない。現在のバッファを放棄( |abandon| )できない場合は失敗する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			++hidden	Open the terminal in a hidden buffer,
+					no window will be used.
+			++rows={height} Use {height} for the terminal window
+					height.  If the terminal uses the full
+					Vim height (no window above or below
+					th terminal window) the command line
+					height will be reduced as needed.
+			++cols={width}  Use {width} for the terminal window
+					width. If the terminal uses the full
+					Vim width (no window left or right of
+					the terminal window) this value is
+					ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ++hidden @tab 端末を隠しバッファとして開く。ウィンドウは使用されない。
+@item ++rows=@{height@} @tab 端末ウィンドウの高さとして @{height@} を使う。もしも端末が Vim の全高 (ウィンドウの上方や端末ウィンドウの下方ではない) を使用するならば、コマンドラインの高さは必要に応じて減らされるでしょう。
+@item ++cols=@{width@} @tab 端末ウィンドウの幅として @{width@} を使う。もしも端末が Vim の全幅 (端末ウィンドウの右側や左側ではない) を使用するならば、この値は無視されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			++eof={text}	when using [range]: text to send after
+					the last line was written. Cannot
+					contain white space.  A CR is
+					appended.  For MS-Windows the default
+					is to send CTRL-D.
+					E.g. for a shell use "++eof=exit" and
+					for Python "++eof=exit()".  Special
+					codes can be used like with `:map`,
+					e.g. "<C-Z>" for CTRL-Z.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ++eof=@{text@} @tab [range] を使った場合: 最後の行を送信したあとに指定したテキストが送られる。空白を含むことはできない。 CR が 1 つ付け加えられる。MS-Windows ではデフォルトでは CTRL-D が送られる。
+
+例: シェルには "++eof=exit" を、Python には "++eof=exit()" を指定する。特殊 コードが `@command{:map}` と同様に利用できる。例: "<C-Z>" は CTRL-Z を示す。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			If you want to use more options use the |term_start()|
+			function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+より詳細なオプションを使いたいならば |term_start()| 関数を使ってください。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the buffer associated with the terminal is unloaded or wiped out the job
+is killed, similar to calling `job_stop(job, "kill")`
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末に関連付けられたバッファがアンロードもしくは削除された場合には、`@command{job_stop(job, "kill")}` を呼んだのと同じようにそのジョブが殺されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+So long as the job is running the window behaves like it contains a modified
+buffer.  Trying to close the window with `CTRL-W :quit` fails.  When using
+`CTRL-W :quit!` the job is ended.  The text in the window is lost.  The buffer
+still exists, but getting it in a window with `:buffer` will show an empty
+buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブが実行され続けるとウィンドウはそのバッファが変更されたかのように振る舞います。 `@command{CTRL-W :quit}` でウィンドウを閉じようとしても失敗します。`@command{CTRL-W :quit!}` を使うとジョブは終了します。ウィンドウのテキストは失われます。バッファは依然存在しますが、`@command{:buffer}` でウィンドウに割り当てても空のバッファが表示されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Trying to close the window with `CTRL-W :close` also fails.   Using
+`CTRL-W :close!` will close the window and make the buffer hidden.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+`@command{CTRL-W :close}` で閉じようとしてもまた失敗します。`@command{CTRL-W :close!}` はウィンドウを閉じ、バッファを隠し状態にします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use `CTRL-W :hide` to close the terminal window and make the buffer
+hidden, the job keeps running.  The `:buffer` command can be used to turn the
+current window into a terminal window.  If there are unsaved changes this
+fails, use !  to force, as usual.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+`@command{CTRL-W :hide}` を使うとジョブを実行したまま、端末ウィンドウを閉じバッファを隠し状態にできます。`@command{:buffer}` コマンドで現在のウィンドウを端末ウィンドウにすることができます。未保存の変更があった場合にはこれは失敗しますが、通常と同じように ! で強制できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To have a background job run without a window, and open the window when it's
+done, use options like this: >
+	:term ++hidden ++open make
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バックグラウンドジョブをウィンドウ無しで実行し、終了したらウィンドウに表示するには、次のようにオプションを指定します:
+@example
+:term ++hidden ++open make
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Note that the window will open at an unexpected moment, this will interrupt
+what you are doing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ウィンドウが予期せぬタイミングで開かれ、あなたが行っている操作に割り込む可能性があることに留意してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E947* *E948*
+So long as the job is running, the buffer is considered modified and Vim
+cannot be quit easily, see |abandon|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E947}
+@anchor{E948}
+@cindex E947
+@cindex E948
+ジョブが実行され続けると、バッファが変更されたとみなされ Vim を簡単には終了できなくなります。|abandon| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the job has finished and no changes were made to the buffer: closing the
+window will wipe out the buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブが終了しバッファになんの変更も及ぼさなかった場合、そのウィンドウを閉じるとバッファは削除されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Before changes can be made to a terminal buffer, the 'modifiable' option must
+be set.  This is only possible when the job has finished.  At the first change
+the buffer will become a normal buffer and the highlighting is removed.
+You may want to change the buffer name with |:file| to be able to write, since
+the buffer name will still be set to the command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末バッファを変更するにはオプション '@option{modifiable}' をセットする必要があります。これはジョブが終了した後にのみ行なえます。バッファを最初に変更した瞬間に普通のバッファになりハイライトは削除されます。バッファを保存可能にするために |:file| でバッファの名前を、コマンド名から変更することもできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Resizing ~
+							*terminal-resizing*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-resizing}
+@cindex terminal-resizing
+@unnumberedsubsec サイズ変更
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The size of the terminal can be in one of three modes:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末のサイズは 3 つのモードのいずれか 1 つで決まります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. The 'termsize' option is empty: The terminal size follows the window size.
+   The minimal size is 2 screen lines with 10 cells.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item オプション '@option{termsize}' が空の場合: 端末サイズはウィンドウのサイズに従う。最小で 2 行、10 桁。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+2. The 'termsize' option is "rows*cols", where "rows" is the minimal number of
+   screen rows and "cols" is the minimal number of cells.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item オプション '@option{termsize}' が "@var{rows*cols}" の場合、"@var{rows}" を最小行数、"@var{cols}" を最小桁数とする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+3. The 'termsize' option is "rowsXcols" (where the x is upper or lower case).
+   The terminal size is fixed to the specified number of screen lines and
+   cells.  If the window is bigger there will be unused empty space.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item オプション '@option{termsize}' が "@var{rowsXcols}" ("X" は大文字小文字を問わない) の場合: 端末サイズは指定された行数と桁数で固定される。もしもウィンドウがそれよりも大きい場合には、使用されない空の領域ができる。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the window is smaller than the terminal size, only part of the terminal can
+be seen (the lower-left part).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウサイズが端末サイズよりも小さい場合、端末の一部の領域 (左下に相当する部分) のみが描画されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The |term_getsize()| function can be used to get the current size of the
+terminal.  |term_setsize()| can be used only when in the first or second mode,
+not when 'termsize' is "rowsXcols".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末の現在のサイズを取得するのに関数 |term_getsize()| が使えます。|term_setsize()| は 1 か 2 のモードの時にだけ、すなわち '@option{termsize}' が "@var{rowsXcols}" 形式ではない時に使えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Terminal-Job and Terminal-Normal mode ~
+							*Terminal-mode*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{Terminal-mode}
+@cindex Terminal-mode
+@unnumberedsubsec Terminal-Job と Terminal-Normal モード
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When the job is running the contents of the terminal is under control of the
+job.  That includes the cursor position.  Typed keys are sent to the job.
+The terminal contents can change at any time.  This is called Terminal-Job
+mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブが実行中には端末の内容はジョブの制御下にあります。それにはカーソルの位置も含まれます。入力したキーはジョブに送られます。端末の内容はいつでも更新されえます。これを Terminal-Job モードと呼びます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use CTRL-W N (or 'termkey' N) to switch to Terminal-Normal mode.  Now the
+contents of the terminal window is under control of Vim, the job output is
+suspended.  CTRL-\ CTRL-N does the same.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@kbd{CTRL-W N} (もしくは 'termkey' N) を入力すると Terminal-Normal モードに遷移します。このモードでは端末ウィンドウのコンテンツは Vim の制御下に置かれ、ジョブの出力は一時保留されます。@kbd{CTRL-\ CTRL-N} でも同じようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Terminal-Job mode is where |:tmap| mappings are applied. Keys sent by
+|term_sendkeys()| are not subject to tmap, but keys from |feedkeys()| are.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|tmap| のマッピングは Terminal-Job モードにおいて作用します。|term_sendkeys()| で送ったキーには tmap は適用されませんが、|feedkeys()| で送ったキーには適用されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E946*
+In Terminal-Normal mode you can move the cursor around with the usual Vim
+commands, Visually mark text, yank text, etc.  But you cannot change the
+contents of the buffer.  The commands that would start insert mode, such as
+'i' and 'a', return to Terminal-Job mode.  The window will be updated to show
+the contents of the terminal. |:startinsert| is ineffective.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E946}
+@cindex E946
+Terminal-Normal モードでは、Vim の普通のコマンドでカーソルを自由に動かせます。視覚的にテキストをマークしたり、テキストをヤンクしたり思いのままです。しかしバッファの内容を変更することはできません。'i' や 'a' など挿入モードを開始するコマンドを使うと Terminal-Job モードに戻ります。結果としてウィンドウは端末のコンテンツを反映させるために更新されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In Terminal-Normal mode the statusline and window title show "(Terminal)".  If
+the job ends while in Terminal-Normal mode this changes to
+"(Terminal-finished)".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Terminal-Normal モードではステータスラインとウィンドウタイトルには "(Terminal)" と表示されます。Terminal-Normal モード中にジョブが終了してしまった場合にはそれが "(Terminal-finished)" に変わります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is not possible to enter Insert mode from Terminal-Job mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Terminal-Job モードから挿入モードに移る方法はありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Cursor style ~
+							*terminal-cursor-style*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-cursor-style}
+@cindex terminal-cursor-style
+@unnumberedsubsec カーソルスタイル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+By default the cursor in the terminal window uses a not blinking block.  The
+normal xterm escape sequences can be used to change the blinking state and the
+shape.  Once focus leaves the terminal window Vim will restore the original
+cursor.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトでは端末ウィンドウのカーソルには点滅しないブロックが使われます。カーソルの点滅状態や形を変更するのに、普通の xterm のエスケープシーケンスが使われます。端末ウィンドウからフォーカスが外れる際に Vim は元々のカーソルを復元します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An exception is when xterm is started with the "-bc" argument, or another way
+that causes the cursor to blink.  This actually means that the blinking flag
+is inverted.  Since Vim cannot detect this, the terminal window cursor
+blinking will also be inverted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+xterm を "-bc" 引数で起動した場合、または他の方法でカーソルの点滅を発生させた場合、が1つの例外となります。それらにより点滅フラグが逆転したことが問題の引き金となります。なぜなら Vim はその逆転を検出できず、端末ウィンドウのカーソルの点滅も逆転します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Special keys ~
+							*terminal-special-keys*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-special-keys}
+@cindex terminal-special-keys
+@unnumberedsubsec スペシャルキー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Since the terminal emulator simulates an xterm, only escape sequences that
+both Vim and xterm recognize will be available in the terminal window.  If you
+want to pass on other escape sequences to the job running in the terminal you
+need to set up forwarding.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末エミュレーターは xterm をシミュレートするので、Vim と xterm が認識するエスケープシーケンスだけが、端末ウィンドウ内で利用できる。
+もしも端末内で実行されているジョブに他のエスケープシーケンスを通したいのなら、転送を設定する必要があります。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	tmap <expr> <Esc>]b SendToTerm("\<Esc>]b")
+	func SendToTerm(what)
+	  call term_sendkeys('', a:what)
+	  return ''
+	endfunc
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+tmap <expr> <Esc>]b SendToTerm("\<Esc>]b")
+func SendToTerm(what)
+  call term_sendkeys('', a:what)
+  return ''
+endfunc
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Unix ~
+							*terminal-unix*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-unix}
+@cindex terminal-unix
+@unnumberedsubsec Unix
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+On Unix a pty is used to make it possible to run all kinds of commands.  You
+can even run Vim in the terminal!  That's used for debugging, see below.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+UNIX ではすべての種類のコマンドを実行可能とするために pty を用いています。端末内で Vim ですら実行できるのです！これは以下のようにデバッグに利用できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Environment variables are used to pass information to the running job:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実行中のジョブに情報を伝えるのに以下の環境変数が利用できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    TERM		name of the terminal, 'term'
+    ROWS		number of rows in the terminal initially
+    LINES		same as ROWS
+    COLUMNS		number of columns in the terminal initially
+    COLORS		number of colors, 't_Co' (256*256*256 in the GUI)
+    VIM_SERVERNAME	v:servername
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item TERM @tab 端末の名前 '@option{term}'
+@item ROWS @tab 端末の初期行数
+@item LINES @tab ROWS と同じ
+@item COLUMNS @tab 端末の初期桁数
+@item COLORS @tab 色数 '@option{t_Co}' (GUIでは 256*256*256)
+@item VIM_SERVERNAME @tab v:servername
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The |client-server| feature can be used to communicate with the Vim instance
+where the job was started.  This only works when v:servername is not empty.
+If needed you can set it with: >
+	call remote_startserver('vim-server')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブを開始した Vim インスタンスと通信するのに |client-server| 機能を使えます。この方法は v:servername が空ではないときのみ機能します。必要ならば次のようにしてそれを設定できます:
+@example
+call remote_startserver('vim-server')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the job you can then do something like: >
+	vim --servername $VIM_SERVERNAME --remote +123 some_file.c
+This will open the file "some_file.c" and put the cursor on line 123.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブの中で以下の様なことができます:
+@verbatim
+vim --servername $VIM_SERVERNAME --remote +123 some_file.c
+@end verbatim
+これは "some_file.c" の 123 行目を開かせます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MS-Windows ~
+							*terminal-ms-windows*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-ms-windows}
+@cindex terminal-ms-windows
+@unnumberedsubsec MS-Windows
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+On MS-Windows winpty is used to make it possible to run all kind of commands.
+Obviously, they must be commands that run in a terminal, not open their own
+window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows ではすべての種類のコマンドを実行可能とするために winpty を用いています。あたりまえのことですが、ここで実行するコマンドは端末の中で動くもので、独自のウィンドウを開くものであってはいけません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You need the following two files from winpty:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+winpty 内の以下の 2 つのファイルが必要です:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    winpty.dll
+    winpty-agent.exe
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+winpty.dll
+winpty-agent.exe
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can download them from the following page:
+
+    https://github.com/rprichard/winpty
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらは以下のページからダウンロードできます:
+
+@url{https://github.com/rprichard/winpty}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Just put the files somewhere in your PATH.  You can set the 'winptydll' option
+to point to the right file, if needed.  If you have both the 32-bit and 64-bit
+version, rename to winpty32.dll and winpty64.dll to match the way Vim was
+build.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルを環境変数 PATH のいずれかに置くだけです。必要ならばオプション '@option{winptydll}' でファイルの場所を指定できます。もしも 32 ビット版と 64 ビット版を同じディレクトリに置きたいのであれば、Vim のビルドに合わせてそれぞれを winpty32.dll もしくは winpty64.dll という名前に変更してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Environment variables are used to pass information to the running job:
+    VIM_SERVERNAME	v:servername
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+環境変数は実行しているジョブに情報を渡すために使われます:
+@example
+VIM_SERVERNAME	v:servername
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Remote testing					*terminal-testing*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-testing}
+@cindex terminal-testing
+@section 2. リモートテスト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Most Vim tests execute a script inside Vim.  For some tests this does not
+work, running the test interferes with the code being tested.  To avoid this
+Vim is executed in a terminal window.  The test sends keystrokes to it and
+inspects the resulting screen state.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim のほとんどのテストは Vim のなかでスクリプトを実行しています。テスト対象のコードと干渉してしまうような、幾つかのテストではこれは機能しません。これを避けるために端末ウィンドウ内でさらに Vim を実行しています。そのテストではキーストロークを端末に送信し、その結果として端末画面の状態が変わるのを検査します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Functions ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 関数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+term_sendkeys()		send keystrokes to a terminal (not subject to tmap)
+term_wait()		wait for screen to be updated
+term_scrape()		inspect terminal screen
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item term_sendkeys() @tab 端末にキーストロークを送信する (tmap の影響を受けない)
+@item term_wait() @tab 端末画面が更新されるのを待つ
+@item term_scrape() @tab 端末画面の内容を検査する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+3. Diffing screen dumps					*terminal-diff*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-diff}
+@cindex terminal-diff
+@section 3. スクリーンダンプの差分
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In some cases it can be bothersome to test that Vim displays the right
+characters on the screen.  E.g. with syntax highlighting.  To make this
+simpler it is possible to take a screen dump of a terminal and compare it to
+an expected screen dump.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+いくつかの場合、Vim がスクリーンに正しい文字を表示しているかどうかをテストすることは面倒になります。例えばシンタックスハイライトをしている時など。これを簡易にするために、ターミナルのスクリーンダンプをとり、それを予想されるスクリーンダンプと比較することで可能になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim uses the window size, text, color and other attributes as displayed.  The
+Vim screen size, font and other properties do not matter.  Therefore this
+mechanism is portable across systems.  A convential screenshot would reflect
+all differences, including font size and family.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はウィンドウサイズ、テキスト、カラーや、その他の表示される属性を使います。Vim のスクリーンサイズ、フォントや、その他の特性は問題ではありません。それゆえ、このメカニズムはシステムに渡って使えます。従来のスクリーンショットはフォントのサイズやファミリーを含め、すべての差異を反映するでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Writing a screen dump test for Vim ~
+							*terminal-dumptest*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-dumptest}
+@cindex terminal-dumptest
+@unnumberedsubsec Vim のためのスクリーンダンプテストを書く
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+For an example see the Test_syntax_c() function in
+src/testdir/test_syntax.vim.  The main parts are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例として、src/testdir/test_syntax.vim の Test_syntax_c() 関数を見てみましょう。これの主な部分は:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Write a file you want to test with. This is useful for testing syntax
+  highlighting.  You can also start Vim with en empty buffer.
+- Run Vim in a terminal with a specific size.  The default is 20 lines of 75
+  characters.  This makes sure the dump is always this size.  The function
+  RunVimInTerminal() takes care of this.  Pass it the arguments for the Vim
+  command.
+- Send any commands to Vim using term_sendkeys().  For example: >
+	call term_sendkeys(buf, ":echo &lines &columns\<CR>")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item テストに使いたいファイルを書きましょう。これはシンタックスハイライトをテストするのに有用です。空のバッファで Vim を起動することができます。
+@item 端末で Vim を指定したサイズで起動します。デフォルトの大きさは 20 行 75 文字です。これは必ずダンプがいつも同じ大きさになるようにします。関数 RunVimInTerminal() がこれを引き受けます。Vim コマンドに引数を渡します。
+@item term_sendkeys() を使って Vim にコマンドを送ります。例:
+@example
+call term_sendkeys(buf, ":echo &lines &columns\<CR>")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Check that the screen is now in the expected state, using
+  VerifyScreenDump().  This expects the reference screen dump to be in the
+  src/testdir/dumps/ directory.  Pass the name without ".dump".  It is
+  recommended to use the name of the test function and a sequence number, so
+  that we know what test is using the file.
+- Repeat sending commands and checking the state.
+- Finally stop Vim by calling StopVimInTerminal().
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item VerifyScreenDump() を使って、スクリーンが現在期待された状態にあることを確認します。これは参照するスクリーンダンプが src/testdir/dumps/ ディレクトリにあることを期待します。".dump" を除いた名前を渡します。テスト関数の名前とスクリーン番号を使用することが推奨されています。そのため、どのテストがファイルを使用しているのかがわかります。
+@item コマンドを送り状態をチェックすることを繰り返します。
+@item 最後に、StopVimInTerminal() を呼んで Vim を終了します。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first time you do this you won't have a screen dump yet.  Create an empty
+file for now, e.g.: >
+	touch src/testdir/dumps/Test_function_name_01.dump
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+初めて行なった時にはまだスクリーンダンプが無いでしょう。さしあたり空のファイルを作成しましょう。例:
+@example
+touch src/testdir/dumps/Test_function_name_01.dump
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The test will then fail, giving you the command to compare the reference dump
+and the failed dump, e.g.: >
+	call term_dumpdiff("Test_func.dump.failed", "dumps/Test_func.dump")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+参照するダンプと失敗したダンプを比較するコマンドを与えたときに、この時テストは失敗するでしょう。例:
+@example
+call term_dumpdiff("Test_func.dump.failed", "dumps/Test_func.dump")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use this command in Vim, with the current directory set to src/testdir.
+Once you are satisfied with the test, move the failed dump in place of the
+reference: >
+	:!mv Test_func.dump.failed dumps/Test_func.dump
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カレントディレクトリを src/testdir に設定して、Vim でこのコマンドを使います。テストがひと度満たされたなら、失敗ダンプを参照する場所に移動します。
+@example
+:!mv Test_func.dump.failed dumps/Test_func.dump
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Creating a screen dump ~
+							*terminal-screendump*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-screendump}
+@cindex terminal-screendump
+@unnumberedsubsec スクリーンダンプを作成する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To create the screen dump, run Vim (or any other program) in a terminal and
+make it show the desired state.  Then use the term_dumpwrite() function to
+create a screen dump file.  For example: >
+	:call term_dumpwrite(77, "mysyntax.dump")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スクリーンダンプを作成するために、端末で Vim (もしくは他のプログラム) を実行し、望む状態が見えるようにします。それから、スクリーンダンプファイルを作成するために term_dumpwrite() 関数を使います。例えば:
+@example
+:call term_dumpwrite(77, "mysyntax.dump")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here "77" is the buffer number of the terminal.  Use `:ls!` to see it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ここで "77" はターミナルのバッファ番号です。これを見るには `@command{:ls!}` を使います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can view the screen dump with term_dumpload(): >
+	:call term_dumpload("mysyntax.dump")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+term_dumpload() を使ってスクリーンダンプを見ることができます:
+@example
+:call term_dumpload("mysyntax.dump")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To verify that Vim still shows exactly the same screen, run Vim again with
+exactly the same way to show the desired state.  Then create a screen dump
+again, using a different file name: >
+	:call term_dumpwrite(88, "test.dump")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim がまだ正確に同じスクリーンを表示しているかを確認するために、望む状態を表示する、正確に同じ方法で Vim を再び起動します。それから別の名前を使って、再度スクリーンダンプを作成します。
+@example
+:call term_dumpwrite(88, "test.dump")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To assert that the files are exactly the same use assert_equalfile(): >
+	call assert_equalfile("mysyntax.dump", "test.dump")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルが厳密に同じかどうかを確認するために、assert_equalfile() を使います:
+@example
+call assert_equalfile("mysyntax.dump", "test.dump")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If there are differences then v:errors will contain the error message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしも差分があるのなら、v:errors にはエラーメッセージを含んでいるでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Comparing screen dumps ~
+						*terminal-diffscreendump*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-diffscreendump}
+@cindex terminal-diffscreendump
+@unnumberedsubsec スクリーンダンプを比較する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+assert_equalfile() does not make it easy to see what is different.
+To spot the problem use term_dumpdiff(): >
+	call term_dumpdiff("mysyntax.dump", "test.dump")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+assert_equalfile() は差異を見るためには使い易くありません。問題を特定するためは term_dumpdiff() を使います:
+@example
+call term_dumpdiff("mysyntax.dump", "test.dump")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This will open a window consisting of three parts:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは 3 つの部分からなるウィンドウを開きます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1.  The contents of the first dump
+2.  The difference between the first and second dump
+3.  The contents of the second dump
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item 1 つ目のダンプの内容
+@item 1 つ目と 2 つ目のダンプの差分
+@item 2 つ目のダンプの内容
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can usually see what differs in the second part.  Use the 'ruler' to
+relate it to the postion in the first or second dump.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+普通は 2 番目の部分で差異を見ます。1 つ目もしくは 2 つ目のダンプ内の位置を関連付けるために '@option{ruler}' を使います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Alternatively, press "s" to swap the first and second dump. Do this everal
+times so that you can spot the difference in the context of the text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+あるいは、1 つ目と 2 つ目のダンプを交換するために "s" を押します。テキストの内容の差分を見抜くことができるように、何度か繰り返します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Debugging						*terminal-debug*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-debug}
+@cindex terminal-debug
+@section 4. デバッグ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Terminal debugging plugin can be used to debug a program with gdb and view
+the source code in a Vim window.  Since this is completely contained inside
+Vim this also works remotely over an ssh connection.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim のウィンドウでソースコードを表示しながらプログラムを gdb でデバッグするのに、端末デバッグプラグインが利用できます。これは Vim の中だけで完結するので、SSH 接続が 1 つあればリモートで機能します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Starting ~
+							*termdebug-starting*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{termdebug-starting}
+@cindex termdebug-starting
+@unnumberedsubsec はじめに
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Load the plugin with this command: >
+	packadd termdebug
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下のコマンドでプラグインを読み込みます:
+@example
+packadd termdebug
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<							*:Termdebug*
+To start debugging use `:Termdebug` followed by the command name, for example: >
+	:Termdebug vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:Termdebug}
+@cindex :Termdebug
+デバッグを開始するには `@command{:TermDebug}` に続けてコマンド名を入力します。例:
+@example
+:TermDebug vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This opens two windows:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これにより 2 つのウィンドウが開きます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+gdb window	A terminal window in which "gdb vim" is executed.  Here you
+		can directly interact with gdb.  The buffer name is "!gdb".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item gdb のウィンドウ @tab "gdb vim" を実行した端末ウィンドウ。ここでは直接 gdb とやりとりできる。バッファ名は "!gdb"
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+program window	A terminal window for the executed program.  When "run" is
+		used in gdb the program I/O will happen in this window, so
+		that it does not interfere with controlling gdb.  The buffer
+		name is "gdb program".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item プログラムのウィンドウ @tab 実行したプログラムの端末ウィンドウ。gdb 内で "run" をしてプログラムの I/O が発生するとこのウィンドウに反映される。その内容は gdb の制御下にない。バッファ名は "gdb program"
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The current window is used to show the source code.  When gdb pauses the
+source file location will be displayed, if possible.  A sign is used to
+highlight the current position (using highlight group debugPC).	 
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在のウィンドウはソースコードを表示するのに使われます。gdb が一時停止した際に、可能ならばその場所が表示されます。現在の位置を示すためにサインが利用されます (ハイライトグループ debugPC を使う)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the buffer in the current window is modified, another window will be opened
+to display the current gdb position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在のウィンドウの内容が変更されると、現在の gdb の位置を表示するために別のウィンドウが開きます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Focus the terminal of the executed program to interact with it.  This works
+the same as any command running in a terminal window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実行中のプログラムを操作するにはその端末にフォーカスを合わせます。以降の操作は普通の端末ウィンドウと同様です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the debugger ends, typically by typing "quit" in the gdb window, the two
+opened windows are closed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デバッガが終了すると、通常は gdb のウィンドウで "quit" とタイプすることで終了しますが、2 つのウィンドウは閉じます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Example session ~
+							*termdebug-example*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{termdebug-example}
+@cindex termdebug-example
+@unnumberedsubsec セッション例
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Start in the Vim "src" directory and build Vim: >
+	% make
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の "src" ディレクトリで開始し、Vim をビルドします:
+@example
+% make
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Start Vim: >
+	% ./vim
+Load the termdebug plugin and start debugging Vim: >
+	:packadd termdebug
+	:Termdebug vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim を起動します:
+@example
+% ./vim
+@end example
+termdebug プラグインを読み込んで Vim のデバッグを開始します:
+@example
+:packadd termdebug
+:Termdebug vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+You should now have three windows:
+    source  - where you started, has a window toolbar with buttons
+    gdb	    - you can type gdb commands here
+    program - the executed program will use this window
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在、3 つのウィンドウがあるはずです:
+@itemize
+@item source  - 作業を開始した場所で、ボタンのあるツールバーウィンドウを持っています
+@item gdb     - ここでは gdb コマンドを入力することができます
+@item program - 実行されたプログラムがこのウィンドウを使用します
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+You can use CTRL-W CTRL-W or the mouse to move focus between windows.
+Put focus on the gdb window and type: >
+	break ex_help
+	run
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウ間のフォーカス移動には @kbd{CTRL-W CTRL-W} かマウスを使うことができます。gdb ウィンドウにフォーカスを置いてから次を入力しましょう:
+@example
+break ex_help
+run
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Vim will start running in the program window. Put focus there and type: >
+	:help gui
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim がプログラムウィンドウで走りはじめるでしょう。そこにフォーカスを置いてから次を入力します:
+@example
+:help gui
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Gdb will run into the ex_help breakpoint.  The source window now shows the 
+ex_cmds.c file.  A ">>" marker will appear where the breakpoint was set.  The
+line where the debugger stopped is highlighted.  You can now step through the
+program.  Let's use the mouse: click on the "Next" button in the window
+toolbar.  You will see the highlighting move as the debugger executes a line
+of source code.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Gdb は ex_help ブレークポイントの中で動作するでしょう。ソースウィンドウは現在、@file{ex_cmds.c} ファイルを表示しています。">>" マーカーは、ブレークポイントがどこにあるのかを示しています。デバッガが停止している行はハイライトされています。プログラムを一行ずつ実行していくことができます。マウスを使ってみましょう: ウィンドウツールバーの "Next" ボタンをクリックしましょう。デバッガーがソースコードの一行を実行しながらハイライト移動するのを目にするでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Click "Next" a few times until the for loop is highlighted.  Put the cursor on
+the end of "eap->arg", then click "Eval" in the toolbar.  You will see this
+displayed:
+	"eap->arg": 0x555555e68855 "gui" ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+for ループがハイライトされるまで、何回か "Next" をクリックしましょう。"eap->arg" のうしろカーソルを置いてから、ツールバーの "Eval" をクリックしましょう。次のような表示を目にするでしょう:
+@example
+"eap->arg": 0x555555e68855 "gui"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This way you can inspect the value of local variables.  You can also focus the
+gdb window and use a "print" command, e.g.: >
+	print *eap
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはローカル変数の値を検査する方法です。gdb ウィンドウをフォーカスして "print" コマンド使ってみましょう。例えば:
+@example
+print *eap
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now go back to the source window and put the cursor on the first line after
+the for loop, then type: >
+	:Break
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そしてソースウィンドウに戻って、for ループの下の最初の行にカーソルを置いて、次を入力しましょう:
+@example
+:Break
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+You will see a ">>" marker appear, this indicates the new breakpoint.  Now
+click "Cont" in the toolbar and the code until the breakpoint will be
+executed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+">>" マーカーが出現しているのがわかるでしょう。これは新たなブレークポイントを示しています。ツールバーの "Cont" をクリックすると、ブレークポイントまでのコードが実行されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can type more advanced commands in the gdb window.  For example, type: >
+	watch curbuf
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+gdb ウィンドウではもっと高度なコマンドを入力することができます。例えば、次を入力しましょう:
+@example
+watch curbuf
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Now click "Cont" in the toolbar (or type "cont" in the gdb window). Execution
+will now continue until the value of "curbuf" changes, which is in do_ecmd().
+To remove this watchpoint again type in the gdb window: >
+	delete 3
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ツールバーの "Cont" をクリック (もしくは gdb ウィンドウで "cont" を入力) しましょう。実行は "curbuf" の値が変更するまで続きます。ここは do_ecmd() の中です。
+ウォッチポイントを削除するには、再び gdb ウィンドウで、次を入力します:
+@example
+delete 3
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can see the stack by typing in the gdb window: >
+	where
+Move through the stack frames, e.g. with: >
+	frame 3
+The source window will show the code, at the point where the call was made to
+a deeper level.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+gdb ウィンドウで次を入力することでスタックを見ることができます:
+@example
+where
+@end example
+スタックフレームを移動します。例えば次のようにして:
+@example
+frame 3
+@end example
+ソースウィンドウは、より深いレベルにコールが為された時点で、コードを表示するでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Stepping through code ~
+							*termdebug-stepping*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{termdebug-stepping}
+@cindex termdebug-stepping
+@unnumberedsubsec コードをステップ実行する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Put focus on the gdb window to type commands there.  Some common ones are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+gdb ウィンドウにフォーカスを移しコマンドを入力します。一般的なものは以下:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- CTRL-C	interrupt the program
+- next		execute the current line and stop at the next line
+- step		execute the current line and stop at the next statement,
+		entering functions
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item CTRL-C    プログラムを中断する
+@item next      現在の行を実行し、次の行(の手前)で停止する
+@item step      現在の行を実行し、次の文(の手前)で停止する。関数の内側に入る
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- finish	execute until leaving the current function
+- where		show the stack
+- frame N	go to the Nth stack frame
+- continue	continue execution
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item finish    現在の関数を抜けるまで実行する
+@item where     スタックを表示する
+@item frame N   N 番目のスタックフレームに移動する
+@item continue  実行を再開する
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the window showing the source code these commands can used to control gdb:
+ :Run [args]	    run the program with [args] or the previous arguments
+ :Arguments {args}  set arguments for the next :Run
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ソースコードを表示しているウィンドウでは gdb を制御するのに幾つかのコマンドが使えます:
+@multitable @columnfractions .3 .7
+@item :Run [args] @tab [args] もしくは以前の引数を使ってプログラムを実行します
+@item :Arguments @{args@} @tab 次の :Run のために引数を設定します
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ :Break		set a breakpoint at the current line; a sign will be displayed
+ :Delete	delete a breakpoint at the current line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :Break @tab 現在の行にブレークポイントを設定する。サインが表示される
+@item :Delete @tab 現在の行のブレークポイントを削除する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ :Step		execute the gdb "step" command
+ :Over		execute the gdb "next" command (:Next is a Vim command)
+ :Finish	execute the gdb "finish" command
+ :Continue	execute the gdb "continue" command
+ :Stop		interrupt the program
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :Step @tab gdb の "step" コマンドを実行する
+@item :Over @tab gdb の "next" コマンドを実行する (:Next だと Vim のコマンドとかぶるので)
+@item :Finish @tab gdb の "finish" コマンドを実行する
+@item :Continue @tab gdb の "continue" コマンドを実行する
+@item :Stop @tab プログラムを中断する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If 'mouse' is set the plugin adds a window toolbar with these entries:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしも '@option{mouse}' が設定されているならば、プラグインはウィンドウツールバーにこれらの項目を追加します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+  Step		:Step
+  Next		:Over
+  Finish	:Finish
+  Cont		:Continue
+  Stop		:Stop
+  Eval		:Evaluate
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Step          :Step
+Next          :Over
+Finish        :Finish
+Cont          :Continue
+Stop          :Stop
+Eval          :Evaluate
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This way you can use the mouse to perform the most common commands.  You need
+to have the 'mouse' option set to enable mouse clicks.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この方法は、多くの一般的なコマンドを実行するためにマウスを使えるようにします。マウスクリックを有効にするには、'@option{mouse}' オプションを設定する必要があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Inspecting variables ~
+							*termdebug-variables*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{termdebug-variables}
+@cindex termdebug-variables
+@unnumberedsubsec 変数を検査する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ :Evaluate	    evaluate the expression under the cursor
+ K		    same
+ :Evaluate {expr}   evaluate {expr}
+ :'<,'>Evaluate	    evaluate the Visually selected text
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item :Evaluate @tab カーソルの下の式を評価する
+@item K @tab 上に同じ
+@item :Evaluate @{expr@} @tab @{expr@} を評価する
+@item :'<,'>Evaluate @tab ビジュアル選択したテキストを評価する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is similar to using "print" in the gdb window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは gdb ウィンドウで "print" コマンドを使ったのに相当します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Other commands ~
+							*termdebug-commands*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{termdebug-commands}
+@cindex termdebug-commands
+@unnumberedsubsec その他のコマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ :Gdb	       jump to the gdb window
+ :Program      jump to the window with the running program
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item :Gdb @tab gdb ウィンドウに移動する
+@item :Program @tab デバッグ中のプログラムウィンドウに移動する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Communication ~
+						*termdebug-communication*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{termdebug-communication}
+@cindex termdebug-communication
+@unnumberedsubsec 通信
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+There is another, hidden, buffer, which is used for Vim to communicate with
+gdb.  The buffer name is "gdb communication".  Do not delete this buffer, it
+will break the debugger.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が gdb と通信するために他に隠されたバッファを利用します。バッファ名は "gdb communicate" です。このバッファは消さないでください。消してしまうとデバッガが動作しなくなってしまうでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Customizing ~
+							*termdebug-customizing*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{termdebug-customizing}
+@cindex termdebug-customizing
+@unnumberedsubsec カスタマイズ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+To change the name of the gdb command, set the "termdebugger" variable before
+invoking `:Termdebug`: >
+	let termdebugger = "mygdb"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+gdb コマンド以外のデバッガを使うには、 `@command{:Termdebug`} を実行する前に "@var{termdebugger}" 変数を変更してください:
+@example
+let termdebugger = "mygdb"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<						*gdb-version*
+Only debuggers fully compatible with gdb will work.  Vim uses the GDB/MI
+interface.  This probably requires gdb version 7.12.  if you get this error:
+	Undefined command: "new-ui". Try "help".~
+Then your gdb is too old.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gdb-version}
+@cindex gdb-version
+gdb と完全互換のあるデバッガのみが使えます。Vim は gdb の操作に GDB/MI インターフェイスを利用しています。たぶん gdb バージョン 7.12 を要求します。もしも次のようなエラーが出たなら:
+@example
+Undefined command: "new-ui". Try "help".
+@end example
+gdb が古いのです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*hl-debugPC* *hl-debugBreakpoint*
+The color of the signs can be adjusted with these highlight groups:
+- debugPC		the current position
+- debugBreakpoint	a breakpoint
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{hl-debugPC}
+@anchor{hl-debugBreakpoint}
+@cindex hl-debugPC
+@cindex hl-debugBreakpoint
+サインの色は以下のハイライトグループで調整できます:
+@multitable @columnfractions .4 .6
+@item debugPC @tab 現在の位置
+@item debugBreakpoint @tab ブレークポイント
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The defaults are, when 'background' is "light":
+  hi debugPC term=reverse ctermbg=lightblue guibg=lightblue
+  hi debugBreakpoint term=reverse ctermbg=red guibg=red
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{background}' オプションが "@var{light}" の時のデフォルトは以下のとおりです:
+@example
+hi debugPC term=reverse ctermbg=lightblue guibg=lightblue
+hi debugBreakpoint term=reverse ctermbg=red guibg=red
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When 'background' is "dark":
+  hi debugPC term=reverse ctermbg=darkblue guibg=darkblue
+  hi debugBreakpoint term=reverse ctermbg=red guibg=red
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{background}' オプションが "@var{dark}" の時は以下のとおりです:
+@example
+hi debugPC term=reverse ctermbg=darkblue guibg=darkblue
+hi debugBreakpoint term=reverse ctermbg=red guibg=red
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To change the width of the Vim window when debugging starts, and use a
+vertical split: >
+  let g:termdebug_wide = 163
+This will set &columns to 163 when :Termdebug is used.  The value is restored
+when quitting the debugger.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デバッグを開始した際に Vim のウィンドウ幅を変更し、垂直分割を利用するには次のように設定します:
+@example
+let g:termdebug_wide = 163
+@end example
+これは :Termdebug を実行した際に &columns を 163 に設定します。元の値はデバッガが終了する際に復元されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+If g:termdebug_wide is set and &Columns is already  larger than
+g:termdebug_wide then a vertical split will be used without changing &columns.
+Set it to 1 to get a vertical split without every changing &columns (useful
+for when the terminal can't be resized by Vim).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしも g:termdebug_wide が設定されていて、すでに &Columns が g:termdebug_wide よりも大きいなら、&columns を変更することなしに左右分割が使われます。すべての &columns を変更することなしに左右分割をするには、1 を設定します (Vim によってリサイズすることのできない端末の時に有用です)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
