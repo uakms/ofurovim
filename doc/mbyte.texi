@@ -1,0 +1,3930 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node mbyte.txt, , , 目次
+@unnumbered マルチバイトテキストのサポート
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*mbyte.txt*     For Vim version 8.0.  Last change: 2018 Jan 21
+
+
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*mbyte.txt*     For Vim バージョン 8.0.  Last change: 2018 Jan 21
+
+		  VIMリファレンスマニュアル	  by Bram Moolenaar et al.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Multi-byte support				*multibyte* *multi-byte*
+						*Chinese* *Japanese* *Korean*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{multibyte}
+@anchor{multi-byte}
+@anchor{Chinese}
+@anchor{Japanese}
+@anchor{Korean}
+@cindex multibyte
+@cindex multi-byte
+@cindex Chinese
+@cindex Japanese
+@cindex Korean
+マルチバイトサポート
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This is about editing text in languages which have many characters that can
+not be represented using one byte (one octet).  Examples are Chinese, Japanese
+and Korean.  Unicode is also covered here.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このファイルでは、中国語、日本語、韓国語などの、1 バイト (オクテット) では表現することができないほど多くの文字を持つ言語の、テキストの編集について説明する。Unicode についても説明する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For an introduction to the most common features, see |usr_45.txt| in the user
+manual.
+For changing the language of messages and menus see |mlang.txt|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザーマニュアルの |@ref{usr_45.txt, , usr_45.txt}| で、共通する事柄を簡単に紹介している。メッセージやメニューの言語を変更するには |mlang.txt| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{not available when compiled without the |+multi_byte| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{|+multi_byte| が有効な場合のみ利用可能@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.  Getting started			|mbyte-first|
+2.  Locale				|mbyte-locale|
+3.  Encoding				|mbyte-encoding|
+4.  Using a terminal			|mbyte-terminal|
+5.  Fonts on X11			|mbyte-fonts-X11|
+6.  Fonts on MS-Windows			|mbyte-fonts-MSwin|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. はじめに @tab |@ref{mbyte-first, , mbyte-first}|
+@item 2. ロケール @tab |@ref{mbyte-locale, , mbyte-locale}|
+@item 3. エンコーディング @tab |@ref{mbyte-encoding, , mbyte-encoding}|
+@item 4. 端末の使用 @tab |@ref{mbyte-terminal, , mbyte-terminal}|
+@item 5. X11 のフォント @tab |@ref{mbyte-fonts-X11, , mbyte-fonts-X11}|
+@item 6. MS-Windows のフォント @tab |@ref{mbyte-fonts-MSwin, , mbyte-fonts-MSwin}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+7.  Input on X11			|mbyte-XIM|
+8.  Input on MS-Windows			|mbyte-IME|
+9.  Input with a keymap			|mbyte-keymap|
+10. Input with imactivatefunc()		|mbyte-func|
+11. Using UTF-8				|mbyte-utf8|
+12. Overview of options			|mbyte-options|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 7.  X11 での入力 @tab |@ref{mbyte-XIM, , mbyte-XIM}|
+@item 8.  MS-Windows での入力 @tab |@ref{mbyte-IME, , mbyte-IME}|
+@item 9.  キーマップを使用した入力 @tab |@ref{mbyte-keymap, , mbyte-keymap}|
+@item 10. imactivatefunc() を使用した入力 @tab |@ref{mbyte-func, , mbyte-func}|
+@item 11. UTF-8 を使う @tab |@ref{mbyte-utf8, , mbyte-utf8}|
+@item 12. 主なオプション @tab |@ref{mbyte-options, , mbyte-options}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NOTE: This file contains UTF-8 characters.  These may show up as strange
+characters or boxes when using another encoding.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:}@*
+このファイルには Unicode の文字が含まれている。他のエンコーディングを使用している場合は、変な文字、あるいは四角形として表示されるかもしれない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Getting started					*mbyte-first*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mbyte-first}
+@cindex mbyte-first
+@section 1. はじめに (Getting started)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is a summary of the multibyte features in Vim.  If you are lucky it works
+as described and you can start using Vim without much trouble.  If something
+doesn't work you will have to read the rest.  Don't be surprised if it takes
+quite a bit of work and experimenting to make Vim use all the multi-byte
+features.  Unfortunately, every system has its own way to deal with multibyte
+languages and it is quite complicated.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim のマルチバイト機能を簡単に紹介する。運が良ければ、説明したことがそのまま機能して、なんのトラブルもなしに Vim を使い始めることができる。そうでない場合は、このファイルをさらに読み進める必要がある。Vim のマルチバイト機能を使用できるようにするために、多少の手間や試行錯誤が必要であっても驚かないで欲しい。不幸なことに、すべてのシステムはそれぞれ独自の方法でマルチバイト言語を扱っていて、それは実に複雑である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+COMPILING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec コンパイル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you already have a compiled Vim program, check if the |+multi_byte| feature
+is included.  The |:version| command can be used for this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コンパイル済みの Vim をすでに持っているなら、|+multi_byte| 機能が含まれているかどうか確認する。|:version| コマンドで確認できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If +multi_byte is not included, you should compile Vim with "normal", "big" or
+"huge" features.  You can further tune what features are included.  See the
+INSTALL files in the source directory.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|+multi_byte| が含まれていないときは、Vim を "normal" か "big" か "huge" 構成でコンパイルする必要がある。コンパイルの際には、どの機能を含めるのか調整することができる。ソースディレクトリの @file{INSTALL} ファイルを参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+LOCALE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec ロケール
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+First of all, you must make sure your current locale is set correctly.  If
+your system has been installed to use the language, it probably works right
+away.  If not, you can often make it work by setting the $LANG environment
+variable in your shell: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+まずは、ロケールが正く設定されていることを確認する。システムの言語が正しく設定されていれば、マルチバイト機能をすぐに使用することができる。設定されてなくても、環境変数 @var{$LANG} をシェルから設定すれば、大抵は使用できるようになる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	setenv LANG ja_JP.EUC
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+setenv LANG ja_JP.EUC
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Unfortunately, the name of the locale depends on your system.  Japanese might
+also be called "ja_JP.EUCjp" or just "ja".  To see what is currently used: >
+
+	:language
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+不幸なことに、ロケールの名前はシステムごとに違う。日本語なら "ja_JP.EUCjp" や "ja" などがある。現在の設定を確認するには:
+@example
+:language
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To change the locale inside Vim use: >
+
+	:language ja_JP.EUC
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が内部で使用するロケールを変更するには:
+@example
+:language ja_JP.EUC
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will give an error message if this doesn't work.  This is a good way to
+experiment and find the locale name you want to use.  But it's always better
+to set the locale in the shell, so that it is used right from the start.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+その設定が機能しない場合はエラーメッセージが表示される。使用したい言語のロケール名を見付けるためにいくつか試してみると良い。しかし、Vim は起動時にシステムのロケールを適切に使用するので、シェルでロケールを設定するのが無難である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See |mbyte-locale| for details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+詳細は |mbyte-locale| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ENCODING
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec エンコーディング
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If your locale works properly, Vim will try to set the 'encoding' option
+accordingly.  If this doesn't work you can overrule its value: >
+
+	:set encoding=utf-8
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ロケールが適切に設定されていれば、オプション '@option{encoding}' はそれに応じた値に設定される。それが機能しないときは、自分で設定しなおすこともできる:
+@example
+:set encoding=utf-8
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See |encoding-values| for a list of acceptable values.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+設定できる値の一覧は |encoding-values| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The result is that all the text that is used inside Vim will be in this
+encoding.  Not only the text in the buffers, but also in registers, variables,
+etc.  This also means that changing the value of 'encoding' makes the existing
+text invalid!  The text doesn't change, but it will be displayed wrong.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この設定は Vim 内部でテキストを保持するためのエンコーディングとして使用される。バッファのテキストだけでなく、レジスタや変数のエンコーディングとしても使用される。そのため、'@option{encoding}' の設定を変更すると、すでに内部にあるテキストは不正なテキストになってしまう。テキストは新しいエンコーディングに変換されず、間違った状態で表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can edit files in another encoding than what 'encoding' is set to.  Vim
+will convert the file when you read it and convert it back when you write it.
+See 'fileencoding', 'fileencodings' and |++enc|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{encoding}' に設定されたのとは違うエンコーディングのファイルも編集することができる。Vim はファイルを開くときにエンコーディングを変換し、保存するときに元に戻す。'@option{fileencoding}'、'@option{fileencodings}'、|++enc| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+DISPLAY AND FONTS
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 表示とフォント
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are working in a terminal (emulator) you must make sure it accepts the
+same encoding as which Vim is working with.  If this is not the case, you can
+use the 'termencoding' option to make Vim convert text automatically.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末 (のエミュレータ) で作業しているなら、端末が、Vim と同じエンコーディングを使用することを確認する。違うなら、オプション '@option{termencoding}' を設定して、テキストが自動的に変換されるようにする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For the GUI you must select fonts that work with the current 'encoding'.  This
+is the difficult part.  It depends on the system you are using, the locale and
+a few other things.  See the chapters on fonts: |mbyte-fonts-X11| for
+X-Windows and |mbyte-fonts-MSwin| for MS-Windows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GUI で作業しているなら、'@option{encoding}' に設定されたエンコーディングに対応したフォントを選択する必要がある。フォントの設定は難しい。使用しているシステムやロケールなどに依存している。X-Window 環境なら |mbyte-fonts-X11|、MS-Windows なら |mbyte-fonts-MSwin| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For GTK+ 2, you can skip most of this section.  The option 'guifontset' does
+no longer exist.  You only need to set 'guifont' and everything should "just
+work".  If your system comes with Xft2 and fontconfig and the current font
+does not contain a certain glyph, a different font will be used automatically
+if available.  The 'guifontwide' option is still supported but usually you do
+not need to set it.  It is only necessary if the automatic font selection does
+not suit your needs.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GTK+ 2 を使っているなら、今読んでいるこの項目はほとんど読まなくて良い。オプション '@option{guifontset}' はもう存在しない。'@option{guifont}' を設定するだけですべてうまく機能する。システムに Xft2 と fontconfig が用意されているなら、選択したフォントが何かのグリフを含んでいないときは、自動的に他の利用可能なフォントが使用される。オプション '@option{guifontwide}' はまだサポートされているが通常は必要ない。自動的に選択されるフォントが適切でない場合のみ設定する必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For X11 you can set the 'guifontset' option to a list of fonts that together
+cover the characters that are used.  Example for Korean: >
+
+	:set guifontset=k12,r12
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+X11 ではオプション '@option{guifontset}' に複数のフォントを設定して、さまざまな文字を扱えるようにする。韓国語での設定例:
+@example
+:set guifontset=k12,r12
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Alternatively, you can set 'guifont' and 'guifontwide'.  'guifont' is used for
+the single-width characters, 'guifontwide' for the double-width characters.
+Thus the 'guifontwide' font must be exactly twice as wide as 'guifont'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+代わりに '@option{guifont}' と '@option{guifontwide}' を設定することもできる。'@option{guifont}' は半角文字、'@option{guifontwide}' は全角文字のためのフォントである。'@option{guifontwide}' のフォントは '@option{guifont}' のちょうど 2 倍の幅でなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Example for UTF-8: >
+
+	:set guifont=-misc-fixed-medium-r-normal-*-18-120-100-100-c-90-iso10646-1
+	:set guifontwide=-misc-fixed-medium-r-normal-*-18-120-100-100-c-180-iso10646-1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+UTF-8 使用時の設定例:
+@example
+:set guifont=-misc-fixed-medium-r-normal-*-18-120-100-100-c-90-iso10646-1
+:set guifontwide=-misc-fixed-medium-r-normal-*-18-120-100-100-c-180-iso10646-1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can also set 'guifont' alone, Vim will try to find a matching
+'guifontwide' for you.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{guifont}' だけを設定した場合、Vim は '@option{guifontwide}' として使用できるフォントを見付けようとする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+INPUT
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 入力
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are several ways to enter multi-byte characters:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マルチバイト文字を入力するにはいくつかの方法がある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- For X11 XIM can be used.  See |XIM|.
+- For MS-Windows IME can be used.  See |IME|.
+- For all systems keymaps can be used.  See |mbyte-keymap|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item X11 では XIM を使用できる。|XIM| を参照。
+@item MS-Windows では IME を使用できる。|IME| を参照。
+@item すべてのシステムでキーマップを使用できる。|mbyte-keymap| を参照。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The options 'iminsert', 'imsearch' and 'imcmdline' can be used to chose
+the different input methods or disable them temporarily.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{iminsert}', '@option{imsearch}', '@option{imcmdline}' を使用して、別の入力方法に切り替えたり、インプットメソッドを一時的に無効にしたりできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2.  Locale						*mbyte-locale*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mbyte-locale}
+@cindex mbyte-locale
+@section 2. ロケール (Locale)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The easiest setup is when your whole system uses the locale you want to work
+in.  But it's also possible to set the locale for one shell you are working
+in, or just use a certain locale inside Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最も簡単なのは、システム全体のロケールを設定することである。しかし、作業しているシェルのみロケールを変更したり、Vim だけが特定のロケールを使用するようにも設定できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+WHAT IS A LOCALE?					*locale*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{locale}
+@cindex locale
+@unnumberedsubsec ロケールって何？
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are many of languages in the world.  And there are different cultures
+and environments at least as much as the number of languages.	A linguistic
+environment corresponding to an area is called "locale".  This includes
+information about the used language, the charset, collating order for sorting,
+date format, currency format and so on.  For Vim only the language and charset
+really matter.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+世界にはたくさんの言語があり、少なくとも、それと同じ数だけ文化や環境がある。地域に対応した言語環境のことをロケール (locale) という。ロケールは、言語、文字セット、文字の整列順、日付の書式、通貨の書式、などの情報を含んでいる。Vim にとっては言語と文字セットの情報だけが重要である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can only use a locale if your system has support for it.  Some systems
+have only a few locales, especially in the USA.  The language which you want
+to use may not be on your system.  In that case you might be able to install
+it as an extra package.  Check your system documentation for how to do that.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+システムがサポートしているロケールのみ使用することができる。(特にアメリカなどでは) ほんの少しのロケールしか持っていないシステムもある。そのため、望みの言語を使用することができないかもしれない。追加パッケージでロケールをインストールできることもあるので、システムのドキュメントを確認すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The location in which the locales are installed varies from system to system.
+For example, "/usr/share/locale" or "/usr/lib/locale".  See your system's
+setlocale() man page.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ロケールがインストールされている場所はシステムによりさまざまである。例えば "/usr/share/locale" や "/usr/lib/locale" などにある場合がある。システムのマニュアルの setlocale() を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Looking in these directories will show you the exact name of each locale.
+Mostly upper/lowercase matters, thus "ja_JP.EUC" and "ja_jp.euc" are
+different.  Some systems have a locale.alias file, which allows translation
+from a short name like "nl" to the full name "nl_NL.ISO_8859-1".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ロケールがインストールされているディレクトリを見ればロケールの正しい名前がわかる。ほとんどの場合、大文字と小文字は区別されるので、例えば "ja_JP.EUC" と "ja_jp.euc" は異なる。いくつかのシステムは locale.alias というファイルを持っていて、"nl" のような短い名前を使って "nl_NL.ISO_8859-1" という完全な名前を指定できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that X-windows has its own locale stuff.  And unfortunately uses locale
+names different from what is used elsewhere.  This is confusing!  For Vim it
+matters what the setlocale() function uses, which is generally NOT the
+X-windows stuff.  You might have to do some experiments to find out what
+really works.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+X-Window は独自のロケール機構を持っている。そして不幸なことに、他で使用されているものとは違うロケール名を使用する。これは混乱の元である。Vim にとっては関数 setlocale() が使用するものが重要であり、それは通常、X-Window のものではない。何が実際に機能するのか、実験してみる必要があるかもしれない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*locale-name*
+The (simplified) format of |locale| name is:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{locale-name}
+@cindex locale-name
+ロケール |locale| の名前の (簡単な) 書式は:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	language
+or	language_territory
+or	language_territory.codeset
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+        言語                    (language)
+または  言語_地域               (language_territory)
+または  言語_地域.コードセット  (language_territory.codeset)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Territory means the country (or part of it), codeset means the |charset|.  For
+example, the locale name "ja_JP.eucJP" means:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+地域は国を意味する (あるいはその地方)。コードセットは |charset| のこと。例えば、ロケール名 "ja_JP.eucJP" の意味は:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	ja	the language is Japanese
+	JP	the country is Japan
+	eucJP	the codeset is EUC-JP
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item ja @tab 言語は日本語 (Japanese)
+@item JP @tab 国は日本 (Japan)
+@item eucJP @tab コードセットは EUC-JP
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+But it also could be "ja", "ja_JP.EUC", "ja_JP.ujis", etc.  And unfortunately,
+the locale name for a specific language, territory and codeset is not unified
+and depends on your system.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同じ意味でも "ja", "ja_JP.EUC", "ja_JP.ujis" などの名前のこともある。不幸なことに、言語、地域、コードセット、を表す名前は統一されておらず、システムによって異なる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples of locale name:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ロケール名の例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    charset	    language		  locale name ~
+    GB2312	    Chinese (simplified)  zh_CN.EUC, zh_CN.GB2312
+    Big5	    Chinese (traditional) zh_TW.BIG5, zh_TW.Big5
+    CNS-11643	    Chinese (traditional) zh_TW
+    EUC-JP	    Japanese		  ja, ja_JP.EUC, ja_JP.ujis, ja_JP.eucJP
+    Shift_JIS	    Japanese		  ja_JP.SJIS, ja_JP.Shift_JIS
+    EUC-KR	    Korean		  ko, ko_KR.EUC
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .4 .4
+@headitem charset @tab language @tab ロケール名
+@item GB2312 @tab 中国語 (簡体字) @tab zh_CN.EUC, zh_CN.GB2312
+@item Big5 @tab 中国語 (繁体字) @tab zh_TW.BIG5, zh_TW.Big5
+@item CNS-11643 @tab 中国語 (繁体字) @tab zh_TW
+@item EUC-JP @tab 日本語 @tab ja, ja_JP.EUC, ja_JP.ujis, ja_JP.eucJP
+@item Shift_JIS @tab 日本語 @tab ja_JP.SJIS, ja_JP.Shift_JIS
+@item EUC-KR @tab 韓国語 @tab ko, ko_KR.EUC
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING A LOCALE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec ロケールを使用する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To start using a locale for the whole system, see the documentation of your
+system.  Mostly you need to set it in a configuration file in "/etc".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+システム全体のロケールを設定するには、システムのドキュメントを参照。恐らく、"/etc" 内の設定ファイルを編集する必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To use a locale in a shell, set the $LANG environment value.  When you want to
+use Korean and the |locale| name is "ko", do this:
+
+    sh:    export LANG=ko
+    csh:   setenv LANG ko
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+シェルのロケールを設定するには、環境変数 @var{$LANG} を設定する。例えば、韓国語を使用するとき、ロケール |locale| の名前が "ko" なら、このように設定する:
+@example
+sh:    export LANG=ko
+csh:   setenv LANG ko
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can put this in your ~/.profile or ~/.cshrc file to always use it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これを @file{~/.profile} や @file{~/.cshrc} に書いておけばいつでも設定された状態にできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To use a locale in Vim only, use the |:language| command: >
+
+	:language ko
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が使用するロケールだけ設定するには |:language| コマンドを使う:
+@example
+:language ko
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Put this in your ~/.vimrc file to use it always.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これを @file{~/.vimrc} に書いておけばいつでも設定された状態にできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Or specify $LANG when starting Vim:
+
+   sh:    LANG=ko vim {vim-arguments}
+   csh:	  env LANG=ko vim {vim-arguments}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+あるいは、特定の @var{$LANG} を設定した状態で Vim を起動するには:
+@example
+sh:    LANG=ko vim @{vim-arguments@}
+csh:   env LANG=ko vim @{vim-arguments@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You could make a small shell script for this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このために、小さなシェルスクリプトを作成することもできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3.  Encoding				*mbyte-encoding*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mbyte-encoding}
+@cindex mbyte-encoding
+@section 3. エンコーディング (Encoding)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim uses the 'encoding' option to specify how characters are identified and
+encoded when they are used inside Vim.  This applies to all the places where
+text is used, including buffers (files loaded into memory), registers and
+variables.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はオプション '@option{encoding}' を Vim 内部で使用するエンコーディングとして使用する。バッファ (メモリに読み込まれたファイル) やレジスタ、変数など、すべてのテキストはこのエンコーディングでメモリに保存される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*charset* *codeset*
+Charset is another name for encoding.  There are subtle differences, but these
+don't matter when using Vim.  "codeset" is another similar name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{charset}
+@anchor{codeset}
+@cindex charset
+@cindex codeset
+文字セット (Charset) とコードセット (codeset) は「エンコーディング」の別名である。正確には違うのだが、Vim を使用する上でそれは重要ではない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Each character is encoded as one or more bytes.  When all characters are
+encoded with one byte, we call this a single-byte encoding.  The most often
+used one is called "latin1".  This limits the number of characters to 256.
+Some of these are control characters, thus even fewer can be used for text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+文字は 1 バイト以上のバイトでエンコードされる。すべての文字が 1 バイトでエンコードされるものを私達はシングルバイトエンコーディングと呼ぶ。そのようなエンコーディングとしては "latin1" がよく使用される。これは 256 文字を表現することができる。それには制御文字も含むので、テキストとして使用できる文字はそれより少ない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When some characters use two or more bytes, we call this a multi-byte
+encoding.  This allows using much more than 256 characters, which is required
+for most East Asian languages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+2 バイト以上を使って文字を表現するものを、私達はマルチバイトエンコーディングと呼ぶ。これは 256 文字よりもっと多くの文字を表現することができ、ほとんどの東アジアの言語はこれを必要とする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Most multi-byte encodings use one byte for the first 127 characters.  These
+are equal to ASCII, which makes it easy to exchange plain-ASCII text, no
+matter what language is used.  Thus you might see the right text even when the
+encoding was set wrong.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ほとんどのマルチバイトエンコーディングは 127 文字 (ASCII 文字の範囲) を 1 バイトで表現するため、使用する言語に関係なく、ASCII 文字だけのテキストをやり取りすることが簡単になっている。したがって、間違ったエンコーディングが設定されていても、それを読むことができるだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*encoding-names*
+Vim can use many different character encodings.  There are three major groups:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{encoding-names}
+@cindex encoding-names
+多くのエンコーディングを使用することができる。大きく 3 つに分類すると:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1   8bit	Single-byte encodings, 256 different characters.  Mostly used
+		in USA and Europe.  Example: ISO-8859-1 (Latin1).  All
+		characters occupy one screen cell only.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .2 .7
+@item 1 @tab 8bit @tab シングルバイトエンコーディング。256 文字を表現できる。アメリカやヨーロッパで使用される。例: ISO-8859-1 (Latin1)。すべての文字は 1 つ分の表示幅で表示される。(いわゆる半角)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+2   2byte	Double-byte encodings, over 10000 different characters.
+		Mostly used in Asian countries.  Example: euc-kr (Korean)
+		The number of screen cells is equal to the number of bytes
+		(except for euc-jp when the first byte is 0x8e).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 2 @tab 2byte @tab ダブルバイトエンコーディング。10000 以上の文字を表現できる。アジアの国々で使用される。例: euc-kr (韓国語)。文字のバイト数と同じ数の表示幅で表示される。(2 バイトならいわゆる全角) @* (euc-jp の 1 バイト目が 0x8e の文字 (半角カナ) は例外)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+u   Unicode	Universal encoding, can replace all others.  ISO 10646.
+		Millions of different characters.  Example: UTF-8.  The
+		relation between bytes and screen cells is complex.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item u @tab Unicode @tab ユニバーサルエンコーディング。他のエンコーディングを統合するもの。ISO 10646。100 万以上の文字を表現できる。例: UTF-8。文字が使用するバイト数と表示幅の関係は複雑。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Other encodings cannot be used by Vim internally.  But files in other
+encodings can be edited by using conversion, see 'fileencoding'.
+Note that all encodings must use ASCII for the characters up to 128 (except
+when compiled for EBCDIC).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他のエンコーディングは Vim 内部のエンコーディングとして使用することはできないが、そのようなエンコーディングのファイルを編集することはできる。'@option{fileencoding}' を参照。
+@quotation
+@strong{Note:} @*
+すべてのエンコーディングは 0 から 128 までの文字が ASCII 文字と同じでなければならない (EBCDIC 用にコンパイルした場合は除く)。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Supported 'encoding' values are:			*encoding-values*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{encoding-values}
+@cindex encoding-values
+'@option{encoding}' に設定できる値:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1   latin1	8-bit characters (ISO 8859-1, also used for cp1252)
+1   iso-8859-n	ISO_8859 variant (n = 2 to 15)
+1   koi8-r	Russian
+1   koi8-u	Ukrainian
+1   macroman    MacRoman (Macintosh encoding)
+1   8bit-{name} any 8-bit encoding (Vim specific name)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .3 .6
+@item 1 @tab latin1 @tab 8 ビット文字 (ISO 8859-1 及び cp1252)
+@item 1 @tab iso-8859-n @tab ISO_8859 シリーズ (n = 2 to 15)
+@item 1 @tab koi8-r @tab ロシア語
+@item 1 @tab koi8-u @tab ウクライナ語
+@item 1 @tab macroman @tab MacRoman (Macintosh のエンコーディング)
+@item 1 @tab 8bit-@{name@} @tab 8ビットエンコーディングのどれか (Vim 特有の名前)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1   cp437	similar to iso-8859-1
+1   cp737	similar to iso-8859-7
+1   cp775	Baltic
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 1 @tab cp437 @tab iso-8859-1 に類似
+@item 1 @tab cp737 @tab iso-8859-7 に類似
+@item 1 @tab cp775 @tab バルト語
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1   cp850	similar to iso-8859-4
+1   cp852	similar to iso-8859-1
+1   cp855	similar to iso-8859-2
+1   cp857	similar to iso-8859-5
+1   cp860	similar to iso-8859-9
+1   cp861	similar to iso-8859-1
+1   cp862	similar to iso-8859-1
+1   cp863	similar to iso-8859-8
+1   cp865	similar to iso-8859-1
+1   cp866	similar to iso-8859-5
+1   cp869	similar to iso-8859-7
+1   cp874	Thai
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 1 @tab cp850 @tab iso-8859-4 に類似
+@item 1 @tab cp852 @tab iso-8859-1 に類似
+@item 1 @tab cp855 @tab iso-8859-2 に類似
+@item 1 @tab cp857 @tab iso-8859-5 に類似
+@item 1 @tab cp860 @tab iso-8859-9 に類似
+@item 1 @tab cp861 @tab iso-8859-1 に類似
+@item 1 @tab cp862 @tab iso-8859-1 に類似
+@item 1 @tab cp863 @tab iso-8859-8 に類似
+@item 1 @tab cp865 @tab iso-8859-1 に類似
+@item 1 @tab cp866 @tab iso-8859-5 に類似
+@item 1 @tab cp869 @tab iso-8859-7 に類似
+@item 1 @tab cp874 @tab タイ語
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1   cp1250	Czech, Polish, etc.
+1   cp1251	Cyrillic
+1   cp1253	Greek
+1   cp1254	Turkish
+1   cp1255	Hebrew
+1   cp1256	Arabic
+1   cp1257	Baltic
+1   cp1258	Vietnamese
+1   cp{number}	MS-Windows: any installed single-byte codepage
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 1 @tab cp1250 @tab チェコ語、ポーランド語など
+@item 1 @tab cp1251 @tab キリル語
+@item 1 @tab cp1253 @tab ギリシャ語
+@item 1 @tab cp1254 @tab トルコ語
+@item 1 @tab cp1255 @tab ヘブライ語
+@item 1 @tab cp1256 @tab アラビア語
+@item 1 @tab cp1257 @tab バルト語
+@item 1 @tab cp1258 @tab ベトナム語
+@item 1 @tab cp@{number@} @tab MS-Windows: インストールされているシングルバイトのコードページ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+2   cp932	Japanese (Windows only)
+2   euc-jp	Japanese (Unix only)
+2   sjis	Japanese (Unix only)
+2   cp949	Korean (Unix and Windows)
+2   euc-kr	Korean (Unix only)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 2 @tab cp932 @tab 日本語 (Windows only)
+@item 2 @tab euc-jp @tab 日本語 (Unix only)
+@item 2 @tab sjis @tab 日本語 (Unix only)
+@item 2 @tab cp949 @tab 韓国語 (Unix and Windows)
+@item 2 @tab euc-kr @tab 韓国語 (Unix only)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+2   cp936	simplified Chinese (Windows only)
+2   euc-cn	simplified Chinese (Unix only)
+2   cp950	traditional Chinese (on Unix alias for big5)
+2   big5	traditional Chinese (on Windows alias for cp950)
+2   euc-tw	traditional Chinese (Unix only)
+2   2byte-{name} Unix: any double-byte encoding (Vim specific name)
+2   cp{number}	MS-Windows: any installed double-byte codepage
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 2 @tab cp936 @tab 簡体中国語 (Windows only)
+@item 2 @tab euc-cn @tab 簡体中国語 (Unix only)
+@item 2 @tab cp950 @tab 繁体中国語 (on Unix alias for big5)
+@item 2 @tab big5 @tab 繁体中国語 (on Windows alias for cp950)
+@item 2 @tab euc-tw @tab 繁体中国語 (Unix only)
+@item 2 @tab 2byte-@{name@} @tab Unix: ダブルバイトエンコーディングのどれか (Vim特有の名前)
+@item 2 @tab cp@{number@} @tab MS-Windows: インストールされているダブルバイトのコードページ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+u   utf-8	32 bit UTF-8 encoded Unicode (ISO/IEC 10646-1)
+u   ucs-2	16 bit UCS-2 encoded Unicode (ISO/IEC 10646-1)
+u   ucs-2le	like ucs-2, little endian
+u   utf-16	ucs-2 extended with double-words for more characters
+u   utf-16le	like utf-16, little endian
+u   ucs-4	32 bit UCS-4 encoded Unicode (ISO/IEC 10646-1)
+u   ucs-4le	like ucs-4, little endian
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item u @tab utf-8 @tab UTF-8 にエンコードされた 32 ビットの Unicode (ISO/IEC 10646-1)
+@item u @tab ucs-2 @tab UCS-2 にエンコードされた 16 ビットの Unicode (ISO/IEC 10646-1)
+@item u @tab ucs-2le @tab リトルエンディアンの ucs-2
+@item u @tab utf-16 @tab ucs-2 を拡張してさらに多くの文字を表現できるようにしたもの
+@item u @tab utf-16le @tab リトルエンディアンの utf-16
+@item u @tab ucs-4 @tab UCS-4 にエンコードされた 32 ビットの Unicode (ISO/IEC 10646-1)
+@item u @tab ucs-4le @tab リトルエンディアンの ucs-4
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The {name} can be any encoding name that your system supports.  It is passed
+to iconv() to convert between the encoding of the file and the current locale.
+For MS-Windows "cp{number}" means using codepage {number}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{name@} にはシステムがサポートしているエンコーディングの名前を入れることができる。これらの名前はファイルのエンコーディングとロケールのエンコーディングを変換するときに iconv() に渡される。MS-Windows では "cp@{number@}" はコードページ番号である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Examples: >
+		:set encoding=8bit-cp1252
+		:set encoding=2byte-cp932
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@example
+:set encoding=8bit-cp1252
+:set encoding=2byte-cp932
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The MS-Windows codepage 1252 is very similar to latin1.  For practical reasons
+the same encoding is used and it's called latin1.  'isprint' can be used to
+display the characters 0x80 - 0xA0 or not.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows のコードページ 1252 は latin1 と良く似ている。実用的な理由から、2 つは同じエンコーディングとして扱われ、latin1 と呼ばれる。0x80 - 0xA0 の文字を表示するかしないかは '@option{isprint}' で設定できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Several aliases can be used, they are translated to one of the names above.
+An incomplete list:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+いくつかの別名を使用できる。別名は上記の名前のどれかとして解釈される。完全ではないが一覧を示す:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1   ansi	same as latin1 (obsolete, for backward compatibility)
+2   japan	Japanese: on Unix "euc-jp", on MS-Windows cp932
+2   korea	Korean: on Unix "euc-kr", on MS-Windows cp949
+2   prc		simplified Chinese: on Unix "euc-cn", on MS-Windows cp936
+2   chinese     same as "prc"
+2   taiwan	traditional Chinese: on Unix "euc-tw", on MS-Windows cp950
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .3 .6
+@item 1 @tab ansi @tab latin1 と同じ (廃止。後方互換性のために残されている)
+@item 2 @tab japan @tab 日本語: Unix では euc-jp、MS-Windows では cp932
+@item 2 @tab korea @tab 韓国語: Unix では euc-kr、MS-Windows では cp949
+@item 2 @tab prc @tab 簡体中国語: Unix では euc-cn、MS-Windows では cp936
+@item 2 @tab chinese @tab prc と同じ
+@item 2 @tab taiwan @tab 繁体中国語: Unix では euc-tw、MS-Windows では cp950
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+u   utf8	same as utf-8
+u   unicode	same as ucs-2
+u   ucs2be	same as ucs-2 (big endian)
+u   ucs-2be	same as ucs-2 (big endian)
+u   ucs-4be	same as ucs-4 (big endian)
+u   utf-32	same as ucs-4
+u   utf-32le	same as ucs-4le
+    default     stands for the default value of 'encoding', depends on the
+		environment
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item u @tab utf8 @tab utf-8 と同じ
+@item u @tab unicode @tab ucs-2 と同じ
+@item u @tab ucs2be @tab ucs-2 と同じ (ビッグエンディアン)
+@item u @tab ucs-2be @tab ucs-2 と同じ (ビッグエンディアン)
+@item u @tab ucs-4be @tab ucs-4 と同じ (ビッグエンディアン)
+@item u @tab utf-32 @tab ucs-4 と同じ
+@item u @tab utf-32le @tab ucs-4le と同じ
+@item @tab default @tab '@option{encoding}' のデフォルト値を意味する。環境に依存する。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For the UCS codes the byte order matters.  This is tricky, use UTF-8 whenever
+you can.  The default is to use big-endian (most significant byte comes
+first):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+UCS コードにはバイト順の問題がある。これは扱いが難しいので、可能なときにはいつでも UTF-8 を使用した方が良い。指定がなければビッグエンディアンを使用する (最上位バイトが最初にくる):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	    name	bytes		char ~
+	    ucs-2	      11 22	    1122
+	    ucs-2le	      22 11	    1122
+	    ucs-4	11 22 33 44	11223344
+	    ucs-4le	44 33 22 11	11223344
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .4 .3
+@headitem 名前 @tab バイト列 @tab 文字
+@item ucs-2 @tab 11 22 @tab 1122
+@item ucs-2le @tab 22 11 @tab 1122
+@item ucs-4 @tab 11 22 33 44 @tab 11223344
+@item ucs-4le @tab 44 33 22 11 @tab 11223344
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On MS-Windows systems you often want to use "ucs-2le", because it uses little
+endian UCS-2.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows はリトルエンディアンの UCS-2 を使用するので、MS-Windows では主に "ucs-2le" を使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are a few encodings which are similar, but not exactly the same.  Vim
+treats them as if they were different encodings, so that conversion will be
+done when needed.  You might want to use the similar name to avoid conversion
+or when conversion is not possible:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+良く似ているが区別されているエンコーディングがある。Vim はそれらを別のエンコーディングとして扱うため、エンコーディングの変換が行われる。エンコーディングの変換ができないときや、よけいな変換を防ぎたいときは、他の名前を使う必要があるかもしれない:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	cp932, shift-jis, sjis
+	cp936, euc-cn
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+cp932, shift-jis, sjis
+cp936, euc-cn
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*encoding-table*
+Normally 'encoding' is equal to your current locale and 'termencoding' is
+empty.  This means that your keyboard and display work with characters encoded
+in your current locale, and Vim uses the same characters internally.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{encoding-table}
+@cindex encoding-table
+通常、'@option{encoding}' はロケールと同じ設定で、'@option{termencoding}' は空になっている。その場合、文字の入力と表示はそのロケールでエンコードされる。Vim 内部でも同じ文字表現を使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can make Vim use characters in a different encoding by setting the
+'encoding' option to a different value.  Since the keyboard and display still
+use the current locale, conversion needs to be done.  The 'termencoding' then
+takes over the value of the current locale, so Vim converts between 'encoding'
+and 'termencoding'.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{encoding}' を設定して、Vim 内部で使用するエンコーディングを変更することができるが、入力と表示にはロケールが使用されるので、エンコーディングの変換が必要になる。そのときは '@option{termencoding}' がロケールのエンコーディングとして使用される。Vim は '@option{encoding}' と '@option{termencoding}' の間でエンコーディングを変換する。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:let &termencoding = &encoding
+	:set encoding=utf-8
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:let &termencoding = &encoding
+:set encoding=utf-8
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+However, not all combinations of values are possible.  The table below tells
+you how each of the nine combinations works.  This is further restricted by
+not all conversions being possible, iconv() being present, etc.  Since this
+depends on the system used, no detailed list can be given.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべてのエンコーディングの組み合わせが利用できるわけではない。下記の表にどのようなものが機能するか示す。すべての変換が可能なわけではなく、iconv() が常に使用できるとは限らないので、利用できないものもある。これはシステムに依存することなので細部まで説明することはできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+('tenc' is the short name for 'termencoding' and 'enc' short for 'encoding')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+('@option{tenc}' は '@option{termencoding}' の省略、'@option{enc}' は '@option{encoding}' の省略)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'tenc'	    'enc'	remark ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .15 .15 .7
+@headitem '@option{tenc}' @tab '@option{enc}' @tab 説明
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ 8bit	    8bit	Works.  When 'termencoding' is different from
+			'encoding' typing and displaying may be wrong for some
+			characters, Vim does NOT perform conversion (set
+			'encoding' to "utf-8" to get this).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 8bit @tab 8bit @tab 機能する。'@option{termencoding}' と '@option{encoding}' が違うときは、変換することができないいくつかの文字は入力と表示が正しく行われない。(そのような文字を得るには '@option{encoding}' を "@var{utf-8}" に設定する)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ 8bit      2byte	MS-Windows: works for all codepages installed on your
+			system; you can only type 8bit characters;
+			Other systems: does NOT work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 8bit @tab 2byte @tab MS-Windows: インストールされているすべてのコードページで機能する。8 ビットの文字だけ入力することができる。@* 他のシステム: 機能しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ 8bit	   Unicode	Works, but only 8bit characters can be typed directly
+			(others through digraphs, keymaps, etc.); in a
+			terminal you can only see 8bit characters; the GUI can
+			show all characters that the 'guifont' supports.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 8bit @tab Unicode @tab 機能するが、8 ビット文字しか直接入力できない(他の文字は DIGRAPH、キーマップなどで入力できる)。端末には 8 ビット文字しか表示できない。GUI では '@option{guifont}' がサポートしている文字であれば表示できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ 2byte	    8bit	Works, but typing non-ASCII characters might
+			be a problem.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 2byte @tab 8bit @tab 機能するが、非 ASCII 文字を入力するには問題がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ 2byte	   2byte	MS-Windows: works for all codepages installed on your
+			system; typing characters might be a problem when
+			locale is different from 'encoding'.
+			Other systems: Only works when 'termencoding' is equal
+			to 'encoding', you might as well leave it empty.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 2byte @tab 2byte @tab MS-Windows: インストールされているすべてのコードページで機能する。'@option{encoding}' をロケールと違う設定にすると入力に問題あり。@* 他のシステム: '@option{termencoding}' と '@option{encoding}' が同じ場合のみ機能する。'@option{termencoding}' は空にしておいたほうが良い。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ 2byte	   Unicode	works, Vim will translate typed characters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 2byte @tab Unicode @tab 機能する。Vim は入力された文字を変換する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ Unicode    8bit	works (unusual)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item Unicode @tab 8bit @tab 機能する。(普通はこうしない)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ Unicode    2byte	does NOT work
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item Unicode @tab 2byte @tab 機能しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ Unicode   Unicode	works very well (leaving 'termencoding' empty works
+			the same way, because all Unicode is handled
+			internally as UTF-8)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item Unicode @tab Unicode @tab 問題なく機能する。(Vim 内部では Unicode はすべて UTF-8 で扱われるため、'@option{termencoding}' が空でも同じく機能する)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CONVERSION						*charset-conversion*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{charset-conversion}
+@cindex charset-conversion
+@unnumberedsubsec エンコーディングの変換
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will automatically convert from one to another encoding in several places:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はいろいろな場面で自動的にエンコーディングを変換する:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- When reading a file and 'fileencoding' is different from 'encoding'
+- When writing a file and 'fileencoding' is different from 'encoding'
+- When displaying characters and 'termencoding' is different from 'encoding'
+- When reading input and 'termencoding' is different from 'encoding'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item ファイルを読み込むとき、'@option{fileencoding}' と '@option{encoding}' が違う場合
+@item ファイルを書き込むとき、'@option{fileencoding}' と '@option{encoding}' が違う場合
+@item 文字を表示するとき、'@option{termencoding}' と '@option{encoding}' が違う場合
+@item 入力を受け取るとき、'@option{termencoding}' と '@option{encoding}' が違う場合
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- When displaying messages and the encoding used for LC_MESSAGES differs from
+  'encoding' (requires a gettext version that supports this).
+- When reading a Vim script where |:scriptencoding| is different from
+  'encoding'.
+- When reading or writing a |viminfo| file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item メッセージを表示するとき、LC_MESSAGES のエンコーディングが '@option{encoding}' と違う場合 (gettext のサポートが必要)。
+@item Vim script を読み込むとき、|:scriptencoding| が '@option{encoding}' と違う場合
+@item |viminfo| ファイルを読み書きするとき
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Most of these require the |+iconv| feature.  Conversion for reading and
+writing files may also be specified with the 'charconvert' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ほとんどの変換は |+iconv| の機能が必要である。ファイルを読み書きするときの変換の動作はオプション '@option{charconvert}' での指定もできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Useful utilities for converting the charset:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+エンコーディングを変換するための便利なユーティリティ:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    All:	    iconv
+	GNU iconv can convert most encodings.  Unicode is used as the
+	intermediate encoding, which allows conversion from and to all other
+	encodings.  See http://www.gnu.org/directory/libiconv.html.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item All: iconv
+GNU iconv はほぼすべてのエンコーディングを変換できる。変換の中間層に Unicode を使用することで、多くの変換を可能にしている。@*
+@url{http://www.gnu.org/directory/libiconv.html} を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    Japanese:	    nkf
+	Nkf is "Network Kanji code conversion Filter".  One of the most unique
+	facility of nkf is the guess of the input Kanji code.  So, you don't
+	need to know what the inputting file's |charset| is.  When convert to
+	EUC-JP from ISO-2022-JP or Shift_JIS, simply do the following command
+	in Vim:
+	    :%!nkf -e
+	Nkf can be found at:
+	http://www.sfc.wide.ad.jp/~max/FreeBSD/ports/distfiles/nkf-1.62.tar.gz
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 日本語: nkf
+"Network Kanji code conversion Filter"。最も特徴的な nkf の機能は漢字コードの自動認識である。そのため、ファイルのエンコーディング |charset| を知る必要がない。ISO-2022-JP や Shift_JIS を EUC-JP に変換するには、Vim からこのようなコマンドを単に実行すれば良い:
+@example
+:%!nkf -e
+@end example
+Nkf はここから入手できる: @*
+@url{http://www.sfc.wide.ad.jp/~max/FreeBSD/ports/distfiles/nkf-1.62.tar.gz} @*
+@{訳注: utf-8 対応などの機能が追加されているもの @url{https://ja.osdn.net/projects/nkf/} @}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    Chinese:	    hc
+	Hc is "Hanzi Converter".  Hc convert a GB file to a Big5 file, or Big5
+	file to GB file.  Hc can be found at:
+	ftp://ftp.cuhk.hk/pub/chinese/ifcss/software/unix/convert/hc-30.tar.gz
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 中国語: hc
+"Hanzi Converter"。Hc は GB から Big5 へ、Big5 から GB へ、の変換をする。Hc はここから入手できる: @*
+@url{ftp://ftp.cuhk.hk/pub/chinese/ifcss/software/unix/convert/hc-30.tar.gz}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    Korean:	    hmconv
+	Hmconv is Korean code conversion utility especially for E-mail.  It can
+	convert between EUC-KR and ISO-2022-KR.  Hmconv can be found at:
+	ftp://ftp.kaist.ac.kr/pub/hangul/code/hmconv/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 韓国語: hmconv
+Hmconv は E-mail を扱うことに特化した韓国語エンコーディング変換ユーティリティである。EUC-KR と ISO-2022-KR の間の変換ができる。Hmconv はここから入手できる: @*
+@url{ftp://ftp.kaist.ac.kr/pub/hangul/code/hmconv/}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    Multilingual:   lv
+	Lv is a Powerful Multilingual File Viewer.  And it can be worked as
+	|charset| converter.  Supported |charset|: ISO-2022-CN, ISO-2022-JP,
+	ISO-2022-KR, EUC-CN, EUC-JP, EUC-KR, EUC-TW, UTF-7, UTF-8, ISO-8859
+	series, Shift_JIS, Big5 and HZ.  Lv can be found at:
+	http://www.ff.iij4u.or.jp/~nrt/lv/index.html
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 多国語: lv
+Lv は高性能な多言語ファイルビューアである。そして、エンコーディングの変換もできる。サポートしているエンコーディング |charset| は: ISO-2022-CN, ISO-2022-JP, ISO-2022-KR, EUC-CN, EUC-JP, EUC-KR, EUC-TW, UTF-7, UTF-8, ISO-8859 シリーズ、Shift_JIS, Big5, HZ。Lv はここから入手できる:
+@url{http://www.ff.iij4u.or.jp/~nrt/lv/index.html}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+							*mbyte-conversion*
+When reading and writing files in an encoding different from 'encoding',
+conversion needs to be done.  These conversions are supported:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mbyte-conversion}
+@cindex mbyte-conversion
+'@option{encoding}' の設定と違うエンコーディングのファイルを読み書きするときは、エンコーディングを変換する必要がある。次の変換がサポートされている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- All conversions between Latin-1 (ISO-8859-1), UTF-8, UCS-2 and UCS-4 are
+  handled internally.
+- For MS-Windows, when 'encoding' is a Unicode encoding, conversion from and
+  to any codepage should work.
+- Conversion specified with 'charconvert'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item Latin-1 (ISO-8859-1), UTF-8, UCS-2, UCS-4 の間の変換は Vim が自前で行う。
+@item MS-Windows では、'@option{encoding}' が Unicode なら各コードページとの変換は機能する。
+@item '@option{charconvert}' による変換。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Conversion with the iconv library, if it is available.
+	Old versions of GNU iconv() may cause the conversion to fail (they
+	request a very large buffer, more than Vim is willing to provide).
+	Try getting another iconv() implementation.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 可能であれば、iconv ライブラリを使用して変換することができる。
+@quotation
+古いバージョンの GNU iconv() では変換が失敗することがある (Vim が用意するバッファよりも、はるかに大きなバッファを要求するため)。その場合は他の iconv() 実装を試すこと。
+@end quotation
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*iconv-dynamic*
+On MS-Windows Vim can be compiled with the |+iconv/dyn| feature.  This means
+Vim will search for the "iconv.dll" and "libiconv.dll" libraries.  When
+neither of them can be found Vim will still work but some conversions won't be
+possible.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{iconv-dynamic}
+@cindex iconv-dynamic
+MS-Windows では |+iconv/dyn| 機能つきで Vim をコンパイルすることができる。そうすると Vim は "iconv.dll" と "libiconv.dll" を検索するようになる。どちらも見つからない場合でも Vim は動作するが、変換ができなくなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Using a terminal					*mbyte-terminal*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mbyte-terminal}
+@cindex mbyte-terminal
+@section 4. 端末の使用 (Using a terminal)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The GUI fully supports multi-byte characters.  It is also possible in a
+terminal, if the terminal supports the same encoding that Vim uses.  Thus this
+is less flexible.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GUI ではマルチバイト文字を完全にサポートしている。端末を使う場合でも、Vim が使用するエンコーディングをサポートしていればマルチバイト文字を扱えるが、少し不便なこともある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, you can run Vim in a xterm with added multi-byte support and/or
+|XIM|.  Examples are kterm (Kanji term) and hanterm (for Korean), Eterm
+(Enlightened terminal) and rxvt.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マルチバイト (と |XIM|) をサポートしている xterm で Vim を使用することができる。他にも kterm (Kanji term), hanterm (韓国語用), Eterm (Enlightened terminal), rxvt、などが使用できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If your terminal does not support the right encoding, you can set the
+'termencoding' option.  Vim will then convert the typed characters from
+'termencoding' to 'encoding'.  And displayed text will be converted from
+'encoding' to 'termencoding'.  If the encoding supported by the terminal
+doesn't include all the characters that Vim uses, this leads to lost
+characters.  This may mess up the display.  If you use a terminal that
+supports Unicode, such as the xterm mentioned below, it should work just fine,
+since nearly every character set can be converted to Unicode without loss of
+information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末が適切なエンコーディングをサポートしていない場合はオプション '@option{termencoding}' を設定する。Vim は入力された文字を '@option{termencoding}' から '@option{encoding}' へと変換する。そして表示するときに '@option{encoding}' から '@option{termencoding}' へと変換する。端末のエンコーディングに、Vim が取り扱う文字がすべて含まれていない場合、文字の情報が失なわれてしまう。下記で説明している xterm のように、Unicode をサポートしている端末なら問題はない。ほぼすべての文字セットは情報を失なわずに Unicode に変換できるからである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+UTF-8 IN XFREE86 XTERM					*UTF8-xterm*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{UTF8-xterm}
+@cindex UTF8-xterm
+@unnumberedsubsec UTF-8をXFree86 xtermで使う
+@{訳注: 最近の環境なら標準で使えるようになっている。@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is a short explanation of how to use UTF-8 character encoding in the
+xterm that comes with XFree86 by Thomas Dickey (text by Markus Kuhn).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは Thomas Dickey によって提供される XFree86 xterm で、どのようにして UTF-8 エンコードされた文字を利用するかについての簡単な説明である (文: Markus Kuhn)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Get the latest xterm version which has now UTF-8 support:
+
+	http://invisible-island.net/xterm/xterm.html
+
+Compile it with "./configure --enable-wide-chars ; make"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+UTF-8 をサポートしている最新の xterm を入手すること:
+
+@url{http://invisible-island.net/xterm/xterm.html}
+
+"@command{./configure --enable-wide-chars ; make}" としてコンパイルすること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Also get the ISO 10646-1 version of various fonts, which is available on
+
+	http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts.tar.gz
+
+and install the font as described in the README file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+また ISO 10646-1 バージョンのフォントを入手すること:
+
+@url{http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts.tar.gz}
+
+それから README ファイルの記述に従ってフォントをインストールすること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now start xterm with >
+
+  xterm -u8 -fn -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1
+or, for bigger character: >
+  xterm -u8 -fn -misc-fixed-medium-r-normal--15-140-75-75-c-90-iso10646-1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そして xterm を起動する。
+@verbatim
+xterm -u8 -fn -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1
+@end verbatim
+大きな文字を使うときは:
+@verbatim
+xterm -u8 -fn -misc-fixed-medium-r-normal--15-140-75-75-c-90-iso10646-1
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+and you will have a working UTF-8 terminal emulator.  Try both >
+
+   cat utf-8-demo.txt
+   vim utf-8-demo.txt
+
+with the demo text that comes with ucs-fonts.tar.gz in order to see
+whether there are any problems with UTF-8 in your xterm.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そうすると UTF-8 端末エミュレータが動作するだろう。ucs-fonts.tar.gz に含まれている次の両方のデモ・ファイルを試して:
+@verbatim
+cat utf-8-demo.txt
+vim utf-8-demo.txt
+@end verbatim
+xterm で UTF-8 が問題なく動作しているかどうか確認すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For Vim you may need to set 'encoding' to "utf-8".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の '@option{encoding}' を "@var{utf-8}" に設定する必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5.  Fonts on X11					*mbyte-fonts-X11*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mbyte-fonts-X11}
+@cindex mbyte-fonts-X11
+@section 5. X11のフォント (Fonts on X11)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Unfortunately, using fonts in X11 is complicated.  The name of a single-byte
+font is a long string.  For multi-byte fonts we need several of these...
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+X11 でのフォントの取り扱いは難しい。シングルバイトフォントの名前は長い文字列である。マルチバイトフォントを使うにはさらにいくつか考慮することがある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: Most of this is no longer relevant for GTK+ 2.  Selecting a font via
+its XLFD is not supported; see 'guifont' for an example of how to
+set the font.  Do yourself a favor and ignore the |XLFD| and |xfontset|
+sections below.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+この説明のほとんどは GTK+ 2 にとっては関係ない。XLFD を用いたフォントの指定はサポートされていない。フォントの設定例は '@option{guifont}' を参照。下記の項 |XLFD| と |xfontset| は読んでも読まなくても良い。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+First of all, Vim only accepts fixed-width fonts for displaying text.  You
+cannot use proportionally spaced fonts.  This excludes many of the available
+(and nicer looking) fonts.  However, for menus and tooltips any font can be
+used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は固定幅のフォントだけを扱うことができる。プロポーショナルフォントを使用することはできない。そのため多くの(見た目の良い)フォントは使用できない。しかし、メニューやツールチップにはどのフォントでも使用することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that Display and Input are independent.  It is possible to see your
+language even though you have no input method for it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+表示と入力は独立している。入力したい言語のインプットメソッドがなくても、表示することはできる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You should get a default font for menus and tooltips that works, but it might
+be ugly.  Read the following to find out how to select a better font.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メニューやツールチップは標準設定のフォントでも機能するが、おそらくそれは、あまり見た目が良くない。より良いフォントを選ぶには下記の説明を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+X LOGICAL FONT DESCRIPTION (XLFD)
+							*XLFD*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{XLFD}
+@cindex XLFD
+@unnumberedsubsec X 論理フォント名 (X LOGICAL FONT DESCRIPTION (XLFD))
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+XLFD is the X font name and contains the information about the font size,
+charset, etc.  The name is in this format:
+
+FOUNDRY-FAMILY-WEIGHT-SLANT-WIDTH-STYLE-PIXEL-POINT-X-Y-SPACE-AVE-CR-CE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+XLFD は X のフォント名であり、フォントサイズや文字セットなどの情報を含んでいる。名前はこのような書式になっている:
+@example
+FOUNDRY-FAMILY-WEIGHT-SLANT-WIDTH-STYLE-PIXEL-POINT-X-Y-SPACE-AVE-CR-CE
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Each field means:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+各フィールドの意味:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- FOUNDRY:  FOUNDRY field.  The company that created the font.
+- FAMILY:   FAMILY_NAME field.  Basic font family name.  (helvetica, gothic,
+	    times, etc)
+- WEIGHT:   WEIGHT_NAME field.  How thick the letters are.  (light, medium,
+	    bold, etc)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item FOUNDRY: FOUNDRY フィールド。フォントを作成、提供した組織名。
+@item FAMILY: FAMILY_NAME フィールド。フォントファミリの名前(書体名)。(helvetica, gothic, times など)
+@item WEIGHT: WEIGHT_NAME フィールド。文字の太さ。(light, medium, bold など)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- SLANT:    SLANT field.
+		r:  Roman (no slant)
+		i:  Italic
+		o:  Oblique
+		ri: Reverse Italic
+		ro: Reverse Oblique
+		ot: Other
+		number:	Scaled font
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item SLANT: SLANT フィールド (文字の傾き)
+@multitable @columnfractions .1 .9
+@item r: @tab Roman (ローマン体。正字体。傾きなし)
+@item i: @tab Italic (イタリック体)
+@item o: @tab Oblique (斜体)
+@item ri: @tab Reverse Italic (逆傾きのイタリック体)
+@item ro: @tab Reverse Oblique (逆傾きの斜体)
+@item ot: @tab Other (その他)
+@item number: @tab Scaled font (傾きの角度)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- WIDTH:    SETWIDTH_NAME field.  Width of characters.  (normal, condensed,
+	    narrow, double wide)
+- STYLE:    ADD_STYLE_NAME field.  Extra info to describe font.  (Serif, Sans
+	    Serif, Informal, Decorated, etc)
+- PIXEL:    PIXEL_SIZE field.  Height, in pixels, of characters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item WIDTH: SETWIDTH_NAME フィールド。文字幅。(normal, condensed, narrow, double wide)
+@item  STYLE: ADD_STYLE_NAME フィールド。フォントの追加情報。(Serif, Sans Serif, Informal, Decorated など)
+@item PIXEL: PIXEL_SIZE フィールド。ピクセル単位の文字の高さ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- POINT:    POINT_SIZE field.  Ten times height of characters in points.
+- X:	    RESOLUTION_X field.  X resolution (dots per inch).
+- Y:	    RESOLUTION_Y field.  Y resolution (dots per inch).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item POINT: POINT_SIZE フィールド。ポイント単位の文字の高さを 10 倍した値。
+@item X: RESOLUTION_X フィールド。X 軸方向の解像度( 1 インチあたりのドット数)
+@item Y: RESOLUTION_Y フィールド。Y 軸方向の解像度( 1 インチあたりのドット数)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- SPACE:    SPACING field.
+		p:  Proportional
+		m:  Monospaced
+		c:  CharCell
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item SPACE: SPACING フィールド。(文字送り)
+@multitable @columnfractions .1 .9
+@item p: @tab Proportional (プロポーショナル、可変幅)
+@item m: @tab Monospaced (モノスペース、固定幅)
+@item c: @tab CharCell (文字セル)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- AVE:	    AVERAGE_WIDTH field.  Ten times average width in pixels.
+- CR:	    CHARSET_REGISTRY field.  The name of the charset group.
+- CE:	    CHARSET_ENCODING field.  The rest of the charset name.  For some
+	    charsets, such as JIS X 0208, if this field is 0, code points has
+	    the same value as GL, and GR if 1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item AVE: AVERAGE_WIDTH フィールド。ピクセル単位の文字幅の平均値を10倍した値。
+@item CR: CHARSET_REGISTRY フィールド。文字セットの名前。
+@item CE: CHARSET_ENCODING フィールド。文字セットの追加情報。JIS X 0208 のような文字セットは、このフィールドが 0 ならコードポイントは GL と同じ値を持つ。1 なら GR と同じ。@*
+@{訳注: jisx0208 の場合、CHARSET_ENCODING=0 なら 7 ビット JIS コード、1 なら EUC-JP の番号で、文字がフォントに収録されている。@}
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, in case of a 16 dots font corresponding to JIS X 0208, it is
+written like:
+    -misc-fixed-medium-r-normal--16-110-100-100-c-160-jisx0208.1990-0
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、JIS X 0208 に対応する 16 ドットのフォントは次のように書く:
+@example
+-misc-fixed-medium-r-normal--16-110-100-100-c-160-jisx0208.1990-0
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+X FONTSET
+						*fontset* *xfontset*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{fontset}
+@anchor{xfontset}
+@cindex fontset
+@cindex xfontset
+@unnumberedsubsec X フォントセット (X FONTSET)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+A single-byte charset is typically associated with one font.  For multi-byte
+charsets a combination of fonts is often used.  This means that one group of
+characters are used from one font and another group from another font (which
+might be double wide).  This collection of fonts is called a fontset.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+シングルバイト文字セットは一般的に 1 つのフォントに関連付けられている。マルチバイト文字セットはほとんどの場合、複数のフォントの組合せを使用する。そして表示する文字に合ったフォントが選択されて使用される。そのようなフォントの集合をフォントセットと呼ぶ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Which fonts are required in a fontset depends on the current locale.  X
+windows maintains a table of which groups of characters are required for a
+locale.  You have to specify all the fonts that a locale requires in the
+'guifontset' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ロケールによって必要なフォントは異なる。X-Window はロケールに必要な文字セットの表を管理している。ロケールが必要とする全てのフォントをオプション '@option{guifontset}' に設定しなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NOTE: The fontset always uses the current locale, even though 'encoding' may
+be set to use a different charset.  In that situation you might want to use
+'guifont' and 'guifontwide' instead of 'guifontset'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+'@option{encoding}' が、ロケールとは違う文字セットに設定されていても、フォントセットは常にロケールを使用する。そういう場合は '@option{guifontset}' ではなく '@option{guifont}' と '@option{guifontwide}' を使用する。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example:
+    |charset| language		    "groups of characters" ~
+    GB2312    Chinese (simplified)  ISO-8859-1 and GB 2312
+    Big5      Chinese (traditional) ISO-8859-1 and Big5
+    CNS-11643 Chinese (traditional) ISO-8859-1, CNS 11643-1 and CNS 11643-2
+    EUC-JP    Japanese		    JIS X 0201 and JIS X 0208
+    EUC-KR    Korean		    ISO-8859-1 and KS C 5601 (KS X 1001)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@multitable @columnfractions .3 .3 .4
+@headitem |charset| @tab language @tab "groups of characters"
+@item GB2312 @tab 簡体中国語 @tab ISO-8859-1 and GB 2312
+@item Big5 @tab 繁体中国語 @tab ISO-8859-1 and Big5
+@item CNS-11643 @tab 繁体中国語 @tab ISO-8859-1, CNS 11643-1 and CNS 11643-2
+@item EUC-JP @tab 日本語 @tab JIS X 0201 and JIS X 0208
+@item EUC-KR @tab 韓国語 @tab ISO-8859-1 and KS C 5601 (KS X 1001)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can search for fonts using the xlsfonts command.  For example, when you're
+searching for a font for KS C 5601: >
+    xlsfonts | grep ksc5601
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+xlsfonts コマンドを使ってフォントを検索できる。例えば、KS C 5601 のフォントを探すには:
+@example
+xlsfonts | grep ksc5601
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is complicated and confusing.  You might want to consult the X-Windows
+documentation if there is something you don't understand.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは複雑で混乱しやすいことなので、分からないことは X-Window のドキュメントで調べること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*base_font_name_list*
+When you have found the names of the fonts you want to use, you need to set
+the 'guifontset' option.  You specify the list by concatenating the font names
+and putting a comma in between them.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{base_font_name_list}
+@cindex base_font_name_list
+使用したいフォントの名前を見付けたらオプション '@option{guifontset}' を設定する。設定はフォントの名前をコンマで区切って指定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, when you use the ja_JP.eucJP locale, this requires JIS X 0201
+and JIS X 0208.  You could supply a list of fonts that explicitly specifies
+the charsets, like: >
+
+ :set guifontset=-misc-fixed-medium-r-normal--14-130-75-75-c-140-jisx0208.1983-0,
+	\-misc-fixed-medium-r-normal--14-130-75-75-c-70-jisx0201.1976-0
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、ja_JP.eucJP ロケールの場合、JIS X 0201 と JIS X 0208 が必要である。次のように文字セットを明示的に指定してフォントを設定する:
+@example
+:set guifontset=-misc-fixed-medium-r-normal--14-130-75-75-c-140-jisx0208.1983-0,
+       \-misc-fixed-medium-r-normal--14-130-75-75-c-70-jisx0201.1976-0
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Alternatively, you can supply a base font name list that omits the charset
+name, letting X-Windows select font characters required for the locale.  For
+example: >
+
+ :set guifontset=-misc-fixed-medium-r-normal--14-130-75-75-c-140,
+	\-misc-fixed-medium-r-normal--14-130-75-75-c-70
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+文字セットの名前を省略した場合、X-Window が、ロケールに必要なフォントを選択する。例:
+@example
+:set guifontset=-misc-fixed-medium-r-normal--14-130-75-75-c-140,
+       \-misc-fixed-medium-r-normal--14-130-75-75-c-70
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Alternatively, you can supply a single base font name that allows X-Windows to
+select from all available fonts.  For example: >
+
+ :set guifontset=-misc-fixed-medium-r-normal--14-*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+基本となるフォントの名前を 1 つだけ指定して、利用可能なすべてのフォントの中から選択させることもできる。例:
+@example
+:set guifontset=-misc-fixed-medium-r-normal--14-*
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Alternatively, you can specify alias names.  See the fonts.alias file in the
+fonts directory (e.g., /usr/X11R6/lib/X11/fonts/).  For example: >
+
+ :set guifontset=k14,r14
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+フォントの別名を指定することもできる。フォントディレクトリ (例えば /usr/X11R6/lib/X11/fonts/) のファイル fonts.alias を見ること。例:
+@example
+:set guifontset=k14,r14
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*E253*
+Note that in East Asian fonts, the standard character cell is square.  When
+mixing a Latin font and an East Asian font, the East Asian font width should
+be twice the Latin font width.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E253}
+@cindex E253
+@quotation
+@strong{Note:} @*
+東アジアのフォントは、基本的には正四角形の範囲で表示される。ラテンフォントと東アジアのフォントを組み合わせた場合、東アジアのフォントはラテンフォントの 2 倍の幅で表示される。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If 'guifontset' is not empty, the "font" argument of the |:highlight| command
+is also interpreted as a fontset.  For example, you should use for
+highlighting: >
+	:hi Comment font=english_font,your_font
+If you use a wrong "font" argument you will get an error message.
+Also make sure that you set 'guifontset' before setting fonts for highlight
+groups.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{guifontset}' が空の場合、コマンド |:highlight| の "font" 引数はフォントセットとして解釈される。例えばこのように使用する:
+@example
+:hi Comment font=english_font,your_font
+@end example
+間違った "font" 引数を使用するとエラーメッセージが表示される。事前に '@option{guifontset}' を設定して確認すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING RESOURCE FILES
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec リソースファイルを使う (USING RESOURCE FILES)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Instead of specifying 'guifontset', you can set X11 resources and Vim will
+pick them up.  This is only for people who know how X resource files work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{guifontset}' を設定する代わりに X11 のリソースを設定すれば、Vim はそれを使用する。これは X のリソースファイルの働きを知っている人向けである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For Motif and Athena insert these three lines in your $HOME/.Xdefaults file:
+
+	Vim.font: |base_font_name_list|
+	Vim*fontSet: |base_font_name_list|
+	Vim*fontList: your_language_font
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Motif と Athena ではファイル @file{$HOME/.Xdefaults} にこの 3 行を追加する:
+@example
+Vim.font: |base_font_name_list|
+Vim*fontSet: |base_font_name_list|
+Vim*fontList: your_language_font
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: Vim.font is for text area.
+      Vim*fontSet is for menu.
+      Vim*fontList is for menu (for Motif GUI)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Vim.font はテキストエリアの設定 @*
+Vim*fontSet はメニューの設定 @*
+Vim*fontList はメニューの設定 (Motif GUI用)
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, when you are using Japanese and a 14 dots font, >
+
+	Vim.font: -misc-fixed-medium-r-normal--14-*
+	Vim*fontSet: -misc-fixed-medium-r-normal--14-*
+	Vim*fontList: -misc-fixed-medium-r-normal--14-*
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、14 ドットの日本語フォントを使うには:
+@example
+Vim.font: -misc-fixed-medium-r-normal--14-*
+Vim*fontSet: -misc-fixed-medium-r-normal--14-*
+Vim*fontList: -misc-fixed-medium-r-normal--14-*
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+or: >
+
+	Vim*font: k14,r14
+	Vim*fontSet: k14,r14
+	Vim*fontList: k14,r14
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしくは:
+@example
+Vim*font: k14,r14
+Vim*fontSet: k14,r14
+Vim*fontList: k14,r14
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+To have them take effect immediately you will have to do >
+
+	xrdb -merge ~/.Xdefaults
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この設定をすぐに反映させるには
+@verbatim
+xrdb -merge ~/.Xdefaults
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Otherwise you will have to stop and restart the X server before the changes
+take effect.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしくは X サーバーを停止して再起動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The GTK+ version of GUI Vim does not use .Xdefaults, use ~/.gtkrc instead.
+The default mostly works OK.  But for the menus you might have to change
+it.  Example: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GTK+ 版の Vim は @file{.Xdefaults} を使わず @file{~/.gtkrc} の設定を使用する。初期設定は恐らくうまく機能するが、メニューのフォントは変更した方がいいかもしれない。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	style "default"
+	{
+		fontset="-*-*-medium-r-normal--14-*-*-*-c-*-*-*"
+	}
+	widget_class "*" style "default"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+style "default"
+@{
+        fontset="-*-*-medium-r-normal--14-*-*-*-c-*-*-*"
+@}
+widget_class "*" style "default"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6.  Fonts on MS-Windows				*mbyte-fonts-MSwin*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mbyte-fonts-MSwin}
+@cindex mbyte-fonts-MSwin
+@section 6. MS-Windows のフォント (Fonts on MS-Windows)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The simplest is to use the font dialog to select fonts and try them out.  You
+can find this at the "Edit/Select Font..." menu.  Once you find a font name
+that works well you can use this command to see its name: >
+
+	:set guifont
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最も簡単なのは、フォント選択ダイアロクを使ってフォントを選択して、試してみることである。メニューの "Edit/Select Font..." (編集/フォント設定) を使用する。ちょうどいいフォントを見付けたら、このコマンドでフォントの名前を確認する:
+@example
+:set guifont
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Then add a command to your |gvimrc| file to set 'guifont': >
+
+	:set guifont=courier_new:h12
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そして、'@option{guifont}' を設定するコマンドを |gvimrc| に追加する:
+@example
+:set guifont=courier_new:h12
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7.  Input on X11				*mbyte-XIM*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mbyte-XIM}
+@cindex mbyte-XIM
+@section 7.  X11 での入力 (Input on X11)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+X INPUT METHOD (XIM) BACKGROUND			*XIM* *xim* *x-input-method*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{XIM}
+@anchor{xim}
+@anchor{x-input-method}
+@cindex XIM
+@cindex xim
+@cindex x-input-method
+@unnumberedsubsec X INPUT METHOD (XIM) の基礎知識
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+XIM is an international input module for X.  There are two kinds of structures,
+Xlib unit type and |IM-server| (Input-Method server) type.  |IM-server| type
+is suitable for complex input, such as CJK.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+XIM は X の国際化入力機構である。Xlib ユニット型と |IM-server| (Input-Method server) 型の 2 種類がある。|IM-server| 型は CJK (日中韓) で使われるような複雑な入力方式に適している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- IM-server
+							*IM-server*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{IM-server}
+@cindex IM-server
+@unnumberedsubsubsec インプットメソッドサーバー (IM-server)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+  In |IM-server| type input structures, the input event is handled by either
+  of the two ways: FrontEnd system and BackEnd system.  In the FrontEnd
+  system, input events are snatched by the |IM-server| first, then |IM-server|
+  give the application the result of input.  On the other hand, the BackEnd
+  system works reverse order.  MS Windows adopt BackEnd system.  In X, most of
+  |IM-server|s adopt FrontEnd system.  The demerit of BackEnd system is the
+  large overhead in communication, but it provides safe synchronization with
+  no restrictions on applications.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|IM-server| 型の入力方式では、FrontEnd システムか BackEnd システムのどちらかの方法で入力イベントを処理する。FrontEnd システムでは、まず |IM-server| が入力イベントを取得し、そして入力の結果を |IM-server| からアプリケーションへ渡す。BackEnd システムではその逆の順番で処理される。MS Windows は BackEnd システムを採用している。X では、ほとんどの |IM-server| が FrontEnd システムを採用している。BackEnd システムには通信のオーバーヘッドが大きく掛かるというデメリットはあるが、アプリケーションに制限を加えず、安全に同期することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  For example, there are xwnmo and kinput2 Japanese |IM-server|, both are
+  FrontEnd system.  Xwnmo is distributed with Wnn (see below), kinput2 can be
+  found at: ftp://ftp.sra.co.jp/pub/x11/kinput2/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+たとえば xwnmo と kinput2 という日本語インプットメソッドサーバーがあるが、両方とも FrontEnd システムである。xwnmo は Wnn (下記参照) と一緒に提供されている。kinput2 はここから入手できる: @url{ftp://ftp.sra.co.jp/pub/x11/kinput2/}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  For Chinese, there's a great XIM server named "xcin", you can input both
+  Traditional and Simplified Chinese characters.  And it can accept other
+  locale if you make a correct input table.  Xcin can be found at:
+  http://cle.linux.org.tw/xcin/
+  Others are scim: http://scim.freedesktop.org/ and fcitx:
+  http://www.fcitx.org/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+中国語用には、"xcin" というよくできた XIM サーバーがあり、簡体中国語と繁体中国語の両方を入力できる。適切な入力テーブルを作成すれば、他のロケールも受け付ける。Xcin はここから入手できる: @url{http://cle.linux.org.tw/xcin/}。他には @url{scim: http://scim.freedesktop.org/} と fcitx: @url{http://www.fcitx.org/} がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+- Conversion Server
+							*conversion-server*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{conversion-server}
+@cindex conversion-server
+@unnumberedsubsubsec 変換サーバー (Conversion Server)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+  Some system needs additional server: conversion server.  Most of Japanese
+  |IM-server|s need it, Kana-Kanji conversion server.  For Chinese inputting,
+  it depends on the method of inputting, in some methods, PinYin or ZhuYin to
+  HanZi conversion server is needed.  For Korean inputting, if you want to
+  input Hanja, Hangul-Hanja conversion server is needed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+いくつかのシステムではさらに、変換サーバーが必要である。ほとんどの日本語インプットメソッドサーバーは仮名漢字変換サーバーを必要とする。中国語の入力では、入力方式に依存する。いくつかの方式では、PinYin や ZhuYin から HanZi への変換サーバーが必要である。韓国語の入力では、Hanja を入力するには、Hangul-Hanja 変換サーバーが必要である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  For example, the Japanese inputting process is divided into 2 steps.  First
+  we pre-input Hira-gana, second Kana-Kanji conversion.  There are so many
+  Kanji characters (6349 Kanji characters are defined in JIS X 0208) and the
+  number of Hira-gana characters are 76.  So, first, we pre-input text as
+  pronounced in Hira-gana, second, we convert Hira-gana to Kanji or Kata-Kana,
+  if needed.  There are some Kana-Kanji conversion server: jserver
+  (distributed with Wnn, see below) and canna.  Canna can be found at:
+  http://canna.sourceforge.jp/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、日本語の入力は 2 段階に分けられる。最初に平仮名を入力し、次に漢字へ変換する。多くの漢字 (JIS X 0208 には 6349 文字が定義されている) と 76 文字の平仮名があるため、まず平仮名を入力し、必要なら、それを漢字や片仮名に変換する。仮名漢字変換サーバーには jserver (Wnn と一緒に提供されている。下記参照) や canna などがある。Canna はここから入手できる: @url{http://canna.sourceforge.jp/}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There is a good input system: Wnn4.2.  Wnn 4.2 contains,
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Wnn4.2 というよくできた入力システムがある。Wnn4.2 は以下のものを含んでいる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    xwnmo (|IM-server|)
+    jserver (Japanese Kana-Kanji conversion server)
+    cserver (Chinese PinYin or ZhuYin to simplified HanZi conversion server)
+    tserver (Chinese PinYin or ZhuYin to traditional HanZi conversion server)
+    kserver (Hangul-Hanja conversion server)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item xwnmo (|IM-server|)
+@item jserver (日本語仮名漢字変換サーバー)
+@item cserver (中国語の PinYin、ZhuYin から簡体漢字への変換サーバー)
+@item tserver (中国語の PinYin、ZhuYin から繁体漢字への変換サーバー)
+@item kserver (Hangul-Hanja 変換サーバー)
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Wnn 4.2 for several systems can be found at various places on the internet.
+Use the RPM or port for your system.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Wnn4.2 は多くのシステムで動作し、インターネットのさまざまな場所で入手することができる。あなたのシステム用の RPM や port を使用すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+- Input Style
+							*xim-input-style*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{xim-input-style}
+@cindex xim-input-style
+@unnumberedsubsubsec 入力スタイル (Input Style)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+  When inputting CJK, there are four areas:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+CJK (日中韓語) を入力するとき、4 つの表示領域がある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+      1. The area to display of the input while it is being composed
+      2. The area to display the currently active input mode.
+      3. The area to display the next candidate for the selection.
+      4. The area to display other tools.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item 入力途中の文字を表示する領域
+@item 現在の入力モードを表示する領域
+@item 変換候補を表示する領域
+@item その他のツールを表示する領域
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  The third area is needed when converting.  For example, in Japanese
+  inputting, multiple Kanji characters could have the same pronunciation, so
+  a sequence of Hira-gana characters could map to a distinct sequence of Kanji
+  characters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+3 番目の表示領域は変換をするときに必要である。たとえば、日本語の入力では、同じ発音の漢字が複数あるので、同じ平仮名が複数の漢字に対応する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  The first and second areas are defined in international input of X with the
+  names of "Preedit Area", "Status Area" respectively.  The third and fourth
+  areas are not defined and are left to be managed by the |IM-server|.  In the
+  international input, four input styles have been defined using combinations
+  of Preedit Area and Status Area: |OnTheSpot|, |OffTheSpot|, |OverTheSpot|
+  and |Root|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+1 番目と 2 番目の表示領域は X の国際化入力でそれぞれ "Preedit Area", "Status Area" と定義されている。3 番目と 4 番目の表示領域は定義されておらず、|IM-server| に任されている。国際化入力では Preedit Area と Status Area の組み合せで 4 つの入力スタイルが定義されている: |OnTheSpot| |OffTheSpot| |OverTheSpot| |Root|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  Currently, GUI Vim supports three styles, |OverTheSpot|, |OffTheSpot| and
+  |Root|.
+  When compiled with |+GUI_GTK| feature, GUI Vim supports two styles,
+  |OnTheSpot| and |OverTheSpot|.  You can select the style with the 'imstyle'
+  option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在、GUI Vim は |OverTheSpot|, |OffTheSpot|, |Root| の 3 つのスタイルをサポートしている。|+GUI_GTK| 機能を有効にしてコンパイルすると、GUI Vim は |OnTheSpot| と |OverTheSpot| の 2 つのスタイルをサーポートする。'@option{imstyle}' オプションでスタイルを選択することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+*.  on-the-spot						*OnTheSpot*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{OnTheSpot}
+@cindex OnTheSpot
+@table @asis
+@item on-the-spot
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    Preedit Area and Status Area are performed by the client application in
+    the area of application.  The client application is directed by the
+    |IM-server| to display all pre-edit data at the location of text
+    insertion.  The client registers callbacks invoked by the input method
+    during pre-editing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Preedit Area と Status Area はアプリケーション領域にクライアントアプリケーションによって表示される。クライアントアプリケーションはテキストを挿入する位置に未確定文字をすべて表示するように |IM-server| から指示される。クライアントは、コールバック関数を登録して、未確定文字の入力中にインプットメソッドから呼び出してもらう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*.  over-the-spot					*OverTheSpot*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{OverTheSpot}
+@cindex OverTheSpot
+@item over-the-spot
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    Status Area is created in a fixed position within the area of application,
+    in case of Vim, the position is the additional status line.  Preedit Area
+    is made at present input position of application.  The input method
+    displays pre-edit data in a window which it brings up directly over the
+    text insertion position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Status Area はアプリケーション領域の固定位置に作成される。Vim の場合は、ステータスライン付近である。Preedit Area はアプリケーションの入力している位置に作成される。インプットメソッドは、テキストが挿入される位置にあるウィンドウに未確定文字を表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*.  off-the-spot					*OffTheSpot*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{OffTheSpot}
+@cindex OffTheSpot
+@item off-the-spot
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    Preedit Area and Status Area are performed in the area of application, in
+    case of Vim, the area is additional status line.  The client application
+    provides display windows for the pre-edit data to the input method which
+    displays into them directly.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Preedit Area と Status Area はアプリケーション領域に表示される。Vim の場合は、ステータスライン付近である。クライアントアプリケーションは表示ウィンドウを提供し、インプットメソッドが直接そこに未確定文字を表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*.  root-window						*Root*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{Root}
+@cindex Root
+@item root-window
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    Preedit Area and Status Area are outside of the application.  The input
+    method displays all pre-edit data in a separate area of the screen in a
+    window specific to the input method.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Preedit Area と Status Area はアプリケーションの外側に表示される。インプットメソッドは別に用意した自分のウィンドウに未確定文字をすべて表示する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING XIM			*multibyte-input* *E284* *E286* *E287* *E288*
+				*E285* *E289*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec XIM を使用する (USING XIM)
+@anchor{multibyte-input}
+@anchor{E284}
+@anchor{E286}
+@anchor{E287}
+@anchor{E288}
+@anchor{E285}
+@anchor{E289}
+@cindex multibyte-input
+@cindex E284
+@cindex E286
+@cindex E287
+@cindex E288
+@cindex E285
+@cindex E289
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that Display and Input are independent.  It is possible to see your
+language even though you have no input method for it.  But when your Display
+method doesn't match your Input method, the text will be displayed wrong.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+表示と入力は独立している。インプットメソッドがなくてもあなたの言語を見ることができる。しかし、表示方法とインプットメソッドが合わないと、テキストは間違って表示される。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note: You can not use IM unless you specify 'guifontset'.
+	      Therefore, Latin users, you have to also use 'guifontset'
+	      if you use IM.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+'@option{guifontset}' を設定しないとインプットメソッドを使用できない。従って、ラテン語のユーザーも、インプットメソッドを使用するなら、'@option{guifontset}' を設定しなければならない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To input your language you should run the |IM-server| which supports your
+language and |conversion-server| if needed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+あなたの言語を入力するには、その言語をサポートしているインプットメソッドサーバー |IM-server| を実行する。必要なら変換サーバー |conversion-server| も実行する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The next 3 lines should be put in your ~/.Xdefaults file.  They are common for
+all X applications which uses |XIM|.  If you already use |XIM|, you can skip
+this. >
+
+	*international: True
+	*.inputMethod: your_input_server_name
+	*.preeditType: your_input_style
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の 3 行を @file{~/.Xdefaults} ファイルに書き込む。これは |XIM| を使用するすべての X アプリケーションに共通する設定である。すでに |XIM| を使用している場合は、これを読み飛ばすこと。
+@example
+*international: True
+*.inputMethod: your_input_server_name
+*.preeditType: your_input_style
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+input_server_name	is your |IM-server| name (check your |IM-server|
+			manual).
+your_input_style	is one of |OverTheSpot|, |OffTheSpot|, |Root|.  See
+			also |xim-input-style|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item input_server_name @tab インプットサーバー |IM-server| の名前。(|IM-server| のマニュアルを確認すること)。
+@item your_input_style @tab |OverTheSpot|, |OffTheSpot|, |Root| のどれか。|xim-input-style| を参照。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+*international may not necessary if you use X11R6.
+*.inputMethod and *.preeditType are optional if you use X11R6.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+X11R6 を使用している場合、*international は必要ない。また、*.inputMethod と *.preeditType の指定は任意。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, when you are using kinput2 as |IM-server|, >
+
+	*international: True
+	*.inputMethod: kinput2
+	*.preeditType: OverTheSpot
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+kinput2 を |IM-server| として使う場合の例:
+@example
+*international: True
+*.inputMethod: kinput2
+*.preeditType: OverTheSpot
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When using |OverTheSpot|, GUI Vim always connects to the IM Server even in
+Normal mode, so you can input your language with commands like "f" and "r".
+But when using one of the other two methods, GUI Vim connects to the IM Server
+only if it is not in Normal mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|OverTheSpot| を使用する場合、GUI Vim はノーマルモードでも常にインプットメソッドサーバーに接続する。そのため "f" や "r" コマンドであなたの言語を入力することができる。しかし、他の入力スタイルの場合は、GUI Vim はノーマルモードのときにはインプットメソッドサーバーに接続しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If your IM Server does not support |OverTheSpot|, and if you want to use your
+language with some Normal mode command like "f" or "r", then you should use a
+localized xterm  or an xterm which supports |XIM|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+インプットメソッドサーバーが |OverTheSpot| をサポートしていない場合、"f" や "r" などのノーマルモードコマンドであなたの言語を使用するには、ローカライズされた xterm か、|XIM| をサポートした xterm を使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If needed, you can set the XMODIFIERS environment variable:
+
+	sh:  export XMODIFIERS="@im=input_server_name"
+	csh: setenv XMODIFIERS "@im=input_server_name"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+必要なら、環境変数 XMODIFIERS を設定する:
+@verbatim
+sh:  export XMODIFIERS="@im=input_server_name"
+csh: setenv XMODIFIERS "@im=input_server_name"
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, when you are using kinput2 as |IM-server| and sh, >
+
+	export XMODIFIERS="@im=kinput2"
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+インプットメソッドサーバーに kinput2 を使用する場合の sh での設定例:
+@example
+export XMODIFIERS="@@im=kinput2"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+FULLY CONTROLLED XIM
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec XIM の制御 (FULLY CONTROLLED XIM)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can fully control XIM, like with IME of MS-Windows (see |multibyte-ime|).
+This is currently only available for the GTK GUI.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows の IME (|multibyte-ime| 参照) のように、XIM を制御することができる。この機能は現在 GTK GUI でのみ利用可能。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Before using fully controlled XIM, one setting is required.  Set the
+'imactivatekey' option to the key that is used for the activation of the input
+method.  For example, when you are using kinput2 + canna as IM Server, the
+activation key is probably Shift+Space: >
+
+	:set imactivatekey=S-space
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+XIM を制御するには、使用しているインプットメソッドのトグルキーを、オプション '@option{imactivatekey}' に設定する必要がある。たとえば、インプットメソッドサーバーに kinput2 + canna の組み合せを使用している場合、トグルキーは恐らく Shift+Space なので、このように設定する:
+@example
+:set imactivatekey=S-space
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See 'imactivatekey' for the format.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+設定の書式は '@option{imactivatekey}' を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+8.  Input on MS-Windows					*mbyte-IME*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mbyte-IME}
+@cindex mbyte-IME
+@section 8. MS-Windowsでの入力 (Input on MS-Windows)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+(Windows IME support)				*multibyte-ime* *IME*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{multibyte-ime}
+@anchor{IME}
+@cindex multibyte-ime
+@cindex IME
+@unnumberedsubsec Windows IME のサポート (Windows IME support)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{only works Windows GUI and compiled with the |+multi_byte_ime| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Windows の GUI 環境で |+multi_byte_ime| が有効な場合のみ利用可能@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To input multibyte characters on Windows, you can use an Input Method Editor
+(IME).  In process of your editing text, you must switch status (on/off) of
+IME many many many times.  Because IME with status on is hooking all of your
+key inputs, you cannot input 'j', 'k', or almost all of keys to Vim directly.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Windows ではマルチバイト文字の入力に Input Method Editor (IME) を使うことができる。IME を使ったテキストの入力では、IME の状態をオンにしたりオフにしたり、何度も何度も切り替えなければならない。そうしないと、IME の状態がオンのときには、キー入力はすべて IME に取られてしまうので、'@key{j}' や '@key{k}' などほぼすべてのキーを、直接 Vim に入力することができない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This |+multi_byte_ime| feature help this.  It reduce times of switch status of
+IME manually.  In normal mode, there are almost no need working IME, even
+editing multibyte text.  So exiting insert mode with ESC, Vim memorize last
+status of IME and force turn off IME.  When re-enter insert mode, Vim revert
+IME status to that memorized automatically.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|+multi_byte_ime| 機能はそれを手助けし、IMEを手動で切り替える手間を減少させる。マルチバイトテキストを編集しているときでも、ノーマルモードで IME を必要とすることはほとんどない。そこで、ESC で挿入モードを抜けるときに、Vim は IME の状態を記録してから、IME を強制的にオフにする。そして、次に挿入モードに入ったときに自動的に、記録しておいた状態に戻す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This works on not only insert-normal mode, but also search-command input and
+replace mode.
+The options 'iminsert', 'imsearch' and 'imcmdline' can be used to chose
+the different input methods or disable them temporarily.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは挿入モードとノーマルモードの間だけでなく、コマンドラインや検索コマンドの入力時や置換モードでも同じである。
+
+オプション '@option{iminsert}', '@option{imsearch}', '@option{imcmdline}' を設定して、それぞれ別々に入力方法を選択したり、無効にしたりできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+WHAT IS IME
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec IME について (WHAT IS IME)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    IME is a part of East asian version Windows.  That helps you to input
+    multibyte character.  English and other language version Windows does not
+    have any IME.  (Also there is no need usually.) But there is one that
+    called Microsoft Global IME.  Global IME is a part of Internet Explorer
+    4.0 or above.  You can get more information about Global IME, at below
+    URL.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+IME は東アジア向けの Windows の一部で、マルチバイト文字を入力するためのものである。英語などの言語用の Windows には IME は搭載されていない (普通は必要ない)。しかし、Microsoft Global IME というものがある。これは Internet Explorer4.0 以上に含まれている。詳しいことは下記のURLを参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+WHAT IS GLOBAL IME					*global-ime*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{global-ime}
+@cindex global-ime
+@unnumberedsubsec GLOBAL IMEについて (WHAT IS GLOBAL IME)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    Global IME makes capability to input Chinese, Japanese, and Korean text
+    into Vim buffer on any language version of Windows 98, Windows 95, and
+    Windows NT 4.0.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Global IME は Windows 95, Windows 98, Windows NT 4.0 のどの言語用のバージョンでも利用可能で、中国語、日本語、韓国語のテキストを Vim に入力することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    On Windows 2000 and XP it should work as well (without downloading).  On
+    Windows 2000 Professional, Global IME is built in, and the Input Locales
+    can be added through Control Panel/Regional Options/Input Locales.
+    Please see below URL for detail of Global IME.  You can also find various
+    language version of Global IME at same place.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+Windows 2000 や Xp でも問題なく使用できる (ダウンロードは必要ない)。Windows 2000 Professional には Global IME が組み込まれており、コントロールパネルの地域と言語のオプション/言語タブ/テキストサービスと入力言語の詳細ボタンから入力言語を追加できる。Global IME の詳細は下記のURLを参照。リンク先には Global IME の各国語用のバージョンもある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    - Global IME detailed information.
+	http://search.microsoft.com/results.aspx?q=global+ime
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item Global IME detailed information. @*
+@url{http://search.microsoft.com/results.aspx?q=global+ime}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    - Active Input Method Manager (Global IME)
+	http://msdn.microsoft.com/en-us/library/aa741221(v=VS.85).aspx
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item Active Input Method Manager (Global IME) @*
+@url{http://msdn.microsoft.com/en-us/library/aa741221(v=VS.85).aspx}
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    Support for Global IME is an experimental feature.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Global IME のサポートは実験的な機能である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NOTE: For IME to work you must make sure the input locales of your language
+are added to your system.  The exact location of this depends on the version
+of Windows you use.  For example, on my Windows 2000 box:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+IME を使用するには入力したい言語をシステムに追加する必要がある。正確な設定方法は Windows のバージョンによって違う。Windows XP の場合は:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. Control Panel
+2. Regional Options
+3. Input Locales Tab
+4. Add Installed input locales -> Chinese(PRC)
+   The default is still English (United Stated)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item コントロールパネルを開く
+@item 地域と言語のオプションを開く
+@item 言語タブを選択
+@item [テキストサービスと入力言語]エリアの詳細ボタンをクリック
+@item 追加ボタンをクリック
+@end enumerate
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Cursor color when IME or XIM is on				*CursorIM*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CursorIM}
+@cindex CursorIM
+@unnumberedsubsec IME や XIM がオンのときのカーソルの色
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    There is a little cute feature for IME.  Cursor can indicate status of IME
+    by changing its color.  Usually status of IME was indicated by little icon
+    at a corner of desktop (or taskbar).  It is not easy to verify status of
+    IME.  But this feature help this.
+    This works in the same way when using XIM.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+IME の状態に応じてカーソルの色を変えることができる。通常、IME の状態はデスクトップの隅 (やタスクバー) に表示されているが、これはあまり確認しやすくないので、この機能が役に立つ。これは XIM でも同じように機能する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    You can select cursor color when status is on by using highlight group
+    CursorIM.  For example, add these lines to your |gvimrc|: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+強調グループの CursorIM を設定して、IME の状態がオンのときの色を選べる。たとえば、次の行を |gvimrc| に追加する:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if has('multi_byte_ime')
+	    highlight Cursor guifg=NONE guibg=Green
+	    highlight CursorIM guifg=NONE guibg=Purple
+	endif
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+if has('multi_byte_ime')
+    highlight Cursor guifg=NONE guibg=Green
+    highlight CursorIM guifg=NONE guibg=Purple
+endif
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    Cursor color with off IME is green.  And purple cursor indicates that
+    status is on.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これで、IME がオフならカーソルは緑、オンなら紫になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+9. Input with a keymap					*mbyte-keymap*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mbyte-keymap}
+@cindex mbyte-keymap
+@section 9. キーマップでの入力 (Input with a keymap)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the keyboard doesn't produce the characters you want to enter in your
+text, you can use the 'keymap' option.  This will translate one or more
+(English) characters to another (non-English) character.  This only happens
+when typing text, not when typing Vim commands.  This avoids having to switch
+between two keyboard settings.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+キーボードから入力できない文字がある場合にはオプション '@option{keymap}' を使う。1 つ以上の (英語の) 文字を入力することで、別の (非英語の) 文字を入力することができる。この機能はテキストを入力するときだけ作用する。Vim コマンドを入力するときには作用しない。そのため、キーボードの設定を切り替える手間がない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+{only available when compiled with the |+keymap| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+@{Vimが |+keymap| 機能付きでコンパイルされたときにのみ利用可能@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The value of the 'keymap' option specifies a keymap file to use.  The name of
+this file is one of these two:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{keymap}' に、使用したいキーマップファイルを指定する。ファイルの名前は次の 2 つのうちのどちらか:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	keymap/{keymap}_{encoding}.vim
+	keymap/{keymap}.vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+keymap/@{keymap@}_@{encoding@}.vim
+keymap/@{keymap@}.vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here {keymap} is the value of the 'keymap' option and {encoding} of the
+'encoding' option.  The file name with the {encoding} included is tried first.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{keymap@} はオプション '@option{keymap}' に設定する値、@{encoding@} はオプション '@option{encoding}' の値。@{encoding@} 付きのファイル名が優先して使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'runtimepath' is used to find these files.  To see an overview of all
+available keymap files, use this: >
+	:echo globpath(&rtp, "keymap/*.vim")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+キーマップファイルを探すために '@option{runtimepath}' が使われる。利用可能なすべてのキーマップファイルを一覧するには、このようにする:
+@example
+:echo globpath(&rtp, "keymap/*.vim")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In Insert and Command-line mode you can use CTRL-^ to toggle between using the
+keyboard map or not. |i_CTRL-^| |c_CTRL-^|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+挿入モードとコマンドラインモードでは、@kbd{CTRL-^} を使ってキーマップを使用するかどうかを切り換えることができる。|i_CTRL-^| |c_CTRL-^|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This flag is remembered for Insert mode with the 'iminsert' option.  When
+leaving and entering Insert mode the previous value is used.  The same value
+is also used for commands that take a single character argument, like |f| and
+|r|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+挿入モードでは、キーマップの状態はオプション '@option{iminsert}' に記憶される。挿入モードから抜けて、再び挿入モードに入ったときに、以前の状態が使われる。|f| や |r| などの 1 つの文字を引数に取るコマンドでも同じ値が使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+For Command-line mode the flag is NOT remembered.  You are expected to type an
+Ex command first, which is ASCII.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+コマンドラインモードでは、キーマップの状態は記憶されない。コマンドラインモードに入るとまず、(ASCII 文字の) Ex コマンドを入力するはずだからである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+For typing search patterns the 'imsearch' option is used.  It can be set to
+use the same value as for 'iminsert'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+検索パターンの入力では、オプション '@option{imsearch}' が使われる。'@option{iminsert}' と設定を共有するように設定することもできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*lCursor*
+It is possible to give the GUI cursor another color when the language mappings
+are being used.  This is disabled by default, to avoid that the cursor becomes
+invisible when you use a non-standard background color.  Here is an example to
+use a brightly colored cursor: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{lCursor}
+@cindex lCursor
+キーマップ (言語マップ) を使用中に、GUI カーソルの色を変えることができる。もしも、非標準な背景色を使用していた場合にカーソルが見えなくなることがないように、初期状態ではこの機能は無効になっている。次の例では、カーソルの色が明るくなるようにしている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:highlight Cursor guifg=NONE guibg=Green
+	:highlight lCursor guifg=NONE guibg=Cyan
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:highlight Cursor guifg=NONE guibg=Green
+:highlight lCursor guifg=NONE guibg=Cyan
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		*keymap-file-format* *:loadk* *:loadkeymap* *E105* *E791*
+The keymap file looks something like this: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{keymap-file-format}
+@anchor{:loadk}
+@anchor{:loadkeymap}
+@anchor{E105}
+@anchor{E791}
+@cindex keymap-file-format
+@cindex :loadk
+@cindex :loadkeymap
+@cindex E105
+@cindex E791
+キーマップファイルはこのような構成になっている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	" Maintainer:	name <email@address>
+	" Last Changed:	2001 Jan 1
+
+	let b:keymap_name = "short"
+
+	loadkeymap
+	a	A
+	b	B	comment
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+" Maintainer:   name <email@address>
+" Last Changed: 2001 Jan 1
+
+let b:keymap_name = "short"
+
+loadkeymap
+a       A
+b       B       comment
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The lines starting with a " are comments and will be ignored.  Blank lines are
+also ignored.  The lines with the mappings may have a comment after the useful
+text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+「"」で始まる行はコメントなので無視される。空白行も無視される。マップを定義する行には役に立つコメントを書くことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The "b:keymap_name" can be set to a short name, which will be shown in the
+status line.  The idea is that this takes less room than the value of
+'keymap', which might be long to distinguish between different languages,
+keyboards and encodings.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"b:keymap_name" にはステータスラインに表示される短い名前を設定できる。'@option{keymap}' の値は、言語の違いやキーボードやエンコーディングの違いを区別するために長くなりがちだが、ステータスラインに表示できる文字には限りがあるので、この変数を使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The actual mappings are in the lines below "loadkeymap".  In the example "a"
+is mapped to "A" and "b" to "B".  Thus the first item is mapped to the second
+item.  This is done for each line, until the end of the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実際のマップは "loadkeymap" 以下に書く。上の例では、"a" は "A" に、"b" は "B" にマップされる。このように、一番目のものが二番目にマップされる。そして、ファイルの末尾まで同じように処理される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+These items are exactly the same as what can be used in a |:lnoremap| command,
+using "<buffer>" to make the mappings local to the buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+このように設定したマップは、|:lnoremap|に "<buffer>" を指定したバッファローカルなマップとまったく同じである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+You can check the result with this command: >
+	:lmap
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+それはこのコマンドで確認できる:
+@example
+:lmap
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The two items must be separated by white space.  You cannot include white
+space inside an item, use the special names "<Tab>" and "<Space>" instead.
+The length of the two items together must not exceed 200 bytes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+2 つの項目は空白で区切る。マップに空白を含めるには、"<Tab>", "<Space>" という特別な表記を使う。2 つの項目の文字の長さは、合わせて 200 バイトを超えてはいけない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It's possible to have more than one character in the first column.  This works
+like a dead key.  Example: >
+	'a	á
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一番目の項目に複数の文字を指定することができる。これはデッドキーのような作用をする。例:
+@example
+'a      á
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Since Vim doesn't know if the next character after a quote is really an "a",
+it will wait for the next character.  To be able to insert a single quote,
+also add this line: >
+	''	'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+クォートの入力があったとき、次に "a" が入力されるかどうかわからないので、Vim は次の文字が入力されるまで待機する。シングルクォートを入力できるようにするには、次の行も加える:
+@example
+''      '
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Since the mapping is defined with |:lnoremap| the resulting quote will not be
+used for the start of another character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マップは|:lnoremap|で定義されるので、結果のクォート文字は、他のマップの開始文字としては扱われない。@*
+@{訳注: シングルクォートを入力できるようにするには... '@option{timeout}' も参照。@}
+
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The "accents" keymap uses this.				*keymap-accents*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{keymap-accents}
+@cindex keymap-accents
+"accents" キーマップはこれを使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first column can also be in |<>| form:
+	<C-c>		Ctrl-C
+	<A-c>		Alt-c
+	<A-C>		Alt-C
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初の列は |<>| 表記で書くこともできる:
+@example
+<C-c>           Ctrl-C
+<A-c>           Alt-c
+<A-C>           Alt-C
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Note that the Alt mappings may not work, depending on your keyboard and
+terminal.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Alt マッピングは機能しないことがある。それはキーボードや端末に依存する。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Although it's possible to have more than one character in the second column,
+this is unusual.  But you can use various ways to specify the character: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+二番目の項目に複数の文字を指定することもできるが、一般的ではない。しかし、文字を指定するのにいろいろな方法を使用して構わない:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	A	a		literal character
+	A	<char-97>	decimal value
+	A	<char-0x61>	hexadecimal value
+	A	<char-0141>	octal value
+	x	<Space>		special key name
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+A       a               literal character
+A       <char-97>       decimal value
+A       <char-0x61>     hexadecimal value
+A       <char-0141>     octal value
+x       <Space>         special key name
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The characters are assumed to be encoded for the current value of 'encoding'.
+It's possible to use ":scriptencoding" when all characters are given
+literally.  That doesn't work when using the <char-> construct, because the
+conversion is done on the keymap file, not on the resulting character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+文字は現在の '@option{encoding}' と同じエンコーディングであるものとして扱われる。":scriptencoding" でリテラル文字のエンコーディングを指定することができるが、<char-> 表記の文字には影響しない。なぜなら、キーマップファイルのエンコーディングが変換されるのであって、<char-> の結果の文字は変換されないからである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The lines after "loadkeymap" are interpreted with 'cpoptions' set to "C".
+This means that continuation lines are not used and a backslash has a special
+meaning in the mappings.  Examples: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"loadkeymap" 以下の行は '@option{cpoptions}' に "C" を設定した状態で解釈される。つまり、行の継続は使用されない。バックスラッシュは特殊文字として扱われる。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	" a comment line
+	\"	x	maps " to x
+	\\	y	maps \ to y
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+" a comment line
+\"      x       " を x へマップ
+\\      y       \ を y へマップ
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you write a keymap file that will be useful for others, consider submitting
+it to the Vim maintainer for inclusion in the distribution:
+<maintainer@vim.org>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他の人にも便利なキーマップファイルを作成したら、Vim の配布物に含めるために、Vim のメンテナーに提出することを検討していただきたい: @*
+@email{<maintainer@@vim.org>}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+HEBREW KEYMAP						*keymap-hebrew*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{keymap-hebrew}
+@cindex keymap-hebrew
+@unnumberedsubsec ヘブライ語 キーマップ (HEBREW KEYMAP)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This file explains what characters are available in UTF-8 and CP1255 encodings,
+and what the keymaps are to get those characters:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このファイルは UTF-8 と CP1255 のエンコーディングで利用可能な文字と、その文字を入力するためのキーマップを説明している:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+glyph   encoding	   keymap ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+グリフ    エンコード    キーマップ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Char   utf-8 cp1255  hebrew  hebrewp  name ~
+א    0x5d0  0xe0     t	      a     'alef
+ב    0x5d1  0xe1     c	      b     bet
+ג    0x5d2  0xe2     d	      g     gimel
+ד    0x5d3  0xe3     s	      d     dalet
+ה    0x5d4  0xe4     v	      h     he
+ו    0x5d5  0xe5     u	      v     vav
+ז    0x5d6  0xe6     z	      z     zayin
+ח    0x5d7  0xe7     j	      j     het
+ט    0x5d8  0xe8     y	      T     tet
+י    0x5d9  0xe9     h	      y     yod
+ך    0x5da  0xea     l	      K     kaf sofit
+כ    0x5db  0xeb     f	      k     kaf
+ל    0x5dc  0xec     k	      l     lamed
+ם    0x5dd  0xed     o	      M     mem sofit
+מ    0x5de  0xee     n	      m     mem
+ן    0x5df  0xef     i	      N     nun sofit
+נ    0x5e0  0xf0     b	      n     nun
+ס    0x5e1  0xf1     x	      s     samech
+ע    0x5e2  0xf2     g	      u     `ayin
+ף    0x5e3  0xf3     ;	      P     pe sofit
+פ    0x5e4  0xf4     p	      p     pe
+ץ    0x5e5  0xf5     .	      X     tsadi sofit
+צ    0x5e6  0xf6     m	      x     tsadi
+ק    0x5e7  0xf7     e	      q     qof
+ר    0x5e8  0xf8     r	      r     resh
+ש    0x5e9  0xf9     a	      w     shin
+ת    0x5ea  0xfa     ,	      t     tav
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .2 .2 .1 .1 .3
+@headitem Char @tab utf-8 @tab cp1255h @tab ebrew @tab hebrewp @tab name
+@item א @tab 0x5d0 @tab 0xe0 @tab t @tab a @tab 'alef
+@item ב @tab 0x5d1 @tab 0xe1 @tab c @tab b @tab bet
+@item ג @tab 0x5d2 @tab 0xe2 @tab d @tab g @tab gimel
+@item ד @tab 0x5d3 @tab 0xe3 @tab s @tab d @tab dalet
+@item ה @tab 0x5d4 @tab 0xe4 @tab v @tab h @tab he
+@item ו @tab 0x5d5 @tab 0xe5 @tab u @tab v @tab vav
+@item ז @tab 0x5d6 @tab 0xe6 @tab z @tab z @tab zayin
+@item ח @tab 0x5d7 @tab 0xe7 @tab j @tab j @tab het
+@item ט @tab 0x5d8 @tab 0xe8 @tab y @tab T @tab tet
+@item י @tab 0x5d9 @tab 0xe9 @tab h @tab y @tab yod
+@item ך @tab 0x5da @tab 0xea @tab l @tab K @tab kaf sofit
+@item כ @tab 0x5db @tab 0xeb @tab f @tab k @tab kaf
+@item ל @tab 0x5dc @tab 0xec @tab k @tab l @tab lamed
+@item ם @tab 0x5dd @tab 0xed @tab o @tab M @tab mem sofit
+@item מ @tab 0x5de @tab 0xee @tab n @tab m @tab mem
+@item ן @tab 0x5df @tab 0xef @tab i @tab N @tab nun sofit
+@item נ @tab 0x5e0 @tab 0xf0 @tab b @tab n @tab nun
+@item ס @tab 0x5e1 @tab 0xf1 @tab x @tab s @tab samech
+@item ע @tab 0x5e2 @tab 0xf2 @tab g @tab u @tab `ayin
+@item ף @tab 0x5e3 @tab 0xf3 @tab ; @tab P @tab pe sofit
+@item פ @tab 0x5e4 @tab 0xf4 @tab p @tab p @tab pe
+@item ץ @tab 0x5e5 @tab 0xf5 @tab . @tab X @tab tsadi sofit
+@item צ @tab 0x5e6 @tab 0xf6 @tab m @tab x @tab tsadi
+@item ק @tab 0x5e7 @tab 0xf7 @tab e @tab q @tab qof
+@item ר @tab 0x5e8 @tab 0xf8 @tab r @tab r @tab resh
+@item ש @tab 0x5e9 @tab 0xf9 @tab a @tab w @tab shin
+@item ת @tab 0x5ea @tab 0xfa @tab , @tab t @tab tav
+@end multitable
+@end ifset @c ----------- ^ ----------- @tab JA  ----------- ^ -----------
+
+@ifset EN
+Vowel marks and special punctuation:
+הְ    0x5b0  0xc0     A:      A:   sheva
+הֱ    0x5b1  0xc1     HE      HE   hataf segol
+הֲ    0x5b2  0xc2     HA      HA   hataf patah
+הֳ    0x5b3  0xc3     HO      HO   hataf qamats
+הִ    0x5b4  0xc4     I       I    hiriq
+הֵ    0x5b5  0xc5     AY      AY   tsere
+הֶ    0x5b6  0xc6     E       E    segol
+הַ    0x5b7  0xc7     AA      AA   patah
+הָ    0x5b8  0xc8     AO      AO   qamats
+הֹ    0x5b9  0xc9     O       O    holam
+הֻ    0x5bb  0xcb     U       U    qubuts
+כּ    0x5bc  0xcc     D       D    dagesh
+הֽ    0x5bd  0xcd     ]T      ]T   meteg
+ה־   0x5be  0xce     ]Q      ]Q   maqaf
+בֿ    0x5bf  0xcf     ]R      ]R   rafe
+ב׀   0x5c0  0xd0     ]p      ]p   paseq
+שׁ    0x5c1  0xd1     SR      SR   shin-dot
+שׂ    0x5c2  0xd2     SL      SL   sin-dot
+׃    0x5c3  0xd3     ]P      ]P   sof-pasuq
+װ    0x5f0  0xd4     VV      VV   double-vav
+ױ    0x5f1  0xd5     VY      VY   vav-yod
+ײ    0x5f2  0xd6     YY      YY   yod-yod
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+母音マークと特別な句読点:
+@multitable @columnfractions .1 .2 .2 .1 .1 .3
+@headitem Char @tab utf-8 @tab cp1255h @tab ebrew @tab hebrewp @tab name
+@item הְ @tab 0x5b0 @tab 0xc0 @tab A: @tab A: @tab sheva
+@item הֱ @tab 0x5b1 @tab 0xc1 @tab HE @tab HE @tab hataf segol
+@item הֲ @tab 0x5b2 @tab 0xc2 @tab HA @tab HA @tab hataf patah
+@item הֳ @tab 0x5b3 @tab 0xc3 @tab HO @tab HO @tab hataf qamats
+@item הִ @tab 0x5b4 @tab 0xc4 @tab I @tab I @tab hiriq
+@item הֵ @tab  0x5b5 @tab 0xc5 @tab AY @tab AY @tab tsere
+@item הֶ @tab 0x5b6 @tab 0xc6 @tab E @tab E @tab segol
+@item הַ @tab 0x5b7 @tab 0xc7 @tab AA @tab AA @tab patah
+@item הָ @tab 0x5b8 @tab 0xc8 @tab AO @tab AO @tab qamats
+@item הֹ @tab 0x5b9 @tab 0xc9 @tab O @tab O @tab holam
+@item הֻ @tab 0x5bb @tab 0xcb @tab U @tab U @tab qubuts
+@item כּ @tab 0x5bc @tab 0xcc @tab D @tab D @tab dagesh
+@item הֽ @tab 0x5bd @tab 0xcd @tab ]T @tab ]T @tab meteg
+@item ה־ @tab 0x5be @tab 0xce @tab ]Q @tab ]Q @tab maqaf
+@item בֿ @tab 0x5bf @tab 0xcf @tab ]R @tab ]R @tab rafe
+@item ב׀ @tab 0x5c0 @tab 0xd0 @tab ]p @tab ]p @tab paseq
+@item שׁ @tab 0x5c1 @tab 0xd1 @tab SR @tab SR @tab shin-dot
+@item שׂ @tab 0x5c2 @tab 0xd2 @tab SL @tab SL @tab sin-dot
+@item ׃ @tab 0x5c3 @tab 0xd3 @tab ]P @tab ]P @tab sof-pasuq
+@item װ @tab 0x5f0 @tab 0xd4 @tab VV @tab VV @tab double-vav
+@item ױ @tab 0x5f1 @tab 0xd5 @tab VY @tab VY @tab vav-yod
+@item ײ @tab 0x5f2 @tab 0xd6 @tab YY @tab YY @tab yod-yod
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The following are only available in utf-8
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下は UTF-8 でのみ利用可能なもの
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Cantillation marks:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+朗唱マーク:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+glyph
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+グリフ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Char utf-8 hebrew name
+ב֑    0x591   C:   etnahta
+ב֒    0x592   Cs   segol
+ב֓    0x593   CS   shalshelet
+ב֔    0x594   Cz   zaqef qatan
+ב֕    0x595   CZ   zaqef gadol
+ב֖    0x596   Ct   tipeha
+ב֗    0x597   Cr   revia
+ב֘    0x598   Cq   zarqa
+ב֙    0x599   Cp   pashta
+ב֚    0x59a   C!   yetiv
+ב֛    0x59b   Cv   tevir
+ב֜    0x59c   Cg   geresh
+ב֝    0x59d   C*   geresh qadim
+ב֞    0x59e   CG   gershayim
+ב֟    0x59f   CP   qarnei-parah
+ב֪    0x5aa   Cy   yerach-ben-yomo
+ב֫    0x5ab   Co   ole
+ב֬    0x5ac   Ci   iluy
+ב֭    0x5ad   Cd   dehi
+ב֮    0x5ae   Cn   zinor
+ב֯    0x5af   CC   masora circle
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .2 .2 .5
+@headitem Char @tab utf-8 @tab hebrew @tab name
+@item ב֑ @tab 0x591 @tab C: @tab etnahta
+@item ב֒ @tab 0x592 @tab Cs @tab segol
+@item ב֓ @tab 0x593 @tab CS @tab shalshelet
+@item ב֔ @tab 0x594 @tab Cz @tab zaqef qatan
+@item ב֕ @tab 0x595 @tab CZ @tab zaqef gadol
+@item ב֖ @tab 0x596 @tab Ct @tab tipeha
+@item ב֗ @tab 0x597 @tab Cr @tab revia
+@item ב֘ @tab 0x598 @tab Cq @tab zarqa
+@item ב֙ @tab 0x599 @tab Cp @tab pashta
+@item ב֚ @tab 0x59a @tab C! @tab yetiv
+@item ב֛ @tab 0x59b @tab Cv @tab tevir
+@item ב֜ @tab 0x59c @tab Cg @tab geresh
+@item ב֝ @tab 0x59d @tab C* @tab geresh qadim
+@item ב֞ @tab 0x59e @tab CG @tab gershayim
+@item ב֟ @tab 0x59f @tab CP @tab qarnei-parah
+@item ב֪ @tab 0x5aa @tab Cy @tab yerach-ben-yomo
+@item ב֫ @tab 0x5ab @tab Co @tab ole
+@item ב֬ @tab 0x5ac @tab Ci @tab iluy
+@item ב֭ @tab 0x5ad @tab Cd @tab dehi
+@item ב֮ @tab 0x5ae @tab Cn @tab zinor
+@item ב֯ @tab 0x5af @tab CC @tab masora circle
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Combining forms:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+連結形:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+ﬠ    0xfb20  X`   Alternative `ayin
+ﬡ    0xfb21  X'   Alternative 'alef
+ﬢ    0xfb22  X-d  Alternative dalet
+ﬣ    0xfb23  X-h  Alternative he
+ﬤ    0xfb24  X-k  Alternative kaf
+ﬥ    0xfb25  X-l  Alternative lamed
+ﬦ    0xfb26  X-m  Alternative mem-sofit
+ﬧ    0xfb27  X-r  Alternative resh
+ﬨ    0xfb28  X-t  Alternative tav
+﬩    0xfb29  X-+  Alternative plus
+שׁ    0xfb2a  XW   shin+shin-dot
+שׂ    0xfb2b  Xw   shin+sin-dot
+שּׁ    0xfb2c  X..W  shin+shin-dot+dagesh
+שּׂ    0xfb2d  X..w  shin+sin-dot+dagesh
+אַ    0xfb2e  XA   alef+patah
+אָ    0xfb2f  XO   alef+qamats
+אּ    0xfb30  XI   alef+hiriq (mapiq)
+בּ    0xfb31  X.b  bet+dagesh
+גּ    0xfb32  X.g  gimel+dagesh
+דּ    0xfb33  X.d  dalet+dagesh
+הּ    0xfb34  X.h  he+dagesh
+וּ    0xfb35  Xu  vav+dagesh
+זּ    0xfb36  X.z  zayin+dagesh
+טּ    0xfb38  X.T  tet+dagesh
+יּ    0xfb39  X.y  yud+dagesh
+ךּ    0xfb3a  X.K  kaf sofit+dagesh
+כּ    0xfb3b  X.k  kaf+dagesh
+לּ    0xfb3c  X.l  lamed+dagesh
+מּ    0xfb3e  X.m  mem+dagesh
+נּ    0xfb40  X.n  nun+dagesh
+סּ    0xfb41  X.s  samech+dagesh
+ףּ    0xfb43  X.P  pe sofit+dagesh
+פּ    0xfb44  X.p  pe+dagesh
+צּ    0xfb46  X.x  tsadi+dagesh
+קּ    0xfb47  X.q  qof+dagesh
+רּ    0xfb48  X.r  resh+dagesh
+שּ    0xfb49  X.w  shin+dagesh
+תּ    0xfb4a  X.t  tav+dagesh
+וֹ    0xfb4b  Xo   vav+holam
+בֿ    0xfb4c  XRb  bet+rafe
+כֿ    0xfb4d  XRk  kaf+rafe
+פֿ    0xfb4e  XRp  pe+rafe
+ﭏ    0xfb4f  Xal  alef-lamed
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .2 .2 .5
+@headitem Char @tab utf-8 @tab hebrew @tab name
+@item ﬠ @tab 0xfb20 @tab X` @tab Alternative `ayin
+@item ﬡ @tab 0xfb21 @tab X' @tab Alternative 'alef
+@item ﬢ @tab 0xfb22 @tab X-d @tab Alternative dalet
+@item ﬣ @tab 0xfb23 @tab X-h @tab Alternative he
+@item ﬤ @tab 0xfb24 @tab X-k @tab Alternative kaf
+@item ﬥ @tab 0xfb25 @tab X-l @tab Alternative lamed
+@item ﬦ @tab 0xfb26 @tab X-m @tab Alternative mem-sofit
+@item ﬧ @tab 0xfb27 @tab X-r @tab Alternative resh
+@item ﬨ @tab 0xfb28 @tab X-t @tab Alternative tav
+@item ﬩ @tab 0xfb29 @tab X-+ @tab Alternative plus
+@item שׁ @tab 0xfb2a @tab XW @tab shin+shin-dot
+@item שׂ @tab 0xfb2b @tab Xw @tab shin+sin-dot
+@item שּׁ @tab 0xfb2c @tab X..W @tab shin+shin-dot+dagesh
+@item שּׂ @tab 0xfb2d @tab X..w @tab shin+sin-dot+dagesh
+@item אַ @tab 0xfb2e @tab XA @tab alef+patah
+@item אָ @tab 0xfb2f @tab XO @tab alef+qamats
+@item אּ @tab 0xfb30 @tab XI @tab alef+hiriq (mapiq)
+@item בּ @tab 0xfb31 @tab X.b @tab bet+dagesh
+@item גּ @tab 0xfb32 @tab X.g @tab gimel+dagesh
+@item דּ @tab 0xfb33 @tab X.d @tab dalet+dagesh
+@item הּ @tab 0xfb34 @tab X.h @tab he+dagesh
+@item וּ @tab 0xfb35 @tab Xu @tab vav+dagesh
+@item זּ @tab 0xfb36 @tab X.z @tab zayin+dagesh
+@item טּ @tab 0xfb38 @tab X.T @tab tet+dagesh
+@item יּ @tab 0xfb39 @tab X.y @tab yud+dagesh
+@item ךּ @tab 0xfb3a @tab X.K @tab kaf sofit+dagesh
+@item כּ @tab 0xfb3b @tab X.k @tab kaf+dagesh
+@item לּ @tab 0xfb3c @tab X.l @tab lamed+dagesh
+@item מּ @tab 0xfb3e @tab X.m @tab mem+dagesh
+@item נּ @tab 0xfb40 @tab X.n @tab nun+dagesh
+@item סּ @tab 0xfb41 @tab X.s @tab samech+dagesh
+@item ףּ @tab 0xfb43 @tab X.P @tab pe sofit+dagesh
+@item פּ @tab 0xfb44 @tab X.p @tab pe+dagesh
+@item צּ @tab 0xfb46 @tab X.x @tab tsadi+dagesh
+@item קּ @tab 0xfb47 @tab X.q @tab qof+dagesh
+@item רּ @tab 0xfb48 @tab X.r @tab resh+dagesh
+@item שּ @tab 0xfb49 @tab X.w @tab shin+dagesh
+@item תּ @tab 0xfb4a @tab X.t @tab tav+dagesh
+@item וֹ @tab 0xfb4b @tab Xo @tab vav+holam
+@item בֿ @tab 0xfb4c @tab XRb @tab bet+rafe
+@item כֿ @tab 0xfb4d @tab XRk @tab kaf+rafe
+@item פֿ @tab 0xfb4e @tab XRp @tab pe+rafe
+@item ﭏ @tab 0xfb4f @tab Xal @tab alef-lamed
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+10.  Input with imactivatefunc()				*mbyte-func*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mbyte-func}
+@cindex mbyte-func
+@section 10. imactivatefunc() を使用した入力 (Input with imactivatefunc())
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim has the 'imactivatefunc' and 'imstatusfunc' options. These are useful to
+activate/deactivate the input method from Vim in any way, also with an external
+command. For example, fcitx provide fcitx-remote command: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim には '@option{imactivatefunc}' と '@option{imstatusfunc}' オプションがある。これらは、Vim や外部コマンドから、とにかくインプットメソッドをオン/オフするのに便利だ。例えば、fcitx は fcitx-remote コマンドを提供している:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	set iminsert=2
+	set imsearch=2
+	set imcmdline
+
+	set imactivatefunc=ImActivate
+	function! ImActivate(active)
+	  if a:active
+	    call system('fcitx-remote -o')
+	  else
+	    call system('fcitx-remote -c')
+	  endif
+	endfunction
+
+	set imstatusfunc=ImStatus
+	function! ImStatus()
+	  return system('fcitx-remote')[0] is# '2'
+	endfunction
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+set iminsert=2
+set imsearch=2
+set imcmdline
+
+set imactivatefunc=ImActivate
+function! ImActivate(active)
+  if a:active
+    call system('fcitx-remote -o')
+  else
+    call system('fcitx-remote -c')
+  endif
+endfunction
+
+set imstatusfunc=ImStatus
+function! ImStatus()
+  return system('fcitx-remote')[0] is# '2'
+endfunction
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Using this script, you can activate/deactivate XIM via Vim even when it is not
+compiled with |+xim|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このスクリプトを使うと、|+xim| 機能を有効にしていなくても、Vim 経由で XIM をオン/オフすることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+11. Using UTF-8				*mbyte-utf8* *UTF-8* *utf-8* *utf8*
+							*Unicode* *unicode*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@section 11. UTF-8 を使う
+@anchor{mbyte-utf8}
+@anchor{UTF-8}
+@anchor{utf-8}
+@anchor{utf8}
+@anchor{Unicode}
+@anchor{unicode}
+@cindex mbyte-utf8
+@cindex UTF-8
+@cindex utf-8
+@cindex utf8
+@cindex Unicode
+@cindex unicode
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Unicode character set was designed to include all characters from other
+character sets.  Therefore it is possible to write text in any language using
+Unicode (with a few rarely used languages excluded).  And it's mostly possible
+to mix these languages in one file, which is impossible with other encodings.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unicode は、他の文字セットをすべて含むように設計された。そのため、どんな言語のテキストでも Unicode を使って書くことができる (希少な言語を除く)。そして、他のエンコーディングでは混在させることが不可能な言語でも、1 つのファイルに混在させることが可能である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Unicode can be encoded in several ways.  The most popular one is UTF-8, which
+uses one or more bytes for each character and is backwards compatible with
+ASCII.   On MS-Windows UTF-16 is also used (previously UCS-2), which uses
+16-bit words.  Vim can support all of these encodings, but always uses UTF-8
+internally.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unicode にはいくつかのエンコード法がある。もっとも一般的なのは、1 文字を 1 または複数バイトで表わす UTF-8 であり、ASCII と後方互換性がある。MS-Windows では UTF-16 も使われる (以前は UCS-2 と呼ばれていた)。こちらは 16 ビットを基本単位とする。Vim はこれらのエンコーディングすべてをサポートしているが、Vim で Unicode を使う場合、内部では常に UTF-8 が使われている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim has comprehensive UTF-8 support.  It works well in:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は幅広く UTF-8 をサポートしており、それは以下の環境で機能する:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- xterm with utf-8 support enabled
+- Athena, Motif and GTK GUI
+- MS-Windows GUI
+- several other platforms
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item utf-8 サポートが有効になっている xterm
+@item Athena, Motif, GTK の GUI
+@item MS-Windows GUI
+@item その他いくつかのプラットフォーム
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Double-width characters are supported.  This works best with 'guifontwide' or
+'guifontset'.  When using only 'guifont' the wide characters are drawn in the
+normal width and a space to fill the gap.  Note that the 'guifontset' option
+is no longer relevant in the GTK+ 2 GUI.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+全角文字は '@option{guifontwide}' や '@option{guifontset}' を使うと最もうまく表示することができる。'@option{guifont}' だけを設定している場合は、全角文字は通常の幅で描画され、足りない幅が空白で埋められる。
+@quotation
+@strong{Note:} @*
+オプション '@option{guifontset}' は GTK+ 2 GUI では使用しない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*bom-bytes*
+When reading a file a BOM (Byte Order Mark) can be used to recognize the
+Unicode encoding:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{bom-bytes}
+@cindex bom-bytes
+ファイルを読み込むとき、BOM (Byte Order Mark) があれば、その Unicode エンコーディングを判別するのに使われる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	EF BB BF     utf-8
+	FE FF        utf-16 big endian
+	FF FE        utf-16 little endian
+	00 00 FE FF  utf-32 big endian
+	FF FE 00 00  utf-32 little endian
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+EF BB BF     utf-8
+FE FF        utf-16 big endian
+FF FE        utf-16 little endian
+00 00 FE FF  utf-32 big endian
+FF FE 00 00  utf-32 little endian
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Utf-8 is the recommended encoding.  Note that it's difficult to tell utf-16
+and utf-32 apart.  Utf-16 is often used on MS-Windows, utf-32 is not
+widespread as file format.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+UTF-8 が推奨されているエンコーディングである。UTF-16 と UTF-32 を区別するのは難しい。Windows では UTF-16 がしばしば使われる。UTF-32 はファイルフォーマットとしては広く使われていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+					*mbyte-combining* *mbyte-composing*
+A composing or combining character is used to change the meaning of the
+character before it.  The combining characters are drawn on top of the
+preceding character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mbyte-combining}
+@anchor{mbyte-composing}
+@cindex mbyte-combining
+@cindex mbyte-composing
+合成文字や結合文字を使うと、先行文字の意味を変えることができる。結合文字は先行文字に重ねて描画される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Up to two combining characters can be used by default.  This can be changed
+with the 'maxcombine' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+デフォルトで2文字までの結合文字を扱うことができる。この値はオプション '@option{maxcombine}' で変更できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When editing text a composing character is mostly considered part of the
+preceding character.  For example "x" will delete a character and its
+following composing characters by default.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+テキストの編集中は、合成文字は先行文字の一部として扱われる。例えば、初期設定で
+は、"x" は文字を削除するときに、連なる合成文字をいっぺんに削除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+If the 'delcombine' option is on, then pressing 'x' will delete the combining
+characters, one at a time, then the base character.  But when inserting, you
+type the first character and the following composing characters separately,
+after which they will be joined.  The "r" command will not allow you to type a
+combining character, because it doesn't know one is coming.  Use "R" instead.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション '@option{delcombine}' がオンのときには、'x' は 1 回に 1 文字の結合文字を削除して、最後に基底文字を削除する。入力するときには、まず 1 文字目を入力して、そして合成文字を入力する。すると、文字が合成される。"r" コマンドを使って結合文字を入力することはできない。結合文字がさらに入力されるかどうか知ることができないからである。代わりに "R" を使う。
+
+@{訳注:
+@multitable @columnfractions .6 .4
+@item combining character @tab 結合文字
+@item composing character @tab 合成文字
+@item base character @tab 基底文字
+@item preceding character @tab 先行文字？
+@end multitable
+@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Bytes which are not part of a valid UTF-8 byte sequence are handled like a
+single character and displayed as <xx>, where "xx" is the hex value of the
+byte.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+UTF-8 として不正なバイト列はそれぞれ 1 バイトの文字として扱われ、<xx> と表示される。この "xx" はそのバイトの 16 進数である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Overlong sequences are not handled specially and displayed like a valid
+character.  However, search patterns may not match on an overlong sequence.
+(an overlong sequence is where more bytes are used than required for the
+character.)  An exception is NUL (zero) which is displayed as "<00>".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Overlong sequence に対して特別な処理はされない。通常の文字と同じように表示される。Overlong sequence はどんな検索パターンにもマッチしないかもしれない。
+
+(Overlong sequence とは、文字を表すために必要なバイトよりも多くのバイトでその文字を表現しているバイト列のこと。) "<00>" と表示されている NUL(zero) は例外。
+
+@{訳注: たぶん、"<00>" と表示されてる Overlong sequence だけはたとえ |/\_.| でもマッチしないということ。@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the file and buffer the full range of Unicode characters can be used (31
+bits).  However, displaying only works for the characters present in the
+selected font.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルやバッファには、Unicode で表現できる範囲 (31ビット) の文字をすべて書くことができる。ただし、それを表示できるのは使用フォントがその文字を提供している場合のみ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Useful commands:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+便利なコマンド:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- "ga" shows the decimal, hexadecimal and octal value of the character under
+  the cursor.  If there are composing characters these are shown too.  (If the
+  message is truncated, use ":messages").
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize @minus
+@item "ga" はカーソル位置の文字のコードを 10 進数、16 進数、8 進数で表示する。合成文字も表示される。(表示が途切れてしまった場合は ":messages" を使う)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- "g8" shows the bytes used in a UTF-8 character, also the composing
+  characters, as hex numbers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "g8" は文字の UTF-8 コードを 16 進数で表示する。合成文字も表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- ":set encoding=utf-8 fileencodings=" forces using UTF-8 for all files.  The
+  default is to use the current locale for 'encoding' and set 'fileencodings'
+  to automatically detect the encoding of a file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "@command{:set encoding=utf-8 fileencodings=}" とすると、すべてのファイルで UTF-8 を使うように強制できる。'@option{encoding}' を現在のロケールに合わせて設定し、'@option{fileencodings}' によって自動的にファイルのエンコーディングを判定するように設定するのがデフォルトである。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+STARTING VIM
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec Vim を UTF-8 モードで起動する (STARTING VIM)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If your current locale is in an utf-8 encoding, Vim will automatically start
+in utf-8 mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ロケールが UTF-8 の場合、Vim は自動的に UTF-8 モードで起動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are using another locale: >
+
+	set encoding=utf-8
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+UTF-8 以外のロケールを使っている場合はこのようにする:
+@example
+set encoding=utf-8
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You might also want to select the font used for the menus.  Unfortunately this
+doesn't always work.  See the system specific remarks below, and 'langmenu'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メニューに使われるフォントを変える必要があるかもしれない。残念ながら、これはいつもうまくいくとは限らない。システムに依存する説明は下記、または '@option{langmenu}' を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+USING UTF-8 IN X-Windows				*utf-8-in-xwindows*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{utf-8-in-xwindows}
+@cindex utf-8-in-xwindows
+@unnumberedsubsec X-Window で UTF-8 を使う (USING UTF-8 IN X-Windows)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: This section does not apply to the GTK+ 2 GUI.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+この項は GTK+ 2 GUI には当てはまらない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You need to specify a font to be used.  For double-wide characters another
+font is required, which is exactly twice as wide.  There are three ways to do
+this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使用するフォントを選択する必要がある。全角文字を表示するにはさらに別のフォントが必要。設定するには次の 3 つの方法がある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Set 'guifont' and let Vim find a matching 'guifontwide'
+2. Set 'guifont' and 'guifontwide'
+3. Set 'guifontset'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item '@option{guifont}' を設定して、'@option{guifontwide}' は Vim に設定させる
+@item '@option{guifont}' と '@option{guifontwide}' を設定する
+@item '@option{guifontset}' を設定する
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See the documentation for each option for details.  Example: >
+
+   :set guifont=-misc-fixed-medium-r-normal--15-140-75-75-c-90-iso10646-1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+詳細は各オプションの説明を参照。例:
+@example
+:set guifont=-misc-fixed-medium-r-normal--15-140-75-75-c-90-iso10646-1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You might also want to set the font used for the menus.  This only works for
+Motif.  Use the ":hi Menu font={fontname}" command for this. |:highlight|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メニューで使用されるフォントも変更することができる。これは Motif でのみ機能する。"@command{:hi Menu font=@{fontname@}}" コマンドを使って設定する。|:highlight|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+TYPING UTF-8						*utf-8-typing*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{utf-8-typing}
+@cindex utf-8-typing
+@unnumberedsubsec UTF-8を入力する (TYPING UTF-8)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are using X-Windows, you should find an input method that supports
+utf-8.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+X-Window を使っているなら、UTF-8 をサポートしているインプットメソッド使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If your system does not provide support for typing utf-8, you can use the
+'keymap' feature.  This allows writing a keymap file, which defines a utf-8
+character as a sequence of ASCII characters.  See |mbyte-keymap|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+システムが UTF-8 の入力をサポートしていない場合でも、'@option{keymap}' を使って入力することができる。ASCII 文字を複数入力することで UTF-8 の文字を入力するようなキーマップファイルを作ることができる。|mbyte-keymap| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Another method is to set the current locale to the language you want to use
+and for which you have a XIM available.  Then set 'termencoding' to that
+language and Vim will convert the typed characters to 'encoding' for you.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+他にも、XIM を利用することができる言語に、ロケールを設定する方法がある。その場合は、'@option{termencoding}' をその言語に設定する。Vim は入力された文字を '@option{termencoding}' から '@option{encoding}' へ変換する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If everything else fails, you can type any character as four hex bytes: >
+
+	CTRL-V u 1234
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべての方法が使えなくても、4 文字の 16 進数で文字コードを直接入力することができる:
+@example
+CTRL-V u 1234
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+"1234" is interpreted as a hex number.  You must type four characters, prepend
+a zero if necessary.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"1234" は 16 進数として解釈される。正しく 4 文字を入力しなくてはいけない。必要であればゼロを前置する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+COMMAND ARGUMENTS					*utf-8-char-arg*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{utf-8-char-arg}
+@cindex utf-8-char-arg
+@unnumberedsubsec コマンド引数 (COMMAND ARGUMENTS)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Commands like |f|, |F|, |t| and |r| take an argument of one character.  For
+UTF-8 this argument may include one or two composing characters.  These need
+to be produced together with the base character, Vim doesn't wait for the next
+character to be typed to find out if it is a composing character or not.
+Using 'keymap' or |:lmap| is a nice way to type these characters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|f|, |F|, |t|, |r| のようなコマンドは 1 つの文字を引数に取る。UTF-8 では 1 文字か 2 文字の合成文字の場合がある。Vim は合成文字の入力かどうかを調べるために次の入力を待ったりはしないため、合成文字は基底文字と同時に入力する必要がある。そのような文字は '@option{keymap}' や |:lmap| を使うと簡単に入力することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The commands that search for a character in a line handle composing characters
+as follows.  When searching for a character without a composing character,
+this will find matches in the text with or without composing characters.  When
+searching for a character with a composing character, this will only find
+matches with that composing character.  It was implemented this way, because
+not everybody is able to type a composing character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+行内検索をするコマンド (|f| など) は合成文字を次のように処理する。非合成文字を検索するときは、合成されている文字とされていない文字の両方がマッチする。合成文字を検索するときは、合成文字だけがマッチする。すべての人が合成文字を入力できるわけではないので、このようになっている。
+
+@{訳注: 例えば、か(U+304B) + 濁点(U+3099) という合成文字は "fか" でマッチする@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+12. Overview of options					*mbyte-options*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mbyte-options}
+@cindex mbyte-options
+@section 12. 主なオプション (Overview of options)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These options are relevant for editing multi-byte files.  Check the help in
+options.txt for detailed information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのオプションはマルチバイトテキストのファイルの編集に関係する。詳細は @file{options.txt} の説明を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'encoding'	Encoding used for the keyboard and display.  It is also the
+		default encoding for files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item '@option{encoding}' @tab キーボード入力や表示に使われるエンコーディング。これは新規ファイルのエンコーディングの初期設定でもある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'fileencoding'	Encoding of a file.  When it's different from 'encoding'
+		conversion is done when reading or writing the file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item '@option{fileencoding}' @tab ファイルのエンコーディング。'@option{encoding}' と違う場合、ファイルの読み書き時にエンコーディングが変換される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'fileencodings'	List of possible encodings of a file.  When opening a file
+		these will be tried and the first one that doesn't cause an
+		error is used for 'fileencoding'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item '@option{fileencodings}' @tab ファイルに使うことができるエンコーディングのリスト。ファイルを開くとき、リストの先頭から順番に変換を試して、エラーが起きなかった最初のものが '@option{fileencoding}' として使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'charconvert'	Expression used to convert files from one encoding to another.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item '@option{charconvert}' @tab あるエンコーディングから別のエンコーディングへファイルを変換する式。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'formatoptions' The 'm' flag can be included to have formatting break a line
+		at a multibyte character of 256 or higher.  Thus is useful for
+		languages where a sequence of characters can be broken
+		anywhere.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item '@option{formatoptions}' @tab このオプションにフラグ 'm' を含めると、フォーマット時に、(文字のコードが 256 以上の) マルチバイト文字のところで改行することができる。これは、どこでも改行することができる言語を編集するときに便利である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'guifontset'	The list of font names used for a multi-byte encoding.  When
+		this option is not empty, it replaces 'guifont'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item '@option{guifontset}' @tab マルチバイトエンコーディングの文字に使うフォントのリスト。このオプションが設定されていれば '@option{guifont}' の代わりに使用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+'keymap'	Specify the name of a keyboard mapping.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item '@option{keymap}' @tab キーボードマッピングの名前を指定する。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+
+Contributions specifically for the multi-byte features by:
+	Chi-Deok Hwang <hwang@mizi.co.kr>
+	SungHyun Nam <goweol@gmail.com>
+	K.Nagano <nagano@atese.advantest.co.jp>
+	Taro Muraoka  <koron@tka.att.ne.jp>
+	Yasuhiro Matsumoto <mattn@mail.goo.ne.jp>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マルチバイト機能は、特に以下の方々の貢献による:
+@multitable @columnfractions .05 .95
+@item @tab Chi-Deok Hwang <@email{hwang@@mizi.co.kr}>
+@item @tab SungHyun Nam <@email{goweol@@gmail.com}>
+@item @tab K.Nagano <@email{nagano@@atese.advantest.co.jp}>
+@item @tab Taro Muraoka <@email{koron@@tka.att.ne.jp}>
+@item @tab Yasuhiro Matsumoto <@email{mattn@@mail.goo.ne.jp}>
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset

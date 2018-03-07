@@ -22,7 +22,7 @@ REFMANUALS = \
 	doc/syntax.texi doc/spell.texi doc/diff.texi doc/autocmd.texi \
 	doc/filetype.texi doc/eval.texi doc/channel.texi doc/fold.texi \
 	doc/print.texi doc/remote.texi doc/term.texi doc/terminal.texi \
-	doc/digraph.texi doc/mbyte.texi
+	doc/digraph.texi doc/mbyte.texi doc/mlang.texi doc/arabic.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
@@ -41,7 +41,8 @@ INCONVENIENTFILES = \
 	$(ORIG)/doc/quotes.txt \
 	$(ORIG)/doc/map.txt \
 	$(ORIG)/doc/spell.txt \
-	$(ORIG)/doc/eval.txt
+	$(ORIG)/doc/eval.txt \
+	$(ORIG)/doc/mlang.txt
 
 .PHONY: usrhtml refonehtml refhtml usrpdf refpdf kyukana \
 	first diffja nvcheck clean
