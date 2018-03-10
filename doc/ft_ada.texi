@@ -1,0 +1,1455 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node ft_ada.txt, , , 目次
+@unnumbered Ada (プログラミング言語) のサポート
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*ft_ada.txt*	For Vim version 8.0.  Last change: 2010 Jul 20
+
+
+		    ADA FILE TYPE PLUG-INS REFERENCE MANUAL~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*ft_ada.txt*    For Vim バージョン 8.0.  Last change: 2010 Jul 20
+
+
+                    ADA ファイルタイププラグイン リファレンスマニュアル
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ADA								      *ada.vim*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ada.vim}
+@cindex ada.vim
+ADA
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1.  Syntax Highlighting			    |ft-ada-syntax|
+2.  File type Plug-in			    |ft-ada-plugin|
+3.  Omni Completion			    |ft-ada-omni|
+    3.1 Omni Completion with "gnat xref"	|gnat-xref|
+    3.2 Omni Completion with "ctags"		|ada-ctags|
+4.  Compiler Support			    |ada-compiler|
+    4.1 GNAT					|compiler-gnat|
+    4.2 Dec Ada					|compiler-decada|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. 構文強調 @tab |@ref{ft-ada-syntax, , ft-ada-syntax}|
+@item 2. ファイルタイププラグイン @tab |@ref{ft-ada-plugin, , ft-ada-plugin}|
+@item 3. オムニ補完 @tab |@ref{ft-ada-omni, , ft-ada-omni}|
+@item @ @ @ @ @ 3.1 "gnat xref" を使ったオムニ補完 @tab |@ref{gnat-xref, , gnat-xref}|
+@item @ @ @ @ @ 3.2 "ctags" を使ったオムニ補完 @tab |@ref{ada-ctags, , ada-ctags}|
+@item 4. コンパイラへの対応 @tab |@ref{ada-compiler, , ada-compiler}|
+@item @ @ @ @ @ 4.1 GNAT @tab |@ref{compiler-gnat, , compiler-gnat}|
+@item @ @ @ @ @ 4.2 Dec Ada @tab |@ref{compiler-decada, , compiler-decada}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+5.  References				    |ada-reference|
+    5.1 Options					|ft-ada-options|
+    5.2 Commands				|ft-ada-commands|
+    5.3 Variables				|ft-ada-variables|
+    5.4 Constants				|ft-ada-constants|
+    5.5 Functions				|ft-ada-functions|
+6.  Extra Plug-ins			    |ada-extra-plugins|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 5. リファレンス @tab |@ref{ada-reference, , ada-reference}|
+@item @ @ @ @ @ 5.1 オプション @tab |@ref{ft-ada-options, , ft-ada-options}|
+@item @ @ @ @ @ 5.2 コマンド @tab |@ref{ft-ada-commands, , ft-ada-commands}|
+@item @ @ @ @ @ 5.3 変数 @tab |@ref{ft-ada-variables, , ft-ada-variables}|
+@item @ @ @ @ @ 5.4 定数 @tab |@ref{ft-ada-constants, , ft-ada-constants}|
+@item @ @ @ @ @ 5.5 関数 @tab |@ref{ft-ada-functions, , ft-ada-functions}|
+@item 6. その他のプラグイン @tab |@ref{ada-extra-plugins, , ada-extra-plugins}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Syntax Highlighting ~
+							       *ft-ada-syntax*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-ada-syntax}
+@cindex ft-ada-syntax
+@section 1. 構文強調
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This mode is designed for the 2005 edition of Ada ("Ada 2005"), which includes
+support for objected-programming, protected types, and so on.  It handles code
+written for the original Ada language ("Ada83", "Ada87", "Ada95") as well,
+though code which uses Ada 2005-only keywords will be wrongly colored (such
+code should be fixed anyway).  For more information about Ada, see
+http://www.adapower.com.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このモードはオブジェクト指向プログラムや型保護等の機能がサポートされた、Ada の 2005 年版 ("Ada 2005") を想定して作られている。Ada 2005 で追加されたキーワードを使用しているコード (そのようなコードは修正をすべき) は誤った強調色で表示してしまうものの、オリジナルの Ada 言語 ("Ada83", "Ada87", "Ada95") で書かれたコードも概ね取り扱うことができる。Ada についての詳細は @url{http://www.adapower.com/} を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Ada mode handles a number of situations cleanly.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ada モードは多くの状況をきれいに取り扱う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, it knows that the "-" in "-5" is a number, but the same character
+in "A-5" is an operator.  Normally, a "with" or "use" clause referencing
+another compilation unit is coloured the same way as C's "#include" is coloured.
+If you have "Conditional" or "Repeat" groups coloured differently, then "end
+if" and "end loop" will be coloured as part of those respective groups.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、"-5" のなかの "-" は数字の一部として認識するが、"A-5" という表記の中の同じ文字は演算子として認識される。通常、他のコンパイルユニットを参照する "with" や "use" 節は、C における "#include" と同じ強調色で表示される。
+
+"Conditional" や "Repeat" グループを異なる強調色に設定すれば、"end if" と "end loop" はそれぞれのグループの強調色で表示される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can set these to different colours using vim's "highlight" command (e.g.,
+to change how loops are displayed, enter the command ":hi Repeat" followed by
+the colour specification; on simple terminals the colour specification
+ctermfg=White often shows well).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらにはコマンド "@command{highlight}" を使って異なる強調色を設定することができる。(例: ループの色を変えるには "@command{:hi Repeat}" に続けて強調色指定を続ける; 単純な端末上では ctermfg=White と指定すると見やすいことが多い)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are several options you can select in this Ada mode. See |ft-ada-options|
+for a complete list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ada モードではユーザーが設定できるオプションがいくつか存在する。その完全なリストは |ft-ada-options| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To enable them, assign a value to the option.  For example, to turn one on:
+ >
+    > let g:ada_standard_types = 1
+>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+それらを有効化するには、オプションに値を設定する。あるオプションを有効化する例:
+@example
+let ada_standard_types = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+To disable them use ":unlet".  Example:
+>
+    > unlet g:ada_standard_types
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+無効化するには ":unlet" を使用する。例:
+@example
+unlet ada_standard_types = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can just use ":" and type these into the command line to set these
+temporarily before loading an Ada file.  You can make these option settings
+permanent by adding the "let" command(s), without a colon, to your "~/.vimrc"
+file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ada ファイルを読込む前に、コマンドラインで ":" とこれらのコマンドをキー入力することで、設定することができる。ファイル "~/.vimrc" に、コロン (":") を除いて "let" コマンドを追加すれば、これらのオプション設定を永続化することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Even on a slow (90Mhz) PC this mode works quickly, but if you find the
+performance unacceptable, turn on |g:ada_withuse_ordinary|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このモードは遅いコンピュータ (90MHz) 上でも高速に動作するが、もしもパフォーマンスが受け入れられないほど低いようならば、|g:ada_withuse_ordinary| を有効化する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Syntax folding instructions (|fold-syntax|) are added when |g:ada_folding| is
+set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|g:ada_folding| がセットされていると、構文による折り畳み命令 (|fold-syntax|) が追加される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. File type Plug-in ~
+					       *ft-ada-indent* *ft-ada-plugin*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-ada-indent}
+@anchor{ft-ada-plugin}
+@cindex ft-ada-indent
+@cindex ft-ada-plugin
+@section 2. ファイルタイププラグイン
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Ada plug-in provides support for:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ada プラグインは以下のことに対応している:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ - auto indenting	(|indent.txt|)
+ - insert completion	(|i_CTRL-N|)
+ - user completion	(|i_CTRL-X_CTRL-U|)
+ - tag searches		(|tagsrch.txt|)
+ - Quick Fix		(|quickfix.txt|)
+ - backspace handling	(|'backspace'|)
+ - comment handling	(|'comments'|, |'commentstring'|)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item - オートインデント @tab (|indent.txt|)
+@item - 入力補完 @tab (|i_CTRL-N|)
+@item - ユーザー定義補完 @tab (|i_CTRL-X_CTRL-U|)
+@item - タグ検索 @tab (|tagsrch.txt|)
+@item - Quick Fix @tab (|quickfix.txt|)
+@item - バックスペース制御 @tab (|'backspace'|)
+@item - コメント制御 @tab (|'comments'|, |'commentstring'|)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The plug-in only activates the features of the Ada mode whenever an Ada
+file is opened and adds Ada related entries to the main and pop-up menu.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ada ファイルが開かれたときだけこのプラグインは Ada モード機能を有効化し、メニューやポップアップメニューに Ada 関連の項目を追加する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Omni Completion ~
+								 *ft-ada-omni*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-ada-omni}
+@cindex ft-ada-omni
+@section 3. オムニ補完
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Ada omni-completions (|i_CTRL-X_CTRL-O|) uses tags database created either
+by "gnat xref -v" or the "exuberant Ctags (http://ctags.sourceforge.net).  The
+complete function will automatically detect which tool was used to create the
+tags file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ada オムニ補完 (|i_CTRL-X_CTRL-O|) は、"gnat xref -v" または "exuberant Ctags" (http://ctags.sourceforge.net) によって作られた tags データベースを利用する。補完関数は、tags ファイルがどちらのツールを使って作られたのかを自動的に判定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+------------------------------------------------------------------------------
+3.1 Omni Completion with "gnat xref" ~
+								   *gnat-xref*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gnat-xref}
+@cindex gnat-xref
+@unnumberedsubsec 3.1 "gnat xref" を使ったオムニ補完
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+GNAT XREF uses the compiler internal information (ali-files) to produce the
+tags file. This has the advantage to be 100% correct and the option of deep
+nested analysis. However the code must compile, the generator is quite
+slow and the created tags file contains only the basic Ctags information for
+each entry - not enough for some of the more advanced Vim code browser
+plug-ins.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GNAT XREF はコンパイラの内部情報 (aliファイル) を使って tags ファイルを生成する。これは 100% 正しいというアドバンテージと、深くネストした解析のオプションを持つ。しかしそのコードはコンパイルが通らねばならず、生成器はとても遅く、生成された tags ファイルは各項目に対して基本的な Ctags 情報しか持たない。これでは Vim の高度なコードブラウザープラグインに対しては十分ではない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NOTE: "gnat xref -v" is very tricky to use as it has almost no diagnostic
+       output - If nothing is printed then usually the parameters are wrong.
+       Here some important tips:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"gnat xref -v" はとてもトリッキーで診断情報をほとんど出力しない。もし何も表示されなかったら、たいていパラメーターが間違っている。いくつか重要な tips:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1)  You need to compile your code first and use the "-aO" option to point to
+    your .ali files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item 1) 最初にコードをコンパイルし、"-aO" オプションを使って @file{.ali} ファイルの位置を示さねばならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+2)  "gnat xref -v ../Include/adacl.ads" won't work - use  the "gnat xref -v
+    -aI../Include adacl.ads" instead.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 2) "@command{gnat xref -v ../Include/adacl.ads}" はうまく動かないので、代わりに "@command{gnat xref -v -aI../Include adacl.ads}" を使うこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+3)  "gnat xref -v -aI../Include *.ad?" won't work - use "cd ../Include" and
+    then "gnat xref -v *.ad?"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 3) "@command{gnat xref -v -aI../Include *.ad?}" はうまく動かないので、代わりに "@command{cd ../Include}" と "@command{gnat xref -v *.ad?}" を使うこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+4)  Project manager support is completely broken - don't even try "gnat xref
+    -Padacl.gpr".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 4) プロジェクトマネージャー対応は完全に壊れている。"@command{gnat xref -Padacl.gpr}" と試してみるのもいけない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+5)  Vim is faster when the tags file is sorted - use "sort --unique
+    --ignore-case --output=tags tags" .
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 5) タグファイルがソートされているとVimは高速に検索できるので、"@command{sort --unique --ignore-case --output=tags tags}" とすること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+6)  Remember to insert "!_TAG_FILE_SORTED 2 %sort ui" as first line to mark
+    the file assorted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 6) タグファイルがソートされていることを示すために、1 行目に "@samp{!_TAG_FILE_SORTED 2 %sort ui}" と入れるのを忘れないこと。
+@end itemize
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+------------------------------------------------------------------------------
+3.2 Omni Completion with "ctags"~
+								   *ada-ctags*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ada-ctags}
+@cindex ada-ctags
+@unnumberedsubsec 3.2 "ctags" を使ったオムニ補完
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Exuberant Ctags uses its own multi-language code parser. The parser is quite
+fast, produces a lot of extra information (hence the name "Exuberant Ctags")
+and can run on files which currently do not compile.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Exuberant Ctags は内蔵の多言語コードパーサーを使う。このパーサーはとても高速で、大量の付加情報を生成する (それゆえ "Exuberant Ctags" という名前がつけられている)。また、コンパイルが通らないファイルに対しても実行できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are also lots of other Vim-tools which use exuberant Ctags.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Exuberant Ctags を利用する Vim のツールはたくさんある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You will need to install a version of the Exuberant Ctags which has Ada
+support patched in. Such a version is available from the GNU Ada Project
+(http://gnuada.sourceforge.net).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+まず最初に、Ada 対応のパッチを適用した Exuberant Ctags をインストールしなければならない。これは GNU Ada プロジェクトから入手できる。(@url{http://gnuada.sourceforge.net}).
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Ada parser for Exuberant Ctags is fairly new - don't expect complete
+support yet.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Exuberant Ctags の Ada パーサーはかなり新しく、完全な対応は期待しないこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Compiler Support ~
+								*ada-compiler*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ada-compiler}
+@cindex ada-compiler
+@section 4. コンパイラへの対応
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Ada mode supports more than one Ada compiler and will automatically load the
+compiler set in |g:ada_default_compiler| whenever an Ada source is opened. The
+provided compiler plug-ins are split into the actual compiler plug-in and a
+collection of support functions and variables. This allows the easy
+development of specialized compiler plug-ins fine tuned to your development
+environment.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ada モードは複数の Ada コンパイラに対応していて、Ada ソースを開くとき、|g:ada_default_compiler| で設定されているコンパイラセットを自動的に読み込む。このコンパイラプラグインは、実際のコンパイラプラグインと、サポート関数・変数のセットに分かれている。これによって、ユーザーの開発環境用に特殊化したコンパイラプラグインを作ることが容易になっている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+------------------------------------------------------------------------------
+4.1 GNAT ~
+							       *compiler-gnat*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{compiler-gnat}
+@cindex compiler-gnat
+@unnumberedsubsec 4.1 GNAT
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+GNAT is the only free (beer and speech) Ada compiler available. There are
+several versions available which differ in the licence terms used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GNAT は現在入手可能な唯一の (ビールとスピーチ両方の意味で) フリーな Ada コンパイラである。ライセンス条項に違いのある複数のバージョンが用意されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The GNAT compiler plug-in will perform a compile on pressing <F7> and then
+immediately shows the result. You can set the project file to be used by
+setting:
+ >
+ > call g:gnat.Set_Project_File ('my_project.gpr')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GNAT コンパイラプラグインは @key{<F7>}を押すとコンパイルを行い、その後即座に結果を表示する。プロジェクトファイルを設定することができる:
+@example
+call g:gnat.Set_Project_File ('my_project.gpr')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Setting a project file will also create a Vim session (|views-sessions|) so -
+like with the GPS - opened files, window positions etc. will be remembered
+separately for all projects.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロジェクトファイルを設定すると、GPS と同じように Vim のセッション (|views-sessions|) も作成される。これは開いているファイル・ウィンドウ位置などをプロジェクトごとに記憶しておく。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								*gnat_members*
+GNAT OBJECT ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gnat_members}
+@cindex gnat_members
+@unnumberedsubsubsec GNAT オブジェクト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							       *g:gnat.Make()*
+g:gnat.Make()
+		Calls |g:gnat.Make_Command| and displays the result inside a
+               |quickfix| window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{g:gnat.Make()}
+@cindex g:gnat.Make()
+@item g:gnat.Make()
+|g:gnat.Make_Command| を呼び出し、結果を |quickfix| ウィンドウに表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							     *g:gnat.Pretty()*
+g:gnat.Pretty()
+		Calls |g:gnat.Pretty_Program|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:gnat.Pretty()}
+@cindex g:gnat.Pretty()
+@item g:gnat.Pretty()
+|g:gnat.Pretty_Program| を呼び出す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							       *g:gnat.Find()*
+g:gnat.Find()
+		Calls |g:gnat.Find_Program|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:gnat.Find()}
+@cindex g:gnat.Find()
+@item g:gnat.Find()
+|g:gnat.Find_Program| を呼び出す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							       *g:gnat.Tags()*
+g:gnat.Tags()
+		Calls |g:gnat.Tags_Command|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:gnat.Tags()}
+@cindex g:gnat.Tags()
+@item g:gnat.Tags()
+|g:gnat.Tags_Command| を呼び出す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						   *g:gnat.Set_Project_File()*
+g:gnat.Set_Project_File([{file}])
+		Set gnat project file and load associated session.  An open
+		project will be closed and the session written.  If called
+		without file name the file selector opens for selection of a
+		project file. If called with an empty string then the project
+		and associated session are closed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:gnat.Set_Project_File()}
+@cindex g:gnat.Set_Project_File()
+@item g:gnat.Set_Project_File([@{file@}])
+gnat プロジェクトファイルを設定し、関連付けられたセッションを読み込む。そのとき開かれていたプロジェクトは閉じられ、セッションが書き出される。ファイル名なしで呼び出したときは、プロジェクトファイルを選択するためのファイル選択ダイアログが開く。空文字列を指定して呼び出したときは、そのプロジェクトを閉じ、関連付けられたセッションを閉じる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							 *g:gnat.Project_File*
+g:gnat.Project_File	string
+		Current project file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:gnat.Project_File}
+@cindex g:gnat.Project_File
+@item g:gnat.Project_File 文字列
+現在のプロジェクトファイル。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							 *g:gnat.Make_Command*
+g:gnat.Make_Command	string
+		External command used for |g:gnat.Make()| (|'makeprg'|).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:gnat.Make_Command}
+@cindex g:gnat.Make_Command
+@item g:gnat.Make_Command 文字列
+|g:gnat.Make()| に使われる外部プログラム (|'makeprg'|)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						       *g:gnat.Pretty_Program*
+g:gnat.Pretty_Program	string
+		External command used for |g:gnat.Pretty()|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:gnat.Pretty_Program}
+@cindex g:gnat.Pretty_Program
+@item g:gnat.Pretty_Program 文字列
+|g:gnat.Pretty()| に使われる外部プログラム
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							 *g:gnat.Find_Program*
+g:gnat.Find_Program	string
+		External command used for |g:gnat.Find()|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:gnat.Find_Program}
+@cindex g:gnat.Find_Program
+@item g:gnat.Find_Program 文字列
+|g:gnat.Find()| に使われる外部プログラム
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							 *g:gnat.Tags_Command*
+g:gnat.Tags_Command	string
+		External command used for |g:gnat.Tags()|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:gnat.Tags_Command}
+@cindex g:gnat.Tags_Command
+@item g:gnat.Tags_Command 文字列
+|g:gnat.Tags()| に使われる外部プログラム
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							 *g:gnat.Error_Format*
+g:gnat.Error_Format	string
+		Error format (|'errorformat'|)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:gnat.Error_Format}
+@cindex g:gnat.Error_Format
+@item g:gnat.Error_Format 文字列
+エラーフォーマット (|'errorformat'|)
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+------------------------------------------------------------------------------
+4.2 Dec Ada ~
+					    *compiler-hpada* *compiler-decada*
+					*compiler-vaxada* *compiler-compaqada*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{compiler-hpada}
+@anchor{compiler-decada}
+@anchor{compiler-vaxada}
+@anchor{compiler-compaqada}
+@cindex compiler-hpada
+@cindex compiler-decada
+@cindex compiler-vaxada
+@cindex compiler-compaqada
+@unnumberedsubsec 4.2 Dec Ada
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Dec Ada (also known by - in chronological order - VAX Ada, Dec Ada, Compaq Ada
+and HP Ada) is a fairly dated Ada 83 compiler. Support is basic: <F7> will
+compile the current unit.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Dec Ada (歴代の名前は VAX Ada, Dec Ada, Compaq Ada, HP Ada) は相当古い Ada 83のコンパイラである。対応は基本的なものである: @key{<F7>} で現在のユニットをコンパイルする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Dec Ada compiler expects the package name and not the file name to be
+passed as a parameter. The compiler plug-in supports the usual file name
+convention to convert the file into a unit name. Both '-' and '__' are allowed
+as separators.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Dec Ada は引数としてファイル名でなくパッケージ名が渡されることを期待する。コンパイラプラグインは普通のファイル名の慣習に対応しており、ファイル名をユニット名に変換する。区切り文字として '-' と '__' の両方に対応している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							      *decada_members*
+DEC ADA OBJECT ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{decada_members}
+@cindex decada_members
+@unnumberedsubsubsec DEC ADA オブジェクト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							     *g:decada.Make()*
+g:decada.Make()		function
+		Calls |g:decada.Make_Command| and displays the result inside a
+		|quickfix| window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{g:decada.Make()}
+@cindex g:decada.Make()
+@item g:decada.Make() 関数
+|g:decada.Make_Command| を呼び出し、結果を |quickfix| ウィンドウに表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*g:decada.Unit_Name()*
+g:decada.Unit_Name()	function
+		Get the Unit name for the current file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:decada.Unit_Name()}
+@cindex g:decada.Unit_Name()
+@item g:decada.Unit_Name() 関数
+現在のファイルのユニット名を取得する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						       *g:decada.Make_Command*
+g:decada.Make_Command	string
+		External command used for |g:decada.Make()| (|'makeprg'|).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:decada.Make_Command}
+@cindex g:decada.Make_Command
+@item g:decada.Make_Command 文字列
+|g:decada.Make()| に使われる外部プログラム (|'makeprg'|)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						       *g:decada.Error_Format*
+g:decada.Error_Format|	string
+		Error format (|'errorformat'|).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:decada.Error_Format}
+@cindex g:decada.Error_Format
+@item g:decada.Error_Format| 文字列
+エラーフォーマット (|'errorformat'|)。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. References ~
+							       *ada-reference*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ada-reference}
+@cindex ada-reference
+@section 5. リファレンス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+------------------------------------------------------------------------------
+5.1 Options ~
+							      *ft-ada-options*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-ada-options}
+@cindex ft-ada-options
+@unnumberedsubsec 5.1 オプション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*g:ada_standard_types*
+g:ada_standard_types	bool (true when exists)
+		Highlight types in package Standard (e.g., "Float").
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{g:ada_standard_types}
+@cindex g:ada_standard_types
+@item g:ada_standard_types 切替 (存在するなら真)
+パッケージ Standard 内の型を強調する (例: "Float")
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							  *g:ada_space_errors*
+						  *g:ada_no_trail_space_error*
+						    *g:ada_no_tab_space_error*
+							 *g:ada_all_tab_usage*
+g:ada_space_errors	 bool (true when exists)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada_space_errors}
+@anchor{g:ada_no_trail_space_error}
+@anchor{g:ada_no_tab_space_error}
+@anchor{g:ada_all_tab_usage}
+@cindex g:ada_space_errors
+@cindex g:ada_no_trail_space_error
+@cindex g:ada_no_tab_space_error
+@cindex g:ada_all_tab_usage
+@item g:ada_space_errors 切替 (存在するなら真)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Highlight extraneous errors in spaces ...
+		g:ada_no_trail_space_error
+		    - but ignore trailing spaces at the end of a line
+		g:ada_no_tab_space_error
+		    - but ignore tabs after spaces
+		g:ada_all_tab_usage
+		    - highlight all tab use
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+余計な空白文字をエラーとして強調する。
+@multitable @columnfractions .5 .5
+@item g:ada_no_trail_space_error @tab ただし行末のスペースを無視する。
+@item g:ada_no_tab_space_error @tab ただしスペースの後のタブを無視する。
+@item g:ada_all_tab_usage @tab 全てのタブを強調する。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							   *g:ada_line_errors*
+g:ada_line_errors	  bool (true when exists)
+		Highlight lines which are too long. Note: This highlighting
+		option is quite CPU intensive.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada_line_errors}
+@cindex g:ada_line_errors
+@item g:ada_line_errors 切替 (存在するなら真)
+長すぎる行を強調する。
+@quotation
+@strong{Note:} @*
+このオプションは CPU に多大な負荷がかかる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							 *g:ada_rainbow_color*
+g:ada_rainbow_color	  bool (true when exists)
+		Use rainbow colours for '(' and ')'. You need the
+		rainbow_parenthesis for this to work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada_rainbow_color}
+@cindex g:ada_rainbow_color
+@item g:ada_rainbow_color 切替 (存在するなら真)
+'(' と ')' にレインボーカラーを使う。rainbow_parenthesis を使わないとこれは意味がない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							       *g:ada_folding*
+g:ada_folding		  set ('sigpft')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada_folding}
+@cindex g:ada_folding
+@item g:ada_folding 集合 ('sigpft')
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Use folding for Ada sources.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ada のソースに折り畳みを使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		    's':    activate syntax folding on load
+			'p':    fold packages
+			'f':    fold functions and procedures
+			't':    fold types
+			'c':    fold conditionals
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item 's': 読み込み時に構文折り畳みを有効化する。
+@itemize
+@item 'p': パッケージを折り畳む
+@item 'f': 関数と手続きを折り畳む
+@item 't': 型を折り畳む
+@item 'c': 条件文を折り畳む
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		    'g':    activate gnat pretty print folding on load
+			'i':    lone 'is' folded with line above
+			'b':	lone 'begin' folded with line above
+			'p':	lone 'private' folded with line above
+			'x':	lone 'exception' folded with line above
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 'g': 読み込み時にgnat整形折り畳みを有効化する。
+@itemize
+@item 'i': 孤立した 'is' を上の行といっしょに折り畳む
+@item 'b': 孤立した 'begin' を上の行といっしょに折り畳む
+@item 'p': 孤立した 'private' を上の行といっしょに折り畳む
+@item 'x': 孤立した 'exception' を上の行といっしょに折り畳む
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		    'i':    activate indent folding on load
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 'i': 読み込み時にインデント折り畳みを有効化する。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Note: Syntax folding is in an early (unusable) stage and
+		      indent or gnat pretty folding is suggested.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+構文折り畳みは初期段階 (使用に耐えない) であり、インデントか gnat 整形折り畳みが勧められている。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		For gnat pretty folding to work the following settings are
+		suggested: -cl3 -M79 -c2 -c3 -c4 -A1 -A2 -A3 -A4 -A5
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+gnat 整形折り畳みを使うときは、次の設定が勧められている:
+@example
+-cl3 -M79 -c2 -c3 -c4 -A1 -A2 -A3 -A4 -A5
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		For indent folding to work the following settings are
+		suggested: shiftwidth=3 softtabstop=3
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+インデント折り畳みを使うときは、次の設定が勧められている:
+@example
+shiftwidth=3 softtabstop=3
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								*g:ada_abbrev*
+g:ada_abbrev		  bool (true when exists)
+		Add some abbreviations. This feature is more or less superseded
+		by the various completion methods.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada_abbrev}
+@cindex g:ada_abbrev
+@item g:ada_abbrev 切替 (存在するなら真)
+いくつかの短縮入力を追加する。この機能は様々な補完方法によりいくぶん取って代わられている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						      *g:ada_withuse_ordinary*
+g:ada_withuse_ordinary	  bool (true when exists)
+		Show "with" and "use" as ordinary keywords (when used to
+		reference other compilation units they're normally highlighted
+		specially).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada_withuse_ordinary}
+@cindex g:ada_withuse_ordinary
+@item g:ada_withuse_ordinary 切替 (存在するなら真)
+"with" と "use" を通常のキーワードとして表示する (これらが他のコンパイルユニットへの参照として使われた場合には、特別に通常の強調として表示する)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							 *g:ada_begin_preproc*
+g:ada_begin_preproc	  bool (true when exists)
+		Show all begin-like keywords using the colouring of C
+		preprocessor commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada_begin_preproc}
+@cindex g:ada_begin_preproc
+@item g:ada_begin_preproc 切替 (存在するなら真)
+全ての begin-like なキーワードをCのプリプロセッサー命令の色で強調する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						    *g:ada_omni_with_keywords*
+g:ada_omni_with_keywords
+		Add Keywords, Pragmas, Attributes to omni-completions
+		(|compl-omni|). Note: You can always complete then with user
+		completion (|i_CTRL-X_CTRL-U|).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada_omni_with_keywords}
+@cindex g:ada_omni_with_keywords
+@item g:ada_omni_with_keywords
+オムニ補完 (|compl-omni|) にキーワード、プラグマ、属性を追加する。
+@quotation
+@strong{Note:} @*
+いつでも補完して、それからユーザー定義補完 (|i_CTRL-X_CTRL-U|) をすることができる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						      *g:ada_extended_tagging*
+g:ada_extended_tagging	  enum ('jump', 'list')
+		use extended tagging, two options are available
+		    'jump': use tjump to jump.
+		    'list': add tags quick fix list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada_extended_tagging}
+@cindex g:ada_extended_tagging
+@item g:ada_extended_tagging 列挙 ('jump', 'list')
+拡張タグ機能を使う。2 つのオプションがある
+@multitable @columnfractions .2 .8
+@item 'jump': @tab ジャンプするのに tjump を使う
+@item 'list': @tab QuickFix リストにタグを追加する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Normal tagging does not support function or operator
+		overloading as these features are not available in C and
+		tagging was originally developed for C.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+普通のタグ機能は関数や演算子のオーバーロードに対応していない。これらの機能が C になく、タグ機能はもともと C 用に開発されたためである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						   *g:ada_extended_completion*
+g:ada_extended_completion
+		Uses extended completion for <C-N> and <C-R> completions
+		(|i_CTRL-N|). In this mode the '.' is used as part of the
+		identifier so that 'Object.Method' or 'Package.Procedure' are
+		completed together.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada_extended_completion}
+@cindex g:ada_extended_completion
+@item g:ada_extended_completion
+<C-N> と <C-R> 補完 (|i_CTRL-N|) に拡張補完を使う。このモードでは '.' が識別子の一部となり、'Object.Method' や 'Package.Procedure' の全体が補完される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						       *g:ada_gnat_extensions*
+g:ada_gnat_extensions	  bool (true when exists)
+		 Support GNAT extensions.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada_gnat_extensions}
+@cindex g:ada_gnat_extensions
+@item g:ada_gnat_extensions 切替 (存在するなら真)
+GNAT の拡張に対応する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					       *g:ada_with_gnat_project_files*
+g:ada_with_gnat_project_files	 bool (true when exists)
+		 Add gnat project file keywords and Attributes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada_with_gnat_project_files}
+@cindex g:ada_with_gnat_project_files
+@item g:ada_with_gnat_project_files 切替 (存在するなら真)
+gnat プロジェクトファイルのキーワードと属性を追加する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						      *g:ada_default_compiler*
+g:ada_default_compiler	  string
+		set default compiler. Currently supported are 'gnat' and
+		'decada'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada_default_compiler}
+@cindex g:ada_default_compiler
+@item g:ada_default_compiler 文字列
+デフォルトのコンパイラを設定する。現在対応しているのは 'gnat' と 'decada' である。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An "exists" type is a boolean considered true when the variable is defined and
+false when the variable is undefined. The value to which the variable is set
+makes no difference.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+「存在するなら真」の変数は、その変数が定義されているときは真で、定義されていないときは偽となる。その変数がどんな値であろうとも、違いはない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+------------------------------------------------------------------------------
+5.2 Commands ~
+							     *ft-ada-commands*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-ada-commands}
+@cindex ft-ada-commands
+@unnumberedsubsec 5.2 コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:AdaRainbow							 *:AdaRainbow*
+		Toggles rainbow colour (|g:ada_rainbow_color|) mode for
+		'(' and ')'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:AdaRainbow}
+@cindex :AdaRainbow
+@item :AdaRainbow
+'(' と ')' に対するレインボーカラーモード (|g:ada_rainbow_color|) をトグルする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:AdaLines							   *:AdaLines*
+		Toggles line error (|g:ada_line_errors|) display.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:AdaLines}
+@cindex :AdaLines
+@item :AdaLines
+行エラー表示 (|g:ada_line_errors|) をトグルする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:AdaSpaces							  *:AdaSpaces*
+		Toggles space error (|g:ada_space_errors|) display.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:AdaSpaces}
+@cindex :AdaSpaces
+@item :AdaSpaces
+スペースエラー表示 (|g:ada_space_errors|) をトグルする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:AdaTagDir							  *:AdaTagDir*
+		Creates tags file for the directory of the current file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:AdaTagDir}
+@cindex :AdaTagDir
+@item :AdaTagDir
+現在のファイルのディレクトリに対してtagsファイルを作成する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:AdaTagFile							 *:AdaTagFile*
+		Creates tags file for the current file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:AdaTagFile}
+@cindex :AdaTagFile
+@item :AdaTagFile
+現在のファイルに対して tags ファイルを作成する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:AdaTypes							   *:AdaTypes*
+		Toggles standard types (|g:ada_standard_types|) colour.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:AdaTypes}
+@cindex :AdaTypes
+@item :AdaTypes
+標準型 (|g:ada_standard_types|) の色をトグルする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:GnatFind							   *:GnatFind*
+		Calls |g:gnat.Find()|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:GnatFind}
+@cindex :GnatFind
+@item :GnatFind
+|g:gnat.Find()| を呼び出す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:GnatPretty							 *:GnatPretty*
+		Calls |g:gnat.Pretty()|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:GnatPretty}
+@cindex :GnatPretty
+@item :GnatPretty
+|g:gnat.Pretty()| を呼び出す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:GnatTags							   *:GnatTags*
+		Calls |g:gnat.Tags()|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:GnatTags}
+@cindex :GnatTags
+@item :GnatTags
+|g:gnat.Tags()| を呼び出す。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+------------------------------------------------------------------------------
+5.3 Variables ~
+							    *ft-ada-variables*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-ada-variables}
+@cindex ft-ada-variables
+@unnumberedsubsec 5.3 変数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								      *g:gnat*
+g:gnat			    object
+		Control object which manages GNAT compiles.  The object
+		is created when the first Ada source code is loaded provided
+		that |g:ada_default_compiler| is set to 'gnat'. See
+		|gnat_members| for details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{g:gnat}
+@cindex g:gnat
+@item g:gnat オブジェクト
+GNAT コンパイラを管理するコントロールオブジェクト。このオブジェクトは最初に Ada のソースコードが読み込まれたときに、|g:ada_default_compiler| が 'gnat' に設定されているならば作成される。詳しくは |gnat_members| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								    *g:decada*
+g:decada		      object
+		Control object which manages Dec Ada compiles.	The object
+		is created when the first Ada source code is loaded provided
+		that |g:ada_default_compiler| is set to 'decada'. See
+		|decada_members| for details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:decada}
+@cindex g:decada
+@item g:decada オブジェクト
+Dec Ada コンパイラを管理するコントロールオブジェクト。このオブジェクトは最初にAdaのソースコードが読み込まれたときに、|g:ada_default_compiler| が 'decada' に設定されているならば作成される。詳しくは |decada_members| を参照。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+------------------------------------------------------------------------------
+5.4 Constants ~
+							    *ft-ada-constants*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-ada-constants}
+@cindex ft-ada-constants
+@unnumberedsubsec 5.4 定数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All constants are locked. See |:lockvar| for details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+全ての定数はロックされている。詳しくは |:lockvar| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							     *g:ada#WordRegex*
+g:ada#WordRegex		string
+		Regular expression to search for Ada words.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{g:ada#WordRegex}
+@cindex g:ada#WordRegex
+@item g:ada#WordRegex 文字列
+Ada の単語を検索する正規表現。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							  *g:ada#DotWordRegex*
+g:ada#DotWordRegex	string
+		Regular expression to search for Ada words separated by dots.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada#DotWordRegex}
+@cindex g:ada#DotWordRegex
+@item g:ada#DotWordRegex 文字列
+ドットで区切られる Ada の単語を検索する正規表現。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							       *g:ada#Comment*
+g:ada#Comment		string
+		Regular expression to search for Ada comments.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada#Comment}
+@cindex g:ada#Comment
+@item g:ada#Comment 文字列
+Ada のコメントを検索する正規表現。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							      *g:ada#Keywords*
+g:ada#Keywords		list of dictionaries
+		List of keywords, attributes etc. pp. in the format used by
+		omni completion. See |complete-items| for details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada#Keywords}
+@cindex g:ada#Keywords
+@item g:ada#Keywords 辞書のリスト
+キーワード、属性などのリスト。オムニ補完で用いられる形式。詳しくは |complete-items| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							   *g:ada#Ctags_Kinds*
+g:ada#Ctags_Kinds	dictionary of lists
+		Dictionary of the various kinds of items which the Ada support
+		for Ctags generates.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:ada#Ctags_Kinds}
+@cindex g:ada#Ctags_Kinds
+@item g:ada#Ctags_Kinds リストの辞書
+Ctags が Ada のタグを生成する際の、要素の種類の辞書。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+------------------------------------------------------------------------------
+5.5 Functions ~
+							    *ft-ada-functions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ft-ada-functions}
+@cindex ft-ada-functions
+@unnumberedsubsec 5.5 関数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ada#Word([{line}, {col}])					  *ada#Word()*
+		Return full name of Ada entity under the cursor (or at given
+		line/column), stripping white space/newlines as necessary.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{ada#Word()}
+@cindex ada#Word()
+@item ada#Word([@{line@}, @{col@}])
+カーソル下 (または指定の行・桁) の Ada 要素のフルネームを返す。必要に応じてスペース・改行は取り除かれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ada#List_Tag([{line}, {col}])				      *ada#Listtags()*
+		List all occurrences of the Ada entity under the cursor (or at
+		given line/column) inside the quick-fix window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ada#Listtags()}
+@cindex ada#Listtags()
+@item ada#List_Tag([@{line@}, @{col@}])
+カーソル下 (または指定の行・桁) の Ada 要素の全ての出現位置を QuickFix ウィンドウ内にリストする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ada#Jump_Tag ({ident}, {mode})				      *ada#Jump_Tag()*
+		List all occurrences of the Ada entity under the cursor (or at
+		given line/column) in the tag jump list. Mode can either be
+		'tjump' or 'stjump'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ada#Jump_Tag()}
+@cindex ada#Jump_Tag()
+@item ada#Jump_Tag (@{ident@}, @{mode@})
+カーソル下 (または指定の行・桁) の Ada 要素の全ての出現位置をタグジャンプリスト内にリストする。引数 @{mode@} は 'tjump', 'stjump' のどちらかとする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ada#Create_Tags ({option})				   *ada#Create_Tags()*
+		Creates tag file using Ctags. The option can either be 'file'
+		for the current file, 'dir' for the directory of the current
+		file or a file name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ada#Create_Tags()}
+@cindex ada#Create_Tags()
+@item ada#Create_Tags (@{option@})
+Ctags を使って tags ファイルを作成する。引数 @{option@} が 'file' なら現在のファイル、'dir' なら現在のファイルのディレクトリ、またはファイル名とする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+gnat#Insert_Tags_Header()			   *gnat#Insert_Tags_Header()*
+		Adds the tag file header (!_TAG_) information to the current
+		file which are missing from the GNAT XREF output.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gnat#Insert_Tags_Header()}
+@cindex gnat#Insert_Tags_Header()
+@item gnat#Insert_Tags_Header()
+GNAT XREF の出力に欠けているタグファイルヘッダー (!_TAG_) の情報を現在のファイルに追加する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ada#Switch_Syntax_Option ({option})		  *ada#Switch_Syntax_Option()*
+		Toggles highlighting options on or off. Used for the Ada menu.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ada#Switch_Syntax_Option()}
+@cindex ada#Switch_Syntax_Option()
+@item ada#Switch_Syntax_Option (@{option@})
+強調のオプションをオン・オフにする。Ada のメニューに使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								  *gnat#New()*
+gnat#New ()
+		Create a new gnat object. See |g:gnat| for details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gnat#New()}
+@cindex gnat#New()
+@item gnat#New ()
+新しく gnat オブジェクトを作成する。詳しくは |g:gnat| を参照。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+6. Extra Plugins ~
+							   *ada-extra-plugins*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ada-extra-plugins}
+@cindex ada-extra-plugins
+@section 6. その他のプラグイン
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can optionally install the following extra plug-ins. They work well with
+Ada and enhance the ability of the Ada mode:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下の外部プラグインをインストールしてもよい。これらは Ada の編集に役に立ち、Ada モードの機能を向上させてくれる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+backup.vim
+	http://www.vim.org/scripts/script.php?script_id=1537
+	Keeps as many backups as you like so you don't have to.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item backup.vim
+@url{http://www.vim.org/scripts/script.php?script_id=1537}
+
+可能なかぎりたくさんのバックアップを取ってくれ、自分自身でやる必要がなくなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+rainbow_parenthsis.vim
+	http://www.vim.org/scripts/script.php?script_id=1561
+	Very helpful since Ada uses only '(' and ')'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item rainbow_parenthsis.vim
+@url{http://www.vim.org/scripts/script.php?script_id=1561}
+
+Ada は '(' と ')' しか使わないのでとても助かる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+nerd_comments.vim
+	http://www.vim.org/scripts/script.php?script_id=1218
+	Excellent commenting and uncommenting support for almost any
+	programming language.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item nerd_comments.vim
+@url{http://www.vim.org/scripts/script.php?script_id=1218}
+
+ほとんど全てのプログラミング言語に対応するコメント化・アンコメント化
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+matchit.vim
+	http://www.vim.org/scripts/script.php?script_id=39
+	'%' jumping for any language. The normal '%' jump only works for '{}'
+	style languages. The Ada mode will set the needed search patterns.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item matchit.vim
+@url{http://www.vim.org/scripts/script.php?script_id=39}
+
+ほとんどの言語に対応する '%' でのジャンプ。通常の '%' は '@{@}' 形式の言語に対してだけ役に立つ。Ada モードはこれに必要な検索パターンを設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+taglist.vim
+	http://www.vim.org/scripts/script.php?script_id=273
+	Source code explorer sidebar. There is a patch for Ada available.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item taglist.vim
+@url{http://www.vim.org/scripts/script.php?script_id=273}
+
+ソースコードエクスプローラーサイドバー。Ada で利用可能にするパッチがある。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The GNU Ada Project distribution (http://gnuada.sourceforge.net) of Vim
+contains all of the above.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+GNU Ada プロジェクトが配布 (@url{http://gnuada.sourceforge.net}) する Vim は以上を全て含んでいる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+vim: textwidth=78 nowrap tabstop=8 shiftwidth=4 softtabstop=4 noexpandtab
+vim: filetype=help
+@end ifset
