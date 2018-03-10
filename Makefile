@@ -24,7 +24,7 @@ REFMANUALS = \
 	doc/print.texi doc/remote.texi doc/term.texi doc/terminal.texi \
 	doc/digraph.texi doc/mbyte.texi doc/mlang.texi doc/arabic.texi \
 	doc/farsi.texi doc/hebrew.texi doc/russian.texi doc/ft_ada.texi \
-	doc/ft_rust.texi doc/ft_sql.texi
+	doc/ft_rust.texi doc/ft_sql.texi doc/hangulin.texi doc/rileft.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \

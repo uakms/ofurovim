@@ -3,14 +3,14 @@
 @unnumbered 式の評価、条件式 (Vim script リファレンス)
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*eval.txt*	For Vim version 8.0.  Last change: 2018 Feb 27
+*eval.txt*	For Vim version 8.0.  Last change: 2018 Mar 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*eval.txt*	For Vim バージョン 8.0.  Last change: 2018 Feb 27
+*eval.txt*	For Vim バージョン 8.0.  Last change: 2018 Mar 09
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -6827,6 +6827,7 @@ term_gettty({buf}, [{input}])	String	get the tty name of a terminal
 term_list()			List	get the list of terminal buffers
 term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
+term_setrestore({buf}, {command}) none	set command to restore terminal
 term_start({cmd}, {options})	Job	open a terminal window and run a job
 term_wait({buf} [, {time}])	Number  wait for screen to be updated
 @end ifset
@@ -6847,6 +6848,7 @@ term_wait({buf} [, {time}])	Number  wait for screen to be updated
 @item @ref{term_list(), , term_list}() @tab リスト @tab ターミナルバッファのリストを取得する
 @item @ref{term_scrape(), , term_scrape}(@{buf@}, @{row@}) @tab リスト @tab ターミナルスクリーンの桁を取得する
 @item @ref{term_sendkeys(), , term_sendkeys}(@{buf@}, @{keys@}) @tab なし @tab send keystrokes to a terminal
+@item @ref{term_setrestore(), , term_setrestore}(@{buf@}, @{command@}) @tab なし @tab ターミナルを復帰するコマンドを設定する
 @item @ref{term_start(), , term_start}(@{cmd@}, @{options@}) @tab ジョブ @tab ターミナルウィンドウを開いてジョブを開始する
 @item @ref{term_wait(), , term_wait}(@{buf@} [, @{time@}]) @tab 数値 @tab スクリーンがアップデートされるまで待つ
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -12958,7 +12960,40 @@ getwinpos([{timeout}])					*getwinpos()*
 @end example
 @{timeout@} はターミナルからの応答を何ミリ秒待つのかを指定するのに使える。省略されば場合は 100 ミリ秒が使われる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Use a longer time for a remote terminal.
+		When using a value less than 10 and no response is received
+		within that time, a previously reported position is returned,
+		if available.  This can be used to poll for the position and
+		do some work in the mean time: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 
+リモートターミナルを長時間使用する。
+
+値が 10 よりも小さく、またその時間内に応答が無い場合、可能ならば以前に伝えられた位置が返される。これは位置を把握し、その間に何かをするのに使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			while 1
+			  let res = getwinpos(1)
+			  if res[0] >= 0
+			    break
+			  endif
+			  " Do some work here
+			endwhile
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+while 1
+  let res = getwinpos(1)
+  if res[0] >= 0
+    break
+  endif
+  " Do some work here
+endwhile
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*getwinposx()*
 getwinposx()	The result is a Number, which is the X coordinate in pixels of
@@ -21947,7 +21982,38 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{keys@} はキーの連続として解釈される。例えば、"\<c-x>" は CTRL-X を意味する。
+@{keys@} はキーの連続として解釈される。例えば、"\<c-x>" は @kbd{CTRL-X} を意味する。
+
+@{Vim が |+terminal| 機能付きでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+term_setrestore({buf}, {command})			*term_setrestore()*
+		Set the command to write in a session file to restore the job
+		in this terminal.  The line written in the session file is: >
+			terminal ++curwin ++cols=%d ++rows=%d {command}
+<		Make sure to escape the command properly.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{term_setrestore()}
+@cindex term_setrestore()
+@item term_setrestore(@{buf@}, @{command@})
+端末内のジョブを復帰するために、セッションファイル内に書き込むコマンドを設定する。セッションファイルに書き込まれる行は:
+@example
+terminal ++curwin ++cols=%d ++rows=%d @{command@}
+@end example
+コマンドが適切にエスケープされているか確認すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Use an empty {command} to run 'shell'.
+		Use "NONE" to not restore this window.
+		{only available when compiled with the |+terminal| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'shell' を実行するには 空 @{command@} を使う。
+
+このウィンドウを復帰しないようにするには "NONE" を使う。
 
 @{Vim が |+terminal| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -22058,11 +22124,14 @@ term_start({cmd}, {options})				*term_start()*
 				     window; fails if the current buffer
 				     cannot be |abandon|ed
 		   "hidden"	     do not open a window
+		   "norestore"	     do not add the terminal window to a
+				     session file
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item "vertical" @tab ウィンドウを垂直に分割する
-@item "curwin" @tab カレントウィンドウを使う。ウィンドウは分割しない。カレントバッファを放棄 |abandon| できなければ失敗する。
+@item "curwin" @tab カレントウィンドウを使う。ウィンドウは分割しない。カレントバッファを放棄 |abandon| できなければ失敗する
 @item "hidden" @tab ウィンドウを開かない
+@item "norestore" @tab セッションファイルのためにターミナルウィンドウを追加しない
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 		   "term_finish"     What to do when the job is finished:
