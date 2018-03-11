@@ -3,14 +3,14 @@
 @unnumbered 式の評価、条件式 (Vim script リファレンス)
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*eval.txt*	For Vim version 8.0.  Last change: 2018 Mar 09
+*eval.txt*	For Vim version 8.0.  Last change: 2018 Mar 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*eval.txt*	For Vim バージョン 8.0.  Last change: 2018 Mar 09
+*eval.txt*	For Vim バージョン 8.0.  Last change: 2018 Mar 10
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -6827,6 +6827,7 @@ term_gettty({buf}, [{input}])	String	get the tty name of a terminal
 term_list()			List	get the list of terminal buffers
 term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
+term_setkill({buf}, {how}) 	none	set signal to stop job in terminal
 term_setrestore({buf}, {command}) none	set command to restore terminal
 term_start({cmd}, {options})	Job	open a terminal window and run a job
 term_wait({buf} [, {time}])	Number  wait for screen to be updated
@@ -6848,6 +6849,7 @@ term_wait({buf} [, {time}])	Number  wait for screen to be updated
 @item @ref{term_list(), , term_list}() @tab リスト @tab ターミナルバッファのリストを取得する
 @item @ref{term_scrape(), , term_scrape}(@{buf@}, @{row@}) @tab リスト @tab ターミナルスクリーンの桁を取得する
 @item @ref{term_sendkeys(), , term_sendkeys}(@{buf@}, @{keys@}) @tab なし @tab send keystrokes to a terminal
+@item @ref{term_setkill(), , term_setkill}(@{buf@}, @{how@}) @tab なし @tab ターミナルのジョブを停止するシグナルを設定する
 @item @ref{term_setrestore(), , term_setrestore}(@{buf@}, @{command@}) @tab なし @tab ターミナルを復帰するコマンドを設定する
 @item @ref{term_start(), , term_start}(@{cmd@}, @{options@}) @tab ジョブ @tab ターミナルウィンドウを開いてジョブを開始する
 @item @ref{term_wait(), , term_wait}(@{buf@} [, @{time@}]) @tab 数値 @tab スクリーンがアップデートされるまで待つ
@@ -21759,6 +21761,8 @@ term_getline({buf}, {row})				*term_getline()*
 		The first line has {row} one.  When {row} is "." the cursor
 		line is used.  When {row} is invalid an empty string is
 		returned.
+
+		To get attributes of each character use |term_scrape()|.
 		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -21768,6 +21772,8 @@ term_getline({buf}, {row})				*term_getline()*
 ターミナルウィンドウの @{buf@} からテキストの 1 行を取得する。@{buf@} は |term_getsize()| として使われる。
 
 1 番目の行は @{row@} を 1 つ持っている。@{row@} が "." のとき、カーソル行が使われる。@{row@} が正しくなければ、空文字列が返される。
+
+それぞれの文字の属性を取得するには |term_scrape()| を使う。
 
 @{Vim が |+terminal| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -21988,6 +21994,37 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+term_setkill({buf}, {how})				*term_setkill()*
+		When exiting Vim or trying to close the terminal window in
+		another way, {how} defines whether the job in the terminal can
+		be stopped.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{term_setkill()}
+@cindex term_setkill()
+@item term_setkill(@{buf@}, @{how@})
+Vim を終了もしくは他の方法で端末ウィンドウを閉じようとしているとき、@{how@} は端末のジョブを停止することができるかどうか明確にする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When {how} is empty (the default), the job will not be
+		stopped, trying to exit will result in |E947|.
+		Otherwise, {how} specifies what signal to send to the job.
+		See |job_stop()| for the values.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+@{how@} が空 (既定) のとき、ジョブは停止されず、終了しようとしたことは |E947| の結果を生じる。さもなければ、@{how@} はジョブに送られたシグナルが何であるかを明示する。値については |job_stop()| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		After sending the signal Vim will wait for up to a second to
+		check that the job actually stopped.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+シグナルが送られたあと、Vim はジョブが実際に停止するのを確認するまでの時間 (秒) 待機するだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 term_setrestore({buf}, {command})			*term_setrestore()*
 		Set the command to write in a session file to restore the job
 		in this terminal.  The line written in the session file is: >
@@ -22134,6 +22171,8 @@ term_start({cmd}, {options})				*term_start()*
 @item "norestore" @tab セッションファイルのためにターミナルウィンドウを追加しない
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+		   "term_kill"	     what to do when trying to close the
+				     terminal window, see |term_setkill()|
 		   "term_finish"     What to do when the job is finished:
 					"close": close any windows
 					"open": open window if needed
@@ -22146,6 +22185,7 @@ term_start({cmd}, {options})				*term_start()*
 				     specified "botright sbuf %d" is used
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "term_kill" @tab 端末ウィンドウを閉じようとしたときにすること。|term_setkill()| を参照
 @item "term_finish" @tab
 ジョブが終了したときの処理:
 @multitable @columnfractions .2 .8
