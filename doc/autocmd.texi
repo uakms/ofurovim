@@ -726,8 +726,8 @@ Name			triggered by ~
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ @tab
-@item |FilterWritePre| @tab フィルタコマンドやdiff用にファイルを書き込むとき
-@item |FilterWritePost| @tab フィルタコマンドやdiff用にファイルを書き込んだ後
+@item |FilterWritePre| @tab フィルタコマンドや diff 用にファイルを書き込むとき
+@item |FilterWritePost| @tab フィルタコマンドや diff 用にファイルを書き込んだ後
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -736,6 +736,7 @@ Name			triggered by ~
 |BufCreate|		just after adding a buffer to the buffer list
 |BufDelete|		before deleting a buffer from the buffer list
 |BufWipeout|		before completely deleting a buffer
+|TerminalOpen|		after a terminal buffer was created
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ @tab
@@ -744,6 +745,7 @@ Name			triggered by ~
 @item |BufCreate| @tab バッファリストにバッファを追加した直後
 @item |BufDelete| @tab バッファリストからバッファを削除する前
 @item |BufWipeout| @tab 完全にバッファを削除する前
+@item |TerminalOpen| @tab ターミナルバッファが作成された後
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -825,13 +827,15 @@ Name			triggered by ~
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-|QuitPre|		when using `:quit`, before deciding whether to quit
+|QuitPre|		when using `:quit`, before deciding whether to exit
+|ExitPre|		when using a command that may make Vim exit
 |VimLeavePre|		before exiting Vim, before writing the viminfo file
 |VimLeave|		before exiting Vim, after writing the viminfo file
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ @tab
 @item |QuitPre| @tab `@command{:quit}` を使ったとき、本当に閉じるか決定する前
+@item |ExitPre| @tab Vim を終了かもしれないコマンドを使ったとき
 @item |VimLeavePre| @tab Vim を終了する前、viminfo ファイルを書き出す前
 @item |VimLeave| @tab Vim を終了する前、viminfo ファイルを書き出した後
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -936,6 +940,19 @@ Name			triggered by ~
 @item |CmdlineChanged| @tab 変更がコマンドラインテキストを作成した後
 @item |CmdlineEnter| @tab カーソルがコマンドラインに移動した後
 @item |CmdlineLeave| @tab カーソルがコマンドラインから離れる前
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|CmdlineChanged|	after a change was made to the command-line text
+|CmdlineEnter|		after the cursor moves to the command line
+|CmdlineLeave|		before the cursor leaves the command line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@c 重複している
+@item |CmdlineChanged| @tab 変更がコマンドラインテキストを作成した後
+@item |CmdlineEnter| @tab カーソルがコマンドラインに移動した後
+@item |CmdlineLeave| @tab カーソルがコマンドラインから離れる前
+@c のだ！
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1763,7 +1780,7 @@ DirChanged			The working directory has changed in response
 @anchor{DirChanged}
 @cindex DirChanged
 @item DirChanged
-ワーキングディレクトリは |:cd| や |:lcd| コマンドへの応答の中、'autochdir' オプションの結果として変更される。
+ワーキングディレクトリは |:cd| や |:lcd| コマンドへの応答の中、'@option{autochdir}' オプションの結果として変更される。
 
 パターンは次のようにできるだろう:
 @example
@@ -1773,6 +1790,19 @@ DirChanged			The working directory has changed in response
 "drop"	 to trigger on editing a file
 @end example
 <afile> は新しいディレクトリの名前に設定される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*ExitPre*
+ExitPre				When using `:quit`, `:wq` in a way it makes
+				Vim exit, or using `:qall`, just after
+				|QuitPre|.  Can be used to close any
+				non-essential window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ExitPre}
+@cindex ExitPre
+@item ExitPre
+`@command{:quit}` や Vim を終了すような `@command{:wq}` もしくは `@command{:qall}` や |QuitPre| を使用したすぐ後。不必要なウィンドウを閉じることができる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*FileChangedShell*
@@ -2298,12 +2328,13 @@ QuitPre				When using `:quit`, `:wq` or `:qall`, before
 				or quits Vim.  Can be used to close any
 				non-essential window if the current window is
 				the last ordinary window.
+				Also see |ExitPre|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{QuitPre}
 @cindex QuitPre
 @item QuitPre
-`@command{:quit}`, `@command{:wq}`, `@command{:qall}` を使ったとき、カレントウィンドウを閉じるのか、Vim を終了するのかを決定する前に発行される。例えば、普通のウィンドウがカレントウィンドウだけだったときに、他の余分なウィンドウを閉じることができる。
+`@command{:quit}`, `@command{:wq}`, `@command{:qall}` を使ったとき、カレントウィンドウを閉じるのか、Vim を終了するのかを決定する前に発行される。例えば、普通のウィンドウがカレントウィンドウだけだったときに、他の余分なウィンドウを閉じることができる。|ExitPre| も参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*RemoteReply*
@@ -2571,6 +2602,19 @@ TermChanged			After the value of 'term' has changed.  Useful
 @cindex TermChanged
 @item TermChanged
 オプション '@option{term}' を変更した後。色やフォント等、ターミナル依存の設定を更新するために構文定義ファイルを再読み込みするのに便利である。読み込まれたバッファ全てで発生する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*TerminalOpen*
+TerminalOpen			Just after a terminal buffer was created, with
+				`:terminal` or |term_start()|. This event is
+				triggered even if the buffer is created
+				without a window, with the ++hidden option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{TerminalOpen}
+@cindex TerminalOpen
+@item TerminalOpen
+`@command{:terminal}` や |term_start()| でターミナルバッファが作成されたちょうど後。たとえ ++hidden オプションによってウィンドウなしにバッファが作成されたとしても、このイベントは引き起される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*TermResponse*

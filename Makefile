@@ -25,7 +25,9 @@ REFMANUALS = \
 	doc/digraph.texi doc/mbyte.texi doc/mlang.texi doc/arabic.texi \
 	doc/farsi.texi doc/hebrew.texi doc/russian.texi doc/ft_ada.texi \
 	doc/ft_rust.texi doc/ft_sql.texi doc/hangulin.texi doc/rileft.texi \
-	doc/gui.texi doc/gui_w32.texi doc/gui_x11.texi
+	doc/gui.texi doc/gui_w32.texi doc/gui_x11.texi \
+	doc/if_cscop.texi doc/if_lua.texi doc/if_mzsch.texi doc/if_perl.texi \
+	doc/if_pyth.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
