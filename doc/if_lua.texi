@@ -1,0 +1,1086 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node if_lua.txt, , , 目次
+@unnumbered Lua インターフェイス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*if_lua.txt*    For Vim version 8.0.  Last change: 2015 Oct 16
+
+
+		  VIM REFERENCE MANUAL    by Luis Carvalho
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*if_lua.txt*    For Vim バージョン 8.0.  Last change: 2015 Oct 16
+
+
+                  VIMリファレンスマニュアル    by Luis Carvalho
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The Lua Interface to Vim				*lua* *Lua*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{lua}
+@anchor{Lua}
+@cindex lua
+@cindex Lua
+Vim の Lua インターフェイス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Commands			|lua-commands|
+2. The vim module		|lua-vim|
+3. List userdata		|lua-list|
+4. Dict userdata		|lua-dict|
+5. Funcref userdata		|lua-funcref|
+6. Buffer userdata		|lua-buffer|
+7. Window userdata		|lua-window|
+8. The luaeval function		|lua-luaeval|
+9. Dynamic loading		|lua-dynamic|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. コマンド @tab |@ref{lua-commands, , lua-commands}|
+@item 2. vim モジュール @tab |@ref{lua-vim, , lua-vim}|
+@item 3. List ユーザーデータ @tab |@ref{lua-list, , lua-list}|
+@item 4. Dict ユーザーデータ @tab |@ref{lua-dict, , lua-dict}|
+@item 5. Funcref ユーザーデータ @tab |@ref{lua-funcref, , lua-funcref}|
+@item 6. バッファユーザーデータ @tab |@ref{lua-buffer, , lua-buffer}|
+@item 7. ウィンドウユーザーデータ @tab |@ref{lua-window, , lua-window}|
+@item 8. luaeval 関数 @tab |@ref{lua-luaeval, , lua-luaeval}|
+@item 9. 動的ローディング @tab |@ref{lua-dynamic, , lua-dynamic}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these commands}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらのコマンドはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Lua interface is available only when Vim was compiled with the
+|+lua| feature.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Lua インターフェイスは Vim が |+lua| 機能付きでコンパイルされたときのみ利用できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Commands						*lua-commands*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{lua-commands}
+@cindex lua-commands
+@section 1. コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lua*
+:[range]lua {chunk}
+			Execute Lua chunk {chunk}.    {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:lua}
+@cindex :lua
+@item :[range]lua @{chunk@}
+Lua チャンク @{chunk@} を実行する。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples:
+>
+	:lua print("Hello, Vim!")
+	:lua local curbuf = vim.buffer() curbuf[7] = "line #7"
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:lua print("Hello, Vim!")
+:lua local curbuf = vim.buffer() curbuf[7] = "line #7"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[range]lua << {endmarker}
+{script}
+{endmarker}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[range]lua << @{endmarker@}
+@itemx @{script@}
+@itemx @{endmarker@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Execute Lua script {script}.  {not in Vi}
+			Note: This command doesn't work when the Lua
+			feature wasn't compiled in.  To avoid errors, see
+			|script-here|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Lua スクリプト @{script@} を実行する。
+
+@{Vi にはありません@}
+@quotation
+@strong{Note:} @*
+このコマンドは Lua が組み込まれていない場合は機能しません。エラーを避けるには |script-here| を参照。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{endmarker} must NOT be preceded by any white space.  If {endmarker} is
+omitted from after the "<<", a dot '.' must be used after {script}, like
+for the |:append| and |:insert| commands.
+This form of the |:lua| command is mainly useful for including Lua code
+in Vim scripts.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{endmarker@} の前には空白を入れることはできません。"<<" の後の @{endmarker@} を省略した場合は |:append| や |:insert| コマンドのようにドット "." で @{script@} を閉じます。
+
+|:lua| コマンドのこの書式は主に Vim script の中に Lua コードを埋め込むときに便利です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example:
+>
+	function! CurrentLineInfo()
+	lua << EOF
+	local linenr = vim.window().line
+	local curline = vim.buffer()[linenr]
+	print(string.format("Current line [%d] has %d chars",
+		linenr, #curline))
+	EOF
+	endfunction
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+function! CurrentLineInfo()
+lua << EOF
+local linenr = vim.window().line
+local curline = vim.buffer()[linenr]
+print(string.format("Current line [%d] has %d chars",
+        linenr, #curline))
+EOF
+endfunction
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+To see what version of Lua you have: >
+	:lua print(_VERSION)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+どの Lua のバージョンであるかを見るには:
+@example
+:lua print(_VERSION)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you use LuaJIT you can also use this: >
+	:lua print(jit.version)
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もし LuaJIT を使っているならばこれも使えます:
+@example
+:lua print(jit.version)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:luado*
+:[range]luado {body}	Execute Lua function "function (line, linenr) {body}
+			end" for each line in the [range], with the function
+			argument being set to the text of each line in turn,
+			without a trailing <EOL>, and the current line number.
+			If the value returned by the function is a string it
+			becomes the text of the line in the current turn. The
+			default for [range] is the whole file: "1,$".
+							{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:luado}
+@cindex :luado
+@item :[range]luado @{body@}
+Lua 関数 "function (line, linenr) @{body@} end" を [range] で指定された各行に対して実行する。関数の引数には各行のテキスト (末尾の <EOL> 無し) と現在の行番号が渡されます。関数の戻り値が文字列なら行のテキストはその文字列で置換されます。[range] を省略するとすべてのファイル ("1,$") が処理されます。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples:
+>
+	:luado return string.format("%s\t%d", line:reverse(), #line)
+
+	:lua require"lpeg"
+	:lua -- balanced parenthesis grammar:
+	:lua bp = lpeg.P{ "(" * ((1 - lpeg.S"()") + lpeg.V(1))^0 * ")" }
+	:luado if bp:match(line) then return "-->\t" .. line end
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:luado return string.format("%s\t%d", line:reverse(), #line)
+
+:lua require"lpeg"
+:lua -- balanced parenthesis grammar:
+:lua bp = lpeg.P@{ "(" * ((1 - lpeg.S"()") + lpeg.V(1))^0 * ")" @}
+:luado if bp:match(line) then return "-->\t" .. line end
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:luafile*
+:[range]luafile {file}
+			Execute Lua script in {file}. {not in Vi}
+			The whole argument is used as a single file name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:luafile}
+@cindex :luafile
+@item :[range]luafile @{file@}
+@{file@} 内の Lua スクリプトを実行する。
+
+@{Vi にはありません@}
+
+引数全体で 1 つのファイル名として認識されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples:
+>
+	:luafile script.lua
+	:luafile %
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:luafile script.lua
+:luafile %
+@end example
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All these commands execute a Lua chunk from either the command line (:lua and
+:luado) or a file (:luafile) with the given line [range]. Similarly to the Lua
+interpreter, each chunk has its own scope and so only global variables are
+shared between command calls. All Lua default libraries are available. In
+addition, Lua "print" function has its output redirected to the Vim message
+area, with arguments separated by a white space instead of a tab.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらすべてのコマンドはコマンドライン (:lua と :luado) かファイル (:luafile) で指定された Lua チャンクを範囲指定 [range] に対して実行します。Lua インタープリターと同様に各チャンクはそれぞれのスコープを持つため、各コマンドの実行で共有されるのはグローバル変数だけです。すべての Lua デフォルトライブラリが利用可能です。加えて、Lua の "print" 関数の出力先は Vim のメッセージエリアになり、引数はタブ文字ではなくスペースで区切られます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Lua uses the "vim" module (see |lua-vim|) to issue commands to Vim
+and manage buffers (|lua-buffer|) and windows (|lua-window|). However,
+procedures that alter buffer content, open new buffers, and change cursor
+position are restricted when the command is executed in the |sandbox|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Lua は "vim" モジュール (|lua-vim| 参照) を使って、Vim コマンドを発行したりバッファ (|lua-buffer|) やウィンドウ (|lua-window|) を管理したりします。ただし、コマンドが |sandbox| の中で実行されたときはバッファの変更、新規バッファの作成、カーソル位置の変更は制限されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+2. The vim module					*lua-vim*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{lua-vim}
+@cindex lua-vim
+@section 2. vim モジュール
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Lua interfaces Vim through the "vim" module. The first and last line of the
+input range are stored in "vim.firstline" and "vim.lastline" respectively. The
+module also includes routines for buffer, window, and current line queries,
+Vim evaluation and command execution, and others.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Lua からは "vim" モジュールを使って Vim を操作します。範囲指定の最初と最後の行は "vim.firstline" と "vim.lastline" に格納されています。vim モジュールにはバッファ操作、ウィンドウ操作、現在行の取得、Vim 式評価、Vim コマンド実行、などのルーチンが含まれています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim.list([arg])		Returns an empty list or, if "arg" is a Lua
+				table with numeric keys 1, ..., n (a
+				"sequence"), returns a list l such that l[i] =
+				arg[i] for i = 1, ..., n (see |List|).
+				Non-numeric keys are not used to initialize
+				the list. See also |lua-eval| for conversion
+				rules. Example: >
+					:lua t = {math.pi, false, say = 'hi'}
+					:echo luaeval('vim.list(t)')
+					:" [3.141593, 0], 'say' is ignored
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item vim.list([arg])
+"arg" が 1, ..., n の数値をキーに持つ Lua のテーブルの時、i = 1, ..., n に対して l[i] = arg[i] となるようなリスト l を返し (|List| を参照) 、そうでなければ空のリストを返します。数値以外のキーは戻り値のリストの初期化に使われません。変換のルールについては |lua-eval| を参照してください。例:
+@example
+:lua t = @{math.pi, false, say = 'hi'@}
+:echo luaeval('vim.list(t)')
+:" [3.141593, 0], 'say' is ignored
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	vim.dict([arg])		Returns an empty dictionary or, if "arg" is a
+				Lua table, returns a dict d such that d[k] =
+				arg[k] for all string keys k in "arg" (see
+				|Dictionary|). Number keys are converted to
+				strings. Keys that are not strings are not
+				used to initialize the dictionary. See also
+				|lua-eval| for conversion rules. Example: >
+					:lua t = {math.pi, false, say = 'hi'}
+					:echo luaeval('vim.dict(t)')
+					:" {'say': 'hi'}, numeric keys ignored
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item vim.dict([arg])
+"arg" が Lua のテーブルの時、"arg" のそれぞれのキー k に対して d[k] = arg[k] となるような辞書を返し (|Dictionary| を参照) 、そうでなければ空の辞書を返します。数値のキーは文字列に変換されます。文字列以外のキーは戻り値の辞書の初期化に使われません。変換のルールについては |lua-eval| を参照してください。例:
+@example
+:lua t = @{math.pi, false, say = 'hi'@}
+:echo luaeval('vim.dict(t)')
+:" @{'say': 'hi'@}, numeric keys ignored
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	vim.funcref({name})	Returns a Funcref to function {name} (see
+				|Funcref|). It is equivalent to Vim's
+				"function". NOT IMPLEMENTED YET
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item vim.funcref(@{name@})
+関数 @{name@} への関数参照を返します (|Funcref| を参照) 。その値は Vim の "function" と等価です。 まだ実装されていません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim.buffer([arg])	If "arg" is a number, returns buffer with
+				number "arg" in the buffer list or, if "arg"
+				is a string, returns buffer whose full or short
+				name is "arg". In both cases, returns 'nil'
+				(nil value, not string) if the buffer is not
+				found. Otherwise, if "toboolean(arg)" is
+				'true' returns the first buffer in the buffer
+				list or else the current buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item vim.buffer([arg])
+"arg" が数値ならバッファリストの "arg" 番のバッファを返す。"arg" が文字列ならフルパスかショートパスが "arg" に一致するバッファを返す。どちらの場合もバッファが見つからなければ 'nil' (nil 値、文字列ではない) を返す。その他、"toboolean(arg)" が 'true' ならバッファリストの最初のバッファを、そうでなければカレントバッファを返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim.window([arg])	If "arg" is a number, returns window with
+				number "arg" or 'nil' (nil value, not string)
+				if not found. Otherwise, if "toboolean(arg)"
+				is 'true' returns the first window or else the
+				current window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item vim.window([arg])
+"arg" が数値なら "arg" 番のウィンドウを返す。ウィンドウが無ければ 'nil' (nil 値、文字列ではない) を返す。その他、"toboolean(arg)" が'true' なら最初のウィンドウを、そうでなければカレントウィンドウを返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim.type({arg})		Returns the type of {arg}. It is equivalent to
+				Lua's "type" function, but returns "list",
+				"dict", "funcref", "buffer", or "window" if
+				{arg} is a list, dictionary, funcref, buffer,
+				or window, respectively. Examples: >
+					:lua l = vim.list()
+					:lua print(type(l), vim.type(l))
+					:" userdata list
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item vim.type(@{arg@})
+@{arg@} の型を返す。これは Lua の "type" 関数と同じようなものですが、@{arg@} がリスト、辞書、関数参照、バッファ、ウィンドウのときに、"list", "dict", "funcref", "buffer", "window" をそれぞれ返します。例:
+@example
+:lua l = vim.list()
+:lua print(type(l), vim.type(l))
+:" userdata list
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	vim.command({cmd})	Executes the vim (ex-mode) command {cmd}.
+				Examples: >
+					:lua vim.command"set tw=60"
+					:lua vim.command"normal ddp"
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item vim.command(@{cmd@})
+Vim の Ex コマンド @{cmd@} を実行する。例:
+@example
+:lua vim.command"set tw=60"
+:lua vim.command"normal ddp"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	vim.eval({expr})	Evaluates expression {expr} (see |expression|),
+				converts the result to Lua, and returns it.
+				Vim strings and numbers are directly converted
+				to Lua strings and numbers respectively. Vim
+				lists and dictionaries are converted to Lua
+				userdata (see |lua-list| and |lua-dict|).
+				Examples: >
+					:lua tw = vim.eval"&tw"
+					:lua print(vim.eval"{'a': 'one'}".a)
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item vim.eval(@{expr@})
+式 @{expr@} (|expression| 参照) を評価してその結果を Lua の値に変換して返す。Vim の文字列と数値はそのまま Lua の文字列と数値に変換される。Vim のリストと辞書は Lua のユーザーデータに変換される (|lua-list| と |lua-dict| を参照)。例:
+@example
+:lua tw = vim.eval"&tw"
+:lua print(vim.eval"@{'a': 'one'@}".a)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	vim.line()		Returns the current line (without the trailing
+				<EOL>), a Lua string.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item vim.line()
+現在行 (末尾の <EOL> 無し) を返す。型は Lua 文字列。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim.beep()		Beeps.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item vim.beep()
+ビープ音を鳴らす。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	vim.open({fname})	Opens a new buffer for file {fname} and
+				returns it. Note that the buffer is not set as
+				current.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item vim.open(@{fname@})
+ファイル @{fname@} 用の新しいバッファを開いて返す。
+@quotation
+@strong{Note:} @*
+カレントバッファは変更されません。
+@end quotation
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+3. List userdata					*lua-list*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{lua-list}
+@cindex lua-list
+@section 3. List ユーザーデータ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+List userdata represent vim lists, and the interface tries to follow closely
+Vim's syntax for lists. Since lists are objects, changes in list references in
+Lua are reflected in Vim and vice-versa. A list "l" has the following
+properties and methods:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+List ユーザーデータは vim のリストを表します。Vim のリストに近い形で操作できるようになっています。リストはオブジェクトなので、Lua 内で参照しているリストを変更すると、それは Vim 内にも影響します。逆も同様です。リスト "l" は以下のプロパティとメソッドを持っています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Properties
+----------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec プロパティ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	o "#l" is the number of items in list "l", equivalent to "len(l)"
+	    in Vim.
+	o "l[k]" returns the k-th item in "l"; "l" is zero-indexed, as in Vim.
+	    To modify the k-th item, simply do "l[k] = newitem"; in
+	    particular, "l[k] = nil" removes the k-th item from "l".
+	o "l()" returns an iterator for "l".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item "#l" はリスト "l" の要素数。Vim の "len(l)" と同じ。
+@item "l[k]" は "l" の k 個目の要素を返す。"l" のインデックスは Vim と同じで、0 を基準とする。k 個目の要素を変更するには、単に "l[k] = newitem" とする。"l[k] = nil" で k 個目の要素を "l" から削除できる。
+@item "l()" は "l" のイテレータを返す。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Methods
+-------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec メソッド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	o "l:add(item)" appends "item" to the end of "l".
+	o "l:insert(item[, pos])" inserts "item" at (optional)
+	    position "pos" in the list. The default value for "pos" is 0.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item "l:add(item)" は "item" を "l" の末尾に追加する。
+@item "l:insert(item[, pos])" は "item" を "pos" (省略可) の位置に挿入する。"pos" のデフォルト値は 0。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples:
+>
+	:let l = [1, 'item']
+	:lua l = vim.eval('l') -- same 'l'
+	:lua l:add(vim.list())
+	:lua l[0] = math.pi
+	:echo l[0] " 3.141593
+	:lua l[0] = nil -- remove first item
+	:lua l:insert(true, 1)
+	:lua print(l, #l, l[0], l[1], l[-1])
+	:lua for item in l() do print(item) end
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:let l = [1, 'item']
+:lua l = vim.eval('l') -- 'l' と同じ
+:lua l:add(vim.list())
+:lua l[0] = math.pi
+:echo l[0] " 3.141593
+:lua l[0] = nil -- 最初の項目を削除する
+:lua l:insert(true, 1)
+:lua print(l, #l, l[0], l[1], l[-1])
+:lua for item in l() do print(item) end
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Dict userdata					*lua-dict*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{lua-dict}
+@cindex lua-dict
+@section 4. Dict ユーザーデータ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Similarly to list userdata, dict userdata represent vim dictionaries; since
+dictionaries are also objects, references are kept between Lua and Vim. A dict
+"d" has the following properties:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+list ユーザーデータと同様、dict ユーザーデータは vim の辞書を表します。辞書もオブジェクトなので、Lua と Vim 間で参照が保持されます。辞書 "d" は以下のプロパティを持っています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Properties
+----------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec プロパティ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	o "#d" is the number of items in dict "d", equivalent to "len(d)"
+	    in Vim.
+	o "d.key" or "d['key']" returns the value at entry "key" in "d".
+	    To modify the entry at this key, simply do "d.key = newvalue"; in
+	    particular, "d.key = nil" removes the entry from "d".
+	o "d()" returns an iterator for "d" and is equivalent to "items(d)" in
+	    Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item "#d" は辞書 "d" の要素数。Vim の "len(d)" と同じ。
+@item "d.key" または "d['key']" は "d" の "key" 要素の値を返す。このキーの値を変更するには、単に "d.key = newvalue" とする。"d.key = nil" で "d" から要素を削除できる。
+@item "d()" は "d" のイテレータを返す。Vim の "items(d)" と同じ。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples:
+>
+	:let d = {'n':10}
+	:lua d = vim.eval('d') -- same 'd'
+	:lua print(d, d.n, #d)
+	:let d.self = d
+	:lua for k, v in d() do print(d, k, v) end
+	:lua d.x = math.pi
+	:lua d.self = nil -- remove entry
+	:echo d
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:let d = @{'n':10@}
+:lua d = vim.eval('d') -- 'd' と同じ
+:lua print(d, d.n, #d)
+:let d.self = d
+:lua for k, v in d() do print(d, k, v) end
+:lua d.x = math.pi
+:lua d.self = nil -- エントリを削除する
+:echo d
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Funcref userdata					*lua-funcref*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{lua-funcref}
+@cindex lua-funcref
+@section 5. Funcref ユーザーデータ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Funcref userdata represent funcref variables in Vim. Funcrefs that were
+defined with a "dict" attribute need to be obtained as a dictionary key
+in order to have "self" properly assigned to the dictionary (see examples
+below.) A funcref "f" has the following properties:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Funcref ユーザーデータは Vim における関数参照変数を表します。"dict" 属性付きで定義された Vim の関数参照 はその呼び出し時に "self" に適切に辞書が代入できるように、辞書のメンバーとして取得できなければなりません (下記の例を参照してください) 。Lua の関数参照 "f" は次のプロパティを持っています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Properties
+----------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec プロパティ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	o "#f" is the name of the function referenced by "f"
+	o "f(...)" calls the function referenced by "f" (with arguments)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item "#f" は "f" が参照している関数の名前です
+@item "f(...)" は "f" が参照している関数を (引数と共に) 呼びます
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples:
+>
+	:function I(x)
+	:  return a:x
+	:  endfunction
+	:let R = function('I')
+	:lua i1 = vim.funcref('I')
+	:lua i2 = vim.eval('R')
+	:lua print(#i1, #i2) -- both 'I'
+	:lua print(i1, i2, #i2(i1) == #i1(i2))
+	:function Mylen() dict
+	:  return len(self.data)
+	:  endfunction
+	:let mydict = {'data': [0, 1, 2, 3]}
+	:lua d = vim.eval('mydict'); d.len = vim.funcref('Mylen')
+	:echo mydict.len()
+	:lua l = d.len -- assign d as 'self'
+	:lua print(l())
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:function I(x)
+:  return a:x
+:  endfunction
+:let R = function('I')
+:lua i1 = vim.funcref('I')
+:lua i2 = vim.eval('R')
+:lua print(#i1, #i2) -- どちらも 'I'
+:lua print(i1, i2, #i2(i1) == #i1(i2))
+:function Mylen() dict
+:  return len(self.data)
+:  endfunction
+:let mydict = @{'data': [0, 1, 2, 3]@}
+:lua d = vim.eval('mydict'); d.len = vim.funcref('Mylen')
+:echo mydict.len()
+:lua l = d.len -- 'self' として d を割り当てる
+:lua print(l())
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Buffer userdata					*lua-buffer*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{lua-buffer}
+@cindex lua-buffer
+@section 6. バッファユーザーデータ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Buffer userdata represent vim buffers. A buffer userdata "b" has the following
+properties and methods:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファユーザーデータは Vim のバッファを表します。バッファユーザーデータ "b" は以下のプロパティとメソッドを持っています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Properties
+----------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec プロパティ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	o "b()" sets "b" as the current buffer.
+	o "#b" is the number of lines in buffer "b".
+	o "b[k]" represents line number k: "b[k] = newline" replaces line k
+	    with string "newline" and "b[k] = nil" deletes line k.
+	o "b.name" contains the short name of buffer "b" (read-only).
+	o "b.fname" contains the full name of buffer "b" (read-only).
+	o "b.number" contains the position of buffer "b" in the buffer list
+	    (read-only).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item "b()" は "b" をカレントバッファに設定する。
+@item "#b" はバッファ "b" の行数。
+@item "b[k]" はバッファの k 行目。"b[k] = newline" で k 行目を文字列 "newline" で置換する。"b[k] = nil" で k 行目を削除する。
+@item "b.name" はバッファ "b" のショートパス (読込専用)。
+@item "b.fname" はバッファ "b" のフルパス (読込専用)。
+@item "b.number" はバッファ "b" のバッファリスト内の位置 (読込専用)。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Methods
+-------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec メソッド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	o "b:insert(newline[, pos])" inserts string "newline" at (optional)
+	    position "pos" in the buffer. The default value for "pos" is
+	    "#b + 1". If "pos == 0" then "newline" becomes the first line in
+	    the buffer.
+	o "b:next()" returns the buffer next to "b" in the buffer list.
+	o "b:previous()" returns the buffer previous to "b" in the buffer
+	    list.
+	o "b:isvalid()" returns 'true' (boolean) if buffer "b" corresponds to
+	    a "real" (not freed from memory) Vim buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item "b:insert(newline[, pos])" は文字列 "newline" をバッファの "pos" の位置 (省略可) に挿入する。"pos" を省略した場合は "#b + 1" に挿入される。"pos == 0" の場合は "newline" は 1 行目に挿入される。
+@item "b:next()" はバッファリストの "b" の次のバッファを返す。
+@item "b:previous()" はバッファリストの "b" の前のバッファを返す。
+@item "b:isvalid()" はバッファ "b" が実在するバッファ (メモリが開放されていない) なら 'true' (boolean) を返す。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples:
+>
+	:lua b = vim.buffer() -- current buffer
+	:lua print(b.name, b.number)
+	:lua b[1] = "first line"
+	:lua b:insert("FIRST!", 0)
+	:lua b[1] = nil -- delete top line
+	:lua for i=1,3 do b:insert(math.random()) end
+	:3,4lua for i=vim.lastline,vim.firstline,-1 do b[i] = nil end
+	:lua vim.open"myfile"() -- open buffer and set it as current
+
+	function! ListBuffers()
+	lua << EOF
+	local b = vim.buffer(true) -- first buffer in list
+	while b ~= nil do
+		print(b.number, b.name, #b)
+		b = b:next()
+	end
+	vim.beep()
+	EOF
+	endfunction
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:lua b = vim.buffer() -- カレントバッファ
+:lua print(b.name, b.number)
+:lua b[1] = "first line"
+:lua b:insert("FIRST!", 0)
+:lua b[1] = nil -- 先頭の行を削除する
+:lua for i=1,3 do b:insert(math.random()) end
+:3,4lua for i=vim.lastline,vim.firstline,-1 do b[i] = nil end
+:lua vim.open"myfile"() -- バッファを開いてそれをカレントにする
+
+function! ListBuffers()
+lua << EOF
+local b = vim.buffer(true) -- リストの最初のバッファ
+while b ~= nil do
+print(b.number, b.name, #b)
+b = b:next()
+end
+vim.beep()
+EOF
+endfunction
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. Window userdata					*lua-window*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{lua-window}
+@cindex lua-window
+@section 7. ウィンドウユーザーデータ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Window objects represent vim windows. A window userdata "w" has the following
+properties and methods:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウオブジェクトは Vim のウィンドウを表します。ウィンドウユーザーデータ"w" は以下のプロパティとメソッドを持っています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Properties
+----------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec プロパティ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	o "w()" sets "w" as the current window.
+	o "w.buffer" contains the buffer of window "w" (read-only).
+	o "w.line" represents the cursor line position in window "w".
+	o "w.col" represents the cursor column position in window "w".
+	o "w.width" represents the width of window "w".
+	o "w.height" represents the height of window "w".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item "w()" は "w" をカレントウィンドウに設定する。
+@item "w.buffer" はウィンドウ "w" のバッファ (読込専用)。
+@item "w.line" はウィンドウ "w" のカーソルの行。
+@item "w.col" はウィンドウ "w" のカーソルの列。
+@item "w.width" はウィンドウ "w" の幅。
+@item "w.height" はウィンドウ "w" の高さ。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Methods
+-------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec メソッド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	o "w:next()" returns the window next to "w".
+	o "w:previous()" returns the window previous to "w".
+	o "w:isvalid()" returns 'true' (boolean) if window "w" corresponds to
+	    a "real" (not freed from memory) Vim window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item "w:next()" は "w" の次のウィンドウを返す。
+@item "w:previous()" は "w" の前のウィンドウを返す。
+@item "w:isvalid()" はウィンドウ "w" が実在するウィンドウ (メモリが開放されていない) なら 'true' を返す。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples:
+>
+	:lua w = vim.window() -- current window
+	:lua print(w.buffer.name, w.line, w.col)
+	:lua w.width = w.width + math.random(10)
+	:lua w.height = 2 * math.random() * w.height
+	:lua n,w = 0,vim.window(true) while w~=nil do n,w = n + 1,w:next() end
+	:lua print("There are " .. n .. " windows")
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:lua w = vim.window() -- カレントウィンドウ
+:lua print(w.buffer.name, w.line, w.col)
+:lua w.width = w.width + math.random(10)
+:lua w.height = 2 * math.random() * w.height
+:lua n,w = 0,vim.window(true) while w~=nil do n,w = n + 1,w:next() end
+:lua print("There are " .. n .. " windows")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+8. The luaeval function					*lua-luaeval* *lua-eval*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{lua-luaeval}
+@anchor{lua-eval}
+@cindex lua-luaeval
+@cindex lua-eval
+@section 8. luaeval 関数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The (dual) equivalent of "vim.eval" for passing Lua values to Vim is
+"luaeval". "luaeval" takes an expression string and an optional argument and
+returns the result of the expression. It is semantically equivalent in Lua to:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"luaeval" は "vim.eval" と対となる関数で Lua の値を Vim に渡すことができます。"luaeval" は式文字列と任意の引数を受け取り、式の結果を返します。意味的には次の Lua コードと同じです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	local chunkheader = "local _A = select(1, ...) return "
+	function luaeval (expstr, arg)
+	    local chunk = assert(loadstring(chunkheader .. expstr, "luaeval"))
+	    return chunk(arg) -- return typval
+	end
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+local chunkheader = "local _A = select(1, ...) return "
+function luaeval (expstr, arg)
+    local chunk = assert(loadstring(chunkheader .. expstr, "luaeval"))
+    return chunk(arg) -- typval を返す
+end
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Note that "_A" receives the argument to "luaeval". Lua numbers, strings, and
+list, dict, and funcref userdata are converted to their Vim respective types,
+while Lua booleans are converted to numbers. An error is thrown if conversion
+of any of the remaining Lua types, including userdata other than lists, dicts,
+and funcrefs, is attempted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"_A" には "luaeval" の引数が渡されます。Lua の数値、文字列、リスト、辞書そして Funcref ユーザーデータはそれぞれの Vim の型に変換されます。ただし、Lua のブール値は数値に変換されます。リスト、辞書および関数参照以外のユーザーデータを含む、それ以外の Lua の型を変換しようとするとエラーが返されます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples: >
+
+	:echo luaeval('math.pi')
+	:lua a = vim.list():add('newlist')
+	:let a = luaeval('a')
+	:echo a[0] " 'newlist'
+	:function Rand(x,y) " random uniform between x and y
+	:  return luaeval('(_A.y-_A.x)*math.random()+_A.x', {'x':a:x,'y':a:y})
+	:  endfunction
+	:echo Rand(1,10)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:echo luaeval('math.pi')
+:lua a = vim.list():add('newlist')
+:let a = luaeval('a')
+:echo a[0] " 'newlist'
+:function Rand(x,y) " random uniform between x and y
+:  return luaeval('(_A.y-_A.x)*math.random()+_A.x', @{'x':a:x,'y':a:y@})
+:  endfunction
+:echo Rand(1,10)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+9. Dynamic loading				    *lua-dynamic*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{lua-dynamic}
+@cindex lua-dynamic
+@section 9. 動的ローディング
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On MS-Windows and Unix the Lua library can be loaded dynamically.  The
+|:version| output then includes |+lua/dyn|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows と Unix では Lua ライブラリを動的にロードすることができます。|+lua/dyn| が |:version| の出力に含まれている時に利用できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This means that Vim will search for the Lua DLL or shared library file only
+when needed.  When you don't use the Lua interface you don't need it, thus
+you can use Vim without this file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これにより、Vim は必要な時だけ Lua DLL もしくは共有ライブラリを検索します。もしあなたが Lua インターフェイスを必要としておらず使わなければ Lua DLL もしくは共有ライブラリ無しで Vim を使うことができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MS-Windows ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec MS-Windows
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To use the Lua interface the Lua DLL must be in your search path.  In a
+console window type "path" to see what directories are used.  The 'luadll'
+option can be also used to specify the Lua DLL.  The version of the DLL must
+match the Lua version Vim was compiled with.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Lua インターフェイスを利用するには Lua DLL が検索パス内になければなりません。コンソールウィンドウ内で "path" と入力し、どのディレクトリが使われているかを確認してください。'@option{luadll}' オプションで Lua の DLL を指定する事ができます。DLL のバージョンは Vim と共にコンパイルされた Lua のバージョンと一致していなければなりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Unix ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec Unix
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'luadll' option can be used to specify the Lua shared library file instead
+of DYNAMIC_LUA_DLL file what was specified at compile time.  The version of
+the shared library must match the Lua version Vim was compiled with.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コンパイル時に指定された DYNAMIC_LUA_DLL ファイルの代わりに '@option{luadll}' オプションで Lua 共有ライブラリを指定できます。共有ライブラリのバージョンはVim と共にコンパイルされた Lua のバージョンと一致していなければなりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+ vim:tw=78:ts=8:noet:ft=help:norl:
+@end ifset

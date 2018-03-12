@@ -1,0 +1,991 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node if_mzsch.txt, , , 目次
+@unnumbered MzScheme インターフェイス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*if_mzsch.txt*  For Vim version 8.0.  Last change: 2017 Oct 08
+
+
+		  VIM REFERENCE MANUAL    by Sergey Khorev
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*if_mzsch.txt*  For Vim バージョン 8.0.  Last change: 2016 Jan 24
+
+
+                  VIMリファレンスマニュアル    by Sergey Khorev
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The MzScheme Interface to Vim				*mzscheme* *MzScheme*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mzscheme}
+@anchor{MzScheme}
+@cindex mzscheme
+@cindex MzScheme
+Vim の MzScheme インターフェイス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Commands				|mzscheme-commands|
+2. Examples				|mzscheme-examples|
+3. Threads				|mzscheme-threads|
+4. Vim access from MzScheme		|mzscheme-vim|
+5. mzeval() Vim function		|mzscheme-mzeval|
+6. Using Function references		|mzscheme-funcref|
+7. Dynamic loading			|mzscheme-dynamic|
+8. MzScheme setup			|mzscheme-setup|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. コマンド @tab |@ref{mzscheme-commands, , mzscheme-commands}|
+@item 2. 例 @tab |@ref{mzscheme-examples, , mzscheme-examples}|
+@item 3. スレッド @tab |@ref{mzscheme-threads, , mzscheme-threads}|
+@item 4. MzScheme から Vim にアクセスする @tab |@ref{mzscheme-vim, , mzscheme-vim}|
+@item 5. mzeval() Vim 関数 @tab |@ref{mzscheme-mzeval, , mzscheme-mzeval}|
+@item 6. 関数参照を使う @tab |@ref{mzscheme-funcref, , mzscheme-funcref}|
+@item 7. 動的ローディング @tab |@ref{mzscheme-dynamic, , mzscheme-dynamic}|
+@item 8. MzScheme のセットアップ @tab |@ref{mzscheme-setup, , mzscheme-setup}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these commands}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらのコマンドはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The MzScheme interface is available only if Vim was compiled with the
+|+mzscheme| feature.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MzScheme インターフェイスは、Vim が |+mzscheme| 機能付きでコンパイルされたときのみ利用できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Based on the work of Brent Fulgham.
+Dynamic loading added by Sergey Khorev
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Brent Fulgham の作業にもとづいています。 @*
+動的ローディングは Sergey Khorev によって追加されました。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+MzScheme and PLT Scheme names have been rebranded as Racket. For more
+information please check http://racket-lang.org
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MzScheme と PLT Scheme は Racket という名前になりました。詳しいことは @url{http://racket-lang.org} を見てください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Futures and places of Racket version 5.x up to and including 5.3.1 do not
+work correctly with processes created by Vim.
+The simplest solution is to build Racket on your own with these features
+disabled: >
+  ./configure --disable-futures --disable-places --prefix=your-install-prefix
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Racket 5.x (5.3.1も含む) の futures と places は Vim から作成されたプロセスでは機能しません。簡単な解決法はそれらの機能を無効にした Racket を自分でビルドすることです:
+@verbatim
+./configure --disable-futures --disable-places --prefix=your-install-prefix
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To speed up the process, you might also want to use --disable-gracket and
+--disable-docs
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロセスを高速化するには、@samp{--disable-gracket} と @samp{--disable-docs} も指定するといいかもしれません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Commands						*mzscheme-commands*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mzscheme-commands}
+@cindex mzscheme-commands
+@section 1. コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:mzscheme* *:mz*
+:[range]mz[scheme] {stmt}
+			Execute MzScheme statement {stmt}.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:mzscheme}
+@anchor{:mz}
+@cindex :mzscheme
+@cindex :mz
+@item :[range]mz[scheme] @{stmt@}
+MzScheme のステートメント @{stmt@} を実行します。
+
+@{Vi にはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[range]mz[scheme] << {endmarker}
+{script}
+{endmarker}
+			Execute inlined MzScheme script {script}.
+			Note: This command doesn't work if the MzScheme
+			feature wasn't compiled in.  To avoid errors, see
+			|script-here|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[range]mz[scheme] << @{endmarker@}
+@itemx @{script@}
+@itemx @{endmarker@}
+MzScheme のスクリプト @{script@} を実行します。
+@quotation
+@strong{Note:} @*
+このコマンドは MzScheme 用の機能を含めてコンパイルされていないときは機能しません。エラーを抑制するには |script-here| を参照してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:mzfile* *:mzf*
+:[range]mzf[ile] {file}	Execute the MzScheme script in {file}.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:mzfile}
+@anchor{:mzf}
+@cindex :mzfile
+@cindex :mzf
+@item :[range]mzf[ile] @{file@}
+@{file@} 内の MzScheme スクリプトを実行します。
+
+@{Vi にはありません@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All of these commands do essentially the same thing - they execute a piece of
+MzScheme code, with the "current range" set to the given line
+range.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのコマンドは、本質的には同じことを行います - つまり、MzScheme のコードを、与えられた "現在の範囲" に対して実行します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the case of :mzscheme, the code to execute is in the command-line.
+In the case of :mzfile, the code to execute is the contents of the given file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+:mzscheme の場合は、実行するコードはコマンドラインから与えます。:mzfile の場合は、実行するコードは指定したファイルから読み込まれます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+MzScheme interface defines exception exn:vim, derived from exn.
+It is raised for various Vim errors.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MzScheme インターフェイスは、exn から派生した例外 exn:vim を定義します。Vim の様々なエラーを通知するために、この例外が投げられます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+During compilation, the MzScheme interface will remember the current MzScheme
+collection path. If you want to specify additional paths use the
+'current-library-collection-paths' parameter. E.g., to cons the user-local
+MzScheme collection path: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コンパイルの実行中に、その時点の MzScheme コレクションのパスが記録されます。もし他にもパスを指定したい場合は、パラメーター 'current-library-collection-paths' を使ってください。例: ユーザーごとのコレクションパスを追加するには:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    :mz << EOF
+    (current-library-collection-paths
+	(cons
+	    (build-path (find-system-path 'addon-dir) (version) "collects")
+	    (current-library-collection-paths)))
+    EOF
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:mz << EOF
+(current-library-collection-paths
+    (cons
+        (build-path (find-system-path 'addon-dir) (version) "collects")
+        (current-library-collection-paths)))
+EOF
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+All functionality is provided through module vimext.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべての機能は vimext モジュールを通して提供されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The exn:vim is available without explicit import.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+exn:vim は明示的なインポートをしなくても利用可能です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To avoid clashes with MzScheme, consider using prefix when requiring module,
+e.g.: >
+	:mzscheme (require (prefix vim- vimext))
+<
+All the examples below assume this naming scheme. 
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+モジュールを require するときは、MzScheme との衝突を避けるため、プリフィックスを使うことも考えてください。例:
+@example
+:mzscheme (require (prefix vim- vimext))
+@end example
+本マニュアル中、以降のすべての例は、このプリフィックスを使っています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*mzscheme-sandbox*
+When executed in the |sandbox|, access to some filesystem and Vim interface
+procedures is restricted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mzscheme-sandbox}
+@cindex mzscheme-sandbox
+サンドボックス |sandbox| の中で実行されているときは、ファイルシステムへのアクセスや Vim インターフェイスプロシージャの実行は制限されています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Examples						*mzscheme-examples*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mzscheme-examples}
+@cindex mzscheme-examples
+@section 2. 例
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	:mzscheme (display "Hello")
+	:mz (display (string-append "Using MzScheme version " (version)))
+	:mzscheme (require (prefix vim- vimext)) ; for MzScheme < 4.x
+	:mzscheme (require (prefix-in vim- 'vimext)) ; MzScheme 4.x
+	:mzscheme (vim-set-buff-line 10 "This is line #10")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:mzscheme (display "Hello")
+:mz (display (string-append "Using MzScheme version " (version)))
+:mzscheme (require (prefix vim- vimext)) ; MzScheme < 4.x 用
+:mzscheme (require (prefix-in vim- 'vimext)) ; MzScheme 4.x 用
+:mzscheme (vim-set-buff-line 10 "This is line #10")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To see what version of MzScheme you have: >
+	:mzscheme (display (version))
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使っている MzScheme のバージョンを見るには:
+@example
+:mzscheme (display (version))
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Inline script usage: >
+	function! <SID>SetFirstLine()
+	    :mz << EOF
+	    (display "!!!")
+	    (require (prefix vim- vimext))
+	    ; for newer versions (require (prefix-in vim- 'vimext))
+	    (vim-set-buff-line 1 "This is line #1")
+	    (vim-beep)
+	EOF
+	endfunction
+
+	nmap <F9> :call <SID>SetFirstLine() <CR>
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+インラインスクリプトの例:
+@example
+function! <SID>SetFirstLine()
+    :mz << EOF
+    (display "!!!")
+    (require (prefix vim- vimext))
+    ; ↑新しいバージョンでは (require (prefix-in vim- 'vimext))
+    (vim-set-buff-line 1 "This is line #1")
+    (vim-beep)
+EOF
+endfunction
+
+nmap <F9> :call <SID>SetFirstLine() <CR>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+File execution: >
+	:mzfile supascript.scm
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルの実行:
+@example
+:mzfile supascript.scm
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Vim exception handling: >
+	:mz << EOF
+	(require (prefix vim- vimext))
+	; for newer versions (require (prefix-in vim- 'vimext))
+	(with-handlers
+	  ([exn:vim? (lambda (e) (display (exn-message e)))])
+	  (vim-eval "nonsense-string"))
+	EOF
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例外制御:
+@example
+:mz << EOF
+(require (prefix vim- vimext))
+; ↑新しいバージョンでは (require (prefix-in vim- 'vimext))
+(with-handlers
+  ([exn:vim? (lambda (e) (display (exn-message e)))])
+  (vim-eval "nonsense-string"))
+EOF
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Auto-instantiation of vimext module (can be placed in your |vimrc|): >
+    function! MzRequire()
+	:redir => l:mzversion
+	:mz (version)
+	:redir END
+	if strpart(l:mzversion, 1, 1) < "4"
+	    " MzScheme versions < 4.x:
+	    :mz (require (prefix vim- vimext))
+	else
+	    " newer versions:
+	    :mz (require (prefix-in vim- 'vimext))
+	endif
+    endfunction
+
+    if has("mzscheme")
+	silent call MzRequire()
+    endif
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+vimext モジュールの自動インスタンス化 (|vimrc| に書くことができます):
+@example
+function! MzRequire()
+    :redir => l:mzversion
+    :mz (version)
+    :redir END
+    if strpart(l:mzversion, 1, 1) < "4"
+        " MzScheme versions < 4.x では:
+        :mz (require (prefix vim- vimext))
+    else
+        " それ以降のバージョンでは
+        :mz (require (prefix-in vim- 'vimext))
+    endif
+endfunction
+
+if has("mzscheme")
+    silent call MzRequire()
+endif
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+==============================================================================
+3. Threads						*mzscheme-threads*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mzscheme-threads}
+@cindex mzscheme-threads
+@section 3. スレッド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The MzScheme interface supports threads. They are independent from OS threads,
+thus scheduling is required. The option 'mzquantum' determines how often
+Vim should poll for available MzScheme threads.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MzScheme インターフェイスはスレッドをサポートしています。これは OS のスレッドとは独立しており、よってスケジューリングが必要になります。オプション '@option{mzquantum}' によって、Vim がどれだけの時間間隔で MzScheme スレッドに切り替えるかが決定されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+NOTE
+Thread scheduling in the console version of Vim is less reliable than in the
+GUI version.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+コンソール版 Vim のスレッドスケジューリングは GUI 版よりやや信頼性が低くなります。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Vim access from MzScheme				*mzscheme-vim*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mzscheme-vim}
+@cindex mzscheme-vim
+@section 4. MzScheme から VIM にアクセスする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*mzscheme-vimext*
+The 'vimext' module provides access to procedures defined in the MzScheme
+interface.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mzscheme-vimext}
+@cindex mzscheme-vimext
+'vimext' モジュールは MzScheme インターフェイスで定義されたプロシージャへのアクセスを提供します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Common
+------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 共通
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (command {command-string})	    Perform the vim ":Ex" style command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item (command @{command-string@})
+Vim の Ex コマンドを実行する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (eval {expr-string})	    Evaluate the vim expression into
+				    respective MzScheme object: |Lists| are
+				    represented as Scheme lists,
+				    |Dictionaries| as hash tables,
+				    |Funcref|s as functions (see also
+				    |mzscheme-funcref|)
+				    NOTE the name clashes with MzScheme eval,
+				    use module qualifiers to overcome this.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (eval @{expr-string@})
+Vim の式を評価し、対応する MzScheme のオブジェクトに変換する。リスト (|Lists|) はScheme のリスト、辞書 (|Dictionaries|) ははハッシュテーブル、関数参照 (|Funcref|)は関数になる。
+@quotation
+@strong{Note:} @*
+MzScheme の eval と名前が衝突しているので、呼び出すにはモジュール限定子を使ってください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (range-start)		    Start/End of the range passed with
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (range-start)
+Scheme コマンドに渡された範囲の開始行を取得
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (range-end)			    the Scheme command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (range-end)
+Scheme コマンドに渡された範囲の終了行を取得
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (beep)			    beep
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (beep)
+ビープを鳴らす
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-option {option-name} [buffer-or-window]) Get Vim option value (either
+				    local or global, see set-option).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-option @{option-name@} [buffer-or-window])
+Vim の (ローカルまたはグローバルな) オプションの値を取得する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (set-option {string} [buffer-or-window])
+				    Set a Vim option. String must have option
+				    setting form (like optname=optval, or
+				    optname+=optval, etc.) When called with
+				    {buffer} or {window} the local option will
+				    be set. The symbol 'global can be passed
+				    as {buffer-or-window}. Then |:setglobal|
+				    will be used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (set-option @{string@} [buffer-or-window])
+Vim のオプションをセットする。@{string@} はオプション設定形式 (optname=optvalue や optname+=optval など) になっていなければならない。@{buffer@} または @{window@} を指定した場合、そのバッファまたはウィンドウにローカルなオプションがセットされる。@{buffer-or-window@} としてシンボル 'global を渡すと |:setglobal| と同じになる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Buffers							 *mzscheme-buffer*
+-------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mzscheme-buffer}
+@cindex mzscheme-buffer
+@unnumberedsubsec バッファ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (buff? {object})		    Is object a buffer?
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item (buff? @{object@})
+オブジェクトがバッファであるか？
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (buff-valid? {object})	    Is object a valid buffer? (i.e.
+				    corresponds to the real Vim buffer)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (buff-valid? @{object@})
+オブジェクトが有効なバッファであるか？(実際に Vim のバッファに対応しているか)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-buff-line {linenr} [buffer])
+				    Get line from a buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-buff-line @{linenr@} [buffer])
+バッファから行を取得する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (set-buff-line {linenr} {string} [buffer])
+				    Set a line in a buffer. If {string} is #f,
+				    the line gets deleted.  The [buffer]
+				    argument is optional. If omitted, the
+				    current buffer will be used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (set-buff-line @{linenr@} @{string@} [buffer])
+バッファの @{linenr@} 行目を @{string@} にする。@{string@} が #f ならその行は削除される。引数 [buffer] は省略可能。省略された場合はカレントバッファが対象となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-buff-line-list {start} {end} [buffer])
+				    Get a list of lines in a buffer. {Start}
+				    and {end} are 1-based and inclusive.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-buff-line-list @{start@} @{end@} [buffer])
+バッファ内の行のリストを取得する。@{start@} と @{end@} は 1 から始まる。@{start@} 行目と @{end@} 行目は含まれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (set-buff-line-list {start} {end} {string-list} [buffer])
+				    Set a list of lines in a buffer. If
+				    string-list is #f or null, the lines get
+				    deleted. If a list is shorter than
+				    {end}-{start} the remaining lines will
+				    be deleted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (set-buff-line-list @{start@} @{end@} @{string-list@} [buffer])
+バッファに行のリストをセットする。@{string-list@} が #f または null の場合、その行は削除される。リストの長さが @{end@} - @{start@} 以下である場合、足りない分の行は削除される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-buff-name [buffer])	    Get a buffer's text name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-buff-name [buffer])
+バッファの名前を取得する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-buff-num [buffer])	    Get a buffer's number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-buff-num [buffer])
+バッファ番号を取得する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-buff-size [buffer])	    Get buffer line count.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-buff-size [buffer])
+バッファの行数を取得する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (insert-buff-line-list {linenr} {string/string-list} [buffer])
+				    Insert a list of lines into a buffer after
+				    {linenr}. If {linenr} is 0, lines will be
+				    inserted at start.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (insert-buff-line-list @{linenr@} @{string/string-list@} [buffer])
+@{linenr@} 行目の後ろに行を挿入する。@{linenr@} が 0 の場合、バッファの先頭に挿入される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (curr-buff)			    Get the current buffer. Use other MzScheme
+				    interface procedures to change it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (curr-buff)
+カレントバッファ(オブジェクト)を取得する。バッファを変更するには他の MzScheme インターフェイス手続きを使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (buff-count)		    Get count of total buffers in the editor.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (buff-count)
+バッファの総数を取得する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-next-buff [buffer])	    Get next buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-next-buff [buffer])
+次のバッファを取得する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-prev-buff [buffer])	    Get previous buffer. Return #f when there
+				    are no more buffers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-prev-buff [buffer])
+前のバッファを取得する。それ以上前が存在しないときは #f を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (open-buff {filename})	    Open a new buffer (for file "name")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (open-buff @{filename@})
+@{filename@} という名前で新規バッファを開く
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-buff-by-name {buffername}) Get a buffer by its filename or #f
+					if there is no such buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-buff-by-name @{buffername@})
+バッファ名を指定してバッファオブジェクトを取得する。見つからなければ #f を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-buff-by-num {buffernum})   Get a buffer by its number (return #f if
+				    there is no buffer with this number).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-buff-by-num @{buffernum@})
+バッファ番号を指定してバッファオブジェクトを取得する。見つからなければ #f を返す。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Windows							    *mzscheme-window*
+------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mzscheme-window}
+@cindex mzscheme-window
+@unnumberedsubsec ウィンドウ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (win? {object})		    Is object a window?
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item (win? @{object@})
+オブジェクトはウィンドウか？
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (win-valid? {object})	    Is object a valid window (i.e. corresponds
+				    to the real Vim window)?
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (win-valid? @{object@})
+オブジェクトは有効なウィンドウであるか？(実際に Vim のウィンドウに対応しているか)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (curr-win)			    Get the current window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (curr-win)
+カレントウィンドウ (オブジェクト) を取得する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (win-count)			    Get count of windows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (win-count)
+ウィンドウの個数を取得する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-win-num [window])	    Get window number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-win-num [window])
+ウィンドウ番号を取得する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-win-by-num {windownum})    Get window by its number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-win-by-num @{windownum@})
+番号を指定してウィンドウを取得する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-win-buffer	[window])   Get the buffer for a given window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-win-buffer [window])
+指定したウィンドウ内のバッファを取得する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-win-height [window])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-win-height [window])
+ウィンドウの高さを取得する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (set-win-height {height} [window])  Get/Set height of window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (set-win-height @{height@} [window])
+ウィンドウの高さをセットする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-win-width [window])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-win-width [window])
+ウィンドウの幅を取得する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (set-win-width {width} [window])Get/Set width of window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (set-win-width @{width@} [window])
+ウィンドウの幅をセットする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-win-list [buffer])	    Get list of windows for a buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-win-list [buffer])
+バッファを表示しているウィンドウのリスト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (get-cursor [window])	    Get cursor position in a window as
+				    a pair (linenr . column).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (get-cursor [window])
+ウィンドウ内のカーソル位置をペア (linenr . column) として取得する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    (set-cursor (line . col) [window])  Set cursor position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item (set-cursor (line . col) [window])
+カーソル位置をセットする
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. mzeval() Vim function				    *mzscheme-mzeval*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mzscheme-mzeval}
+@cindex mzscheme-mzeval
+@section 5. mzeval() Vim 関数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To facilitate bi-directional interface, you can use |mzeval()| function to
+evaluate MzScheme expressions and pass their values to Vim script.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+相互接続を容易にするために |mzeval()| 関数が提供されています。この関数は MzScheme の式を評価してその結果を Vim script の値に変換したものを返します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Using Function references				    *mzscheme-funcref*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mzscheme-funcref}
+@cindex mzscheme-funcref
+@section 6. 関数参照を使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+MzScheme interface allows use of |Funcref|s so you can call Vim functions
+directly from Scheme. For instance: >
+    function! MyAdd2(arg)
+	return a:arg + 2
+    endfunction
+    mz (define f2 (vim-eval "function(\"MyAdd2\")"))
+    mz (f2 7)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MzScheme インターフェイスでは関数参照 (|Funcref|) が使えます。Vim の関数を Scheme から直接呼び出せます。例:
+@example
+function! MyAdd2(arg)
+    return a:arg + 2
+endfunction
+mz (define f2 (vim-eval "function(\"MyAdd2\")"))
+mz (f2 7)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+< or : >
+    :mz (define indent (vim-eval "function('indent')"))
+    " return Vim indent for line 12
+    :mz (indent 12)
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+または:
+@example
+:mz (define indent (vim-eval "function('indent')"))
+" return Vim indent for line 12
+:mz (indent 12)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. Dynamic loading				*mzscheme-dynamic* *E815*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mzscheme-dynamic}
+@anchor{E815}
+@cindex mzscheme-dynamic
+@cindex E815
+@section 7. 動的ローディング
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On MS-Windows the MzScheme libraries can be loaded dynamically. The |:version|
+output then includes |+mzscheme/dyn|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows では MzScheme ライブラリを動的に読み込むことが可能です。これを行うと |:version| の出力に |+mzscheme/dyn| が含まれるようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This means that Vim will search for the MzScheme DLL files only when needed.
+When you don't use the MzScheme interface you don't need them, thus you can
+use Vim without these DLL files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この場合、Vim は必要なときだけ MzScheme の DLL ファイルを検索するようになります。MzScheme インターフェイスを使わないときは DLL を必要としないので、DLL なしで Vim を使うことができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+NOTE: Newer version of MzScheme (Racket) require earlier (trampolined)
+initialisation via scheme_main_setup.  So Vim always loads the MzScheme DLL at
+startup if possible.  This may make Vim startup slower.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+比較的新しいバージョンの MzScheme (Racket) は scheme_main_setup によるトランポリンを用いた事前初期化処理を必要とします。そのために Vim は可能であれば常に MzScheme の DLL を初期化時に読み込みます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To use the MzScheme interface the MzScheme DLLs must be in your search path.
+In a console window type "path" to see what directories are used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MzScheme インターフェイスを使うには MzScheme の DLL が検索パス内に存在しなければなりません。コンソールウィンドウで "path" とタイプすると、どのディレクトリが検索パスとなるか表示できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On MS-Windows the options 'mzschemedll' and 'mzschemegcdll' are used for the
+name of the library to load.  The initial value is specified at build time.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows では、'@option{mzschemedll}' と '@option{mzschemegcdll}' オプションはロードするためのライブラリ名として使われる。初期値はビルド時に指定されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The version of the DLL must match the MzScheme version Vim was compiled with.
+For MzScheme version 209 they will be "libmzsch209_000.dll" and
+"libmzgc209_000.dll". To know for sure look at the output of the ":version"
+command, look for -DDYNAMIC_MZSCH_DLL="something" and
+-DDYNAMIC_MZGC_DLL="something" in the "Compilation" info.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+DLL の名前は Vim をコンパイルした時の MzScheme のバージョンと一致しなければなりません。MzScheme 209 用ならば "libmzsch209_000.dll" と "libmzgc209_000.dll" となるでしょう。確認するには ":version" コマンドの出力を見て、コンパイル情報から -DDYNAMIC_MZSCH_DLL="なんらか" と -DDYNAMIC_MZGC_DLL="なんらか" を探してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, if MzScheme (Racket) is installed at C:\Racket63, you may need
+to set the environment variable as the following: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、MzScheme (Racket) が C:\Racket63 にインストールされている場合、次のように環境変数を設定する必要があるかもしれません:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  PATH=%PATH%;C:\Racket63\lib
+  PLTCOLLECTS=C:\Racket63\collects
+  PLTCONFIGDIR=C:\Racket63\etc
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+PATH=%PATH%;C:\Racket63\lib
+PLTCOLLECTS=C:\Racket63\collects
+PLTCONFIGDIR=C:\Racket63\etc
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+==============================================================================
+8. MzScheme setup				    *mzscheme-setup* *E895*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{mzscheme-setup}
+@anchor{E895}
+@cindex mzscheme-setup
+@cindex E895
+@section 8. MzScheme のセットアップ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim requires "racket/base" module for if_mzsch core (fallback to "scheme/base"
+if it doesn't exist), "r5rs" module for test and "raco ctool" command for
+building Vim.  If MzScheme did not have them, you can install them with
+MzScheme's raco command:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は if_mzsch のコアモジュールとして "racket/base" (もし存在しなければ "scheme/base" にフォールバックします) を、テストのために "r5rs" モジュールを、そして Vim のビルド時に必要な "raco ctool" コマンドを要求します。MzScheme がそれらを持っていなかった場合は MzScheme の raco コマンドで次のようにインストールできます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+  raco pkg install scheme-lib       # scheme/base module
+  raco pkg install r5rs-lib         # r5rs module
+  raco pkg install cext-lib         # raco ctool command
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+raco pkg install scheme-lib       # scheme/base module
+raco pkg install r5rs-lib         # r5rs module
+raco pkg install cext-lib         # raco ctool command
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+======================================================================
+  vim:tw=78:ts=8:sts=4:ft=help:norl:
+@end ifset

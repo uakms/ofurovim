@@ -1,0 +1,1288 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node if_cscop.txt, , , 目次
+@unnumbered cscope を使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*if_cscop.txt*  For Vim version 8.0.  Last change: 2018 Jan 21
+
+
+		  VIM REFERENCE MANUAL    by Andy Kahn
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*if_cscop.txt*  For Vim バージョン 8.0.  Last change: 2018 Jan 21
+
+
+                  VIMリファレンスマニュアル    by Andy Kahn
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*cscope* *Cscope*
+This document explains how to use Vim's cscope interface.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscope}
+@anchor{Cscope}
+@cindex cscope
+@cindex Cscope
+この文章は Vim における cscope インターフェイスの使い方について述べている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Cscope is a tool like ctags, but think of it as ctags on steroids since it
+does a lot more than what ctags provides.  In Vim, jumping to a result from
+a cscope query is just like jumping to any tag; it is saved on the tag stack
+so that with the right keyboard mappings, you can jump back and forth between
+functions as you normally would with |tags|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+cscope は ctags のようなツールであるが、ctags よりも多くの機能が提供されるので ctags の代わりとみなせる。Vim ではタグにジャンプするように、cscope クエリの結果へジャンプすることができる; ジャンプの履歴はタグスタックに保存されいつものキーマッピングにより、普段 |tags| でやるように関数の間を行ったり来たりできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Cscope introduction		|cscope-intro|
+2. Cscope related commands	|cscope-commands|
+3. Cscope options		|cscope-options|
+4. How to use cscope in Vim	|cscope-howtouse|
+5. Limitations			|cscope-limitations|
+6. Suggested usage		|cscope-suggestions|
+7. Availability & Information	|cscope-info|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. Cscope の紹介 @tab |@ref{cscope-intro, , cscope-intro}|
+@item 2. Cscope に関係するコマンド @tab |@ref{cscope-commands, , cscope-commands}|
+@item 3. Cscope オプション @tab |@ref{cscope-options, , cscope-options}|
+@item 4. Vim での cscope の使い方 @tab |@ref{cscope-howtouse, , cscope-howtouse}|
+@item 5. 制限事項 @tab |@ref{cscope-limitations, , cscope-limitations}|
+@item 6. 使い方の提案 @tab |@ref{cscope-suggestions, , cscope-suggestions}|
+@item 7. 入手法と情報 @tab |@ref{cscope-info, , cscope-info}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is currently for Unix and Win32 only.
+{Vi does not have any of these commands}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在のところ UNIX と Win32 で使える。
+
+@{Vi にはこれらのコマンドはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Cscope introduction					*cscope-intro*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscope-intro}
+@cindex cscope-intro
+@section 1. Cscope の紹介
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The following text is taken from a version of the cscope man page:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下の文章はあるバージョンの cscope のマニュアルから引用した:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				    -----
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  Cscope is an interactive screen-oriented tool that helps you:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+cscope は貴方を助けるインタラクティブなスクリーン指向のツールです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+       Learn how a C program works without endless flipping through a thick
+       listing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item いつ終わるかわからない厚いソースリストのページをめくることなく、C プログラムがどのように働くかを知る。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+       Locate the section of code to change to fix a bug without having to
+       learn the entire program.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item プログラム全体を知らなくても、バグを修正するために変更すべきコードの位置を見つける。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+       Examine the effect of a proposed change such as adding a value to an
+       enum variable.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 列挙変数 (enum) に値を追加するといった提案された変更の影響を検証する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+       Verify that a change has been made in all source files such as adding
+       an argument to an existing function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 既存の関数に引数を追加したというような全部のソースファイルに施された変更を検証する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+       Rename a global variable in all source files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 全部のソースファイルのグローバル変数の名前を変える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+       Change a constant to a preprocessor symbol in selected lines of files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ファイルの指定された行にある定数をプリプロセッサーのシンボルに変更する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  It is designed to answer questions like:
+       Where is this symbol used?
+       Where is it defined?
+       Where did this variable get its value?
+       What is this global symbol's definition?
+       Where is this function in the source files?
+       What functions call this function?
+       What functions are called by this function?
+       Where does the message "out of space" come from?
+       Where is this source file in the directory structure?
+       What files include this header file?
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item これは次のような質問に答えるように意図されている:
+@itemize
+@item どこでこのシンボルが使われたのか？
+@item それがどこで定義されたのか？
+@item この変数がどこでその値を得たのか？
+@item このグローバルシンボルの定義は何か？
+@item この関数はどのソースファイルのどこにあるのか？
+@item どの関数がこの関数を呼んでいるのか？
+@item どの関数がこの関数から呼ばれているか？
+@item "メモリが足りない" というメッセージはどこから来たのか？
+@item このソースファイルはディレクトリのどこにあるのか？
+@item どんなファイルがこのヘッダーファイルをインクルードしているのか？
+@end itemize
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  Cscope answers these questions from a symbol database that it builds the
+  first time it is used on the source files.  On a subsequent call, cscope
+  rebuilds the database only if a source file has changed or the list of
+  source files is different.  When the database is rebuilt the data for the
+  unchanged files is copied from the old database, which makes rebuilding
+  much faster than the initial build.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+cscope は起動すると最初に 1 度だけソースファイルからシンボルデータベースを作成し、このデータベースを用いてこれらの質問に答える。2 度目以降の起動では、ソースファイルが変更されたかソースファイルのリストが異なる時にだけデータベースが再構築される。データベースが再構築される時でも変更されていないファイルについては過去のデータベースよりコピーされるので、初めから構築し直すよりも高速に構築できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				    -----
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When cscope is normally invoked, you will get a full-screen selection
+screen allowing you to make a query for one of the above questions.
+However, once a match is found to your query and you have entered your
+text editor to edit the source file containing match, you cannot simply
+jump from tag to tag as you normally would with vi's Ctrl-] or :tag
+command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+通常 cscope を起動すると、上のような問い合わせ (クエリ) を入力できるフルスクリーンの選択画面が表示される。しかしながら、一度クエリが見つかりマッチを含むソースファイルを編集するためのエディタを指定してあると、普段 vi で @kbd{Ctrl-]} や @command{:tag} コマンドでやっているようなタグからタグへの単純なジャンプはできなくなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim's cscope interface is done by invoking cscope with its line-oriented
+interface, and then parsing the output returned from a query.  The end
+result is that cscope query results become just like regular tags, so
+you can jump to them just like you do with normal tags (Ctrl-] or :tag)
+and then go back by popping off the tagstack with Ctrl-T.  (Please note
+however, that you don't actually jump to a cscope tag simply by doing
+Ctrl-] or :tag without remapping these commands or setting an option.
+See the remaining sections on how the cscope interface works and for
+suggested use.)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の cscope インターフェイスは cscope の行指向インターフェイスを利用することでこれを行い、実クエリに対する出力を解釈する。cscope のクエリの結果は最終的に通常の tags のようになるので、普通のタグのようなジャンプ操作 (@kbd{Ctrl-]} や @command{:tag}) を行うことができ、タグスタックを @kbd{Ctrl-T} で逆に辿ることも可能になる。(しかしキーマップの再定義やコマンドやオプションの設定をしないで、まったく単純に @kbd{Ctrl-]} や @command{:tag} と同じようにジャンプできるわけではないことに注意して欲しい。cscope インターフェイスがどのように働くのか、どういう使い方が提案されているのかは残りのセクションを参照。)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+2. Cscope related commands				*cscope-commands*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscope-commands}
+@cindex cscope-commands
+@section 2. Cscope に関係するコマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		*:cscope* *:cs* *:scs* *:scscope* *E259* *E262* *E561* *E560*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cscope}
+@anchor{:cs}
+@anchor{:scs}
+@anchor{:scscope}
+@anchor{E259}
+@anchor{E262}
+@anchor{E561}
+@anchor{E560}
+@cindex :cscope
+@cindex :cs
+@cindex :scs
+@cindex :scscope
+@cindex E259
+@cindex E262
+@cindex E561
+@cindex E560
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+All cscope commands are accessed through suboptions to the cscope commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべての cscope コマンドは、cscope コマンドへのサブオプションを通して利用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	`:cscope` or `:cs` is the main command
+	`:scscope` or `:scs` does the same and splits the window
+	`:lcscope` or `:lcs` uses the location list, see |:lcscope|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item `@command{:cscope}` もしくは `@command{:cs}` はメインコマンド。
+@item `@command{:scscope}` もしくは `@command{:scs}` は同じでウィンドウを分割する。
+@item `@command{:lcscope}` もしくは `@command{:lcs}` はロケーションリストを使う。|:lcscope| を参照。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The available subcommands are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+利用可能なサブコマンドは:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			*E563* *E564* *E566* *E568* *E622* *E623* *E625*
+			*E626* *E609*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E563}
+@anchor{E564}
+@anchor{E566}
+@anchor{E568}
+@anchor{E622}
+@anchor{E623}
+@anchor{E625}
+@anchor{E626}
+@anchor{E609}
+@cindex E563
+@cindex E564
+@cindex E566
+@cindex E568
+@cindex E622
+@cindex E623
+@cindex E625
+@cindex E626
+@cindex E609
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    add   : Add a new cscope database/connection.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item add
+新しい cscope データベース/接続を追加する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	USAGE	:cs add {file|dir} [pre-path] [flags]
+
+	    [pre-path] is the pathname used with the -P command to cscope.
+
+	    [flags] are any additional flags you want to pass to cscope.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使用法 :cs add @{file|dir@} [pre-path] [flags]
+
+[pre-path] cscope に -P コマンドで渡されるパス名
+
+[flags] cscope に引き渡す追加フラグ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	EXAMPLES >
+	    :cscope add /usr/local/cdb/cscope.out
+	    :cscope add /projects/vim/cscope.out /usr/local/vim
+	    :cscope add cscope.out /usr/local/vim -C
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例
+@example
+:cscope add /usr/local/cdb/cscope.out
+:cscope add /projects/vim/cscope.out /usr/local/vim
+:cscope add cscope.out /usr/local/vim -C
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				      *cscope-find* *cs-find* *E567*
+    find  : Query cscope.  All cscope query options are available
+	    except option #5 ("Change this grep pattern").
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscope-find}
+@anchor{cs-find}
+@anchor{E567}
+@cindex cscope-find
+@cindex cs-find
+@cindex E567
+@item find
+cscope に問い合わせる。#5 オプション (grep パターンを変更する) 以外の全 cscope クエリオプションが使用可能。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	USAGE	:cs find {querytype} {name}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使用法 :cs find @{querytype@} @{name@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	    {querytype} corresponds to the actual cscope line
+	    interface numbers as well as default nvi commands:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{querytype@} は実際の cscope のラインインターフェイスの番号 (デフォルトの nvi コマンド) に対応する:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		0 or s: Find this C symbol
+		1 or g: Find this definition
+		2 or d: Find functions called by this function
+		3 or c: Find functions calling this function
+		4 or t: Find this text string
+		6 or e: Find this egrep pattern
+		7 or f: Find this file
+		8 or i: Find files #including this file
+		9 or a: Find places where this symbol is assigned a value
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item 0 or s: @tab C のシンボルを検索
+@item 1 or g: @tab 定義を検索
+@item 2 or d: @tab この関数から呼ばれる関数を検索
+@item 3 or c: @tab この関数を呼んでいる関数を検索
+@item 4 or t: @tab 文字列を検索
+@item 6 or e: @tab egrep パターンを検索
+@item 7 or f: @tab このファイルを検索
+@item 8 or i: @tab このファイルを参照 (#include) しているファイルを検索
+@item 9 or a: @tab このシンボルが変数に割り当てられた場所を検索
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	For all types, except 4 and 6, leading white space for {name} is
+	removed.  For 4 and 6 there is exactly one space between {querytype}
+	and {name}.  Further white space is included in {name}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+4 と 6 以外のタイプでは、@{name@} における先頭のスペースは取り除かれる。4 と 6 では @{querytype@} と @{name@} の間にちょうど 1 個のスペースが挿入される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	EXAMPLES >
+	    :cscope find c vim_free
+	    :cscope find 3  vim_free
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例
+@example
+:cscope find c vim_free
+:cscope find 3  vim_free
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	    These two examples perform the same query: functions calling
+	    "vim_free". >
+
+	    :cscope find t initOnce
+	    :cscope find t  initOnce
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この 2 つの例は、同じクエリ ("vim_free" を呼び出している関数を検索) を実行する。
+@example
+:cscope find t initOnce
+:cscope find t  initOnce
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	    The first one searches for the text "initOnce", the second one for
+	    " initOnce". >
+
+	    :cscope find 0 DEFAULT_TERM
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この例の上の方は、"initOnce" というテキストを検索し、下の方は "initOnce" を検索する。
+@example
+:cscope find 0 DEFAULT_TERM
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	    Executing this example on the source code for Vim 5.1 produces the
+	    following output:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この例を Vim 5.1 のソースコードに対して行うと、以下の出力を生成する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	    Cscope tag: DEFAULT_TERM
+	       #   line  filename / context / line
+	       1   1009  vim-5.1-gtk/src/term.c <<GLOBAL>>
+			 #define DEFAULT_TERM (char_u *)"amiga"
+	       2   1013  vim-5.1-gtk/src/term.c <<GLOBAL>>
+			 #define DEFAULT_TERM (char_u *)"win32"
+	       3   1017  vim-5.1-gtk/src/term.c <<GLOBAL>>
+			 #define DEFAULT_TERM (char_u *)"pcterm"
+	       4   1021  vim-5.1-gtk/src/term.c <<GLOBAL>>
+			 #define DEFAULT_TERM (char_u *)"ansi"
+	       5   1025  vim-5.1-gtk/src/term.c <<GLOBAL>>
+			 #define DEFAULT_TERM (char_u *)"vt52"
+	       6   1029  vim-5.1-gtk/src/term.c <<GLOBAL>>
+			 #define DEFAULT_TERM (char_u *)"os2ansi"
+	       7   1033  vim-5.1-gtk/src/term.c <<GLOBAL>>
+			 #define DEFAULT_TERM (char_u *)"ansi"
+	       8   1037  vim-5.1-gtk/src/term.c <<GLOBAL>>
+			 # undef DEFAULT_TERM
+	       9   1038  vim-5.1-gtk/src/term.c <<GLOBAL>>
+			 #define DEFAULT_TERM (char_u *)"beos-ansi"
+	      10   1042  vim-5.1-gtk/src/term.c <<GLOBAL>>
+			 #define DEFAULT_TERM (char_u *)"mac-ansi"
+	      11   1335  vim-5.1-gtk/src/term.c <<set_termname>>
+			 term = DEFAULT_TERM;
+	      12   1459  vim-5.1-gtk/src/term.c <<set_termname>>
+			 if (STRCMP(term, DEFAULT_TERM))
+	      13   1826  vim-5.1-gtk/src/term.c <<termcapinit>>
+			 term = DEFAULT_TERM;
+	      14   1833  vim-5.1-gtk/src/term.c <<termcapinit>>
+			 term = DEFAULT_TERM;
+	      15   3635  vim-5.1-gtk/src/term.c <<update_tcap>>
+			 p = find_builtin_term(DEFAULT_TERM);
+	    Enter nr of choice (<CR> to abort):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+Cscope tag: DEFAULT_TERM
+   #   line  filename / context / line
+   1   1009  vim-5.1-gtk/src/term.c <<GLOBAL>>
+             #define DEFAULT_TERM (char_u *)"amiga"
+   2   1013  vim-5.1-gtk/src/term.c <<GLOBAL>>
+             #define DEFAULT_TERM (char_u *)"win32"
+   3   1017  vim-5.1-gtk/src/term.c <<GLOBAL>>
+             #define DEFAULT_TERM (char_u *)"pcterm"
+   4   1021  vim-5.1-gtk/src/term.c <<GLOBAL>>
+             #define DEFAULT_TERM (char_u *)"ansi"
+   5   1025  vim-5.1-gtk/src/term.c <<GLOBAL>>
+             #define DEFAULT_TERM (char_u *)"vt52"
+   6   1029  vim-5.1-gtk/src/term.c <<GLOBAL>>
+             #define DEFAULT_TERM (char_u *)"os2ansi"
+   7   1033  vim-5.1-gtk/src/term.c <<GLOBAL>>
+             #define DEFAULT_TERM (char_u *)"ansi"
+   8   1037  vim-5.1-gtk/src/term.c <<GLOBAL>>
+             # undef DEFAULT_TERM
+   9   1038  vim-5.1-gtk/src/term.c <<GLOBAL>>
+             #define DEFAULT_TERM (char_u *)"beos-ansi"
+  10   1042  vim-5.1-gtk/src/term.c <<GLOBAL>>
+             #define DEFAULT_TERM (char_u *)"mac-ansi"
+  11   1335  vim-5.1-gtk/src/term.c <<set_termname>>
+             term = DEFAULT_TERM;
+  12   1459  vim-5.1-gtk/src/term.c <<set_termname>>
+             if (STRCMP(term, DEFAULT_TERM))
+  13   1826  vim-5.1-gtk/src/term.c <<termcapinit>>
+             term = DEFAULT_TERM;
+  14   1833  vim-5.1-gtk/src/term.c <<termcapinit>>
+             term = DEFAULT_TERM;
+  15   3635  vim-5.1-gtk/src/term.c <<update_tcap>>
+             p = find_builtin_term(DEFAULT_TERM);
+Enter nr of choice (<CR> to abort):
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	    The output shows several pieces of information:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+出力には幾つかの情報を示している:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	    1. The tag number (there are 15 in this example).
+	    2. The line number where the tag occurs.
+	    3. The filename where the tag occurs.
+	    4. The context of the tag (e.g., global, or the function name).
+	    5. The line from the file itself.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item タグの数 (例には 15 個ある)
+@item タグが在る行番号
+@item タグの在るファイル名
+@item タグのコンテキスト (例えばグローバルか関数名か)
+@item ファイルの該当行そのもの
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    help  : Show a brief synopsis.
+
+	    USAGE   :cs help
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item help
+短い解説を表示する。
+
+使用法  :cs help
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E261*
+    kill  : Kill a cscope connection (or kill all cscope connections).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E261}
+@cindex E261
+@item kill
+cscope との接続を切断する (もしくは全ての接続を切断する)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	    USAGE   :cs kill {num|partial_name}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使用法  :cs kill @{num|partial_name@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	    To kill a cscope connection, the connection number or a partial
+	    name must be specified.  The partial name is simply any part of
+	    the pathname of the cscope database.  Kill a cscope connection
+	    using the partial name with caution!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+cscope との接続を切断するには、接続番号か部分的な名前を指定しなければならない。「部分的名前」とは単純に cscope データベースのパス名の一部である。部分的名前を使用して cscope 接続を切断する時には注意すること！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	    If the specified connection number is -1, then _ALL_ cscope
+	    connections will be killed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+接続番号 -1 を指定すると、全ての cscope 接続が切断される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    reset : Reinit all cscope connections.
+
+	    USAGE   :cs reset
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item reset
+全ての cscope 接続を再初期化する。
+
+使用法  :cs reset
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    show  : Show cscope connections.
+
+	    USAGE   :cs show
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item show
+cscope 接続を表示する。
+
+使用法  :cs show
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:lcscope* *:lcs*
+This command is same as the ":cscope" command, except when the
+'cscopequickfix' option is set, the location list for the current window is
+used instead of the quickfix list to show the cscope results.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:lcscope}
+@anchor{:lcs}
+@cindex :lcscope
+@cindex :lcs
+このコマンドは "@command{:cscope}" とほぼ同じだが、オプション '@option{cscopequickfix}' がオンになっている場合、QuickFix リストでなくカレントウィンドウのロケーションリストで cscope の結果を表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:cstag* *E257* *E562*
+If you use cscope as well as ctags, |:cstag| allows you to search one or
+the other before making a jump.  For example, you can choose to first
+search your cscope database(s) for a match, and if one is not found, then
+your tags file(s) will be searched.  The order in which this happens
+is determined by the value of |csto|.  See |cscope-options| for more
+details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cstag}
+@anchor{E257}
+@anchor{E562}
+@cindex :cstag
+@cindex E257
+@cindex E562
+ctags と cscope を同じように使うのならば、両方を順に検索してジャンプを行うのに |:cstag| が利用できる。例えば、最初に cscope データベースを検索し、見つからなかった時には、tags ファイルを検索することができる。どちらを先に検索するかは |csto| の値で決まる。詳細は |cscope-options| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|:cstag| performs the equivalent of ":cs find g" on the identifier when
+searching through the cscope database(s).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:cstag| が cscope データベースを検索する時には、識別子に対して ":cs find g" と同じように働く。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|:cstag| performs the equivalent of |:tjump| on the identifier when searching
+through your tags file(s).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|:cstag| が tags ファイルを検索する時には、識別子に対して |:tjump| と同じように働く。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+3. Cscope options					*cscope-options*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscope-options}
+@cindex cscope-options
+@section 3. Cscopeオプション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use the |:set| command to set all cscope options.  Ideally, you would do
+this in one of your startup files (e.g., .vimrc).  Some cscope related
+variables are only valid within |.vimrc|.  Setting them after vim has
+started will have no effect!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+全ての cscope のオプションは |:set| コマンドによって設定できる。理想的には起動ファイルのどれか 1 つ (例: .vimrc) で行うであろう。cscope に関係する幾つかの変数は |.vimrc| の中だけで有効である。Vim が起動した後にそれらの変数を変更しても効果が無い！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*cscopeprg* *csprg*
+'cscopeprg' specifies the command to execute cscope.  The default is
+"cscope".  For example: >
+	:set csprg=/usr/local/bin/cscope
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscopeprg}
+@anchor{csprg}
+@cindex cscopeprg
+@cindex csprg
+'@option{cscopeprg}' には cscope を実行するコマンドを指定する。省略値は "cscope"。例:
+@example
+:set csprg=/usr/local/bin/cscope
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+					    *cscopequickfix* *csqf* *E469*
+{not available when compiled without the |+quickfix| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscopequickfix}
+@anchor{csqf}
+@anchor{E469}
+@cindex cscopequickfix
+@cindex csqf
+@cindex E469
+@{|+quickfix| 付きでコンパイルしないと利用できない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+'cscopequickfix' specifies whether to use quickfix window to show cscope
+results.  This is a list of comma-separated values. Each item consists of
+|cscope-find| command (s, g, d, c, t, e, f, i or a) and flag (+, - or 0).
+'+' indicates that results must be appended to quickfix window,
+'-' implies previous results clearance, '0' or command absence - don't use
+quickfix.  Search is performed from start until first command occurrence.
+The default value is "" (don't use quickfix anyway).  The following value
+seems to be useful: >
+	:set cscopequickfix=s-,c-,d-,i-,t-,e-,a-
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{cscopequickfix}' は cscope の結果を表示するためにクイックフィックスウィンドウを使うかどうかを決める。これはコンマ区切りのリストである。要素は |cscope-find| コマンド (s または g, d, c, t, e, f, i, a) とフラグ (+ または -, 0) から成っている。
+@itemize
+@item '+' は結果がクイックフィックスウィンドウに追加されることを示す。
+@item '-' はそれ以前の結果を消すことを意味する。
+@item '0' や何も指定していないコマンドはクイックフィックスウィンドウを使わない。
+@end itemize
+探索は始まりから最初のコマンドを見つけるまで実行される。デフォルトの値は "" (クイックフィックスを使わない)。次の値が便利だろう:
+@example
+:set cscopequickfix=s-,c-,d-,i-,t-,e-,a-
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cscopetag* *cst*
+If 'cscopetag' is set, the commands ":tag" and CTRL-] as well as "vim -t"
+will always use |:cstag| instead of the default :tag behavior.  Effectively,
+by setting 'cst', you will always search your cscope databases as well as
+your tag files.  The default is off.  Examples: >
+	:set cst
+	:set nocst
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscopetag}
+@anchor{cst}
+@cindex cscopetag
+@cindex cst
+'@option{cscopetag}' が設定されていると、コマンド "@command{:tags}", @kbd{CTRL-]} そして "@command{vim -t}" はデフォルトの @command{:tag} の代わりに、常に ":cstag" を使うようになる。事実上、tag ファイルと同じように cscope データベースを検索することができるようになるだろう。省略した場合はオフ。例:
+@example
+:set cst
+:set nocst
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cscoperelative* *csre*
+If 'cscoperelative' is set, then in absence of a prefix given to cscope
+(prefix is the argument of -P option of cscope), basename of cscope.out
+location (usually the project root directory) will be used as the prefix
+to construct an absolute path.  The default is off.  Note: This option is
+only effective when cscope (cscopeprg) is initialized without a prefix
+path (-P).  Examples: >
+	:set csre
+	:set nocsre
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscoperelative}
+@anchor{csre}
+@cindex cscoperelative
+@cindex csre
+'@option{cscoperelative}' が設定されていて、cscope にプリフィックスが与えられていない場合 (プリフィックスは cscope の -P オプションの引数である)、絶対パスを得るために、cscope.out が保存されているディレクトリ (通常はプロジェクトのルート) が使われる。初期設定はオフである。
+@quotation
+@strong{Note:} @*
+このオプションは cscope (cscopeprg) がプリフィックスパス (-P) なしで初期化されている場合のみ効果がある。
+@end quotation
+例:
+@example
+:set csre
+:set nocsre
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cscopetagorder* *csto*
+The value of 'csto' determines the order in which |:cstag| performs a search.
+If 'csto' is set to zero, cscope database(s) are searched first, followed
+by tag file(s) if cscope did not return any matches.  If 'csto' is set to
+one, tag file(s) are searched before cscope database(s).  The default is zero.
+Examples: >
+	:set csto=0
+	:set csto=1
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscopetagorder}
+@anchor{csto}
+@cindex cscopetagorder
+@cindex csto
+'@option{csto}' の値は |:cstag| が検索を実行する順序を決定する。'@option{csto}' が 0 に設定されているならば、先に cscope データベースが検索され、cscope では見つからなかった時にだけ tag ファイルが検索される。'@option{csto}' が1ならば、cscope データベースの前に tags ファイルが検索される。省略値は 0。例:
+@example
+:set csto=0
+:set csto=1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*cscopeverbose* *csverb*
+If 'cscopeverbose' is not set (the default), messages will not be printed
+indicating success or failure when adding a cscope database.  Ideally, you
+should reset this option in your |.vimrc| before adding any cscope databases,
+and after adding them, set it.  From then on, when you add more databases
+within Vim, you will get a (hopefully) useful message should the database fail
+to be added.  Examples: >
+	:set csverb
+	:set nocsverb
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscopeverbose}
+@anchor{csverb}
+@cindex cscopeverbose
+@cindex csverb
+'@option{cscopeverbose}' が設定されていないと (デフォルト)、cscope データベースを追加した際の成否結果のメッセージが表示されない。理想的には、|.vimrc| の中で cscope データベースを追加する前にリセットし、追加し終わった後で設定すべきである。設定しておけば、Vim 使用中にデータベースの追加に失敗した時、(望むらくは原因を特定するのに) 役立つメッセージが表示されるだろう。例:
+@example
+:set csverb
+:set nocsverb
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						      *cscopepathcomp* *cspc*
+The value of 'cspc' determines how many components of a file's path to
+display.  With the default value of zero the entire path will be displayed.
+The value one will display only the filename with no path.  Other values
+display that many components.  For example: >
+	:set cspc=3
+will display the last 3 components of the file's path, including the file
+name itself.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscopepathcomp}
+@anchor{cspc}
+@cindex cscopepathcomp
+@cindex cspc
+'@option{cspc}' の値はファイルパスのうち幾つの構成要素を表示するか決定する。省略値である 0 を設定した時には完全なパスが表示される。値として 1 を設定すればファイル名だけが表示される。その他の値であれば、その数だけ構成要素を表示する。例:
+@example
+:set cspc=3
+@end example
+ファイルパスのうち最後の 3 つ (ファイル名と 2 段上までのディレクトリ名) を表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. How to use cscope in Vim				*cscope-howtouse*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscope-howtouse}
+@cindex cscope-howtouse
+@section 4. Vim での cscope の使い方
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first thing you need to do is to build a cscope database for your
+source files.  For the most basic case, simply do "cscope -b".  Please
+refer to the cscope man page for more details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初にやらなければならないことは、ソースコードに対して cscope データベースを構築することである。最も基本的なケースでは、単純に "cscope -b" とする。詳細については cscope のマニュアル (man ページ) を参照して欲しい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Assuming you have a cscope database, you need to "add" the database to Vim.
+This establishes a cscope "connection" and makes it available for Vim to use.
+You can do this in your .vimrc file, or you can do it manually after starting
+vim.  For example, to add the cscope database "cscope.out", you would do:
+
+	:cs add cscope.out
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+cscope データベースがあるならば、次にそのデータベースを Vim へ "add" しなければならない。これは cscope との "接続" を確立し、それを Vim が使えるような状態にする。これは @file{.vimrc} や、vim 起動後に手動で行うことができる。例えば、cscope データベース "cscope.out" を追加するには、次のようにする:
+@example
+:cs add cscope.out
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can double-check the result of this by executing ":cs show".  This will
+produce output which looks like this:
+
+ # pid	  database name			      prepend path
+ 0 28806  cscope.out			      <none>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この結果は ":cs show" を実行することでもう一度チェックすることができる。これは次のような出力を生成する:
+@verbatim
+# pid    database name                        prepend path
+0 28806  cscope.out                           <none>
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note:
+Because of the Microsoft RTL limitations, Win32 version shows 0 instead
+of the real pid.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Microsoft のランタイムライブラリの制限により、Win32 バージョンでは本当のプロセス ID ではなく 0 が表示される。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Once a cscope connection is established, you can make queries to cscope and
+the results will be printed to you.  Queries are made using the command
+":cs find".  For example:
+
+	:cs find g ALIGN_SIZE
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一旦 cscope 接続が確立されれば、cscope へクエリを送信でき、その結果を表示することができる。クエリは ":cs find" コマンドにより生成される。例:
+@example
+:cs find g ALIGN_SIZE
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This can get a little cumbersome since one ends up doing a significant
+amount of typing.  Fortunately, there are ways around this by mapping
+shortcut keys.  See |cscope-suggestions| for suggested usage.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは最終的に結構な量のタイプを必要とするのでやっかいである。しかしながら、ショートカットキーをマッピングしてこれを避ける方法がある。その方法については |cscope-suggestions| を参照のこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the results return only one match, you will automatically be taken to it.
+If there is more than one match, you will be given a selection screen to pick
+the match you want to go to.  After you have jumped to the new location,
+simply hit Ctrl-T to get back to the previous one.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一致する項目が 1 つしかなければ、自動的にその場所へ移動する。複数の結果が得られた場合には、行きたい項目を選択できる画面が表示される。新しい場所へ移動した後は、単に @kbd{CTRL-T} をタイプすることで以前の位置へ戻ることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+5. Limitations						*cscope-limitations*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscope-limitations}
+@cindex cscope-limitations
+@section 5. 制限事項
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Cscope support for Vim is only available on systems that support these four
+system calls: fork(), pipe(), execl(), waitpid().  This means it is mostly
+limited to Unix systems.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の cscope 機能は 4 つのシステムコール: fork(), pipe(), execl(), waitpid() をサポートしているシステムでのみ利用可能である。これはほとんど UNIX システムだけに限られることを意味している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Additionally Cscope support works for Win32.  For more information and a
+cscope version for Win32 see:
+
+	http://iamphet.nm.ru/cscope/index.html
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+加えて、Cscope は Win32 でも動く。Win32 で動く cscope について詳しくは次のサイトを見ること。
+
+@url{http://iamphet.nm.ru/cscope/index.html}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The DJGPP-built version from http://cscope.sourceforge.net is known to not
+work with Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@url{http://cscope.sourceforge.net} でダウンロードできる、DJGPP でビルドしたバージョンは、Vim では動かないことがわかっている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Hard-coded limitation: doing a |:tjump| when |:cstag| searches the tag files
+is not configurable (e.g., you can't do a tselect instead).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ハードコードされた限界: |:cstag| がタグファイルを検索するときの |:tjump| の動作はカスタマイズできない (例: tjump でなく tselect を使うことができない)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Suggested usage					*cscope-suggestions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscope-suggestions}
+@cindex cscope-suggestions
+@section 6. 使い方の提案
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Put these entries in your .vimrc (adjust the pathname accordingly to your
+setup): >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のエントリを @file{.vimrc} に記述する (パス名は環境にあわせて然るべく変更すること):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	if has("cscope")
+		set csprg=/usr/local/bin/cscope
+		set csto=0
+		set cst
+		set nocsverb
+		" add any database in current directory
+		if filereadable("cscope.out")
+		    cs add cscope.out
+		" else add database pointed to by environment
+		elseif $CSCOPE_DB != ""
+		    cs add $CSCOPE_DB
+		endif
+		set csverb
+	endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if has("cscope")
+        set csprg=/usr/local/bin/cscope
+        set csto=0
+        set cst
+        set nocsverb
+        " add any database in current directory
+        if filereadable("cscope.out")
+            cs add cscope.out
+        " else add database pointed to by environment
+        elseif $CSCOPE_DB != ""
+            cs add $CSCOPE_DB
+        endif
+        set csverb
+endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+By setting 'cscopetag', we have effectively replaced all instances of the :tag
+command with :cstag.  This includes :tag, Ctrl-], and "vim -t".  In doing
+this, the regular tag command not only searches your ctags generated tag
+files, but your cscope databases as well.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{cscopetag}' を設定することで、@command{:tag} コマンドの実体を @command{:cstag} で効率的に置き換えている。これには @command{:tags}, @kbd{CTRL-]}, そして "@command{vim -t}" も含まれる。こうすることで、通常の tag コマンドは ctags が生成した tag ファイルだけでなく、cscope データベースも検索するようになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some users may want to keep the regular tag behavior and have a different
+shortcut to access :cstag.  For example, one could map Ctrl-_  (underscore)
+to :cstag with the following command: >
+
+	map <C-_> :cstag <C-R>=expand("<cword>")<CR><CR>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+あるユーザーは通常の tag の振る舞いはそのままに、@command{:cstag} へアクセスする異なったショートカットを望むかもしれない。例えば次のコマンドで @kbd{CTRL-_} (アンダースコア) に @command{:cstag} をマップできる:
+@example
+map <C-_> :cstag <C-R>=expand("<cword>")<CR><CR>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A couple of very commonly used cscope queries (using ":cs find") is to
+find all functions calling a certain function and to find all occurrences
+of a particular C symbol.  To do this, you can use these mappings as an
+example: >
+
+	map g<C-]> :cs find 3 <C-R>=expand("<cword>")<CR><CR>
+	map g<C-\> :cs find 0 <C-R>=expand("<cword>")<CR><CR>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+良く使われる 2 つの cscope のクエリ (":cs find" を使う) は、ある関数を読んでいる全ての関数を探すのと、ある C のシンボルを使用している箇所全てを探すものである。これを行うには、例としてこのようなマップを使うことができる:
+@example
+map g<C-]> :cs find 3 <C-R>=expand("<cword>")<CR><CR>
+map g<C-\> :cs find 0 <C-R>=expand("<cword>")<CR><CR>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These mappings for Ctrl-] (right bracket) and Ctrl-\ (backslash) allow you to
+place your cursor over the function name or C symbol and quickly query cscope
+for any matches.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このマッピングにより @kbd{CTRL-]} (右角カッコ) と @kbd{CTRL-\} (バックスラッシュ) を、カーソルの下にある関数名や C シンボルを素早く cscope に問い合わせ結果を得るのに利用できるようになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Or you may use the following scheme, inspired by Vim/Cscope tutorial from
+Cscope Home Page (http://cscope.sourceforge.net/): >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしくは次の仕組みを使うこともできる。これは Vim/Cscope のチュートリアルに影響を受けました (@url{http://cscope.sourceforge.net/})。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	nmap <C-_>s :cs find s <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-_>g :cs find g <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-_>c :cs find c <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-_>t :cs find t <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-_>e :cs find e <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-_>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
+	nmap <C-_>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+	nmap <C-_>d :cs find d <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-_>a :cs find a <C-R>=expand("<cword>")<CR><CR>
+
+	" Using 'CTRL-spacebar' then a search type makes the vim window
+	" split horizontally, with search result displayed in
+	" the new window.
+
+	nmap <C-Space>s :scs find s <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-Space>g :scs find g <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-Space>c :scs find c <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-Space>t :scs find t <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-Space>e :scs find e <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-Space>f :scs find f <C-R>=expand("<cfile>")<CR><CR>
+	nmap <C-Space>i :scs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+	nmap <C-Space>d :scs find d <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-Space>a :scs find a <C-R>=expand("<cword>")<CR><CR>
+
+	" Hitting CTRL-space *twice* before the search type does a vertical
+	" split instead of a horizontal one
+
+	nmap <C-Space><C-Space>s
+		\:vert scs find s <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-Space><C-Space>g
+		\:vert scs find g <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-Space><C-Space>c
+		\:vert scs find c <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-Space><C-Space>t
+		\:vert scs find t <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-Space><C-Space>e
+		\:vert scs find e <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-Space><C-Space>i
+		\:vert scs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+	nmap <C-Space><C-Space>d
+		\:vert scs find d <C-R>=expand("<cword>")<CR><CR>
+	nmap <C-Space><C-Space>a
+		\:vert scs find a <C-R>=expand("<cword>")<CR><CR>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+nmap <C-_>s :cs find s <C-R>=expand("<cword>")<CR><CR>
+nmap <C-_>g :cs find g <C-R>=expand("<cword>")<CR><CR>
+nmap <C-_>c :cs find c <C-R>=expand("<cword>")<CR><CR>
+nmap <C-_>t :cs find t <C-R>=expand("<cword>")<CR><CR>
+nmap <C-_>e :cs find e <C-R>=expand("<cword>")<CR><CR>
+nmap <C-_>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
+nmap <C-_>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+nmap <C-_>d :cs find d <C-R>=expand("<cword>")<CR><CR>
+nmap <C-_>a :cs find a <C-R>=expand("<cword>")<CR><CR>
+
+" '@kbd{CTRL-spacebar}' を使うと Vim のウィンドウを水平分割して、
+" 結果を新しいウィンドウで表示する。
+
+nmap <C-Space>s :scs find s <C-R>=expand("<cword>")<CR><CR>
+nmap <C-Space>g :scs find g <C-R>=expand("<cword>")<CR><CR>
+nmap <C-Space>c :scs find c <C-R>=expand("<cword>")<CR><CR>
+nmap <C-Space>t :scs find t <C-R>=expand("<cword>")<CR><CR>
+nmap <C-Space>e :scs find e <C-R>=expand("<cword>")<CR><CR>
+nmap <C-Space>f :scs find f <C-R>=expand("<cfile>")<CR><CR>
+nmap <C-Space>i :scs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+nmap <C-Space>d :scs find d <C-R>=expand("<cword>")<CR><CR>
+nmap <C-Space>a :scs find a <C-R>=expand("<cword>")<CR><CR>
+
+" 検索をする前に @kbd{CTRL-space} を 2 回連続して押すと、
+" 新しいウィンドウを縦に開く
+
+nmap <C-Space><C-Space>s
+        \:vert scs find s <C-R>=expand("<cword>")<CR><CR>
+nmap <C-Space><C-Space>g
+        \:vert scs find g <C-R>=expand("<cword>")<CR><CR>
+nmap <C-Space><C-Space>c
+        \:vert scs find c <C-R>=expand("<cword>")<CR><CR>
+nmap <C-Space><C-Space>t
+        \:vert scs find t <C-R>=expand("<cword>")<CR><CR>
+nmap <C-Space><C-Space>e
+        \:vert scs find e <C-R>=expand("<cword>")<CR><CR>
+nmap <C-Space><C-Space>i
+        \:vert scs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+nmap <C-Space><C-Space>d
+        \:vert scs find d <C-R>=expand("<cword>")<CR><CR>
+nmap <C-Space><C-Space>a
+        \:vert scs find a <C-R>=expand("<cword>")<CR><CR>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. Cscope availability and information			*cscope-info*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscope-info}
+@cindex cscope-info
+@section 7. 入手法と情報
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you do not already have cscope (it did not come with your compiler
+license or OS distribution), then you can download it for free from:
+	http://cscope.sourceforge.net/
+This is released by SCO under the BSD license.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+まだ cscope を持っていない (あなたのコンパイラのライセンスや OS のディストリビューションに含まれてない) のならば、次の場所から無料で入手できる:
+
+@url{http://cscope.sourceforge.net/}
+
+cscope は SCO により BSD ライセンスに基づいて配布されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In Solaris 2.x, if you have the C compiler license, you will also have
+cscope.  Both are usually located under /opt/SUNWspro/bin
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Solaris 2.x では、C コンパイラのライセンスを入手していれば、cscope も入手しているだろう。どちらも通常は /opt/SUNWspro/bin に格納される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There is source to an older version of a cscope clone (called "cs") available
+on the net.  Due to various reasons, this is not supported with Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+古い cscope のクローン ("cs" という名) のソースコードがネットで入手可能である。ただし様々な理由で、これは Vim ではサポートされない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The cscope interface/support for Vim was originally written by
+Andy Kahn <ackahn@netapp.com>.  The original structure (as well as a tiny
+bit of code) was adapted from the cscope interface in nvi.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オリジナルの cscope インターフェイス/サポートは Andy Kahn <ackahn@@netapp.com> によって書かれた。元となった構造 (かなり小さいコードだった) は nvi の cscope インターフェイスから改作された。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*cscope-win32*
+For a cscope version for Win32 see (seems abandoned):
+	https://code.google.com/archive/p/cscope-win32/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{cscope-win32}
+@cindex cscope-win32
+Win32 バージョンの cscope についてはこのサイトを参照すること (もうダメぽ):
+
+@url{https://code.google.com/archive/p/cscope-win32/}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Win32 support was added by Sergey Khorev <sergey.khorev@gmail.com>.  Contact
+him if you have Win32-specific issues.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Win32 への対応は Sergey Khorev <khorev@@softlab.ru> がしてくれた。Win32 に固有の問題については彼に問い合わせていただきたい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
