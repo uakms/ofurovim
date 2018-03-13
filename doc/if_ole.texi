@@ -1,0 +1,591 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node if_ole.txt, , , 目次
+@unnumbered Win32 の OLE オートメーション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*if_ole.txt*    For Vim version 8.0.  Last change: 2008 Aug 16
+
+
+		  VIM REFERENCE MANUAL    by Paul Moore
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*if_ole.txt*    For Vim バージョン 8.0.  Last change: 2008 Aug 16
+
+
+                  VIMリファレンスマニュアル    by Paul Moore
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The OLE Interface to Vim				*ole-interface*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ole-interface}
+@cindex ole-interface
+Vim への OLE インターフェイス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Activation			|ole-activation|
+2. Methods			|ole-methods|
+3. The "normal" command		|ole-normal|
+4. Registration			|ole-registration|
+5. MS Visual Studio integration	|MSVisualStudio|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. アクティブにする @tab |@ref{ole-activation, , ole-activation}|
+@item 2. メソッド @tab |@ref{ole-methods, , ole-methods}|
+@item 3. "normal" コマンド @tab |@ref{ole-normal, , ole-normal}|
+@item 4. 登録 @tab |@ref{ole-registration, , ole-registration}|
+@item 5. MS Visual Studio との統合 @tab |@ref{MSVisualStudio, , MSVisualStudio}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these commands}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらのコマンドはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+OLE is only available when compiled with the |+ole| feature.  See
+src/if_ole.INSTALL.
+An alternative is using the client-server communication |clientserver|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+OLE は|+ole| 機能と共にコンパイルされたときのみ有効である。src/if_ole.INSTALL を参照せよ。代わりにクライアント、サーバー型の通信を使うこともできる |clientserver|。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Activation						*ole-activation*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ole-activation}
+@cindex ole-activation
+@section 1. アクティブにする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim acts as an OLE automation server, accessible from any automation client,
+for example, Visual Basic, Python, or Perl.  The Vim application "name" (its
+"ProgID", in OLE terminology) is "Vim.Application".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は、あらゆるオートメーションクライアント、例えば Visual Basic, Python, Perl などからアクセス可能な、OLE オートメーションサーバーとして振舞う。Vim アプリケーションの "名前" (これは OLE 用語で言うところの "ProgID") は、"Vim.Application" である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Hence, in order to start a Vim instance (or connect to an already running
+instance), code similar to the following should be used:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+したがって、Vim のインスタンスを起動する (あるいはすでに起動しているインスタンスに接続する) には、次のようなコードが用いられることになる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+[Visual Basic] >
+	Dim Vim As Object
+	Set Vim = CreateObject("Vim.Application")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item [Visual Basic]
+@example
+Dim Vim As Object
+Set Vim = CreateObject("Vim.Application")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+[Python] >
+	from win32com.client.dynamic import Dispatch
+	vim = Dispatch('Vim.Application')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item [Python]
+@example
+from win32com.client.dynamic import Dispatch
+vim = Dispatch('Vim.Application')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+[Perl] >
+	use Win32::OLE;
+	$vim = new Win32::OLE 'Vim.Application';
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item [Perl]
+@example
+use Win32::OLE;
+$vim = new Win32::OLE 'Vim.Application';
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+[C#] >
+        // Add a reference to Vim in your project. 
+        // Choose the COM tab.
+        // Select "Vim Ole Interface 1.1 Type Library"
+	Vim.Vim vimobj = new Vim.Vim();
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item [C#]
+@example
+// プロジェクトに VIM への参照を追加する。
+// COM タブを選択する。
+// "VIM Ole Interface 1.1 Type Library" を選択する。
+Vim.Vim vimobj = new Vim.Vim();
+@end example
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim does not support acting as a "hidden" OLE server, like some other OLE
+Automation servers.  When a client starts up an instance of Vim, that instance
+is immediately visible.  Simply closing the OLE connection to the Vim instance
+is not enough to shut down the Vim instance - it is necessary to explicitly
+execute a quit command (for example, :qa!, :wqa).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は、他の一部の OLE サーバーがサポートしているような、"hidden" な OLE サーバーとしての機能をサポートしていない。クライアントが Vim のインスタンスを起動する場合、そのインスタンスは即座に可視化される。単に Vim インスタンスとの OLE 接続を閉じるだけでは、Vim インスタンスを終了するに十分ではない - 明確に終了コマンド (例えば、:qa!, :wqa) を実行する必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Methods						*ole-methods*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ole-methods}
+@cindex ole-methods
+@section 2. メソッド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim exposes four methods for use by clients.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はクライアントに対して 4 つのメソッドを公開している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*ole-sendkeys*
+SendKeys(keys)		Execute a series of keys.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{ole-sendkeys}
+@cindex ole-sendkeys
+@item SendKeys(keys)
+一連のキー操作を実行する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This method takes a single parameter, which is a string of keystrokes.  These
+keystrokes are executed exactly as if they had been types in at the keyboard.
+Special keys can be given using their <..> names, as for the right hand side
+of a mapping.  Note: Execution of the Ex "normal" command is not supported -
+see below |ole-normal|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このメソッドはひとつの引数、キーストロークの文字列、を取る。これらのキーストロークは、完全にキーボードから打ち込まれたもののように実行される。スペシャルキーは、マッピングの右側に書かれる、<...> 形式の名前で与えることができる。
+@quotation
+@strong{Note:} @*
+Ex "normal" コマンドの実行はサポートされていない - 以下の |ole-normal| を見よ。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples (Visual Basic syntax) >
+	Vim.SendKeys "ihello<Esc>"
+	Vim.SendKeys "ma1GV4jy`a"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例 (Visual Basic の文法)
+@example
+Vim.SendKeys "ihello<Esc>"
+Vim.SendKeys "ma1GV4jy`a"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These examples assume that Vim starts in Normal mode.  To force Normal mode,
+start the key sequence with CTRL-\ CTRL-N as in >
+
+	Vim.SendKeys "<C-\><C-N>ihello<Esc>"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらの例は、Vim がノーマルモードで始まるものと仮定している。必ずノーマルモードにするには、一連のキーを次のように CTRL-\ CTRL-N で始めるとよい
+@example
+Vim.SendKeys "<C-\><C-N>ihello<Esc>"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+CTRL-\ CTRL-N returns Vim to Normal mode, when in Insert or Command-line mode.
+Note that this doesn't work halfway a Vim command
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+CTRL-\ CTRL-N は、挿入モード、コマンドラインモードにいるとき、Vim をノーマルモードに戻す。
+@quotation
+@strong{Note:} @*
+これらは Vim コマンドの途中に入れると機能しないことに注意せよ。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*ole-eval*
+Eval(expr)		Evaluate an expression.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ole-eval}
+@cindex ole-eval
+@item Eval(expr)
+式(expr)を実行する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This method takes a single parameter, which is an expression in Vim's normal
+format (see |expression|).  It returns a string, which is the result of
+evaluating the expression.  A |List| is turned into a string by joining the
+items and inserting line breaks.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このメソッドはひとつの引数、Vim 標準フォーマットの式、を取る (|expression| を参照)。戻り値は、その式を評価した結果の文字列である。リスト |List| は文字列に変換される。そのとき各要素の間に改行が挿入され、連結される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples (Visual Basic syntax) >
+	Line20 = Vim.Eval("getline(20)")
+	Twelve = Vim.Eval("6 + 6")		' Note this is a STRING
+	Font = Vim.Eval("&guifont")
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例 (Visual Basic の文法で)
+@example
+Line20 = Vim.Eval("getline(20)")
+Twelve = Vim.Eval("6 + 6")              ' これが文字列であることに注意
+Font = Vim.Eval("&guifont")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*ole-setforeground*
+SetForeground()		Make the Vim window come to the foreground
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ole-setforeground}
+@cindex ole-setforeground
+@item SetForeground()
+Vim ウィンドウを最前面に持ってくる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This method takes no arguments.  No value is returned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このメソッドは引数を持たない。戻り値はない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example (Visual Basic syntax) >
+	Vim.SetForeground
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例 (Visual Basic の文法で)
+@example
+Vim.SetForeground
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*ole-gethwnd*
+GetHwnd()		Return the handle of the Vim window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ole-gethwnd}
+@cindex ole-gethwnd
+@item GetHwnd()
+Vim のウィンドウハンドルを得る。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This method takes no arguments.  It returns the hwnd of the main Vimwindow.
+You can use this if you are writing something which needs to manipulate the
+Vim window, or to track it in the z-order, etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このメソッドは引数を持たない。戻り値は Vim ウィンドウのウィンドウハンドルである。これは Vim ウィンドウに対して何かの操作を行いたい時に使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example (Visual Basic syntax) >
+	Vim_Hwnd = Vim.GetHwnd
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例 (Visual Basic の文法で)
+@example
+Vim_Hwnd = Vim.GetHwnd
+@end example
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. The "normal" command					*ole-normal*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ole-normal}
+@cindex ole-normal
+@section 3. "normal" コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Due to the way Vim processes OLE Automation commands, combined with the method
+of implementation of the Ex command :normal, it is not possible to execute the
+:normal command via OLE automation.  Any attempt to do so will fail, probably
+harmlessly, although possibly in unpredictable ways.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が OLE オートメーションコマンドを処理する方法は、ex コマンド :normal の実装と統合されているため、OLE オートメーションから :normal コマンドを実行することはできない。実際に実行しようとしても失敗する、たぶん害はないと思われるが、予期しない動作をする恐れはある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There is currently no practical way to trap this situation, and users must
+simply be aware of the limitation.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この状況をトラップする現実的な方法は今のところ存在しないため、ユーザーはこの制限に単に気をつけるようにする他ない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+==============================================================================
+4. Registration					*ole-registration* *E243*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ole-registration}
+@anchor{E243}
+@cindex ole-registration
+@cindex E243
+@section 4. 登録
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Before Vim will act as an OLE server, it must be registered in the system
+registry.  In order to do this, Vim should be run with a single parameter of
+"-register".
+							*-register*  >
+	gvim -register
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim を OLE サーバーとして動作させる前に、システムレジストリに登録する必要がある。これを行うには、Vim をひとつの引数 "-register" で実行すればよい。
+@anchor{-register}
+@cindex -register
+@example
+gvim -register
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If gvim with OLE support is run and notices that no Vim OLE server has been
+registered, it will present a dialog and offers you the choice to register by
+clicking "Yes".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+OLE サーバーが登録されていないとき、OLE をサポートした gvim を起動すると警告ダイアログが出る。"Yes" を選択するとレジストリに登録できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In some situations registering is not possible.  This happens when the
+registry is not writable.  If you run into this problem you need to run gvim
+as "Administrator".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+レジストリが書き込み可能でないときには登録はできない。もし登録できないときは "Administrator" 権限で gvim を起動すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Once vim is registered, the application path is stored in the registry.
+Before moving, deleting, or upgrading Vim, the registry entries should be
+removed using the "-unregister" switch.
+							*-unregister*  >
+	gvim -unregister
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+いったん Vim が登録されると、アプリケーションへのパスはレジストリに保存される。Vim を移動、削除、更新する前に、レジストリの項目を "-unregister" スイッチを使って削除する必要がある。
+@anchor{-unregister}
+@cindex -unregister
+@example
+gvim -unregister
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The OLE mechanism will use the first registered Vim it finds.  If a Vim is
+already running, this one will be used.  If you want to have (several) Vim
+sessions open that should not react to OLE commands, use the non-OLE version,
+and put it in a different directory.  The OLE version should then be put in a
+directory that is not in your normal path, so that typing "gvim" will start
+the non-OLE version.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+OLE メカニズムは、登録された Vim の内、最初に見つけたものを使用する。Vim がすでに実行されている場合は、その Vim が使用される。OLE コマンドに影響されないで、(いくつかの) Vim セッションを張ろうとする場合は、非 OLE バージョンを違うディレクトリに置いて使用するとよい。そして、OLE バージョンをパスに含まれないディレクトリに置けば、"gvim" とタイプしたとき非 OLE バージョンが起動するようになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*-silent*
+To avoid the message box that pops up to report the result, prepend "-silent":
+>
+	gvim -silent -register
+	gvim -silent -unregister
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{-silent}
+@cindex -silent
+結果を表示するメッセージボックスを表示したくないなら "-silent" を付けること。
+@example
+gvim -silent -register
+gvim -silent -unregister
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. MS Visual Studio integration			*MSVisualStudio* *VisVim*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{MSVisualStudio}
+@anchor{VisVim}
+@cindex MSVisualStudio
+@cindex VisVim
+@section 5. MS Visual Studio との統合
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The OLE version can be used to run Vim as the editor in Microsoft Visual
+Studio.  This is called "VisVim".  It is included in the archive that contains
+the OLE version.  The documentation can be found in the runtime directory, the
+README_VisVim.txt file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+OLE バージョンにより、Microsoft Visual Studio のエディタとして Vim を実行することができる。これは "VisVim" と呼ばれる。これは OLE バージョンを含んだアーカイブに同梱されている。ドキュメントは、ランタイムディレクトリに置かれている README_VisVim.txt ファイルにある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Using Vim with Visual Studio .Net~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec Vim と Visual Studio.Net を連携させる
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+With .Net you no longer really need VisVim, since .Net studio has support for
+external editors.  Follow these directions:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+.Net studio は外部エディタをサポートしているので、.Net では VisVim は必要ない。次のようにするとよい:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In .Net Studio choose from the menu Tools->External Tools...
+Add
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+.Net Studio でメニューから [ツール] → [外部ツール] を選択する。
+
+次を追加する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+     Title     - Vim
+     Command   - c:\vim\vim63\gvim.exe
+     Arguments - --servername VS_NET --remote-silent "+call cursor($(CurLine), $(CurCol))" $(ItemPath)
+     Init Dir  - Empty
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@item タイトル @tab Vim
+@item コマンド @tab c:\vim\vim63\gvim.exe
+@item 引数 @tab @samp{--servername VS_NET} @samp{--remote-silent} "+call cursor($(CurLine), $(CurCol))" $(ItemPath)
+@item 初期ディレクトリ @tab 空
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Now, when you open a file in .Net, you can choose from the .Net menu:
+Tools->Vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+こうしておくと .Net でファイルを開いたとき、.Net のメニューから [ツール] → [Vim] を選べるようになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+That will open the file in Vim.
+You can then add this external command as an icon and place it anywhere you
+like.  You might also be able to set this as your default editor.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+それを選ぶとそのファイルが Vim で開かれる。
+
+この外部コマンドをアイコンにして好きなところに置くことができる。これをデフォルトのエディタに設定することもできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you refine this further, please post back to the Vim maillist so we have a
+record of it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしこれをさらに改良できたら、それを留めておけるように Vim メーリングリストに投稿していただきたい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+--servername VS_NET
+This will create a new instance of vim called VS_NET.  So if you open multiple
+files from VS, they will use the same instance of Vim.  This allows you to
+have multiple copies of Vim running, but you can control which one has VS
+files in it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@samp{--servername VS_NET}
+
+この引数をつけると、VS_NET という名前で新しい Vim インスタンスを作る。そのため、VS で複数のファイルを開いても、同じ Vim のインスタンスが使われる。これによって複数の Vim のインスタンスを起動し、かつどのインスタンスが VS のファイルを開いているかを管理することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+--remote-silent "+call cursor(10, 27)"
+	      - Places the cursor on line 10 column 27
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@samp{--remote-silent} "+call cursor(10, 27)"
+
+カーソルを 10 行 27 桁に移動する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+In Vim >
+   :h --remote-silent for more details
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+より詳しくは Vim 内で
+@example
+:h --remote-silent
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+[.Net remarks provided by Dave Fishburn and Brian Sturk]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[.Net の部分は Dave Fishburn と Brian Sturk によって提供された]
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset

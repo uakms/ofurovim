@@ -1,0 +1,375 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node debugger.txt, , , 目次
+@unnumbered デバッガ用のインターフェイス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*debugger.txt*  For Vim version 8.0.  Last change: 2017 Nov 21
+
+
+		  VIM REFERENCE MANUAL    by Gordon Prieur
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*debugger.txt*  For Vim バージョン 8.0.  Last change: 2017 Nov 21
+
+
+                VIMリファレンスマニュアル    by Gordon Prieur
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Debugger Support Features				*debugger-support*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debugger-support}
+@cindex debugger-support
+デバッガ支援機能
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Debugger Features		|debugger-features|
+2. Vim Compile Options		|debugger-compilation|
+3. Integrated Debuggers		|debugger-integration|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. デバッガ機能 @tab |@ref{debugger-features, , debugger-features}|
+@item 2. Vim のコンパイルオプション @tab |@ref{debugger-compilation, , debugger-compilation}|
+@item 3. 統合デバッガ @tab |@ref{debugger-integration, , debugger-integration}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these features}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらの機能は無い@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Debugger Features					*debugger-features*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debugger-features}
+@cindex debugger-features
+@section 1. デバッガ機能
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The following features are available for an integration with a debugger or
+an Integrated Programming Environment (IPE) or Integrated Development
+Environment (IDE):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下の機能はデバッガ、統合プログラミング環境 (IPE)、統合開発環境 (IDE) との統合に利用できる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Alternate Command Input				|alt-input|
+	Debug Signs					|debug-signs|
+	Debug Source Highlight				|debug-highlight|
+	Message Footer					|gui-footer|
+	Balloon Evaluation				|balloon-eval|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item もう 1 つのコマンド入力 @tab |@ref{alt-input, , alt-input}|
+@item デバッグ目印 @tab |@ref{debug-signs, , debug-signs}|
+@item デバッグソースコード強調 @tab |@ref{debug-highlight, , debug-highlight}|
+@item メッセージフッター @tab |@ref{gui-footer, , gui-footer}|
+@item バルーンウィンドウ @tab |@ref{balloon-eval, , balloon-eval}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These features were added specifically for use in the Motif version of gvim.
+However, the |alt-input| and |debug-highlight| were written to be usable in
+both vim and gvim.  Some of the other features could be used in the non-GUI
+vim with slight modifications.  However, I did not do this nor did I test the
+reliability of building for vim or non Motif GUI versions.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらの機能は Motif バージョンの gvim で使うために特別に追加された。しかしながら、|alt-input| と |debug-highlight| は vim と gvim でも使用できるように書かれている。その他の機能は非 GUI バージョンの Vim でもわずかな変更で使うことができる。だが、著者はそのような変更をしていないし、Motif GUI ではないバージョンの Vim ではテストしていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.1 Alternate Command Input				*alt-input*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{alt-input}
+@cindex alt-input
+@unnumberedsubsec 1.1 もう 1 つのコマンド入力
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For Vim to work with a debugger there must be at least an input connection
+with a debugger or external tool.  In many cases there will also be an output
+connection but this isn't absolutely necessary.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim がデバッガと協調動作するには、最低限デバッガや外部ツールからの入力のための接続が必要である。多くの場合は出力のための接続も必要であるがこれは絶対に必要というわけではない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The purpose of the input connection is to let the external debugger send
+commands to Vim.  The commands sent by the debugger should give the debugger
+enough control to display the current debug environment and state.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+外部デバッガが Vim にコマンドを送ることが入力接続の目的である。デバッガから送られるコマンドは現在のデバッグ環境や状態を表示するために充分である必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The current implementation is based on the X Toolkit dispatch loop and the
+XtAddInput() function call.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在の実装は X ツールキット (X Toolkit) の発送ループと XtAddInput() ファンクションコールを基本にしている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.2 Debug Signs						*debug-signs*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debug-signs}
+@cindex debug-signs
+@unnumberedsubsec 1.2 デバッグ目印
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Many debuggers mark specific lines by placing a small sign or color highlight
+on the line.  The |:sign| command lets the debugger set this graphic mark.  Some
+examples where this feature would be used would be a debugger showing an arrow
+representing the Program Counter (PC) of the program being debugged.  Another
+example would be a small stop sign for a line with a breakpoint.  These visible
+highlights let the user keep track of certain parts of the state of the
+debugger.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+多くのデバッガは小さな目印を表示したりその行を色で強調することで特定の行に印を付ける。デバッガは |:sign| コマンドを使って (Vim に) グラフィカルな目印を設定させることができる。この機能の使われ方の一例は、デバッグしているプログラムの実行位置 (プログラムカウンタ:PC) を表示するのにデバッガが表示する矢印に見る事ができる。別の例ではブレークポイントを示す小さな停止記号がある。これらの視覚的な強調はユーザーがデバッガ状態の経過を追う助けになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This feature can be used with more than debuggers, too.  An IPE can use a sign
+to highlight build errors, searched text, or other things.  The sign feature
+can also work together with the |debug-highlight| to ensure the mark is
+highly visible.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この機能はデバッガ以外の用途にも使用できる。IPE はビルドエラー、検索したテキスト、その他を強調するのに何かしらの目印を使用する。この機能は印がより高い視認性を確保するために |debug-highlight| と一緒に利用できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Debug signs are defined and placed using the |:sign| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デバッグ目印は |:sign| コマンドを使って定義、設置する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.3 Debug Source Highlight				*debug-highlight*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debug-highlight}
+@cindex debug-highlight
+@unnumberedsubsec 1.3 デバッグソースコード強調
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This feature allows a line to have a predominant highlight.  The highlight is
+intended to make a specific line stand out.  The highlight could be made to
+work for both vim and gvim, whereas the debug sign is, in most cases, limited
+to gvim.  The one exception to this is Sun Microsystem's dtterm.  The dtterm
+from Sun has a "sign gutter" for showing signs.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この機能により行に優れた強調を施すことができる。これは特定の行を目立たせることを目的としている。この強調は vim と gvim 両方で動作させることができ、gvim に限り多くの場合デバッグ目印と一緒に使うことができる。唯一の例外は Sun Microsystem の dtterm である。dtterm には目印を表示するためのスペースがある。
+
+@{訳注: なので、これを利用する際はコンソール vim でも目印を利用可能となる@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.4 Message Footer					*gui-footer*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gui-footer}
+@cindex gui-footer
+@unnumberedsubsec 1.4 メッセージフッター
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The message footer can be used to display messages from a debugger or IPE.  It
+can also be used to display menu and toolbar tips.  The footer area is at the
+bottom of the GUI window, below the line used to display colon commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メッセージフッターはデバッガや IPE からのメッセージを表示するのに使用する。またメニューやツールバーの tips (一言ヒント) を表示するのにも使用できる。GUI ウィンドウの下のフッターエリアは、Ex コマンドを表示する行のさらに下に位置する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The display of the footer is controlled by the 'guioptions' letter 'F'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+フッターエリアの表示・非表示は '@option{guioptions}' の '@var{F}' フラグで制御する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.5 Balloon Evaluation					*balloon-eval*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{balloon-eval}
+@cindex balloon-eval
+@unnumberedsubsec 1.5 バルーンウィンドウ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This feature allows a debugger, or other external tool, to display dynamic
+information based on where the mouse is pointing.  The purpose of this feature
+was to allow Sun's Visual WorkShop debugger to display expression evaluations.
+However, the feature was implemented in as general a manner as possible and
+could be used for displaying other information as well.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この機能はデバッガや外部ツールに、マウスが指す位置に応じた動的な情報を表示する機能を提供する。この機能は「Sun's Visual WorkShop」のデバッガに式の評価結果を表示させることを目的とした。しかしながら、その他の情報を表示するのに利用できるよう、可能な限り一般的な様式で実現されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Balloon Evaluation has some settable parameters too.  For Motif the font
+list and colors can be set via X resources (XmNballoonEvalFontList,
+XmNballoonEvalBackground, and XmNballoonEvalForeground).
+The 'balloondelay' option sets the delay before an attempt is made to show a
+balloon.
+The 'ballooneval' and/or the 'balloonevalterm' option needs to be set to
+switch it on.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バルーンウィンドウには幾つかの設定可能なパラメーターがある。Motif ではフォントリストと色は X リソース経由で設定される (XmNballoonEvalFontList, XmNballoonEvalBackground, XmNballoonEvalForeground)。
+
+オプション '@option{balloondelay}' はバルーンを表示するまでの遅延時間を設定する。
+
+この機能を有効にするにはオプション '@option{ballooneval}' をオンにする必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Balloon evaluation is only available in the GUI when compiled with the
+|+balloon_eval| feature.  For the terminal the  |+balloon_eval_term| feature
+matters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バルーンウィンドウは |+balloon_eval| 機能をコンパイル時にした時のみ GUI で利用できる。端末では |+balloon_eval_term| 機能が重要である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Balloon evaluation functions are also used to show a tooltip for the
+toolbar.  The 'ballooneval' option does not need to be set for this.  But the
+other settings apply.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バルーンウィンドウ関数はツールバーのツールチップを表示する際にも利用されている。これにはオプション '@option{ballooneval}' を設定する必要はない。しかしその他の設定はこのツールチップにも適用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Another way to use the balloon is with the 'balloonexpr' option.  This is
+completely user definable.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バルーンウィンドウを使うもう1つの方法は、オプション '@option{balloonexpr}' を使うことである。これは完全にユーザーが定義できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Vim Compile Options					*debugger-compilation*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debugger-compilation}
+@cindex debugger-compilation
+@section 2. Vim のコンパイルオプション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The debugger features were added explicitly for use with Sun's Visual
+WorkShop Integrated Programming Environment (ipe).  However, they were done
+in as generic a manner as possible so that integration with other debuggers
+could also use some or all of the tools used with Sun's ipe.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デバッガ機能は Sun の「Visual WorkShop Integrated Programming Environment」(ipe) と一緒に使うために明示的に加えられた。しかし、それらの Sun の ipe と共に使用する機能は他のデバッガも一部もしくは全部を使うことができるように、可能な限り一般的な様式で実現されている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The following compile time preprocessor variables control the features:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下のコンパイル時のプリプロセッサー変数で機能の有無効を制御する:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    Alternate Command Input			ALT_X_INPUT
+    Debug Glyphs				FEAT_SIGNS
+    Debug Highlights				FEAT_SIGNS
+    Message Footer				FEAT_FOOTER
+    Balloon Evaluation				FEAT_BEVAL
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item もう 1 つのコマンド入力 @tab ALT_X_INPUT
+@item デバッグ目印 @tab FEAT_SIGNS
+@item デバッグソースコード強調 @tab FEAT_SIGNS
+@item メッセージフッター @tab FEAT_FOOTER
+@item バルーンウィンドウ @tab FEAT_BEVAL
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first integration with a full IPE/IDE was with Sun Visual WorkShop.  To
+compile a gvim which interfaces with VWS set the following flag, which sets
+all the above flags:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初の完全な IPE/IDE との統合は Sun Visual WorkShop である。gvim を VWS とのインターフェイスを有効にしてコンパイルするには次のフラグを設定する。これにより上で述べた全てのフラグを設定される:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    Sun Visual WorkShop				FEAT_SUN_WORKSHOP
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item Sun Visual WorkShop @tab FEAT_SUN_WORKSHOP
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Integrated Debuggers					*debugger-integration*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{debugger-integration}
+@cindex debugger-integration
+@section 3. 統合デバッガ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+One fully integrated debugger/IPE/IDE is Sun's Visual WorkShop Integrated
+Programming Environment.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+完全に統合されたデバッガ/IPE/IDE は、唯一 Sun の「Visual WorkShop Integrated Programming Environment」だけである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For Sun NetBeans support see |netbeans|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Sun の NetBeans のサポートについては |netbeans| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ vim:tw=78:sw=4:ts=8:ft=help:norl:
+@end ifset

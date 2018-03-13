@@ -1,0 +1,1692 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node if_tcl.txt, , , 目次
+@unnumbered Tcl インターフェイス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*if_tcl.txt*    For Vim version 8.0.  Last change: 2016 Jan 01
+
+
+		  VIM REFERENCE MANUAL    by Ingo Wilken
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*if_tcl.txt*    For Vim バージョン 8.0.  Last change: 2016 Jan 01
+
+
+                  VIMリファレンスマニュアル    by Ingo Wilken
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The Tcl Interface to Vim				*tcl* *Tcl* *TCL*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl}
+@anchor{Tcl}
+@anchor{TCL}
+@cindex tcl
+@cindex Tcl
+@cindex TCL
+Vim への Tcl インターフェイス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Commands				|tcl-ex-commands|
+2. Tcl commands				|tcl-commands|
+3. Tcl variables			|tcl-variables|
+4. Tcl window commands			|tcl-window-cmds|
+5. Tcl buffer commands			|tcl-buffer-cmds|
+6. Miscellaneous; Output from Tcl	|tcl-misc| |tcl-output|
+7. Known bugs & problems		|tcl-bugs|
+8. Examples				|tcl-examples|
+9. Dynamic loading			|tcl-dynamic|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. コマンド @tab |@ref{tcl-ex-commands, , tcl-ex-commands}|
+@item 2. Tcl コマンド @tab |@ref{tcl-commands, , tcl-commands}|
+@item 3. Tcl 変数 @tab |@ref{tcl-variables, , tcl-variables}|
+@item 4. Tcl ウィンドウコマンド @tab |@ref{tcl-window-cmds, , tcl-window-cmds}|
+@item 5. Tcl バッファコマンド @tab |@ref{tcl-buffer-cmds, , tcl-buffer-cmds}|
+@item 6. その他; Tcl からの出力 @tab |@ref{tcl-misc, , tcl-misc}| |@ref{tcl-output, , tcl-output}|
+@item 7. 既知のバグと問題点 @tab |@ref{tcl-bugs, , tcl-bugs}|
+@item 8. 例 @tab |@ref{tcl-examples, , tcl-examples}|
+@item 9. 動的ローディング @tab |@ref{tcl-dynamic, , tcl-dynamic}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these commands} *E280*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E280}
+@cindex E280
+@{Vi にはこれらのコマンドはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Tcl interface only works when Vim was compiled with the |+tcl| feature.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Tcl インターフェイスは、Vim が |+tcl| 機能と共にコンパイルされたときのみ機能する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+WARNING: There are probably still some bugs.  Please send bug reports,
+comments, ideas etc to <Ingo.Wilken@informatik.uni-oldenburg.de>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{警告:} @*
+多分まだいくらかのバグが残っている。バグレポート、コメント、意見などがあったら、<Ingo.Wilken@@informatik.uni-oldenburg.de>まで送ってください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Commands				*tcl-ex-commands* *E571* *E572*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-ex-commands}
+@anchor{E571}
+@anchor{E572}
+@cindex tcl-ex-commands
+@cindex E571
+@cindex E572
+@section 1. コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:tcl* *:tc*
+:tc[l] {cmd}		Execute Tcl command {cmd}.  A simple check if `:tcl`
+			is working: >
+				:tcl puts "Hello"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:tcl}
+@anchor{:tc}
+@cindex :tcl
+@cindex :tc
+@item :tc[l] @{cmd@}
+Tcl コマンド @{cmd@} を実行する。`@command{:tcl}` コマンドが機能するか簡単にチェックするには:
+@example
+:tcl puts "Hello"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[range]tc[l] << {endmarker}
+{script}
+{endmarker}
+			Execute Tcl script {script}.
+			Note: This command doesn't work when the Tcl feature
+			wasn't compiled in.  To avoid errors, see
+			|script-here|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[range]tc[l] << @{endmarker@}
+@itemx @{script@}
+@itemx @{endmarker@}
+Tcl スクリプト @{script@} を実行する。
+@quotation
+@strong{Note:} @*
+このコマンドは Tcl の機能付きでコンパイルされていないと使えない。エラーを抑制するには |script-here| を参照のこと。
+@end quotation
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{endmarker} must NOT be preceded by any white space.  If {endmarker} is
+omitted from after the "<<", a dot '.' must be used after {script}, like for
+the |:append| and |:insert| commands.
+This form of the |:tcl| command is mainly useful for including tcl code in Vim
+scripts.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{endmarker@} の前には空白を置いてはいけない。"<<" の後に @{endmarker@} が省略されたときは |:append| や |:insert| のように '.' が使われる。
+
+この形式の |:tcl| コマンドは Vim script の中に tcl コードを埋め込むのに特に便利である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example: >
+	function! DefineDate()
+	    tcl << EOF
+	    proc date {} {
+		return [clock format [clock seconds]]
+	    }
+	EOF
+	endfunction
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+function! DefineDate()
+    tcl << EOF
+    proc date {} {
+        return [clock format [clock seconds]]
+    }
+EOF
+endfunction
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+To see what version of Tcl you have: >
+	:tcl puts [info patchlevel]
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使っている Tcl のバージョンを見るには:
+@example
+:tcl puts [info patchlevel]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:tcldo* *:tcld*
+:[range]tcld[o] {cmd}	Execute Tcl command {cmd} for each line in [range]
+			with the variable "line" being set to the text of each
+			line in turn, and "lnum" to the line number.  Setting
+			"line" will change the text, but note that it is not
+			possible to add or delete lines using this command.
+			If {cmd} returns an error, the command is interrupted.
+			The default for [range] is the whole file: "1,$".
+			See |tcl-var-line| and |tcl-var-lnum|.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:tcldo}
+@anchor{:tcld}
+@cindex :tcldo
+@cindex :tcld
+@item :[range]tcld[o] @{cmd@}
+Tcl コマンド @{cmd@} を、[range] 内の各行に対し、変数 "line" に各行のテキストを順にセットし、変数 "lnum" に各行番号をセットしながら実行する。"line" への設定はテキストを変更しするが、このコマンドの実行中に、行を追加したり削除したりすることはできない。@{cmd@} がエラーを返せば、コマンドは中断される。[range] の標準値はファイルの全て "1,$" である。|tcl-var-line|, |tcl-var-lnum| を参照せよ。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:tclfile* *:tclf*
+:tclf[ile] {file}	Execute the Tcl script in {file}.  This is the same as
+			":tcl source {file}", but allows file name completion.
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:tclfile}
+@anchor{:tclf}
+@cindex :tclfile
+@cindex :tclf
+@item :tclf[ile] @{file@}
+@{file@} 内の Tcl スクリプトを実行する。これは、"@command{:tcl source @{file@}}" と同じであるが、ファイル名の補完が有効である。
+
+@{Vi にはない@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Note that Tcl objects (like variables) persist from one command to the next,
+just as in the Tcl shell.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Tcl オブジェクト (変数のようなもの) は、Tcl シェル内でと同様、1 つのコマンドから次のコマンドへと引き継がれることに注意せよ。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Executing Tcl commands is not possible in the |sandbox|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|sandbox| の中では Tcl コマンドは実行できない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Tcl commands						*tcl-commands*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-commands}
+@cindex tcl-commands
+@section 2. Tcl コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Tcl code gets all of its access to vim via commands in the "::vim" namespace.
+The following commands are implemented: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Tcl コードからは、"::vim" 名前空間のコマンドを介して vim の全てにアクセスできる。次のコマンドが実装されている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	::vim::beep			# Guess.
+	::vim::buffer {n}		# Create Tcl command for one buffer.
+	::vim::buffer list		# Create Tcl commands for all buffers.
+	::vim::command [-quiet] {cmd}	# Execute an Ex command.
+	::vim::expr {expr}		# Use Vim's expression evaluator.
+	::vim::option {opt}		# Get vim option.
+	::vim::option {opt} {val}	# Set vim option.
+	::vim::window list		# Create Tcl commands for all windows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item ::vim::beep @tab 文字通りの beep。
+@item ::vim::buffer @{n@} @tab Tcl コマンドを 1 つのバッファに作る。
+@item ::vim::buffer list @tab Tcl コマンドを全てのバッファに作る。
+@item ::vim::command [-quiet] @{cmd@} @tab ex コマンドを実行する。
+@item ::vim::expr @{expr@} @tab Vim の式評価を使用する。
+@item ::vim::option @{opt@} @tab vim のオプションを得る。
+@item ::vim::option @{opt@} @{val@} @tab vim のオプションを設定する。
+@item ::vim::window list @tab 全てのウィンドウに Tcl コマンドを作る。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Commands:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec コマンド:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	::vim::beep					*tcl-beep*
+	Honk.  Does not return a result.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{tcl-beep}
+@cindex tcl-beep
+@item ::vim::beep
+音を鳴らす。戻り値はない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	::vim::buffer {n}				*tcl-buffer*
+	::vim::buffer exists {n}
+	::vim::buffer list
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-buffer}
+@cindex tcl-buffer
+@item ::vim::buffer @{n@}
+@itemx ::vim::buffer exists @{n@}
+@itemx ::vim::buffer list
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Provides access to vim buffers.  With an integer argument, creates a
+	buffer command (see |tcl-buffer-cmds|) for the buffer with that
+	number, and returns its name as the result.  Invalid buffer numbers
+	result in a standard Tcl error.  To test for valid buffer numbers,
+	vim's internal functions can be used: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+vim バッファへのアクセスを提供する。整数引数を伴い、その数に対応するバッファへのバッファコマンド (|tcl-buffer-cmds| を参照) を作り、結果としてそのバッファの名前を返す。不正なバッファ番号は、標準 Tcl エラーを返す。有効なバッファ番号を調べるには、vim の内部関数を使うとよい:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		set nbufs [::vim::expr bufnr("$")]
+		set isvalid [::vim::expr "bufexists($n)"]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+set nbufs [::vim::expr bufnr("$")]
+set isvalid [::vim::expr "bufexists($n)"]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	The "list" option creates a buffer command for each valid buffer, and
+	returns a list of the command names as the result.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"list" オプションは、各有効バッファに対してバッファコマンドを作り、戻り値としてコマンドバッファの名前のリストを返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Example: >
+		set bufs [::vim::buffer list]
+		foreach b $bufs { $b append end "The End!" }
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@example
+set bufs [::vim::buffer list]
+foreach b $bufs @{ $b append end "The End!" @}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	The "exists" option checks if a buffer with the given number exists.
+	Example: >
+		if { [::vim::buffer exists $n] } { ::vim::command ":e #$n" }
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"exists" オプションは、与えられた番号のバッファが存在するかを確かめる。
+
+例:
+@example
+if @{ [::vim::buffer exists $n] @} @{ ::vim::command ":e #$n" @}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	This command might be replaced by a variable in future versions.
+	See also |tcl-var-current| for the current buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドは、将来のバージョンで変数に置き換えられるはずである。現在のバッファについては |tcl-var-current| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	::vim::command {cmd}				*tcl-command*
+	::vim::command -quiet {cmd}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-command}
+@cindex tcl-command
+@item ::vim::command @{cmd@}
+@itemx ::vim::command -quiet @{cmd@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Execute the vim (ex-mode) command {cmd}.  Any Ex command that affects
+	a buffer or window uses the current buffer/current window.  Does not
+	return a result other than a standard Tcl error code.  After this
+	command is completed, the "::vim::current" variable is updated.
+	The "-quiet" flag suppresses any error messages from vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+vim の (ex モードの) コマンド @{cmd@} を実行する。バッファ、ウィンドウに影響する ex コマンドは、全て現在のバッファ/ウィンドウを対象とする。標準 Tcl エラーコード以外の戻り値を返すことはない。このコマンドの終了後、"::vim::current" 変数は更新される。"-quiet" フラグは、vim からの全てのエラーメッセージを抑制する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Examples: >
+		::vim::command "set ts=8"
+		::vim::command "%s/foo/bar/g"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@example
+::vim::command "set ts=8"
+::vim::command "%s/foo/bar/g"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	To execute normal-mode commands, use "normal" (see |:normal|): >
+		set cmd "jj"
+		::vim::command "normal $cmd"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ノーマルモードのコマンドの実行には、"normal" を使う (|:normal| を参照):
+@example
+set cmd "jj"
+::vim::command "normal $cmd"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	See also |tcl-window-command| and |tcl-buffer-command|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|tcl-window-command| と |tcl-buffer-command| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	::vim::expr {expr}				*tcl-expr*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-expr}
+@cindex tcl-expr
+@item ::vim::expr @{expr@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Evaluates the expression {expr} using vim's internal expression
+	evaluator (see |expression|).   Any expression that queries a buffer
+	or window property uses the current buffer/current window.  Returns
+	the result as a string.  A |List| is turned into a string by joining
+	the items and inserting line breaks.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+式 @{expr@} を、vim の内部式評価 (|expression| を参照) を使って評価する。バッファやウィンドウプロパティに問い合わせする種類の式は、全て現在のバッファ/ウィンドウを対象とする。結果を文字列として返す。リスト |List| は文字列に変換される。そのとき各要素の間に改行が挿入され、連結される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Examples: >
+		set perl_available [::vim::expr has("perl")]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@example
+set perl_available [::vim::expr has("perl")]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	See also |tcl-window-expr| and |tcl-buffer-expr|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|tcl-window-expr| と |tcl-buffer-expr| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	::vim::option {opt}				*tcl-option*
+	::vim::option {opt} {value}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-option}
+@cindex tcl-option
+@item ::vim::option @{opt@}
+@itemx ::vim::option @{opt@} @{value@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Without second argument, queries the value of a vim option.  With this
+	argument, sets the vim option to {value}, and returns the previous
+	value as the result.  Any options that are marked as 'local to buffer'
+	or 'local to window' affect the current buffer/current window.  The
+	global value is not changed, use the ":set" command for that.  For
+	boolean options, {value} should be "0" or "1", or any of the keywords
+	"on", "off" or "toggle".  See |option-summary| for a list of options.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+第 2 引数なしで、vim オプションの値を問い合わせる。この引数を伴えば、vim オプションに @{value@} を設定し、以前の値を結果として返す。'バッファに固有'、'ウィンドウに固有' と記されているオプションは、全て現在のバッファ/ウィンドウを対象とする。"@command{:set}" コマンドでそれらを変更してもグローバルのオプションは変更されない。真偽値のオプションでは、@{value@} は "0" か "1"、あるいは "on"、"off"、"toggle" のキーワードの内のどれかでなくてはならない。オプションの一覧は、|option-summary| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Example: >
+		::vim::option ts 8
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@example
+::vim::option ts 8
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	See also |tcl-window-option| and |tcl-buffer-option|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|tcl-window-option| と |tcl-buffer-option| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	::vim::window {option}				*tcl-window*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-window}
+@cindex tcl-window
+@item ::vim::window @{option@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Provides access to vim windows.  Currently only the "list" option is
+	implemented.  This creates a window command (see |tcl-window-cmds|) for
+	each window, and returns a list of the command names as the result.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+vim ウィンドウへのアクセスを提供する。今のところ、"list" オプションのみが実装されている。これは各ウィンドウに対し、ウィンドウコマンドを作り (|tcl-window-cmds| を参照)、戻り値としてコマンドの名前のリストを返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Example: >
+		set wins [::vim::window list]
+		foreach w $wins { $w height 4 }
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@example
+set wins [::vim::window list]
+foreach w $wins @{ $w height 4 @}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	This command might be replaced by a variable in future versions.
+	See also |tcl-var-current| for the current window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドは、将来のバージョンで変数と置き換えられるはずである。現在のウィンドウについては、|tcl-var-current| を参照。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Tcl variables					*tcl-variables*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-variables}
+@cindex tcl-variables
+@section 3. Tcl 変数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ::vim namespace contains a few variables.  These are created when the Tcl
+interpreter is called from vim and set to current values. >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+::vim 名前空間は、いくつかの変数を持っている。これらは vim に Tcl インタープリターが呼び出されたときに作られ、現在の値が設定される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	::vim::current		# array containing "current" objects
+	::vim::lbase		# number of first line
+	::vim::range		# array containing current range numbers
+	line			# current line as a string (:tcldo only)
+	lnum			# current line number (:tcldo only)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item ::vim::current @tab "current" オブジェクトを含む配列
+@item ::vim::lbase @tab 最初の行番号
+@item ::vim::range @tab 現在の範囲の番号を含む配列
+@item line @tab 文字列形式での現在の行 (:tcldo のみ)
+@item lnum @tab 現在の行番号 (:tcldo のみ)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Variables:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 変数:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	::vim::current					*tcl-var-current*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{tcl-var-current}
+@cindex tcl-var-current
+@item ::vim::current
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	This is an array providing access to various "current" objects
+	available in vim.  The contents of this array are updated after
+	"::vim::command" is called, as this might change vim's current
+	settings (e.g., by deleting the current buffer).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは、vim から利用可能な様々な "current" オブジェクトへのアクセスを提供する配列である。この配列の内容は、vim の現在の設定を変更 (例、カレントバッファの削除など) する可能性のある、"::vim::command" が呼び出された後に更新される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	The "buffer" element contains the name of the buffer command for the
+	current buffer.  This can be used directly to invoke buffer commands
+	(see |tcl-buffer-cmds|).  This element is read-only.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+"buffer" 要素は、カレントバッファへのバッファコマンドの名前を持つ。これで、直接バッファコマンドを利用することができる (|tcl-buffer-cmds| を参照)。この要素は読取り専用である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Example: >
+		$::vim::current(buffer) insert begin "Hello world"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@example
+$::vim::current(buffer) insert begin "Hello world"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	The "window" element contains the name of the window command for the
+	current window.  This can be used directly to invoke window commands
+	(see |tcl-window-cmds|).  This element is read-only.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+"window" 要素は、カレントウィンドウへのウィンドウコマンドの名前を持つ。これで、直接ウィンドウコマンドを利用することができる (|tcl-window-cmds| を参照)。この要素は読取り専用である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Example: >
+		$::vim::current(window) height 10
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@example
+$::vim::current(window) height 10
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	::vim::lbase					*tcl-var-lbase*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-var-lbase}
+@cindex tcl-var-lbase
+@item ::vim::lbase
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	This variable controls how Tcl treats line numbers.  If it is set to
+	'1', then lines and columns start at 1.  This way, line numbers from
+	Tcl commands and vim expressions are compatible.  If this variable is
+	set to '0', then line numbers and columns start at 0 in Tcl.  This is
+	useful if you want to treat a buffer as a Tcl list or a line as a Tcl
+	string and use standard Tcl commands that return an index ("lsort" or
+	"string first", for example).  The default value is '1'.  Currently,
+	any non-zero values is treated as '1', but your scripts should not
+	rely on this.  See also |tcl-linenumbers|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この変数は、Tcl が行番号をどのように扱うかを制御する。
+
+これが '1' にセットされていると、行と縦列は 1 から始まる。このとき、Tcl コマンドからの行番号と vim の表現は互換性を持つ。
+
+この変数が '0' にセットされた場合、Tcl では行番号、縦列は 0 から始まる。これは、バッファを Tcl のリスト、行を Tcl の文字列として扱い、さらにインデックスを返す標準の Tcl コマンド (例えば、"lsort" や "string first") を使うときに役に立つ。
+
+標準値は '1' である。今のところ、非 0 の値は全て '1' として扱われるが、この事実に依存したスクリプトを書くべきではない。|tcl-linenumbers| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	::vim::range					*tcl-var-range*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-var-range}
+@cindex tcl-var-range
+@item ::vim::range
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	This is an array with three elements, "start", "begin" and "end".  It
+	contains the line numbers of the start and end row of the current
+	range.  "begin" is the same as "start".  This variable is read-only.
+	See |tcl-examples|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは 3 つの要素、"start", "begin", "end" から成る配列である。現在の範囲の、最初と最後の行番号を持つ。"begin" は "start" と同じである。この変数は読取り専用である。|tcl-examples| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	line						*tcl-var-line*
+	lnum						*tcl-var-lnum*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-var-line}
+@cindex tcl-var-line
+@item	line
+@anchor{tcl-var-lnum}
+@cindex tcl-var-lnum
+@itemx	lnum
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	These global variables are only available if the ":tcldo" Ex command
+	is being executed.  They contain the text and line number of the
+	current line.  When the Tcl command invoked by ":tcldo" is completed,
+	the current line is set to the contents of the "line" variable, unless
+	the variable was unset by the Tcl command.  The "lnum" variable is
+	read-only.  These variables are not in the "::vim" namespace so they
+	can be used in ":tcldo" without much typing (this might be changed in
+	future versions).  See also |tcl-linenumbers|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このグローバル変数は、ex コマンド "@command{:tcldo}" が実行されたときのみ利用可能である。これらはテキストと現在の行の行番号を持つ。
+
+Tcl コマンドが "@command{:tcldo}" により呼び出されて完了したとき、"line" 変数が Tcl コマンドによって設定解除されていないければ、現在の行は "line" 変数の内容に設定される。"lnum" 変数は読取り専用である。
+
+これらの変数は、"::vim" 名前空間に属していないため、修飾なしで ":tcldo" で使うことができる (これは将来のバージョンで変更されるはずである)。|tcl-linenumbers| も参照。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Tcl window commands					*tcl-window-cmds*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-window-cmds}
+@cindex tcl-window-cmds
+@section 4. Tcl ウィンドウコマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Window commands represent vim windows.  They are created by several commands:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウコマンドは、vim のウィンドウの表現である。これらはいくつかの方法で作られる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	::vim::window list			|tcl-window|
+	"windows" option of a buffer command	|tcl-buffer-windows|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item ::vim::window リスト |tcl-window|
+@item バッファコマンドの "windows" オプション |tcl-buffer-windows|
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The ::vim::current(window) variable contains the name of the window command
+for the current window.  A window command is automatically deleted when the
+corresponding vim window is closed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+::vim::current(window) 変数は、現在のウィンドウのウィンドウコマンドの名前を持つ。ウィンドウコマンドは、vim ウィンドウが閉じられるに従って、自動的に破棄される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Let's assume the name of the window command is stored in the Tcl variable "win",
+i.e. "$win" calls the command.  The following options are available: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウコマンドの名前が Tcl 変数 "win" に格納される、すなわち、"$win" がコマンドを呼び出す、と仮定しよう。次のオプションが利用可能である:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	$win buffer		# Create Tcl command for window's buffer.
+	$win command {cmd}	# Execute Ex command in windows context.
+	$win cursor		# Get current cursor position.
+	$win cursor {var}	# Set cursor position from array variable.
+	$win cursor {row} {col}	# Set cursor position.
+	$win delcmd {cmd}	# Call Tcl command when window is closed.
+	$win expr {expr}	# Evaluate vim expression in windows context.
+	$win height		# Report the window's height.
+	$win height {n}		# Set the window's height.
+	$win option {opt} [val]	# Get/Set vim option in windows context.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item $win buffer @tab ウィンドウのバッファのTclコマンドを作る。
+@item $win command @{cmd@} @tab ウィンドウのコンキクストに、ex コマンドを実行する。
+@item $win cursor @tab 現在のカーソルの位置を得る。
+@item $win cursor @{var@} @tab 配列変数により、カーソルの位置を設定する。
+@item $win cursor @{row@} @{col@} @tab カーソルの位置を設定する。
+@item $win delcmd @{cmd@} @tab ウィンドウが閉じたら、Tcl コマンドを呼出す。
+@item $win expr @{expr@} @tab ウィンドウのコンキクストに、vim の式評価を行う。
+@item $win height @tab ウィンドウの高さを報告する。
+@item $win height @{n@} @tab ウィンドウの高さを設定する。
+@item $win option @{opt@} [val] @tab ウィンドウのコンテキストに、vim のオプションを取得/設定する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Options:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec オプション:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	$win buffer					*tcl-window-buffer*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{tcl-window-buffer}
+@cindex tcl-window-buffer
+@item $win buffer
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Creates a Tcl command for the window's buffer, and returns its name as
+	the result.  The name should be stored in a variable: >
+		set buf [$win buffer]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウのバッファの Tcl コマンドを作成し、戻り値としてその名前を返す。名前は変数に格納されるべきである:
+@example
+set buf [$win buffer]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	$buf is now a valid Tcl command.  See |tcl-buffer-cmds| for the
+	available options.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+$buf は有効な Tcl コマンドとなる。利用可能なオプションについては、|tcl-buffer-cmds| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	$win cursor					*tcl-window-cursor*
+	$win cursor {var}
+	$win cursor {row} {col}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-window-cursor}
+@cindex tcl-window-cursor
+@item $win cursor
+@itemx $win cursor @{var@}
+@itemx $win cursor @{row@} @{col@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Without argument, reports the current cursor position as a string.
+	This can be converted to a Tcl array variable: >
+		array set here [$win cursor]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数なしで、現在のカーソル位置を文字列として返す。これは、Tcl の配列変数へと変換することができる:
+@example
+array set here [$win cursor]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	"here(row)" and "here(column)" now contain the cursor position.
+	With a single argument, the argument is interpreted as the name of a
+	Tcl array variable, which must contain two elements "row" and "column".
+	These are used to set the cursor to the new position: >
+		$win cursor here	;# not $here !
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このとき、"here(row)" と "here(column)" がカーソル位置を持つ。1 つの引数を伴うと、引数は 2 つの要素 "row" と "column" を持つべき、Tcl 配列変数名と解釈される。これらはカーソルを新しい位置へセットするために使われる。
+@example
+$win cursor here	;# not $here !
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	With two arguments, sets the cursor to the specified row and column: >
+		$win cursor $here(row) $here(column)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+2 つの引数を伴い、カーソルを row と colum で指定した位置へセットする:
+@example
+$win cursor $here(row) $here(column)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	Invalid positions result in a standard Tcl error, which can be caught
+	with "catch".  The row and column values depend on the "::vim::lbase"
+	variable.  See |tcl-var-lbase|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+不正な位置指定は、"catch" にて捕捉可能な標準 Tcl エラーを返す。row と column の値は、"::vim::lbase" 変数に依存する。|tcl-var-lbase| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	$win delcmd {cmd}				*tcl-window-delcmd*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-window-delcmd}
+@cindex tcl-window-delcmd
+@item $win delcmd @{cmd@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Registers the Tcl command {cmd} as a deletion callback for the window.
+	This command is executed (in the global scope) just before the window
+	is closed.  Complex commands should be build with "list": >
+		$win delcmd [list puts vimerr "window deleted"]
+<	See also |tcl-buffer-delcmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Tcl コマンド @{cmd@} を、ウィンドウ破棄のコールバックとして登録する。このコマンドはウィンドウが閉じられた直後に (グローバルスコープで) 実行される。複雑なコマンドは、"list" により構成するとよい:
+@example
+$win delcmd [list puts vimerr "window deleted"]
+@end example
+|tcl-buffer-delcmd| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	$win height					*tcl-window-height*
+	$win height {n}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-window-height}
+@cindex tcl-window-height
+@item $win height
+@itemx $win height @{n@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Without argument, reports the window's current height.  With an
+	argument, tries to set the window's height to {n}, then reports the
+	new height (which might be different from {n}).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数なしで、ウィンドウの現在の高さを報告する。引数を伴うと、ウィンドウの高さを @{n@} に設定しようと試み、戻り値として新しい高さ (これは @{n@} ではないかもしれない) を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	$win command [-quiet] {cmd}			*tcl-window-command*
+	$win expr {expr}				*tcl-window-expr*
+	$win option {opt} [val]				*tcl-window-option*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-window-command}
+@cindex tcl-window-command
+@item $win command [-quiet] @{cmd@}
+@anchor{tcl-window-expr}
+@cindex tcl-window-expr
+@itemx $win expr @{expr@}
+@anchor{tcl-window-option}
+@cindex tcl-window-option
+@itemx $win option @{opt@} [val]
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	These are similar to "::vim::command" etc., except that everything is
+	done in the context of the window represented by $win, instead of the
+	current window.  For example, setting an option that is marked 'local
+	to window' affects the window $win.  Anything that affects or queries
+	a buffer uses the buffer displayed in this window (i.e. the buffer
+	that is represented by "$win buffer").  See |tcl-command|, |tcl-expr|
+	and |tcl-option| for more information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらは、全てがカレントウィンドウの代わりに $win で表現されるウィンドウコンテキストにおいて実行されるという点を除けば、"::vim::command" などに似ている。例えば、'local to window' と記されたオプションの設定は、ウィンドウ $win に影響を与える。バッファへの影響、または問い合わせは、全てこのウィンドウに表示されるバッファ (すなわち、"$win buffer" で表現されるバッファ) を対象とする。より詳しい情報は、|tcl-command|, |tcl-expr|, |tcl-option| を参照せよ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Example: >
+		$win option number on
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@example
+$win option number on
+@end example
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Tcl buffer commands					*tcl-buffer-cmds*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-buffer-cmds}
+@cindex tcl-buffer-cmds
+@section 5. Tcl バッファコマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Buffer commands represent vim buffers.  They are created by several commands:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファコマンドは vim のバッファを表現する。これらはいくつかの方法で作成される:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	::vim::buffer {N}			|tcl-buffer|
+	::vim::buffer list			|tcl-buffer|
+	"buffer" option of a window command	|tcl-window-buffer|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item ::vim::buffer @{N@} |tcl-buffer|
+@item ::vim::buffer リスト |tcl-buffer|
+@item ウィンドウコマンドの "buffer" オプション |tcl-window-buffer|
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The ::vim::current(buffer) variable contains the name of the buffer command
+for the current buffer.  A buffer command is automatically deleted when the
+corresponding vim buffer is destroyed.  Whenever the buffer's contents are
+changed, all marks in the buffer are automatically adjusted.  Any changes to
+the buffer's contents made by Tcl commands can be undone with the "undo" vim
+command (see |undo|).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+::vim::current (バッファ) 変数は、カレントバッファへのバッファコマンドの名前を持っている。バッファコマンドは vim のバッファが破棄されると、それに合わせて自動的に削除される。バッファの内容が変更されると、バッファ内の全てのマークは自動的に調整される。Tcl コマンドによるバッファ内容への変更は、vim の "undo" コマンドで元に戻すことができる (|undo| を参照)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Let's assume the name of the buffer command is stored in the Tcl variable "buf",
+i.e. "$buf" calls the command.  The following options are available: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファコマンドの名前が Tcl 変数 "buf" に格納されている、すなわち、"$buf" がコマンドを呼出すものと仮定しよう。次のオプションが利用可能である:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	$buf append {n} {str}	# Append a line to buffer, after line {n}.
+	$buf command {cmd}	# Execute Ex command in buffers context.
+	$buf count		# Report number of lines in buffer.
+	$buf delcmd {cmd}	# Call Tcl command when buffer is deleted.
+	$buf delete {n}		# Delete a single line.
+	$buf delete {n} {m}	# Delete several lines.
+	$buf expr {expr}	# Evaluate vim expression in buffers context.
+	$buf get {n}		# Get a single line as a string.
+	$buf get {n} {m}	# Get several lines as a list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item $buf append @{n@} @{str@} @tab バッファの行 @{n@} の後に、行を追加する。
+@item $buf command @{cmd@} @tab バッファコンテキストで ex コマンドを実行する。
+@item $buf count @tab バッファ内の行数を返す。
+@item $buf delcmd @{cmd@} @tab バッファが削除されたら Tcl コマンドを呼ぶ。
+@item $buf delete @{n@} @tab 1 行を削除する。
+@item $buf delete @{n@} @{m@} @tab 数行を削除する。
+@item $buf expr @{expr@} @tab バッファコンテキストで、vim の式評価をする。
+@item $buf get @{n@} @tab 1 行を文字列として取得する。
+@item $buf get @{n@} @{m@} @tab 数行をリストとして取得する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	$buf insert {n} {str}	# Insert a line in buffer, as line {n}.
+	$buf last		# Report line number of last line in buffer.
+	$buf mark {mark}	# Report position of buffer mark.
+	$buf name		# Report name of file in buffer.
+	$buf number		# Report number of this buffer.
+	$buf option {opt} [val]	# Get/Set vim option in buffers context.
+	$buf set {n} {text}	# Replace a single line.
+	$buf set {n} {m} {list}	# Replace several lines.
+	$buf windows		# Create Tcl commands for buffer's windows.
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item $buf insert @{n@} @{str@} @tab バッファに行 @{n@} として、行を挿入する。
+@item $buf last @tab バッファの最終行の行番号を返す。
+@item $buf mark @{mark@} @tab バッファマークの位置を返す。
+@item $buf name @tab バッファ内のファイル名を返す。
+@item $buf number @tab そのバッファの番号を返す。
+@item $buf option @{opt@} [val] @tab バッファコンテキストで vim オプションを取得/設定。
+@item $buf set @{n@} @{text@} @tab 1 行を置換する。
+@item $buf set @{n@} @{m@} @{list@} @tab 数行を置換する
+@item $buf windows @tab バッファウィンドウの Tcl コマンドを作成する。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*tcl-linenumbers*
+Most buffer commands take line numbers as arguments.  How Tcl treats these
+numbers depends on the "::vim::lbase" variable (see |tcl-var-lbase|).  Instead
+of line numbers, several keywords can be also used: "top", "start", "begin",
+"first", "bottom", "end" and "last".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-linenumbers}
+@cindex tcl-linenumbers
+ほとんどのバッファコマンドは引数として行番号を取る。Tcl コマンドがこれらをどう扱うかは "::vim::lbase" 変数に依っている (|tcl-var-lbase| を参照)。行番号の代わりに、いくつかのキーワードを使うこともできる: "top", "start", "begin", "first", "bottom", "end", "last" が使える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Options:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec オプション:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	$buf append {n} {str}				*tcl-buffer-append*
+	$buf insert {n} {str}				*tcl-buffer-insert*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{tcl-buffer-append}
+@cindex tcl-buffer-append
+@item $buf append @{n@} @{str@}
+@anchor{tcl-buffer-insert}
+@cindex tcl-buffer-insert
+@itemx $buf insert @{n@} @{str@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Add a line to the buffer.  With the "insert" option, the string
+	becomes the new line {n}, with "append" it is inserted after line {n}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファに行を追加する。"insert" オプションを伴うと文字列は新しい行 @{n@} になり、"append" オプションを伴うと行 @{n@} の後に挿入される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Example: >
+		$buf insert top "This is the beginning."
+		$buf append end "This is the end."
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@example
+$buf insert top "ここが始まり。"
+$buf append end "ここで終わり。"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	To add a list of lines to the buffer, use a loop: >
+		foreach line $list { $buf append $num $line ; incr num }
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファに行にリストを追加するには、ループを使うとよい:
+@example
+foreach line $list @{ $buf append $num $line ; incr num @}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	$buf count					*tcl-buffer-count*
+	Reports the total number of lines in the buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-buffer-count}
+@cindex tcl-buffer-count
+@item $buf count
+バッファ内の行の総数を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	$buf delcmd {cmd}				*tcl-buffer-delcmd*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-buffer-delcmd}
+@cindex tcl-buffer-delcmd
+@item $buf delcmd @{cmd@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Registers the Tcl command {cmd} as a deletion callback for the buffer.
+	This command is executed (in the global scope) just before the buffer
+	is deleted.  Complex commands should be build with "list": >
+		$buf delcmd [list puts vimerr "buffer [$buf number] gone"]
+<	See also |tcl-window-delcmd|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Tcl コマンド @{cmd@} を、バッファの削除に対するコールバックとして登録する。このコマンドは、バッファが削除された直後に (グローバルスコープで) 実行される。複雑なコマンドは "list" として構成するべきである:
+@example
+$buf delcmd [list puts vimerr "buffer [$buf number] gone"]
+@end example
+|tcl-window-delcmd| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	$buf delete {n}					*tcl-buffer-delete*
+	$buf delete {n} {m}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-buffer-delete}
+@cindex tcl-buffer-delete
+@item $buf delete @{n@}
+@itemx $buf delete @{n@} @{m@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Deletes line {n} or lines {n} through {m} from the buffer.
+	This example deletes everything except the last line: >
+		$buf delete first [expr [$buf last] - 1]
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファから行 @{n@}、または行 @{n@} から @{m@} までを削除する。次の例は、最終行を除く全ての行を削除する:
+@example
+$buf delete first [expr [$buf last] - 1]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	$buf get {n}					*tcl-buffer-get*
+	$buf get {n} {m}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-buffer-get}
+@cindex tcl-buffer-get
+@item $buf get @{n@}
+@itemx $buf get @{n@} @{m@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Gets one or more lines from the buffer.  For a single line, the result
+	is a string; for several lines, a list of strings.
+	Example: >
+		set topline [$buf get top]
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファから 1 行以上を取得する。1 行の場合、戻り値は文字列である; 数行の場合には文字列のリストが返される。
+
+例:
+@example
+set topline [$buf get top]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	$buf last					*tcl-buffer-last*
+	Reports the line number of the last line.  This value depends on the
+	"::vim::lbase" variable.  See |tcl-var-lbase|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-buffer-last}
+@cindex tcl-buffer-last
+@item $buf last
+最終行の行番号を返す。この値は "::vim::lbase" 変数に依存する。|tcl-var-lbase| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	$buf mark {mark}				*tcl-buffer-mark*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-buffer-mark}
+@cindex tcl-buffer-mark
+@item $buf mark @{mark@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Reports the position of the named mark as a string, similar to the
+	cursor position of the "cursor" option of a window command (see
+	|tcl-window-cursor|).  This can be converted to a Tcl array variable: >
+		array set mpos [$buf mark "a"]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+名前付きマークの位置を、ウィンドウコマンドの "cursor" オプションにて表されるカーソル位置に似た文字列として返す (|tcl-window-cursor| を参照)。これは Tcl 配列変数に変換される:
+@example
+array set mpos [$buf mark "a"]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	"mpos(column)" and "mpos(row)" now contain the position of the mark.
+	If the mark is not set, a standard Tcl error results.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"mpos(column)" と "mpos(row)" はマークの位置を保持する。マークがセットされていなければ、標準 Tcl エラーが返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	$buf name
+	Reports the name of the file in the buffer.  For a buffer without a
+	file, this is an empty string.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item $buf name
+バッファ内のファイル名を返す。ファイルなしのバッファの場合、空文字列を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	$buf number
+	Reports the number of this buffer.  See |:buffers|.
+	This example deletes a buffer from vim: >
+		::vim::command "bdelete [$buf number]"
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item $buf number
+そのバッファの番号を返す。|:buffer|を参照。この例は、vim からバッファを削除する:
+@example
+::vim::command "bdelete [$buf number]"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	$buf set {n} {string}				*tcl-buffer-set*
+	$buf set {n} {m} {list}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-buffer-set}
+@cindex tcl-buffer-set
+@item $buf set @{n@} @{string@}
+@itemx $buf set @{n@} @{m@} @{list@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Replace one or several lines in the buffer.  If the list contains more
+	elements than there are lines to replace, they are inserted into the
+	buffer.  If the list contains fewer elements, any unreplaced line is
+	deleted from the buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファ内の 1 行以上を置換する。リスト (list) が置換される行以上の要素を持っていた場合、それらはバッファに追加される。リストの要素が少ない場合には、置換されなかった行はバッファから削除される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	$buf windows					*tcl-buffer-windows*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-buffer-windows}
+@cindex tcl-buffer-windows
+@item $buf windows
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Creates a window command for each window that displays this buffer, and
+	returns a list of the command names as the result.
+	Example: >
+		set winlist [$buf windows]
+		foreach win $winlist { $win height 4 }
+<	See |tcl-window-cmds| for the available options.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そのバッファに表示されている各ウィンドウに対し、ウィンドウコマンドを作成し、コマンド名のリストを結果として返す。
+
+例:
+@example
+set winlist [$buf windows]
+foreach win $winlist @{ $win height 4 @}
+@end example
+可能なオプションについては |tcl-window-cmds| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	$buf command [-quiet] {cmd}			*tcl-buffer-command*
+	$buf expr {expr}				*tcl-buffer-expr*
+	$buf option {opt} [val]				*tcl-buffer-option*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-buffer-command}
+@cindex tcl-buffer-command
+@item $buf command [-quiet] @{cmd@}
+@anchor{tcl-buffer-expr}
+@cindex tcl-buffer-expr
+@itemx $buf expr @{expr@}
+@anchor{tcl-buffer-option}
+@cindex tcl-buffer-option
+@itemx $buf option @{opt@} [val]
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	These are similar to "::vim::command" etc., except that everything is
+	done in the context of the buffer represented by $buf, instead of the
+	current buffer.  For example, setting an option that is marked 'local
+	to buffer' affects the buffer $buf.  Anything that affects or queries
+	a window uses the first window in vim's window list that displays this
+	buffer (i.e. the first entry in the list returned by "$buf windows").
+	See |tcl-command|, |tcl-expr| and |tcl-option| for more information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらは、カレントバッファではなく、$buf で表されるバッファコンテキストにおいて全てが実行されるということ以外は、"::vim::command" などと同じである。
+
+例えば、'local to buffer' と記されたオプションの設定は、バッファ $buf に作用する。ウィンドウへの作用、あるいは問い合わせは、全て vim のウィンドウリストの内でこのバッファを表示している最初のウィンドウ (すなわち、"$buf windows" で最初に返されるエントリ) に対して行われる。
+
+より詳しい情報は |tcl-command|, |tcl-expr|, |tcl-option| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Example: >
+		if { [$buf option modified] } { $buf command "w" }
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@example
+if @{ [$buf option modified] @} @{ $buf command "w" @}
+@end example
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Miscellaneous; Output from Tcl		*tcl-misc* *tcl-output*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-misc}
+@anchor{tcl-output}
+@cindex tcl-misc
+@cindex tcl-output
+@section 6. その他; Tcl からの出力
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The standard Tcl commands "exit" and "catch" are replaced by custom versions.
+"exit" terminates the current Tcl script and returns to vim, which deletes the
+Tcl interpreter.  Another call to ":tcl" then creates a new Tcl interpreter.
+"exit" does NOT terminate vim!  "catch" works as before, except that it does
+not prevent script termination from "exit".  An exit code != 0 causes the ex
+command that invoked the Tcl script to return an error.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+標準 Tcl コマンド "exit" と "catch" は、カスタムバージョンのものと置き換えられている。"exit" は、現在の Tcl スクリプトを終了して vim に戻り、Tcl インタープリターを破棄する。その後、":tcl" が呼出されたときに、新しい Tcl インタープリターが作成される。"exit" は、vim を終了させることはない！
+
+"catch" は、"exit" でのスクリプトの終了を妨げることがない点を除けば、標準のものと同じである。終了コードが 0 でないとき (exit code != 0)、Tcl スクリプトを呼出した ex コマンドはエラーを返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Two new I/O streams are available in Tcl, "vimout" and "vimerr".  All output
+directed to them is displayed in the vim message area, as information messages
+and error messages, respectively.  The standard Tcl output streams stdout and
+stderr are mapped to vimout and vimerr, so that a normal "puts" command can be
+used to display messages in vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+2 つの新しい I/O ストリーム、"vimout", "vimerr" が Tcl から利用可能である。これらに向けられた全ての出力は、それぞれ vim の情報メッセージとエラーメッセージとして、メッセージエリアに表示される。標準 Tcl 出力ストリーム stdout と stderr は、普通の "puts" コマンドで vim にメッセージを表示できるよう、vimout と vimerr に割当てられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. Known bugs & problems				*tcl-bugs*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-bugs}
+@cindex tcl-bugs
+@section 7. 既知のバグと問題点
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Calling one of the Tcl Ex commands from inside Tcl (via "::vim::command") may
+have unexpected side effects.  The command creates a new interpreter, which
+has the same abilities as the standard interpreter - making "::vim::command"
+available in a safe child interpreter therefore makes the child unsafe.  (It
+would be trivial to block nested :tcl* calls or ensure that such calls from a
+safe interpreter create only new safe interpreters, but quite pointless -
+depending on vim's configuration, "::vim::command" may execute arbitrary code
+in any number of other scripting languages.)  A call to "exit" within this new
+interpreter does not affect the old interpreter; it only terminates the new
+interpreter, then script processing continues normally in the old interpreter.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Tcl 内部から、("::vim::command" を介して) Tcl の ex コマンドを呼出すと、予期できない副作用を起こす可能性がある。
+
+このコマンドは、"::vim::command" を安全な子インタープリター内で利用可能にするため、その子インタープリターを不安定にして、標準のインタープリターと同じ能力を持つ新しいインタープリターを作る。(ネストされた :tcl* 呼び出しをブロックしたり、安全なインタープリターから新しい安全なインタープリターのみを呼出すよう保証することは簡単なことだが、それは不適切である - vim の設定により、"::vim::command" は他の多くのスクリプト言語の任意のコードを実行することができるからである。)
+
+この新しいインタープリター内での "exit" 呼出しは、古いインタープリターには影響しない; 新しいインタープリターのみを終了し、スクリプト処理は古いインタープリターで正常に続けられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Input from stdin is currently not supported.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+stdin からの入力は、今のところサポートされていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+8. Examples:						*tcl-examples*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-examples}
+@cindex tcl-examples
+@section 8. 例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here are a few small (and maybe useful) Tcl scripts.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+いくつかの小さな (そして、たぶん役に立つ) Tcl スクリプトを紹介しよう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This script sorts the lines of the entire buffer (assume it contains a list
+of names or something similar):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このスクリプトはバッファ全体の行をソートする (名前のリストとか、そのようなものであると仮定する):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	set buf $::vim::current(buffer)
+	set lines [$buf get top bottom]
+	set lines [lsort -dictionary $lines]
+	$buf set top bottom $lines
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+set buf $::vim::current(buffer)
+set lines [$buf get top bottom]
+set lines [lsort -dictionary $lines]
+$buf set top bottom $lines
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This script reverses the lines in the buffer.  Note the use of "::vim::lbase"
+and "$buf last" to work with any line number setting.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このスクリプトは、バッファ内の行を反転する。"::vim::lbase" と "$buf last" は、どんな行番号の設定でも機能することに注目。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	set buf $::vim::current(buffer)
+	set t $::vim::lbase
+	set b [$buf last]
+	while { $t < $b } {
+		set tl [$buf get $t]
+		set bl [$buf get $b]
+		$buf set $t $bl
+		$buf set $b $tl
+		incr t
+		incr b -1
+	}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+set buf $::vim::current(buffer)
+set t $::vim::lbase
+set b [$buf last]
+while { $t < $b } {
+        set tl [$buf get $t]
+        set bl [$buf get $b]
+        $buf set $t $bl
+        $buf set $b $tl
+        incr t
+        incr b -1
+}
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This script adds a consecutive number to each line in the current range:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このスクリプトは、現在の範囲の各行に連続した番号を付け加える:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	set buf $::vim::current(buffer)
+	set i $::vim::range(start)
+	set n 1
+	while { $i <= $::vim::range(end) } {
+		set line [$buf get $i]
+		$buf set $i "$n\t$line"
+		incr i ; incr n
+	}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+set buf $::vim::current(buffer)
+set i $::vim::range(start)
+set n 1
+while { $i <= $::vim::range(end) } {
+        set line [$buf get $i]
+        $buf set $i "$n\t$line"
+        incr i ; incr n
+}
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The same can also be done quickly with two Ex commands, using ":tcldo":
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同じことが、"@command{:tcldo}" による 2 つの ex コマンドで、より迅速に行える:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:tcl set n 1
+	:[range]tcldo set line "$n\t$line" ; incr n
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+:tcl set n 1
+:[range]tcldo set line "$n\t$line" ; incr n
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This procedure runs an Ex command on each buffer (idea stolen from Ron Aaron):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このプロシージャは、各バッファでexコマンドを走らせる (Ron Aaron 氏のアイデア):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	proc eachbuf { cmd } {
+		foreach b [::vim::buffer list] {
+			$b command $cmd
+		}
+	}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+proc eachbuf { cmd } {
+        foreach b [::vim::buffer list] {
+                $b command $cmd
+        }
+}
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Use it like this:
+	:tcl eachbuf %s/foo/bar/g
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+こんな風に使う:
+@example
+:tcl eachbuf %s/foo/bar/g
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Be careful with Tcl's string and backslash substitution, tough.  If in doubt,
+surround the Ex command with curly braces.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Tcl の文字列とバックスラッシュの置換には気をつけてほしい。疑わしいときは、丸括弧で ex コマンドを括っておくとよい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+If you want to add some Tcl procedures permanently to vim, just place them in
+a file (e.g. "~/.vimrc.tcl" on Unix machines), and add these lines to your
+startup file (usually "~/.vimrc" on Unix):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+いくつかの Tcl コマンドをずっと vim で使いたいというなら、それらをファイル (例えば Unix マシンでは "~/.vimrc.tcl" など) に入れておき、スタートアップファイル (Unix マシンなら標準で "~/.vimrc") に以下の行を付け加える:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	if has("tcl")
+		tclfile ~/.vimrc.tcl
+	endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+if has("tcl")
+        tclfile ~/.vimrc.tcl
+endif
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+9. Dynamic loading					*tcl-dynamic*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tcl-dynamic}
+@cindex tcl-dynamic
+@section 9. 動的ローディング
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On MS-Windows and Unix the Tcl library can be loaded dynamically.  The
+|:version| output then includes |+tcl/dyn|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows と UNIX では Tcl ライブラリを動的に読み込むことが可能である。これを行うと |:version| の出力に |+tcl/dyn| が含まれるようになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This means that Vim will search for the Tcl DLL or shared library file only
+when needed.  When you don't use the Tcl interface you don't need it, thus you
+can use Vim without this file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この場合、Vim は必要なときだけ Tcl の DLL ファイルや共有ライブラリファイルを検索する。Tcl インターフェイスを使わないときはこれらは不要なので、それらのファイルが無くても Vim を使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MS-Windows ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec MS-Windows
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To use the Tcl interface the Tcl DLL must be in your search path.  In a
+console window type "path" to see what directories are used.  The 'tcldll'
+option can be also used to specify the Tcl DLL.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Tcl インターフェイスを使うには Tcl の DLL が検索パス内に存在しなければならない。コンソールウィンドウで "path" とタイプすると、どのディレクトリが検索パスとなるか表示することができる。また '@option{tcldll}' オプションを Tcl の DLL を指定するのに使うこともできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The name of the DLL must match the Tcl version Vim was compiled with.
+Currently the name is "tcl86.dll".  That is for Tcl 8.6.  To know for sure
+edit "gvim.exe" and search for "tcl\d*.dll\c".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+DLL の名前は Vim をコンパイルした時の Tcl のバージョンに一致しなければならない。現在その名前は "tcl83.dll" である。これは Tcl8.3 用である。これを確かめるには、"gvim.exe" を開き、"tcl\d*.dll\c" を検索する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Unix ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec Unix
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'tcldll' option can be used to specify the Tcl shared library file instead
+of DYNAMIC_TCL_DLL file what was specified at compile time.  The version of
+the shared library must match the Tcl version Vim was compiled with.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コンパイル時に DYNAMIC_TCL_DLL で指定されたファイルの代わりに '@option{tcldll}' オプションで使用する Tcl の共有ライブラリのファイルを指定するのに使える。共有ライブラリのバージョンは Vim をコンパイルする時に用いた Tcl のバージョンと一致していなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset

@@ -1,0 +1,698 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node if_ruby.txt, , , 目次
+@unnumbered Ruby インターフェイス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*if_ruby.txt*   For Vim version 8.0.  Last change: 2016 Sep 01
+
+
+		  VIM REFERENCE MANUAL    by Shugo Maeda
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*if_ruby.txt*   For Vim バージョン 8.0.  Last change: 2016 Sep 01
+
+
+                 VIM リファレンスマニュアル    by Shugo Maeda
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Ruby Interface to Vim				*ruby* *Ruby*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ruby}
+@anchor{Ruby}
+@cindex ruby
+@cindex Ruby
+Ruby インターフェイス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1. Commands			|ruby-commands|
+2. The Vim module		|ruby-vim|
+3. Vim::Buffer objects		|ruby-buffer|
+4. Vim::Window objects		|ruby-window|
+5. Global variables		|ruby-globals|
+6. Dynamic loading		|ruby-dynamic|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. コマンド @tab |@ref{ruby-commands, , ruby-commands}|
+@item 2. Vim モジュール @tab |@ref{ruby-vim, , ruby-vim}|
+@item 3. Vim::Buffer オブジェクト @tab |@ref{ruby-buffer, , ruby-buffer}|
+@item 4. Vim::Window オブジェクト @tab |@ref{ruby-window, , ruby-window}|
+@item 5. グローバル変数 @tab |@ref{ruby-globals, , ruby-globals}|
+@item 6. 動的ローディング @tab |@ref{ruby-dynamic, , ruby-dynamic}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these commands}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらのコマンドはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			*E266* *E267* *E268* *E269* *E270* *E271* *E272* *E273*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E266}
+@anchor{E267}
+@anchor{E268}
+@anchor{E269}
+@anchor{E270}
+@anchor{E271}
+@anchor{E272}
+@anchor{E273}
+@cindex E266
+@cindex E267
+@cindex E268
+@cindex E269
+@cindex E270
+@cindex E271
+@cindex E272
+@cindex E273
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Ruby interface only works when Vim was compiled with the |+ruby| feature.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ruby インターフェイスは |+ruby| 機能を有効化して Vim をコンパイルした時にのみ動作する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The home page for ruby is http://www.ruby-lang.org/.  You can find links for
+downloading Ruby there.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ruby のホームページは @url{http://www.ruby-lang.org/} である。ここで Ruby をダウンロードできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Commands						*ruby-commands*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ruby-commands}
+@cindex ruby-commands
+@section 1. コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:ruby* *:rub*
+:rub[y] {cmd}		Execute Ruby command {cmd}.  A command to try it out: >
+				:ruby print "Hello"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:ruby}
+@anchor{:rub}
+@cindex :ruby
+@cindex :rub
+@item :rub[y] @{cmd@}
+Ruby のコマンド @{cmd@} を実行する。次のようにして使う:
+@example
+:ruby print "Hello"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:rub[y] << {endpattern}
+{script}
+{endpattern}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :rub[y] << @{endpattern@}
+@itemx @{script@}
+@itemx @{endpattern@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Execute Ruby script {script}.
+			{endpattern} must NOT be preceded by any white space.
+			If {endpattern} is omitted, it defaults to a dot '.'
+			like for the |:append| and |:insert| commands.  This
+			form of the |:ruby| command is mainly useful for
+			including ruby code in vim scripts.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ruby スクリプト @{script@} を実行する。
+
+@{endpattern@} の行では直前に空白文字を先行させてはいけない。@{endpattern@} が省略された場合、|:append| や |:insert| コマンド同様に '.' (ドット) がデフォルトである。この形式の |:ruby| コマンドは主に Vim script に Ruby コードを埋め込むのに便利。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Note: This command doesn't work when the Ruby feature
+			wasn't compiled in.  To avoid errors, see
+			|script-here|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+このコマンドは Ruby 機能をコンパイル時に指定しなかった時には動作しない。エラーを避けるには |script-here| を参照。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example Vim script: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim script の例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	function! RedGem()
+	ruby << EOF
+	class Garnet
+		def initialize(s)
+			@buffer = Vim::Buffer.current
+			vimputs(s)
+		end
+		def vimputs(s)
+			@buffer.append(@buffer.count,s)
+		end
+	end
+	gem = Garnet.new("pretty")
+	EOF
+	endfunction
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+function! RedGem()
+ruby << EOF
+class Garnet
+        def initialize(s)
+                @buffer = Vim::Buffer.current
+                vimputs(s)
+        end
+        def vimputs(s)
+                @buffer.append(@buffer.count,s)
+        end
+end
+gem = Garnet.new("pretty")
+EOF
+endfunction
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+To see what version of Ruby you have: >
+	:ruby print RUBY_VERSION
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使っている Ruby のバージョンを見るには:
+@example
+:ruby print RUBY_VERSION
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:rubydo* *:rubyd* *E265*
+:[range]rubyd[o] {cmd}	Evaluate Ruby command {cmd} for each line in the
+			[range], with $_ being set to the text of each line in
+			turn, without a trailing <EOL>.  Setting $_ will change
+			the text, but note that it is not possible to add or
+			delete lines using this command.
+			The default for [range] is the whole file: "1,$".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:rubydo}
+@anchor{:rubyd}
+@anchor{E265}
+@cindex :rubydo
+@cindex :rubyd
+@cindex E265
+@item :[range]rubyd[o] @{cmd@}
+[range] の範囲の各行に対し、行末の <EOL> を削除して $_ へ代入しつつ、Ruby コマンド @{cmd@} を実行評価する。$_ を変更するとバッファのテキストを変更できるが、このコマンドを使って行を追加したり削除したりはできないことに注意。
+
+[range] を省略した場合ファイル全体が対象: "1,$"
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:rubyfile* *:rubyf*
+:rubyf[ile] {file}	Execute the Ruby script in {file}.  This is the same as
+			`:ruby load 'file'`, but allows file name completion.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:rubyfile}
+@anchor{:rubyf}
+@cindex :rubyfile
+@cindex :rubyf
+@item :rubyf[ile] @{file@}
+ファイル @{file@} の Ruby スクリプトを実行する。ファイル名の補完が利用できる以外は、`@command{:ruby load 'file'}` と同じ。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Executing Ruby commands is not possible in the |sandbox|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|sandbox| 環境内では Ruby コマンドを実行できない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. The Vim module					*ruby-vim*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ruby-vim}
+@cindex ruby-vim
+@section 2. Vim モジュール
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Ruby code gets all of its access to vim via the "Vim" module.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ruby のコードは全ての Vim へのアクセスを Vim モジュール経由で行う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Overview: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 概要
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	print "Hello"			      # displays a message
+	Vim.command(cmd)		      # execute an Ex command
+	num = Vim::Window.count		      # gets the number of windows
+	w = Vim::Window[n]		      # gets window "n"
+	cw = Vim::Window.current	      # gets the current window
+	num = Vim::Buffer.count		      # gets the number of buffers
+	b = Vim::Buffer[n]		      # gets buffer "n"
+	cb = Vim::Buffer.current	      # gets the current buffer
+	w.height = lines		      # sets the window height
+	w.cursor = [row, col]		      # sets the window cursor position
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item print "Hello" @tab メッセージを表示する
+@item Vim.command(cmd) @tab Ex コマンドを実行する
+@item num = Vim::Window.count @tab ウィンドウ数を取得する
+@item w = Vim::Window[n] @tab ウィンドウ n を取得する
+@item cw = Vim::Window.current @tab 現在のウィンドウを取得する
+@item num = Vim::Buffer.count @tab バッファ数を取得する
+@item b = Vim::Buffer[n] @tab バッファ n を取得する
+@item cb = Vim::Buffer.current @tab 現在のバッファを取得する
+@item w.height = lines @tab ウィンドウの高さ (行数) を設定する
+@item w.cursor = [row, col] @tab ウィンドウのカーソル位置を設定する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	pos = w.cursor			      # gets an array [row, col]
+	name = b.name			      # gets the buffer file name
+	line = b[n]			      # gets a line from the buffer
+	num = b.count			      # gets the number of lines
+	b[n] = str			      # sets a line in the buffer
+	b.delete(n)			      # deletes a line
+	b.append(n, str)		      # appends a line after n
+	line = Vim::Buffer.current.line       # gets the current line
+	num = Vim::Buffer.current.line_number # gets the current line number
+	Vim::Buffer.current.line = "test"     # sets the current line number
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item pos = w.cursor @tab カーソルの位置を配列で受け取る
+@item name = b.name @tab バッファのファイル名を取得する
+@item line = b[n] @tab バッファから行の内容を取得する
+@item num = b.count @tab バッファの行数を取得する
+@item b[n] = str @tab バッファの行の内容を変更する
+@item b.delete(n) @tab 行を削除する
+@item b.append(n, str) @tab n 行目の直後に行を追加する
+@item line = Vim::Buffer.current.line @tab カレント行を取得する
+@item num = Vim::Buffer.current.line_number @tab カレント行の行番号を取得する
+@item Vim::Buffer.current.line = "test" @tab カレント行を設定する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Module Functions:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec モジュール関数:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*ruby-message*
+Vim::message({msg})
+	Displays the message {msg}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{ruby-message}
+@cindex ruby-message
+@item Vim::message(@{msg@})
+メッセージ @{msg@} を表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*ruby-set_option*
+Vim::set_option({arg})
+	Sets a vim option.  {arg} can be any argument that the ":set" command
+	accepts.  Note that this means that no spaces are allowed in the
+	argument!  See |:set|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ruby-set_option}
+@cindex ruby-set_option
+@item Vim::set_option(@{arg@})
+Vim のオプションを設定する。@{arg@} は "@command{:set}" コマンドが受け付けるものであれば何でも良い。
+@quotation
+@strong{Note''} @*
+引数の中では空白文字が使えないことに注意。
+@end quotation
+|:set| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*ruby-command*
+Vim::command({cmd})
+	Executes Ex command {cmd}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ruby-command}
+@cindex ruby-command
+@item Vim::command(@{cmd@})
+Ex コマンド @{cmd@} を実行する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*ruby-evaluate*
+Vim::evaluate({expr})
+	Evaluates {expr} using the vim internal expression evaluator (see
+	|expression|).  Returns the expression result as:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ruby-evaluate}
+@cindex ruby-evaluate
+@item Vim::evaluate(@{expr@})
+Vim 内部の実行エンジンを使ってスクリプト @{expr@} を実行評価する (|expression| 参照)。実行結果は次のように返される:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	- a Integer if the Vim expression evaluates to a number
+	- a Float if the Vim expression evaluates to a float
+	- a String if the Vim expression evaluates to a string
+	- a Array if the Vim expression evaluates to a Vim list
+	- a Hash if the Vim expression evaluates to a Vim dictionary
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item Vim の実行結果が number の場合は Integer 
+@item Vim の実行結果が float の場合は Float 
+@item Vim の実行結果が string の場合は String 
+@item Vim の実行結果が Vim の list の場合は Array 
+@item Vim の実行結果が Vim の dictionary の場合は Hash 
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Dictionaries and lists are recursively expanded.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+辞書とリストは再帰的に展開される。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Vim::Buffer objects					*ruby-buffer*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ruby-buffer}
+@cindex ruby-buffer
+@section 3. Vim::Buffer オブジェクト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim::Buffer objects represent vim buffers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オブジェクト Vim::Buffer は Vim のバッファを表す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Class Methods:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec クラスメソッド:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+current		Returns the current buffer object.
+count		Returns the number of buffers.
+self[{n}]	Returns the buffer object for the number {n}.  The first number
+		is 0.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item current @tab カレントバッファオブジェクトを返す。
+@item count @tab バッファの個数を返す。
+@item self[@{n@}] @tab 番号 @{n@} のバッファオブジェクトを返す。最初の番号は 0。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Methods:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec メソッド:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+name		Returns the name of the buffer.
+number		Returns the number of the buffer.
+count		Returns the number of lines.
+length		Returns the number of lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@item name @tab バッファの名前を返す。
+@item number @tab バッファの番号を返す。
+@item count @tab 行数を返す。
+@item length @tab 行数を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+self[{n}]	Returns a line from the buffer. {n} is the line number.
+self[{n}] = {str}
+		Sets a line in the buffer. {n} is the line number.
+delete({n})	Deletes a line from the buffer. {n} is the line number.
+append({n}, {str})
+		Appends a line after the line {n}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item self[@{n@}] @tab バッファの行を返す。@{n@} は行番号。
+@item self[@{n@}] = @{str@} @tab バッファの行を設定する。@{n@} は行番号。
+@item delete(@{n@}) @tab バッファから行を削除する。@{n@} は行番号。
+@item append(@{n@}, @{str@}) @tab 行 @{n@} の後ろに行を追加する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+line		Returns the current line of the buffer if the buffer is
+		active.
+line = {str}    Sets the current line of the buffer if the buffer is active.
+line_number     Returns the number of the current line if the buffer is
+		active.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item line @tab そのバッファがアクティブなら、カレント行を返す。
+@item line = @{str@} @tab そのバッファがアクティブなら、カレント行を設定する。
+@item line_number @tab そのバッファがアクティブなら、カレント行の行番号を返す。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Vim::Window objects					*ruby-window*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ruby-window}
+@cindex ruby-window
+@section 4. Vim::Window オブジェクト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim::Window objects represent vim windows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim::Window オブジェクトは Vim のウィンドウを表現している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Class Methods:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec クラスメソッド:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+current		Returns the current window object.
+count		Returns the number of windows.
+self[{n}]	Returns the window object for the number {n}.  The first number
+		is 0.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item current @tab 現在のウィンドウオブジェクトを返す。
+@item count @tab ウィンドウの数を返す。
+@item self[@{n@}] @tab 番号 @{n@} のウィンドウオブジェクトを返す。番号は 0 から数え始める。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Methods:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec メソッド:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+buffer		Returns the buffer displayed in the window.
+height		Returns the height of the window.
+height = {n}	Sets the window height to {n}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item buffer @tab ウィンドウに表示されているバッファを返す。
+@item height @tab ウィンドウの高さを返す。
+@item height = @{n@} @tab ウィンドウの高さを @{n@} に設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+width		Returns the width of the window.
+width = {n}	Sets the window width to {n}.
+cursor		Returns a [row, col] array for the cursor position.
+cursor = [{row}, {col}]
+		Sets the cursor position to {row} and {col}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item width @tab ウィンドウの幅を返す。
+@item width = @{n@} @tab ウィンドウの幅を @{n@} に設定する。
+@item cursor @tab カーソルの位置を [行数, カラム] の形で配列にして返す。
+@item cursor = [@{row@}, @{col@}] @tab カーソルの位置を @{row@} 行の @{col@} カラムに設定する。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Global variables					*ruby-globals*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ruby-globals}
+@cindex ruby-globals
+@section 5. グローバル変数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are two global variables.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+2 つのグローバル変数がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+$curwin		The current window object.
+$curbuf		The current buffer object.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item $curwin @tab 現在のウィンドウオブジェクト
+@item $curbuf @tab 現在のバッファオブジェクト
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Dynamic loading					*ruby-dynamic*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ruby-dynamic}
+@cindex ruby-dynamic
+@section 6. 動的ローディング
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On MS-Windows and Unix the Ruby library can be loaded dynamically.  The
+|:version| output then includes |+ruby/dyn|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows と Unix では Ruby ライブラリを動的に読み込むことが可能である。これを行うと |:version| の出力に |+ruby/dyn| が含まれるようになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This means that Vim will search for the Ruby DLL file or shared library only
+when needed.  When you don't use the Ruby interface you don't need it, thus
+you can use Vim even though this library file is not on your system.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この場合、Vim は必要になったときだけ Ruby の DLL ファイル及び共有ライブラリを検索する。Ruby インターフェイスを使わないのであればそれらは必要ではないので、ライブラリファイルがシステムに無くても Vim を使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MS-Windows ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec MS-Windows
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You need to install the right version of Ruby for this to work.  You can find
+the package to download from:
+http://rubyinstaller.org/downloads/
+Currently that is rubyinstaller-2.2.5.exe
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これが動作するためには Ruby の適切なバージョンがインストールされている必要がある。次の場所からパッケージをダウンロードできる:
+
+@url{http://rubyinstaller.org/downloads/}
+
+現在のパッケージは rubyinstaller-2.2.5.exe である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To use the Ruby interface the Ruby DLL must be in your search path.  In a
+console window type "path" to see what directories are used.  The 'rubydll'
+option can be also used to specify the Ruby DLL.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ruby インターフェイスを使うには Ruby の DLL が検索パス内に存在しなければならない。コンソールウィンドウで "path" とタイプすると、どのディレクトリが検索パスとなるか表示することができる。また '@option{rubydll}' オプションを Ruby の DLL を指定するのに使うこともできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The name of the DLL must match the Ruby version Vim was compiled with.
+Currently the name is "msvcrt-ruby220.dll".  That is for Ruby 2.2.X.  To know
+for sure edit "gvim.exe" and search for "ruby\d*.dll\c".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+DLL の名前は Vim をコンパイルした時の Ruby のバージョンに一致しなければならない。現在その名前は "msvcrt-ruby220.dll" である。これは Ruby 2.2.X 用である。これを確かめるには、"gvim.exe" を開き、"ruby\d*.dll\c" を検索する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to build Vim with RubyInstaller 1.9 or 2.X using MSVC, you need
+some tricks.  See the src/INSTALLpc.txt for detail.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+自分で RubyInstaller 1.9 または 2.X 対応の Vim を MSVC でビルドするには、ちょっとしたこつが必要である。詳細は src/INSTALLpc.txt を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Unix ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec Unix
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'rubydll' option can be used to specify the Ruby shared library file
+instead of DYNAMIC_RUBY_DLL file what was specified at compile time.  The
+version of the shared library must match the Ruby version Vim was compiled
+with.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コンパイル時に DYNAMIC_RUBY_DLL で指定されたファイルの代わりに、'@option{rubydll}' オプションを使って Ruby の共有ライブラリファイルを指定するのに使える。共有ライブラリのバージョンは Vim をコンパイルする時に用いた  Ruby のバージョンと一致していなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset

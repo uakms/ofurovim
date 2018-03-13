@@ -27,7 +27,8 @@ REFMANUALS = \
 	doc/ft_rust.texi doc/ft_sql.texi doc/hangulin.texi doc/rileft.texi \
 	doc/gui.texi doc/gui_w32.texi doc/gui_x11.texi \
 	doc/if_cscop.texi doc/if_lua.texi doc/if_mzsch.texi doc/if_perl.texi \
-	doc/if_pyth.texi
+	doc/if_pyth.texi doc/if_tcl.texi doc/if_ole.texi doc/if_ruby.texi \
+	doc/debugger.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \

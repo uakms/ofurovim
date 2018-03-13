@@ -1,0 +1,2653 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node if_pyth.txt, , , 目次
+@unnumbered Python インターフェイス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*if_pyth.txt*   For Vim version 8.0.  Last change: 2018 Jan 30
+
+
+		  VIM REFERENCE MANUAL    by Paul Moore
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*if_pyth.txt*   For Vim バージョン 8.0.  Last change: 2018 Jan 30
+
+
+                  VIMリファレンスマニュアル    by Paul Moore
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+The Python Interface to Vim				*python* *Python*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python}
+@anchor{Python}
+@cindex python
+@cindex Python
+Vim の Python インターフェイス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Commands					|python-commands|
+2. The vim module				|python-vim|
+3. Buffer objects				|python-buffer|
+4. Range objects				|python-range|
+5. Window objects				|python-window|
+6. Tab page objects				|python-tabpage|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. コマンド @tab |@ref{python-commands, , python-commands}|
+@item 2. vim モジュール @tab |@ref{python-vim, , python-vim}|
+@item 3. バッファオブジェクト @tab |@ref{python-buffer, , python-buffer}|
+@item 4. レンジオブジェクト @tab |@ref{python-range, , python-range}|
+@item 5. ウィンドウオブジェクト @tab |@ref{python-window, , python-window}|
+@item 6. タブページオブジェクト @tab |@ref{python-tabpage, , python-tabpage}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+7. vim.bindeval objects				|python-bindeval-objects|
+8. pyeval(), py3eval() Vim functions		|python-pyeval|
+9. Dynamic loading				|python-dynamic|
+10. Python 3					|python3|
+11. Python X					|python_x|
+12. Building with Python support		|python-building|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 7. vim.bindeval オブジェクト @tab |@ref{python-bindeval-objects, , python-bindeval-objects}|
+@item 8. Vim 関数 pyeval() と py3eval() @tab |@ref{python-pyeval, , python-pyeval}|
+@item 9. 動的ローディング @tab |@ref{python-dynamic, , python-dynamic}|
+@item 10. Python 3 @tab |@ref{python3, , python3}|
+@item 11. Python X @tab |@ref{python_x, , python_x}|
+@item 12. Python 対応付きでビルドする @tab |@ref{python-building, , python-building}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these commands}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらのコマンドはありません@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Python 2.x interface is available only when Vim was compiled with the
+|+python| feature.
+The Python 3 interface is available only when Vim was compiled with the
+|+python3| feature.
+Both can be available at the same time, but read |python-2-and-3|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Python 2.x インターフェイスは Vim が |+python| 機能付きでコンパイルされたときのみ利用できます。
+
+Python 3 インターフェイスは Vim が |+python3| 機能付きでコンパイルされたときのみ利用できます。
+
+両方を同時に利用することはできますが、|python-2-and-3| をお読みください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Commands						*python-commands*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-commands}
+@cindex python-commands
+@section 1. コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*:python* *:py* *E263* *E264* *E887*
+:[range]py[thon] {stmt}
+			Execute Python statement {stmt}.  A simple check if
+			the `:python` command is working: >
+				:python print "Hello"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:python}
+@anchor{:py}
+@anchor{E263}
+@anchor{E264}
+@anchor{E887}
+@cindex :python
+@cindex :py
+@cindex E263
+@cindex E264
+@cindex E887
+@table @asis
+@item :[range]py[thon] @{stmt@}
+Python のステートメント @{stmt@} を実行します。`@command{:python}` コマンドが機能するか簡単にチェックするには:
+@example
+:python print "Hello"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:[range]py[thon] << {endmarker}
+{script}
+{endmarker}
+			Execute Python script {script}.
+			Note: This command doesn't work when the Python
+			feature wasn't compiled in.  To avoid errors, see
+			|script-here|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :[range]py[thon] << @{endmarker@}
+@itemx @{script@}
+@itemx @{endmarker@}
+Python のスクリプト @{script@} を実行します。
+@quotation
+@strong{Note:} @*
+このコマンドは Python 用の機能を含めてコンパイルされていないときは機能しません。エラーを抑制するには |script-here| を参照してください。
+@end quotation
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{endmarker} must NOT be preceded by any white space.  If {endmarker} is
+omitted from after the "<<", a dot '.' must be used after {script}, like
+for the |:append| and |:insert| commands.
+This form of the |:python| command is mainly useful for including python code
+in Vim scripts.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{endmarker@} の前に空白を置かないでください。"<<" の後に @{endmarker@} を省略した時は |:append| や |:insert| のように '.' は @{script@} の後に使われなければなりません。
+
+この形の |:python| コマンドは Vim script に Python コードを埋め込むのに特に便利です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example: >
+	function! IcecreamInitialize()
+	python << EOF
+	class StrawberryIcecream:
+		def __call__(self):
+			print 'EAT ME'
+	EOF
+	endfunction
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+function! IcecreamInitialize()
+python << EOF
+class StrawberryIcecreame:
+        def __call__(self):
+                print 'EAT ME'
+EOF
+endfunction
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To see what version of Python you have: >
+	:python import sys
+	:python print(sys.version)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使っている Python のバージョンを見るには:
+@example
+:python import sys
+:python print(sys.version)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: Python is very sensitive to the indenting.  Make sure the "class" line
+and "EOF" do not have any indent.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Python はインデントに関して非常に繊細です。"class" の行と "EOF" の行はまったくインデントしないでください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:pydo*
+:[range]pydo {body}	Execute Python function "def _vim_pydo(line, linenr):
+			{body}" for each line in the [range], with the
+			function arguments being set to the text of each line
+			in turn, without a trailing <EOL>, and the current
+			line number. The function should return a string or
+			None. If a string is returned, it becomes the text of
+			the line in the current turn. The default for [range]
+			is the whole file: "1,$".
+			{not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:pydo}
+@cindex :pydo
+@item :[range]pydo @{body@}
+Python の式を "def _vim_pydo(line linenr): @{body@}" という形で実行します。引数には各行のテキスト (末尾の <EOL> なし) と行番号が渡されます。関数は文字列か None を返さなければなりません。文字列を返すと行がその文字列で置換されます。[range] を指定しなかった場合は "1,$" (ファイル全体) が範囲となります。
+
+@{Vi にはない@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples:
+>
+	:pydo return "%s\t%d" % (line[::-1], len(line))
+	:pydo if line: return "%4d: %s" % (linenr, line)
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:pydo return "%s\t%d" % (line[::-1], len(line))
+:pydo if line: return "%4d: %s" % (linenr, line)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:pyfile* *:pyf*
+:[range]pyf[ile] {file}
+			Execute the Python script in {file}.  The whole
+			argument is used as a single file name.  {not in Vi}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:pyfile}
+@anchor{:pyf}
+@cindex :pyfile
+@cindex :pyf
+@item :[range]pyf[ile] @{file@}
+@{file@} 内の Python スクリプトを実行します。引数はそのまま 1 つのファイル名として使われます。
+
+@{Vi にはありません@}
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Both of these commands do essentially the same thing - they execute a piece of
+Python code, with the "current range" |python-range| set to the given line
+range.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これら 2 つのコマンドは、本質的には同じことを行います - つまり、Python のコードを、与えられた "現在の範囲" |python-range| に対して実行します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the case of :python, the code to execute is in the command-line.
+In the case of :pyfile, the code to execute is the contents of the given file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+:python の場合には、実行されるコードはコマンドラインで与えられたものです。
+
+:pyfile の場合には、実行されるコードは与えられたファイルの中身です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Python commands cannot be used in the |sandbox|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Python のコマンドは |sandbox| の中では使えません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To pass arguments you need to set sys.argv[] explicitly.  Example: >
+
+	:python import sys
+	:python sys.argv = ["foo", "bar"]
+	:pyfile myscript.py
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数を渡すためには明示的に sys.argv[] を使って設定してください。例:
+@example
+:python import sys
+:python sys.argv = ["foo", "bar"]
+:pyfile myscript.py
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here are some examples					*python-examples*  >
+
+	:python from vim import *
+	:python from string import upper
+	:python current.line = upper(current.line)
+	:python print "Hello"
+	:python str = current.buffer[42]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-examples}
+@cindex python-examples
+いくつか例を挙げます
+@example
+:python from vim import *
+:python from string import upper
+:python current.line = upper(current.line)
+:python print "Hello"
+:python str = current.buffer[42]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+(Note that changes - like the imports - persist from one command to the next,
+just like in the Python interpreter.)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+変更 - importsなど - は、Python インタープリターと同様に、次のコマンドに引き継がれます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. The vim module					*python-vim*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-vim}
+@cindex python-vim
+@section 2. vim モジュール
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Python code gets all of its access to vim (with one exception - see
+|python-output| below) via the "vim" module.  The vim module implements two
+methods, three constants, and one error object.  You need to import the vim
+module before using it: >
+	:python import vim
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Python コードは、vim モジュールを通して、vim に自由にアクセスすることができます (ただひとつの例外を除いて - 以下の |python-output| を参照)。vim モジュールは 2 つのメソッド、3 つの定数、そして 1 つのエラーオブジェクトを実装しています。これを使うには vim モジュールを import する必要があります。
+@example
+:python import vim
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Overview >
+	:py print "Hello"		# displays a message
+	:py vim.command(cmd)		# execute an Ex command
+	:py w = vim.windows[n]		# gets window "n"
+	:py cw = vim.current.window	# gets the current window
+	:py b = vim.buffers[n]		# gets buffer "n"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+概要
+@multitable @columnfractions .6 .4
+@item :py print "Hello" @tab メッセージを表示
+@item :py vim.command(cmd) @tab ex コマンドを実行
+@item :py w = vim.windows[n] @tab ウィンドウ "n" を得る
+@item :py cw = vim.current.window @tab 現在のウィンドウを得る
+@item :py b = vim.buffers[n] @tab バッファ "n" を得る
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:py cb = vim.current.buffer	# gets the current buffer
+	:py w.height = lines		# sets the window height
+	:py w.cursor = (row, col)	# sets the window cursor position
+	:py pos = w.cursor		# gets a tuple (row, col)
+	:py name = b.name		# gets the buffer file name
+	:py line = b[n]			# gets a line from the buffer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :py cb = vim.current.buffer @tab 現在のバッファを得る
+@item :py w.height = lines @tab ウィンドウの高さを設定する
+@item :py w.cursor = (row, col) @tab ウィンドウのカーソル位置を設定する
+@item :py pos = w.cursor @tab (row, col) の組を得る
+@item :py name = b.name @tab バッファのファイル名を得る
+@item :py line = b[n] @tab バッファから 1 行を得る
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:py lines = b[n:m]		# gets a list of lines
+	:py num = len(b)		# gets the number of lines
+	:py b[n] = str			# sets a line in the buffer
+	:py b[n:m] = [str1, str2, str3]	# sets a number of lines at once
+	:py del b[n]			# deletes a line
+	:py del b[n:m]			# deletes a number of lines
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :py lines = b[n:m] @tab バッファから一連の行を得る
+@item :py num = len(b) @tab 行数を得る
+@item :py b[n] = str @tab バッファ内の 1 行を設定する
+@item :py b[n:m] = [str1, str2, str3] @tab 1 度に数行を設定する
+@item :py del b[n] @tab 1 行を削除する
+@item :py del b[n:m] @tab 数行を削除する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Methods of the "vim" module
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec "vim" モジュールのメソッド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.command(str)					*python-command*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{python-command}
+@cindex python-command
+@item vim.command(str)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Executes the vim (ex-mode) command str.  Returns None.
+	Examples: >
+	    :py vim.command("set tw=72")
+	    :py vim.command("%s/aaa/bbb/g")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+vim (ex モード) のコマンド str を実行します。戻り値はありません。
+
+例:
+@example
+:py vim.command("set tw=72")
+:py vim.command("%s/aaa/bbb/g")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	The following definition executes Normal mode commands: >
+		def normal(str):
+			vim.command("normal "+str)
+		# Note the use of single quotes to delimit a string containing
+		# double quotes
+		normal('"a2dd"aP')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ノーマルモードのコマンドを実行するには、次の定義が使われます:
+@example
+def normal(str):
+        vim.command("normal "+str)
+# '...' は、二重引用符を含む文字列の境界に使われることに注意
+normal('"a2dd"aP')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<								*E659*
+	The ":python" command cannot be used recursively with Python 2.2 and
+	older.  This only works with Python 2.3 and later: >
+	    :py vim.command("python print 'Hello again Python'")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E659}
+@cindex E659
+"@command{:python}" コマンドは、Python 2.2 かそれより古いものでは再帰的に使えません。Python 2.3 かそれより新しいものを使ってください。
+@example
+:py vim.command("python print 'Hello again Python'")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.eval(str)						*python-eval*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-eval}
+@cindex python-eval
+@item vim.eval(str)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Evaluates the expression str using the vim internal expression
+	evaluator (see |expression|).  Returns the expression result as:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+vim 内の式評価を使って、式を評価します (|expression| を参照)。戻り値は、次の通り:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	- a string if the Vim expression evaluates to a string or number
+	- a list if the Vim expression evaluates to a Vim list
+	- a dictionary if the Vim expression evaluates to a Vim dictionary
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item Vim の式を評価した結果が文字列か数値ならば文字列
+@item Vim の式を評価した結果がリストならばリスト
+@item Vim の式を評価した結果が Vim の辞書ならば辞書
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Dictionaries and lists are recursively expanded.
+	Examples: >
+	    :py text_width = vim.eval("&tw")
+	    :py str = vim.eval("12+12")		# NB result is a string! Use
+						# string.atoi() to convert to
+						# a number.
+
+	    :py tagList = vim.eval('taglist("eval_expr")')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+辞書とリストは再帰的に展開されます。
+
+例:
+@example
+:py text_width = vim.eval("&tw")
+:py str = vim.eval("12+12")         # 結果は文字列であることに注意！
+                                    # 数に変換するには、
+                                    # string.atoi() を使うこと。
+
+:py tagList = vim.eval('taglist("eval_expr")')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	The latter will return a python list of python dicts, for instance:
+	[{'cmd': '/^eval_expr(arg, nextcmd)$/', 'static': 0, 'name': ~
+	'eval_expr', 'kind': 'f', 'filename': './src/eval.c'}] ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最後のコマンドは Python 辞書の Python リストを返します。
+
+例:
+@example
+[@{'cmd': '/^eval_expr(arg, nextcmd)$/', 'static': 0, 'name':
+'eval_expr', 'kind': 'f', 'filename': './src/eval.c'@}]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.bindeval(str)					*python-bindeval*
+	Like |python-eval|, but returns special objects described in 
+	|python-bindeval-objects|. These python objects let you modify (|List| 
+	or |Dictionary|) or call (|Funcref|) vim objects.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-bindeval}
+@cindex python-bindeval
+@item vim.bindeval(str)
+|python-eval| と似ていますが、特殊なオブジェクトを返します (|python-bindeval-objects| 参照)。これを使うと Vim のリスト (|List|) や辞書 (|Dictionary|) を変更したり、Vim の関数 (|Funcref|) を呼び出したりできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.strwidth(str)					*python-strwidth*
+	Like |strwidth()|: returns number of display cells str occupies, tab 
+	is counted as one cell.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-strwidth}
+@cindex python-strwidth
+@item vim.strwidth(str)
+|strwidth()| と同じ。str の画面上の幅を数値で返す。タブ文字は 1 幅としてカウントされる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.foreach_rtp(callable)				*python-foreach_rtp*
+	Call the given callable for each path in 'runtimepath' until either 
+	callable returns something but None, the exception is raised or there 
+	are no longer paths. If stopped in case callable returned non-None, 
+	vim.foreach_rtp function returns the value returned by callable.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-foreach_rtp}
+@cindex python-foreach_rtp
+@item vim.foreach_rtp(callable)
+'@option{runtimepath}' の各パスについてコーラブル (callable) を呼び出す。コーラブルが None 以外の値を返すか、例外が発生するか、パスの最後まで処理が進むと停止する。コーラブルが None 以外の値を返して停止した場合は、vim.foreach_rtp 関数はその値を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.chdir(*args, **kwargs)				*python-chdir*
+vim.fchdir(*args, **kwargs)				*python-fchdir*
+	Run os.chdir or os.fchdir, then all appropriate vim stuff.
+	Note: you should not use these functions directly, use os.chdir and 
+	      os.fchdir instead. Behavior of vim.fchdir is undefined in case 
+	      os.fchdir does not exist.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-chdir}
+@cindex python-chdir
+@item vim.chdir(*args, **kwargs)
+@anchor{python-fchdir}
+@cindex python-fchdir
+@itemx vim.fchdir(*args, **kwargs)
+os.chdir、os.fchdir を実行し、Vim にそのことを通知する。
+@quotation
+@strong{Note:} @*
+これらの関数は直接は使用しない。代わりに os.chdir と os.fchdir を使う。os.fchdir が存在しない場合の vim.fchdir の動作は未定義。
+@end quotation
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Error object of the "vim" module
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec "vim" モジュールのエラーオブジェクト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.error						*python-error*
+	Upon encountering a Vim error, Python raises an exception of type
+	vim.error.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{python-error}
+@cindex python-error
+@item vim.error
+vim のエラーに遭遇したとき、Python は型 vim.error の例外を発生させます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Example: >
+		try:
+			vim.command("put a")
+		except vim.error:
+			# nothing in register a
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@example
+try:
+        vim.command("put a")
+except vim.error:
+        # レジスタaが空
+@end example
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Constants of the "vim" module
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec モジュール "vim" の定数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note that these are not actually constants - you could reassign them.
+	But this is silly, as you would then lose access to the vim objects
+	to which the variables referred.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note} @*
+モジュール "vim" の定数は、実際には定数ではありません。よって代入し直すことができます。しかし、それは馬鹿げたことです。その変数が参照している vim オブジェクトへのアクセスができなくなってしまうからです。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.buffers						*python-buffers*
+	A mapping object providing access to the list of vim buffers.  The
+	object supports the following operations: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{python-buffers}
+@cindex python-buffers
+@item vim.buffers
+一連の vim バッファへのアクセスを提供するマッピングオブジェクト。次の操作がサポートされています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	    :py b = vim.buffers[i]	# Indexing (read-only)
+	    :py b in vim.buffers	# Membership test
+	    :py n = len(vim.buffers)	# Number of elements
+	    :py for b in vim.buffers:	# Iterating over buffer list
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item :py b = vim.buffers[i] @tab インデックス化する (読取り専用)
+@item :py b in vim.buffers @tab メンバかどうか調べる
+@item :py n = len(vim.buffers) @tab 要素の個数
+@item :py for b in vim.buffers: @tab バッファリストのイテレート
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+vim.windows						*python-windows*
+	A sequence object providing access to the list of vim windows.  The
+	object supports the following operations: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-windows}
+@cindex python-windows
+@item vim.windows
+一連の vim ウィンドウへのアクセスを提供するシーケンスオブジェクト。このオブジェクトは次の操作をサポートしています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	    :py w = vim.windows[i]	# Indexing (read-only)
+	    :py w in vim.windows	# Membership test
+	    :py n = len(vim.windows)	# Number of elements
+	    :py for w in vim.windows:	# Sequential access
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item :py w = vim.windows[i] @tab インデックス化する (読取り専用)
+@item :py w in vim.windows @tab メンバかどうか調べる
+@item :py n = len(vim.windows) @tab 要素の個数
+@item :py for w in vim.windows: @tab シーケンシャルアクセス
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<	Note: vim.windows object always accesses current tab page. 
+	|python-tabpage|.windows objects are bound to parent |python-tabpage| 
+	object and always use windows from that tab page (or throw vim.error 
+	in case tab page was deleted). You can keep a reference to both 
+	without keeping a reference to vim module object or |python-tabpage|, 
+	they will not lose their properties in this case.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{None:} @*
+vim.windows オブジェクトは常に現在のタブページ内にアクセスします。|python-tabpage|.windows オブジェクトは親である |python-tabpage| オブジェクトに結びつけられて、常にそのタブページのウィンドウを参照します (タブページが削除されていたときは vim.error 例外が発生します)。vim モジュールや |python-tabpage| オブジェクトへの参照を維持しなくても、参照は保持されます。プロパティも失われません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.tabpages						*python-tabpages*
+	A sequence object providing access to the list of vim tab pages. The 
+	object supports the following operations: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-tabpages}
+@cindex python-tabpages
+@item vim.tabpages
+Vim のタブページの一覧へのアクセスを提供するシーケンスオブジェクト。このオブジェクトは次の操作をサポートしています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	    :py t = vim.tabpages[i]	# Indexing (read-only)
+	    :py t in vim.tabpages	# Membership test
+	    :py n = len(vim.tabpages)	# Number of elements
+	    :py for t in vim.tabpages:	# Sequential access
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item :py t = vim.tabpages[i] @tab インデックス化する (読取り専用)
+@item :py t in vim.tabpages @tab メンバかどうか調べる
+@item :py n = len(vim.tabpages) @tab 要素の個数
+@item :py for t in vim.tabpages: @tab シーケンシャルアクセス
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+vim.current						*python-current*
+	An object providing access (via specific attributes) to various
+	"current" objects available in vim:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-current}
+@cindex python-current
+@item vim.current
+vim 内で使える様々な "現在の" オブジェクトへの、(特定の属性を通した) アクセスを提供するオブジェクト:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		vim.current.line	The current line (RW)		String
+		vim.current.buffer	The current buffer (RW)		Buffer
+		vim.current.window	The current window (RW)		Window
+		vim.current.tabpage	The current tab page (RW)	TabPage
+		vim.current.range	The current line range (RO)	Range
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .4 .2
+@item vim.current.line @tab 現在の行 (RW) @tab String
+@item vim.current.buffer @tab 現在のバッファ (RW) @tab Buffer
+@item vim.current.window @tab 現在のウィンドウ (RW) @tab Window
+@item vim.current.tabpage @tab 現在のタブページ (RW) @tab TabPage
+@item vim.current.range @tab 現在の行の範囲 (RO) @tab Range
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	The last case deserves a little explanation.  When the :python or
+	:pyfile command specifies a range, this range of lines becomes the
+	"current range".  A range is a bit like a buffer, but with all access
+	restricted to a subset of lines.  See |python-range| for more details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最後のものに関しては、若干の説明が必要でしょう。@command{:python}, @command{:pyfile} コマンドで、範囲が指定された場合、この行の範囲は、"現在の範囲" として扱われます。範囲はバッファに少し似ていますが、全てのアクセスは行のサブセットに制限されます。詳細は |python-range| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note: When assigning to vim.current.{buffer,window,tabpage} it expects 
+	valid |python-buffer|, |python-window| or |python-tabpage| objects 
+	respectively. Assigning triggers normal (with |autocommand|s) 
+	switching to given buffer, window or tab page. It is the only way to 
+	switch UI objects in python: you can't assign to 
+	|python-tabpage|.window attribute. To switch without triggering 
+	autocommands use >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+vim.current.@{buffer,window,tabpage@} に値を代入するときはその値が有効なオブジェクト (|python-buffer|, |python-window|, |python-tabpage|) であることが期待されます。
+
+値を代入するとバッファ、ウィンドウ、またはタブページの切り替えが起こります (|autocommand| も実行される)。これが唯一 python で UI オブジェクトを切り替える方法です。
+
+|python-tabpage|.window 属性に代入することはできません。自動コマンドを発行させずに切り替えるには次のようにします:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	    py << EOF
+	    saved_eventignore = vim.options['eventignore']
+	    vim.options['eventignore'] = 'all'
+	    try:
+	        vim.current.buffer = vim.buffers[2] # Switch to buffer 2
+	    finally:
+	        vim.options['eventignore'] = saved_eventignore
+	    EOF
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+py << EOF
+saved_eventignore = vim.options['eventignore']
+vim.options['eventignore'] = 'all'
+try:
+    vim.current.buffer = vim.buffers[2] # バッファ 2 へ切り替え
+finally:
+    vim.options['eventignore'] = saved_eventignore
+EOF
+@end example
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+vim.vars						*python-vars*
+vim.vvars						*python-vvars*
+	Dictionary-like objects holding dictionaries with global (|g:|) and 
+	vim (|v:|) variables respectively. Identical to `vim.bindeval("g:")`, 
+	but faster.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-vars}
+@cindex python-vars
+@item vim.vars
+@anchor{python-vvars}
+@cindex python-vvars
+@itemx vim.vvars
+辞書に似たオブジェクトで、グローバル変数 (|g:|) と Vim 変数 (|v:|) への参照です。`@command{vim.bindeval("g:")}` と同じですが、こちらの方が速いです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.options						*python-options*
+	Object partly supporting mapping protocol (supports setting and 
+	getting items) providing a read-write access to global options.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-options}
+@cindex python-options
+@item vim.options
+グローバルオプションへの読み書きアクセスを提供するマップオブジェクト (値の取得と設定のみ対応)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Note: unlike |:set| this provides access only to global options. You
+	cannot use this object to obtain or set local options' values or
+	access local-only options in any fashion. Raises KeyError if no global
+	option with such name exists (i.e. does not raise KeyError for
+	|global-local| options and global only options, but does for window-
+	and buffer-local ones).  Use |python-buffer| objects to access to
+	buffer-local options and |python-window| objects to access to
+	window-local options.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+|:set| と違い、グローバルオプションへのアクセスのみ提供します。このオブジェクトを使ってローカルオプションの値を読み書きすることはできません。
+
+指定した名前のグローバルオプションが存在しない場合は KeyError 例外が発生します (例えば |global-local| オプションやグローバルオプションへのアクセスでは KeyError は発生しませんが、ウィンドウオプションやバッファオプションへのアクセスでは例外が発生します)。
+
+バッファオプションへのアクセスには |python-buffer| オブジェクトを使います。ウィンドウオプションへのアクセスには |python-window| オブジェクトを使います。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Type of this object is available via "Options" attribute of vim 
+	module.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このオブジェクトの型は vim モジュールの "Options" 属性で取得できます。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Output from Python					*python-output*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-output}
+@cindex python-output
+@unnumberedsubsec Pythonからの出力
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	Vim displays all Python code output in the Vim message area.  Normal
+	output appears as information messages, and error output appears as
+	error messages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Python コードからの全ての出力は、Vim のメッセージエリアに表示されます。標準出力はインフォメーションメッセージとして、エラー出力はエラーメッセージとして表示されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	In implementation terms, this means that all output to sys.stdout
+	(including the output from print statements) appears as information
+	messages, and all output to sys.stderr (including error tracebacks)
+	appears as error messages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実装のレベルでいうと、sys.stdout (print ステートメントによる出力も含む) に向けられる全ての出力が、インフォメーションメッセージとして vim に表示され、sys.stderr (エラートレースバックを含む) に向けられる全ての出力が、エラーメッセージとして vim に表示されています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*python-input*
+	Input (via sys.stdin, including input() and raw_input()) is not
+	supported, and may cause the program to crash.  This should probably be
+	fixed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-input}
+@cindex python-input
+入力 (sys.stdin を通した入力、input(), raw_input() を含む) はサポートされず、プログラムをクラッシュさせる可能性があります。これはたぶん修正されるべき問題です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		    *python2-directory* *python3-directory* *pythonx-directory*
+Python 'runtimepath' handling				*python-special-path*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python2-directory}
+@anchor{python3-directory}
+@anchor{pythonx-directory}
+@anchor{python-special-path}
+@cindex python2-directory
+@cindex python3-directory
+@cindex pythonx-directory
+@cindex python-special-path
+@unnumberedsubsec Python における '@option{runtimepath}' の処理
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In python vim.VIM_SPECIAL_PATH special directory is used as a replacement for 
+the list of paths found in 'runtimepath': with this directory in sys.path and 
+vim.path_hooks in sys.path_hooks python will try to load module from 
+{rtp}/python2 (or python3) and {rtp}/pythonx (for both python versions) for 
+each {rtp} found in 'runtimepath'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Python では、'@option{runtimepath}' のパスのリストを使う代わりに、vim.VIM_SPECIAL_PATH という特別なディレクトリが使われます。このディレクトリが sys.path 内で使われるとき、そして vim.path_hooks が sys.path_hooks 内で使われるとき、'@option{runtimepath}' の各パス @{rtp@} に対して @{rtp@}/python2 (or python3) と @{rtp@}/pythonx (両バージョンで読み込まれる) のモジュールがロードされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Implementation is similar to the following, but written in C: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実装は以下のようになっています。ただし実際は C で書かれています:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    from imp import find_module, load_module
+    import vim
+    import sys
+
+    class VimModuleLoader(object):
+        def __init__(self, module):
+            self.module = module
+
+        def load_module(self, fullname, path=None):
+            return self.module
+
+    def _find_module(fullname, oldtail, path):
+        idx = oldtail.find('.')
+        if idx > 0:
+            name = oldtail[:idx]
+            tail = oldtail[idx+1:]
+            fmr = find_module(name, path)
+            module = load_module(fullname[:-len(oldtail)] + name, *fmr)
+            return _find_module(fullname, tail, module.__path__)
+        else:
+            fmr = find_module(fullname, path)
+            return load_module(fullname, *fmr)
+
+    # It uses vim module itself in place of VimPathFinder class: it does not 
+    # matter for python which object has find_module function attached to as 
+    # an attribute.
+    class VimPathFinder(object):
+        @classmethod
+        def find_module(cls, fullname, path=None):
+            try:
+                return VimModuleLoader(_find_module(fullname, fullname, path or vim._get_paths()))
+            except ImportError:
+                return None
+
+        @classmethod
+        def load_module(cls, fullname, path=None):
+            return _find_module(fullname, fullname, path or vim._get_paths())
+
+    def hook(path):
+        if path == vim.VIM_SPECIAL_PATH:
+            return VimPathFinder
+        else:
+            raise ImportError
+
+    sys.path_hooks.append(hook)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+from imp import find_module, load_module
+import vim
+import sys
+
+class VimModuleLoader(object):
+    def __init__(self, module):
+        self.module = module
+
+    def load_module(self, fullname, path=None):
+        return self.module
+
+def _find_module(fullname, oldtail, path):
+    idx = oldtail.find('.')
+    if idx > 0:
+        name = oldtail[:idx]
+        tail = oldtail[idx+1:]
+        fmr = find_module(name, path)
+        module = load_module(fullname[:-len(oldtail)] + name, *fmr)
+        return _find_module(fullname, tail, module.__path__)
+    else:
+        fmr = find_module(fullname, path)
+        return load_module(fullname, *fmr)
+
+# It uses vim module itself in place of VimPathFinder class: it does not 
+# matter for python which object has find_module function attached to as 
+# an attribute.
+class VimPathFinder(object):
+    @classmethod
+    def find_module(cls, fullname, path=None):
+        try:
+            return VimModuleLoader(_find_module(fullname, fullname, path or vim._get_paths()))
+        except ImportError:
+            return None
+
+    @classmethod
+    def load_module(cls, fullname, path=None):
+        return _find_module(fullname, fullname, path or vim._get_paths())
+
+def hook(path):
+    if path == vim.VIM_SPECIAL_PATH:
+        return VimPathFinder
+    else:
+        raise ImportError
+
+sys.path_hooks.append(hook)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.VIM_SPECIAL_PATH					*python-VIM_SPECIAL_PATH*
+	String constant used in conjunction with vim path hook. If path hook 
+	installed by vim is requested to handle anything but path equal to 
+	vim.VIM_SPECIAL_PATH constant it raises ImportError. In the only other 
+	case it uses special loader.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{python-VIM_SPECIAL_PATH}
+@cindex python-VIM_SPECIAL_PATH
+@item vim.VIM_SPECIAL_PATH
+Vim のパスフックに関連付けられた文字列定数。Vim によって設定されたパスフックが vim.VIM_SPECIAL_PATH 定数以外のパスに対して呼び出された場合は ImportError が発生します。そうでなければ特殊ローダが使用されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Note: you must not use value of this constant directly, always use 
+	      vim.VIM_SPECIAL_PATH object.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+この定数の値を直接使用しないこと。常に vim.VIM_SPECIAL_PATH オブジェクトを使用してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.find_module(...)					*python-find_module*
+vim.path_hook(path)					*python-path_hook*
+	Methods or objects used to implement path loading as described above. 
+	You should not be using any of these directly except for vim.path_hook 
+	in case you need to do something with sys.meta_path. It is not 
+	guaranteed that any of the objects will exist in the future vim 
+	versions.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-find_module}
+@cindex python-find_module
+@item vim.find_module(...)
+@anchor{python-path_hook}
+@cindex python-path_hook
+@itemx vim.path_hook(path)
+上述のパスフックの実装に使われるメソッドとオブジェクト。sys.meta_path で vim.path_hook を使って何かをするようなことがなければ、これらを直接使用することはないでしょう。これらのオブジェクトが Vim の将来のバージョンでも存在するかどうかは保証されません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim._get_paths						*python-_get_paths*
+	Methods returning a list of paths which will be searched for by path 
+	hook. You should not rely on this method being present in future 
+	versions, but can use it for debugging.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-_get_paths}
+@cindex python-_get_paths
+@item vim._get_paths
+パスフックで検索されるパスのリストを返すメソッド。将来のバージョンのことを考えるならこのメソッドに依存すべきではありません。デバッグなどに使います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	It returns a list of {rtp}/python2 (or {rtp}/python3) and 
+	{rtp}/pythonx directories for each {rtp} in 'runtimepath'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{runtimepath}' の各パスに対して @{rtp@}/python2 (or @{rtp@}/python3) と @{rtp@}/pythonx ディレクトリのリストを返します。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Buffer objects					*python-buffer*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-buffer}
+@cindex python-buffer
+@section 3. バッファオブジェクト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Buffer objects represent vim buffers.  You can obtain them in a number of ways:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファオブジェクトは、vim のバッファを表します。バッファオブジェクトを取得するはいくつかの方法があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	- via vim.current.buffer (|python-current|)
+	- from indexing vim.buffers (|python-buffers|)
+	- from the "buffer" attribute of a window (|python-window|)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item vim.current.buffer を介して (|python-current|)
+@item vim.buffers のインデックス化から (|python-buffers|)
+@item ウィンドウの "buffer" 属性から (|python-window|)
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Buffer objects have two read-only attributes - name - the full file name for
+the buffer, and number - the buffer number.  They also have three methods
+(append, mark, and range; see below).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファオブジェクトは 2 つの読み取り専用属性を持っています。name はバッファのフルファイル名です。number はバッファ番号です。バッファオブジェクトは 3 つのメソッドを持っています (append, mark, range 以下参照)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can also treat buffer objects as sequence objects.  In this context, they
+act as if they were lists (yes, they are mutable) of strings, with each
+element being a line of the buffer.  All of the usual sequence operations,
+including indexing, index assignment, slicing and slice assignment, work as
+you would expect.  Note that the result of indexing (slicing) a buffer is a
+string (list of strings).  This has one unusual consequence - b[:] is different
+from b.  In particular, "b[:] = None" deletes the whole of the buffer, whereas
+"b = None" merely updates the variable b, with no effect on the buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファオブジェクトは、シーケンスオブジェクトとして扱うこともできます。この文脈では、バッファオブジェクトは文字列のリスト (そう、これは mutable です) のように振舞います。
+
+各要素はバッファの行です。有用なシーケンス操作の全て、つまり、インデックス操作、インデックスによる代入、スライシング、スライスへの代入が期待通りに機能します。
+@quotation
+@strong{Note:} @*
+バッファのインデックス操作 (スライシング) の結果は、文字列 (文字列のリスト) であることを注意しておきます。これはひとつの例外的な結果をもたらします - b[:] は b とは異なるのです。特に、"b[:] = None" はバッファの全てを削除するが、"b = None" は変数 b を更新するだけで、バッファには何の影響も与えません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Buffer indexes start at zero, as is normal in Python.  This differs from vim
+line numbers, which start from 1.  This is particularly relevant when dealing
+with marks (see below) which use vim line numbers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファのインデックスは、Python では普通はゼロから始まります。これは、1 から始まる vim の行番号と異なります。これは、特に vim の行番号を使う marks (以下を参照) を扱う際に問題となります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The buffer object attributes are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファオブジェクトの属性は次の通りです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	b.vars		Dictionary-like object used to access 
+			|buffer-variable|s.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item b.vars @tab バッファ変数 (|buffer-variable|) にアクセスするための辞書オブジェクト。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	b.options	Mapping object (supports item getting, setting and 
+			deleting) that provides access to buffer-local options 
+			and buffer-local values of |global-local| options. Use 
+			|python-window|.options if option is window-local, 
+			this object will raise KeyError. If option is 
+			|global-local| and local value is missing getting it 
+			will return None.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b.options @tab バッファオプションにアクセスするためのマップオブジェクト (値の取得、設定、削除をサポート)。ウィンドウオプションへのアクセスは |python-window|.options を使ってください。ウィンドウオプションに対しては KeyError 例外が発生します。グローバルの値とローカルの値を両方持つオプション (|global-local|) で、ローカルの値がない場合は None が返ります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	b.name		String, RW. Contains buffer name (full path).
+			Note: when assigning to b.name |BufFilePre| and 
+			|BufFilePost| autocommands are launched.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b.name @tab 文字列。読み書き可。バッファ名 (フルパス)。
+@quotation
+@strong{Note:} @*
+b.name に値を設定すると自動コマンドの |BufFilePre| と |BufFilePost| イベントが発生します。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	b.number	Buffer number. Can be used as |python-buffers| key.
+			Read-only.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b.number @tab バッファ番号。|python-buffers| のキーとして使えます。読み込み専用。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	b.valid		True or False. Buffer object becomes invalid when 
+			corresponding buffer is wiped out.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b.valid @tab True または False。関連バッファが破棄されるとバッファオブジェクトは無効となる。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The buffer object methods are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファオブジェクトのメソッドは次の通りです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	b.append(str)	Append a line to the buffer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@item b.append(str) @tab バッファに行を追加
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	b.append(str, nr)  Idem, below line "nr"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b.append(str, nr) @tab バッファの "nr" 行目の下に行を追加。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	b.append(list)	Append a list of lines to the buffer
+			Note that the option of supplying a list of strings to
+			the append method differs from the equivalent method
+			for Python's built-in list objects.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b.append(list) @tab バッファに一連の行を追加
+@quotation
+@strong{Note:} @*
+append メソッドに文字列のリストを与えるオプションは、Python 組込みのリストオブジェクトの等価なメソッドとは違うことに注意してください
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	b.append(list, nr)  Idem, below line "nr"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b.append(list, nr) @tab バッファの "nr" 行目の下に一連の行を追加
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	b.mark(name)	Return a tuple (row,col) representing the position
+			of the named mark (can also get the []"<> marks)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b.mark(name) @tab 名前付きマークの位置を示す(row,col)の組を返す (これは[]"<> marksでも得られる)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	b.range(s,e)	Return a range object (see |python-range|) which
+			represents the part of the given buffer between line
+			numbers s and e |inclusive|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item b.range(s,e) @tab 与えられたバッファの s 行目から e 行目 (s 行と e 行も含む |inclusive|) を示すレンジオブジェクト (|python-range| を参照) を返す
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that when adding a line it must not contain a line break character '\n'.
+A trailing '\n' is allowed and ignored, so that you can do: >
+	:py b.append(f.readlines())
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+行を追加するときは、その行に改行文字 '\n' が含まれてはなりません。末尾の '\n' は許されますが、無視されます。そのため次のようなことができます:
+@example
+:py b.append(f.readlines())
+@end example
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Buffer object type is available using "Buffer" attribute of vim module.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファオブジェクトの型は vim モジュールの "Buffer" 属性で取得できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples (assume b is the current buffer) >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例 (b は現在のバッファに割り当てられているとします) 
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	:py print b.name		# write the buffer file name
+	:py b[0] = "hello!!!"		# replace the top line
+	:py b[:] = None			# delete the whole buffer
+	:py del b[:]			# delete the whole buffer
+	:py b[0:0] = [ "a line" ]	# add a line at the top
+	:py del b[2]			# delete a line (the third)
+	:py b.append("bottom")		# add a line at the bottom
+	:py n = len(b)			# number of lines
+	:py (row,col) = b.mark('a')	# named mark
+	:py r = b.range(1,5)		# a sub-range of the buffer
+	:py b.vars["foo"] = "bar"	# assign b:foo variable
+	:py b.options["ff"] = "dos"	# set fileformat
+	:py del b.options["ar"]		# same as :set autoread<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item :py print b.name @tab バッファのファイル名を出力
+@item :py b[0] = "hello!!!" @tab 先頭の行を置換
+@item :py b[:] = None @tab 全てのバッファを削除
+@item :py del b[:] @tab 全てのバッファを削除
+@item :py b[0:0] = "add a line" @tab 先頭に行を追加
+@item :py del b[2] @tab 行を削除 (３番目)
+@item :py b.append("bottom") @tab 最後に行を追加
+@item :py n = len(b) @tab 行数
+@item :py (row,col) = b.mark('a') @tab 名前付きマーク
+@item :py r = b.range(1,5) @tab バッファの部分範囲
+@item :py b.vars["foo"] = "bar" @tab b:foo への代入
+@item :py b.options["ff"] = "dos" @tab ファイルフォーマット設定
+@item :py del b.options["ar"] @tab :set autoread< と同じ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Range objects					*python-range*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-range}
+@cindex python-range
+@section 4. レンジオブジェクト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Range objects represent a part of a vim buffer.  You can obtain them in a
+number of ways:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+レンジオブジェクトは、vim バッファの一部分を表します。レンジオブジェクトを取得するにはいくつかの方法があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	- via vim.current.range (|python-current|)
+	- from a buffer's range() method (|python-buffer|)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item vim.current.rangeを介して (|python-current|)
+@item バッファのrange()メソッドから (|python-buffer|)
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A range object is almost identical in operation to a buffer object.  However,
+all operations are restricted to the lines within the range (this line range
+can, of course, change as a result of slice assignments, line deletions, or
+the range.append() method).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+レンジオブジェクトの操作は、バッファオブジェクトのそれとほとんど同じです。しかし、全ての操作は範囲内の行に制限されます (もちろん、行の範囲は部分の割当て、行の削除、あるいは range.append() メソッドによって変更できます)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The range object attributes are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+レンジオブジェクトの属性:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	r.start		Index of first line into the buffer
+	r.end		Index of last line into the buffer
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item r.start @tab 選択範囲でのバッファ内の最初の行。
+@item r.end @tab 選択範囲でのバッファ内の最後の行。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The range object methods are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+レンジオブジェクトのメソッド:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	r.append(str)	Append a line to the range
+	r.append(str, nr)  Idem, after line "nr"
+	r.append(list)	Append a list of lines to the range
+			Note that the option of supplying a list of strings to
+			the append method differs from the equivalent method
+			for Python's built-in list objects.
+	r.append(list, nr)  Idem, after line "nr"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@item r.append(str) @tab その範囲に行を追加する
+@item r.append(str, nr) @tab "nr" 行目の後に追加する
+@item r.append(list) @tab その範囲にリストで与えられた複数行を追加する
+@quotation
+@strong{Note:} @*
+これは Python のリストオブジェクトに対する操作とは異なることに注意してください。
+@end quotation
+@item r.append(list, nr) @tab "nr" 行目の後に追加する
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Range object type is available using "Range" attribute of vim module.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Range オブジェクトの型は vim モジュールの "Range" 属性で取得できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example (assume r is the current range):
+	# Send all lines in a range to the default printer
+	vim.command("%d,%dhardcopy!" % (r.start+1,r.end+1))
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例 (r は現在の範囲であるとする):
+@example
+# 既定のプリンタに範囲内の全ての行を送る
+vim.command("%d,%dhardcopy!" % (r.start+1,r.end+1))
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Window objects					*python-window*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-window}
+@cindex python-window
+@section 5. ウィンドウオブジェクト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Window objects represent vim windows.  You can obtain them in a number of ways:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウオブジェクトは、vim のウィンドウを表現します。ウィンドウオブジェクトを取得するには、いくつかの方法があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	- via vim.current.window (|python-current|)
+	- from indexing vim.windows (|python-windows|)
+	- from indexing "windows" attribute of a tab page (|python-tabpage|)
+	- from the "window" attribute of a tab page (|python-tabpage|)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item vim.current.window を介して (|python-current|)
+@item vim.windows のインデックス化から (|python-windows|)
+@item タブページの "windows" 属性のインデックス化から (|python-tabpage|)
+@item タブページの "window" 属性から (|python-tabpage|)
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can manipulate window objects only through their attributes.  They have no
+methods, and no sequence or other interface.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウオブジェクトは、それらの属性を通してのみ操作できます。これらはメソッドを持たず、シーケンスも他のインターフェイスもありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Window attributes are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウの属性:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	buffer (read-only)	The buffer displayed in this window
+	cursor (read-write)	The current cursor position in the window
+				This is a tuple, (row,col).
+	height (read-write)	The window height, in rows
+	width (read-write)	The window width, in columns
+	vars (read-only)	The window |w:| variables. Attribute is 
+				unassignable, but you can change window 
+				variables this way
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@item buffer (読取り専用) @tab そのウィンドウに表示されているバッファ
+@item cursor (読み書き) @tab そのウィンドウの現在のカーソルの位置これは (row,col) の組で表される
+@item height (読み書き) @tab ウィンドウの高さ、行の数で
+@item width (読み書き) @tab ウィンドウの幅、列の数で
+@item vars (読み専用) @tab ウィンドウの |w:| 変数。この属性自体には代入できないが、この属性を使ってウィンドウ変数を変更できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	options (read-only)	The window-local options. Attribute is 
+				unassignable, but you can change window 
+				options this way. Provides access only to 
+				window-local options, for buffer-local use 
+				|python-buffer| and for global ones use 
+				|python-options|. If option is |global-local| 
+				and local value is missing getting it will 
+				return None.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 	options (読み専用) @tab ウィンドウオプション。この属性自体には代入できないが、この属性を使ってウィンドウオプションを変更できる。ウィンドウオプションのみアクセス可能。バッファオプションは |python-buffer| で、グローバルオプションは |python-options| でアクセスする。オプションがグローバルの値とローカルの値を両方持つオプション (|global-local|) で、ローカルの値がない場合は None が返ります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	number (read-only)	Window number.  The first window has number 1.
+				This is zero in case it cannot be determined
+				(e.g. when the window object belongs to other
+				tab page).
+	row, col (read-only)	On-screen window position in display cells.
+				First position is zero.
+	tabpage (read-only)	Window tab page.
+	valid (read-write)	True or False. Window object becomes invalid 
+				when corresponding window is closed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item number (読み専用) @tab ウィンドウ番号。1 つ目のウィンドウの番号は 1 です。番号が不明な場合は 0 が返ります (例えば、他のタブページに関連付けられたウィンドウオブジェクトである場合)。
+@item row, col (読み専用) @tab スクリーン上でのウィンドウの表示位置。値は 0 から始まります。
+@item tabpage (読み専用) @tab ウィンドウのタブページ。
+@item valid (read-write) @tab True または False。関連ウィンドウが閉じられるとウィンドウオブジェクトは無効になる。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The height attribute is writable only if the screen is split horizontally.
+The width attribute is writable only if the screen is split vertically.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+height はスクリーンが水平方向に分割されているときのみ書き込み可能です。
+
+width はスクリーンが垂直方向に分割されているときのみ書き込み可能です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Window object type is available using "Window" attribute of vim module.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Window オブジェクトの型は vim モジュールの "Window" 属性で取得できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Tab page objects					*python-tabpage*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-tabpage}
+@cindex python-tabpage
+@section 6. タブページオブジェクト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Tab page objects represent vim tab pages. You can obtain them in a number of 
+ways:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+タブページオブジェクトは、vim のタブページを表現します。タブページオブジェクトを取得するにはいくつかの方法があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	- via vim.current.tabpage (|python-current|)
+	- from indexing vim.tabpages (|python-tabpages|)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item vim.current.tabpage を介して (|python-current|)
+@item vim.tabpages のインデックス化から (|python-tabpages|)
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use this object to access tab page windows. They have no methods and 
+no sequence or other interfaces.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このオブジェクトを使ってタブページウィンドウにアクセスすることができます。これらはメソッドを持たず、シーケンスも他のインターフェイスもありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Tab page attributes are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+タブページの属性:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	number		The tab page number like the one returned by 
+			|tabpagenr()|.
+	windows		Like |python-windows|, but for current tab page.
+	vars		The tab page |t:| variables.
+	window		Current tabpage window.
+	valid		True or False. Tab page object becomes invalid when 
+			corresponding tab page is closed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item number @tab |tabpagenr()| が返すようなタブページ番号。
+@item windows @tab |python-windows| と同様だが、現在のタブページ用。
+@item vars @tab タブページの |t:| 変数。
+@item window @tab 現在のタブページウィンドウ。
+@item valid @tab True または False。タブページオブジェクトは、関連するタブページがクローズされると無効になる。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+TabPage object type is available using "TabPage" attribute of vim module.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+タブページオブジェクトの型は vim モジュールの "TabPage" 属性で取得できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. vim.bindeval objects				*python-bindeval-objects*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-bindeval-objects}
+@cindex python-bindeval-objects
+@section 7. vim.bindeval オブジェクト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.Dictionary object				*python-Dictionary*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-Dictionary}
+@cindex python-Dictionary
+@unnumberedsubsec vim.Dictionary オブジェクト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    Dictionary-like object providing access to vim |Dictionary| type.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の辞書 (|Dictionary|) にアクセスするための辞書系オブジェクト。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    Attributes:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec 属性:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+        Attribute  Description ~
+        locked     One of                       *python-.locked*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@c 属性       説明
+@table @asis
+@anchor{python-.locked}
+@cindex python-.locked
+@item locked
+次の値のどれか
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+                    Value           Description ~
+                    zero            Variable is not locked
+                    vim.VAR_LOCKED  Variable is locked, but can be unlocked
+                    vim.VAR_FIXED   Variable is locked and can't be unlocked
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@headitem 値 @tab 説明
+@item ゼロ @tab 変数はロックされていない
+@item vim.VAR_LOCKED @tab 変数はロックされている。ロック解除可能
+@item vim.VAR_FIXED @tab 変数はロックされている。ロック解除不可能
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+                   Read-write. You can unlock locked variable by assigning 
+                   `True` or `False` to this attribute. No recursive locking 
+                   is supported.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+読み書き可。`True` か `False` を代入することでロックを変更できる。再帰的なロックはサポートされていない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+        scope      One of
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item scope
+次の値のどれか
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+                    Value              Description ~
+                    zero               Dictionary is not a scope one
+                    vim.VAR_DEF_SCOPE  |g:| or |l:| dictionary
+                    vim.VAR_SCOPE      Other scope dictionary,
+                                       see |internal-variables|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@headitem 値 @tab 説明
+@item ゼロ @tab 辞書はスコープ辞書ではない
+@item vim.VAR_DEF_SCOPE @tab 辞書は |g:| か |l:| である。
+@item vim.VAR_SCOPE @tab 他のスコープ変数 |internal-variables| 参照。
+@end multitable
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    Methods (note: methods do not support keyword arguments):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec メソッド (Note: キーワード引数はサポートされていない):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+        Method      Description ~
+        keys()      Returns a list with dictionary keys.
+        values()    Returns a list with dictionary values.
+        items()     Returns a list of 2-tuples with dictionary contents.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@headitem メソッド @tab 説明
+@item keys() @tab 辞書のキーのリストを返す。
+@item values() @tab 辞書の値のリストを返す。
+@item items() @tab 辞書の内容を 2 値タプルのリストで返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+        update(iterable), update(dictionary), update(**kwargs)
+                    Adds keys to dictionary.
+        get(key[, default=None])
+                    Obtain key from dictionary, returning the default if it is 
+                    not present.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item update(iterable), update(dictionary), update(**kwargs) @tab 辞書にキーを追加する。
+@item get(key[, default=None]) @tab 辞書からキーの値を取得する。キーが存在しない場合は default が返る。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+        pop(key[, default])
+                    Remove specified key from dictionary and return 
+                    corresponding value. If key is not found and default is 
+                    given returns the default, otherwise raises KeyError.
+        popitem()
+                    Remove random key from dictionary and return (key, value) 
+                    pair.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item pop(key[, default]) @tab 辞書からキーを取り除き、その値を返す。キーが存在しない場合は、default が指定されていたらその値を返す。指定されていなければ KeyError 例外が発生する。
+@item popitem() @tab 辞書からランダムにキーを取り除き (key, value) のペアを返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+        has_key(key)
+                    Check whether dictionary contains specified key, similar 
+                    to `key in dict`.
+
+        __new__(), __new__(iterable), __new__(dictionary), __new__(update)
+                    You can use `vim.Dictionary()` to create new vim 
+                    dictionaries. `d=vim.Dictionary(arg)` is the same as 
+                    `d=vim.bindeval('{}');d.update(arg)`. Without arguments 
+                    constructs empty dictionary.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item has_key(key) @tab 辞書がキーを持っているかを確認する。`key in dict` と同じ。
+
+@item __new__(), __new__(iterable), __new__(dictionary), __new__(update) @tab `vim.Dictionary()` を使って vim の辞書を作成できる。`d=vim.Dictionary(arg)` は `d=vim.bindeval('@{@}');d.update(arg)` と同じ。引数がない場合は空の辞書が作成される。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    Examples: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+        d = vim.Dictionary(food="bar")		# Constructor
+        d['a'] = 'b'				# Item assignment
+        print d['a']				# getting item
+        d.update({'c': 'd'})			# .update(dictionary)
+        d.update(e='f')				# .update(**kwargs)
+        d.update((('g', 'h'), ('i', 'j')))	# .update(iterable)
+        for key in d.keys():			# .keys()
+        for val in d.values():			# .values()
+        for key, val in d.items():		# .items()
+        print isinstance(d, vim.Dictionary)	# True
+        for key in d:				# Iteration over keys
+        class Dict(vim.Dictionary):		# Subclassing
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .7 .3
+@item d = vim.Dictionary(food="bar") @tab コンストラクタ
+@item d['a'] = 'b' @tab アイテム代入
+@item print d['a'] @tab アイテム取得
+@item d.update(@{'c': 'd'@}) @tab .update(dictionary)
+@item d.update(e='f') @tab .update(**kwargs)
+@item d.update((('g', 'h'), ('i', 'j'))) @tab .update(iterable)
+@item for key in d.keys(): @tab .keys()
+@item for val in d.values(): @tab .values()
+@item for key, val in d.items(): @tab .items()
+@item print isinstance(d, vim.Dictionary) @tab True
+@item for key in d: @tab キーのイテレーション
+@item class Dict(vim.Dictionary): @tab サブクラス化
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    Note: when iterating over keys you should not modify dictionary.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+キーをイテレーションしている最中に辞書を変更してはいけない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.List object					*python-List*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-List}
+@cindex python-List
+@unnumberedsubsec vim.List オブジェクト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    Sequence-like object providing access to vim |List| type.
+    Supports `.locked` attribute, see |python-.locked|. Also supports the 
+    following methods:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim のリスト (|List|) にアクセスするためのシーケンス系オブジェクト。`.locked` 属性をサポートしている (|python-.locked| 参照)。さらに以下のメソッドをサポートしている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+        Method          Description ~
+        extend(item)    Add items to the list.
+
+        __new__(), __new__(iterable)
+                        You can use `vim.List()` to create new vim lists. 
+                        `l=vim.List(iterable)` is the same as 
+                        `l=vim.bindeval('[]');l.extend(iterable)`. Without 
+                        arguments constructs empty list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@headitem メソッド @tab 説明
+@item extend(item) @tab リストにアイテムを追加する。
+@item __new__(), __new__(iterable) @tab `vim.List()` を使って vim のリストを作成できる。`l=vim.List(iterable)` は `l=vim.bindeval('[]');l.extend(iterable)` と同じ。引数がない場合は空のリストが作成される。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    Examples: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+        l = vim.List("abc")		# Constructor, result: ['a', 'b', 'c']
+        l.extend(['abc', 'def'])	# .extend() method
+        print l[1:]			# slicing
+        l[:0] = ['ghi', 'jkl']		# slice assignment
+        print l[0]			# getting item
+        l[0] = 'mno'			# assignment
+        for i in l:			# iteration
+        print isinstance(l, vim.List)	# True
+        class List(vim.List):		# Subclassing
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item l = vim.List("abc") @tab コンストラクタ。結果: ['a', 'b', 'c']
+@item l.extend(['abc', 'def']) @tab .extend() メソッド
+@item print l[1:] @tab スライス
+@item l[:0] = ['ghi', 'jkl'] @tab スライス代入
+@item print l[0] @tab アイテム取得
+@item l[0] = 'mno' @tab 代入
+@item for i in l: @tab イテレーション
+@item print isinstance(l, vim.List) @tab True
+@item class List(vim.List): @tab サブクラス化
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim.Function object				*python-Function*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-Function}
+@cindex python-Function
+@unnumberedsubsec vim.Function オブジェクト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    Function-like object, acting like vim |Funcref| object. Accepts special 
+    keyword argument `self`, see |Dictionary-function|. You can also use 
+    `vim.Function(name)` constructor, it is the same as 
+    `vim.bindeval('function(%s)'%json.dumps(name))`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の関数参照 (|Funcref|) と似た動作をする関数系オブジェクト。特別な引数として `self` を指定できる (|Dictionary-function| 参照)。`vim.Function(name)` を使って作成することもできる。これは `vim.bindeval('function(%s)'%json.dumps(name))` と同じ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    Attributes (read-only):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec 属性 (読み取り専用):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+        Attribute    Description ~
+        name         Function name.
+        args         `None` or a |python-List| object with arguments.  Note 
+                     that this is a copy of the arguments list, constructed 
+                     each time you request this attribute. Modifications made 
+                     to the list will be ignored (but not to the containers 
+                     inside argument list: this is like |copy()| and not 
+                     |deepcopy()|).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@headitem 属性名 @tab 説明
+@item name @tab 関数名
+@item args @tab `None` または引数を示す |python-List| オブジェクト。これはこの属性をリクエストするたびに作られる引数のコピーであることに注意してください。このリストに対する変更は無視されます。(ただし引数リスト内のコンテナについては無視されません。これは |deepcopy()| ではなく |copy()| と同様です)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+        self         `None` or a |python-Dictionary| object with self 
+                     dictionary. Note that explicit `self` keyword used when 
+                     calling resulting object overrides this attribute.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item self @tab `None` または自身の辞書である |python-Dictionary| オブジェクト。呼び出し時に明示的な `self` キーワードが使われた場合には、渡されるオブジェクトでこの属性はオーバーライドされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+        auto_rebind  Boolean. True if partial created from this Python object 
+                     and stored in the Vim script dictionary should be
+                     automatically rebound to the dictionary it is stored in
+                     when this dictionary is indexed. Exposes Vim internal
+                     difference between `dict.func` (auto_rebind=True) and
+                     `function(dict.func,dict)` (auto_rebind=False). This
+                     attribute makes no sense if `self` attribute is `None`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item auto_rebind @tab ブール値。Python のオブジェクトから作られ Vim script の辞書に格納された部分適用が、その辞書が参照された際に自動的に再バインドされる場合に `True` となります。Vim script で説明すると `dict.func` (auto_rebind=True) と`function(dict.func,dict)` (auto_rebind=False) の違いになります。`self` 属性の値が `None` の場合には、この属性値には意味がありません。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    Constructor additionally accepts `args`, `self` and `auto_rebind` 
+    keywords.  If `args` and/or `self` argument is given then it constructs 
+    a partial, see |function()|.  `auto_rebind` is only used when `self` 
+    argument is given, otherwise it is assumed to be `True` regardless of 
+    whether it was given or not.  If `self` is given then it defaults to 
+    `False`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コンストラクタは、加えて `args`, `self` そして `auto_rebind` キーワードを受け付けます。`args` と `self` どちらか一方、もしくは両方が与えられた場合には、部分適用が生成されます。詳しくは |function()| を参照してください。`auto_rebind` は `self` だけが与えられた場合にのみ使われます。そうでない場合には、それが与えられたかどうかに関わらず `True` であると見做されます。`self` が与えられた場合には、そのデフォルト値は `False` です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+    Examples: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+        f = vim.Function('tr')			# Constructor
+        print f('abc', 'a', 'b')		# Calls tr('abc', 'a', 'b')
+        vim.command('''
+            function DictFun() dict
+                return self
+            endfunction
+        ''')
+        f = vim.bindeval('function("DictFun")')
+        print f(self={})			# Like call('DictFun', [], {})
+        print isinstance(f, vim.Function)	# True
+
+        p = vim.Function('DictFun', self={})
+        print f()
+        p = vim.Function('tr', args=['abc', 'a'])
+        print f('b')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+f = vim.Function('tr')                  # コンストラクタ
+print f('abc', 'a', 'b')                # tr('abc', 'a', 'b') 呼び出し
+vim.command('''
+    function DictFun() dict
+        return self
+    endfunction
+''')
+f = vim.bindeval('function("DictFun")')
+print f(self={})                        # call('DictFun', [],{})と同じ
+print isinstance(f, vim.Function)       # True
+
+p = vim.Function('DictFun', self={})
+print f()
+p = vim.Function('tr', args=['abc', 'a'])
+print f('b')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+8. pyeval() and py3eval() Vim functions			*python-pyeval*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-pyeval}
+@cindex python-pyeval
+@section 8. Vim 関数 pyeval() と py3eval()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To facilitate bi-directional interface, you can use |pyeval()| and |py3eval()| 
+functions to evaluate Python expressions and pass their values to Vim script.
+|pyxeval()| is also available.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+双方向インターフェイスを容易にするため、|pyeval()| 関数と |py3eval()| 関数を使って Python の式を評価して、その値を Vim script に渡すことができます。|pyxeval()| も使用可能です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Python value "None" is converted to v:none.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Python の "None" という値は v:none に変換される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+9. Dynamic loading					*python-dynamic*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-dynamic}
+@cindex python-dynamic
+@section 9. 動的ローディング
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On MS-Windows and Unix the Python library can be loaded dynamically.  The
+|:version| output then includes |+python/dyn| or |+python3/dyn|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows と UNIX では Python ライブラリを動的に読み込むことが可能です。これを行うと |:version| の出力に |+python/dyn| もしくは |+python3/dyn| が含まれるようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This means that Vim will search for the Python DLL or shared library file only
+when needed.  When you don't use the Python interface you don't need it, thus
+you can use Vim without this file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この場合、Vim は必要なときだけ Python の DLL ファイル、もしくは共有ライブラリファイルを検索します。Python インターフェイスを使わないときは DLL を必要としないので、DLL なしで Vim を使うことができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+MS-Windows ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec MS-Windows
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To use the Python interface the Python DLL must be in your search path.  In a
+console window type "path" to see what directories are used.  The 'pythondll'
+or 'pythonthreedll' option can be also used to specify the Python DLL.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Windows で Python インターフェイスを使うには、Python の DLL が検索パス内に存在しなければなりません。コンソールウィンドウで "path" とタイプすると、どのディレクトリが検索パスとなるか表示することができます。また '@option{pythondll}' か '@option{pythonthreedll}' オプションを Python の DLL を指定するのに使うこともできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The name of the DLL should match the Python version Vim was compiled with.
+Currently the name for Python 2 is "python27.dll", that is for Python 2.7.
+That is the default value for 'pythondll'.  For Python 3 it is python36.dll
+(Python 3.6).  To know for sure edit "gvim.exe" and search for
+"python\d*.dll\c".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+DLL の名前は Vim をコンパイルした時の Python のバージョンに一致しなければなりません。現在その名前は "python27.dll" です。これは Python 2.7 用です。これは '@option{pythondll}' の既定値です。Python 3 の場合は python35.dll (Python3.5) です。これを確かめるには、"gvim.exe" を開き、"python\d*.dll\c" を検索してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Unix ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec Unix
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 'pythondll' or 'pythonthreedll' option can be used to specify the Python
+shared library file instead of DYNAMIC_PYTHON_DLL or DYNAMIC_PYTHON3_DLL file
+what were specified at compile time.  The version of the shared library must
+match the Python 2.x or Python 3 version Vim was compiled with.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{pythondll}' と '@option{pythonthreedll}' オプションを、コンパイル時に DYNAMIC_PYTHON_DLL と DYNAMIC_PYTHON3_DLL で指定されている Python の共有ライブラリのファイルの、代わりを指定するのに使えます。共有ライブラリのバージョンは Vim をコンパイルする時に用いた Python 2.x または Python 3 のバージョンと一致していなければなりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+10. Python 3						*python3*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python3}
+@cindex python3
+@section 10. Python 3
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:py3* *:python3*
+The `:py3` and `:python3` commands work similar to `:python`.  A simple check
+if the `:py3` command is working: >
+	:py3 print("Hello")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:py3}
+@anchor{:python3}
+@cindex :py3
+@cindex :python3
+|:py3| コマンドと |:python3| コマンドは |:python| と同様に機能します。`:py3` コマンドが機能するか簡単にチェックするには:
+@example
+:py3 print("Hello")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To see what version of Python you have: >
+	:py3 import sys
+	:py3 print(sys.version)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使っている Python のバージョンを見るには:
+@example
+:py3 import sys
+:py3 print(sys.version)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<							*:py3file*
+The `:py3file` command works similar to `:pyfile`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:py3file}
+@cindex :py3file
+`:py3file` コマンドは `:pyfile` と同様に機能します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:py3do*
+The `:py3do` command works similar to `:pydo`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:py3do}
+@cindex :py3do
+`:py3do` コマンドは `:pydo` と同様に機能します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Vim can be built in four ways (:version output):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim のビルドは 4 種類あります (:version の出力):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. No Python support	    (-python, -python3)
+2. Python 2 support only    (+python or +python/dyn, -python3)
+3. Python 3 support only    (-python, +python3 or +python3/dyn)
+4. Python 2 and 3 support   (+python/dyn, +python3/dyn)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item Python サポートなし      (-python, -python3)
+@item Python 2 サポートのみ    (+python or +python/dyn, -python3)
+@item Python 3 サポートのみ    (-python, +python3 or +python3/dyn)
+@item Python 2 と 3 のサポート (+python/dyn, +python3/dyn)
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Some more details on the special case 4:  *python-2-and-3*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-2-and-3}
+@cindex python-2-and-3
+特殊ケース 4 に付いてもう少し詳細に説明します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When Python 2 and Python 3 are both supported they must be loaded dynamically.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Python 2 と Python 3 をサポートするにはそれらを動的ロードする必要があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When doing this on Linux/Unix systems and importing global symbols, this leads
+to a crash when the second Python version is used.  So either global symbols
+are loaded but only one Python version is activated, or no global symbols are
+loaded. The latter makes Python's "import" fail on libraries that expect the
+symbols to be provided by Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Linux/Unix システムで動的ロード時にグローバルシンボルをインポートすると、2 番目にロードした Python が使われたときにクラッシュが発生します。そのため、グローバルシンボルをロードして一つの Python バージョンだけを使うか、グローバルシンボルをロードしないかのどちらかしかありません。後者は特定のライブラリ (シンボルが Vim から提供されていることを期待しているライブラリ) において Python の"import" が失敗するようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*E836* *E837*
+Vim's configuration script makes a guess for all libraries based on one
+standard Python library (termios).  If importing this library succeeds for
+both Python versions, then both will be made available in Vim at the same
+time.  If not, only the version first used in a session will be enabled.
+When trying to use the other one you will get the E836 or E837 error message.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E836}
+@anchor{E837}
+@cindex E836
+@cindex E837
+
+Vim のコンフィグスクリプトは、ある標準の Python ライブラリ (termios) に基づき、すべてのライブラリについて推測を行います。このライブラリを両方の Python バージョンでインポートできるなら、両方のバージョンを Vim の中で同時に利用できます。そうでない場合は、どちらか最初に使われたもののみが利用可能になります。もう一方を使おうとすると E836 か E837 のエラーメッセージが表示されるでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here Vim's behavior depends on the system in which it was configured.  In a
+system where both versions of Python were configured with --enable-shared,
+both versions of Python will be activated at the same time.  There will still
+be problems with other third party libraries that were not linked to
+libPython.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の動作はコンフィグを実行したシステムに依存します。Python の両方のバージョンが @samp{--enable-shared} 付きでビルドされているなら、両方のバージョンを同時に使用できます。ただし libPython にリンクしていないサードパーティライブラリに対してはまだ問題は解決しません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To work around such problems there are these options:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらの問題に対する対処療法:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+1. The problematic library is recompiled to link to the according
+   libpython.so.
+2. Vim is recompiled for only one Python version.
+3. You undefine PY_NO_RTLD_GLOBAL in auto/config.h after configuration.  This
+   may crash Vim though.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item 問題のライブラリを libpython.so にリンクする形で再コンパイルする。
+@item Vim を再コンパイルして一つの Python バージョンのみ有効にする。
+@item コンフィグ実行後に auto/config.h の PY_NO_RTLD_GLOBAL の定義を削除する。これは Vim がクラッシュするようになるでしょう。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E880*
+Raising SystemExit exception in python isn't endorsed way to quit vim, use: >
+	:py vim.command("qall!")
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E880}
+@cindex E880
+Python 内で SystemExit 例外を発生させても Vim は終了しない。次のようにする:
+@example
+:py vim.command("qall!")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*has-python*
+You can test what Python version is available with: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{has-python}
+@cindex has-python
+どのバージョンの Python が利用可能になっているかは次のコマンドで確認できます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	if has('python')
+	  echo 'there is Python 2.x'
+	endif
+  	if has('python3')
+	  echo 'there is Python 3.x'
+	endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+if has('python')
+  echo 'there is Python 2.x'
+endif
+if has('python3')
+  echo 'there is Python 3.x'
+endif
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note however, that when Python 2 and 3 are both available and loaded
+dynamically, these has() calls will try to load them.  If only one can be
+loaded at a time, just checking if Python 2 or 3 are available will prevent
+the other one from being available.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Python の 2 と 3 の両方が利用可能で、Python が動的ロードされるようになっている場合、この has() 呼び出しによってそれらがロードされます。もし、同時にロードできるのがどちらか一方だけだった場合、Python の 2 と 3 のどちらが利用できるか調べるだけで、もう一方は利用できなくなります。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To avoid loading the dynamic library, only check if Vim was compiled with
+python support: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+動的ライブラリのロードを回避するには、Vim が Python 機能を有効にしてコンパイルされているかどうかをチェックするだけで良い:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	if has('python_compiled')
+	  echo 'compiled with Python 2.x support'
+	  if has('python_dynamic')
+	    echo 'Python 2.x dynamically loaded'
+	  endif
+	endif
+  	if has('python3_compiled')
+	  echo 'compiled with Python 3.x support'
+	  if has('python3_dynamic')
+	    echo 'Python 3.x dynamically loaded'
+	  endif
+	endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+if has('python_compiled')
+  echo 'compiled with Python 2.x support'
+  if has('python_dynamic')
+    echo 'Python 2.x dynamically loaded'
+  endif
+endif
+if has('python3_compiled')
+  echo 'compiled with Python 3.x support'
+  if has('python3_dynamic')
+    echo 'Python 3.x dynamically loaded'
+  endif
+endif
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This also tells you whether Python is dynamically loaded, which will fail if
+the runtime library cannot be found.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはまた Python が動的にロードされているかどうかを教えてくれる。もしもランタイムライブラリが見つからなければ、ここで失敗する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+11. Python X						*python_x* *pythonx*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python_x}
+@anchor{pythonx}
+@cindex python_x
+@cindex pythonx
+@section 11. Python X
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Because most python code can be written so that it works with python 2.6+ and
+python 3 the pyx* functions and commands have been written.  They work exactly
+the same as the Python 2 and 3 variants, but select the Python version using
+the 'pyxversion' setting.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+多くの python コードは、python 2.6+ と python 3 の両方で動くことができるように書けるため、pyx* 関数とコマンドが用意されました。それらは、Python 2 や 3 向けの変種とまったく同じように動作しますが、'@option{pyxversion}' 設定を用いて Python のバージョンを選択できる点が異なります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You should set 'pyxversion' in your |.vimrc| to prefer Python 2 or Python 3
+for Python commands. If you change this setting at runtime you may risk that
+state of plugins (such as initialization) may be lost.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Python コマンドに Python 2 と 3 のどちらを使いたいかに応じて、|.vimrc| の中で '@option{pyxversion}' を設定してください。もしこの設定を実行時に変更すると、プラグインの状態 (例えば初期化など) が失われる危険性があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to use a module, you can put it in the {rtp}/pythonx directory.
+See |pythonx-directory|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+モジュールを使用したい場合には、@{rtp@}/pythonx ディレクトリの中に置くことができます。|pythonx-directory| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:pyx* *:pythonx*
+The `:pyx` and `:pythonx` commands work similar to `:python`.  A simple check
+if the `:pyx` command is working: >
+	:pyx print("Hello")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:pyx}
+@anchor{:pythonx}
+@cindex :pyx
+@cindex :pythonx
+`@command{:pyx}` コマンドと `@command{:pythonx}` コマンドは `@command{:python}` と同様に機能します。`@command{:pyx}` コマンドが機能するか簡単にチェックするには:
+@example
+:pyx print("Hello")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To see what version of Python is being used: >
+	:pyx import sys
+	:pyx print(sys.version)
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+使っている Python のバージョンを見るには:
+@example
+:pyx import sys
+:pyx print(sys.version)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+					*:pyxfile* *python_x-special-comments*
+The `:pyxfile` command works similar to `:pyfile`.  However you can add one of
+these comments to force Vim using `:pyfile` or `:py3file`: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:pyxfile}
+@anchor{python_x-special-comments}
+@cindex :pyxfile
+@cindex python_x-special-comments
+`@command{:pyxfile}` コマンドは `@command{:pyfile}` と同様に機能します。しかし、Vim が `@command{:pyfile}` または `@command{:py3file}` を使うように強制したい場合は以下のコメントのうち 1 つを追加することができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+  #!/any string/python2		" Shebang. Must be the first line of the file.
+  #!/any string/python3		" Shebang. Must be the first line of the file.
+  # requires python 2.x		" Maximum lines depend on 'modelines'.
+  # requires python 3.x		" Maximum lines depend on 'modelines'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+#!/any string/python2         " Shebang。ファイルの先頭でなければならない。
+#!/any string/python3         " Shebang。ファイルの先頭でなければならない。
+# requires python 2.x         " 最大行数は '@option{modelines}' に依存。
+# requires python 3.x         " 最大行数は '@option{modelines}' に依存。
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Unlike normal modelines, the bottom of the file is not checked.
+If none of them are found, the 'pyxversion' setting is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+通常のモードラインとは異なり、ファイルの末尾はチェックされません。いずれのコメントも見つからない場合は、'@option{pyxversion}' の設定が使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*W20* *W21*
+If Vim does not support the selected Python version a silent message will be
+printed.  Use `:messages` to read them.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{W20}
+@anchor{W21}
+@cindex W20
+@cindex W21
+もし Vim が指定された Python のバージョンをサポートしない場合、静かなメッセージが表示されます。それらを読むには `@command{:messages}` を使用してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:pyxdo*
+The `:pyxdo` command works similar to `:pydo`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:pyxdo}
+@cindex :pyxdo
+`@command{:pyxdo}` コマンドは `@command{:pydo}` と同様に機能します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*has-pythonx*
+You can test if pyx* commands are available with: >
+	if has('pythonx')
+	  echo 'pyx* commands are available. (Python ' . &pyx . ')'
+	endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{has-pythonx}
+@cindex has-pythonx
+pyx* コマンドが使用できるかどうかを調べるには以下が使えます:
+@example
+if has('pythonx')
+  echo 'pyx* commands are available. (Python ' . &pyx . ')'
+endif
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When compiled with only one of |+python| or |+python3|, the has() returns 1.
+When compiled with both |+python| and |+python3|, the test depends on the
+'pyxversion' setting.  If 'pyxversion' is 0, it tests Python 3 first, and if
+it is not available then Python 2.  If 'pyxversion' is 2 or 3, it tests only
+Python 2 or 3 respectively.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|+python| または |+python3| のどちらか一方のみでコンパイルされている場合は、has() は 1 を返します。
+
+|+python| と |+python3| の両方でコンパイルされている場合は、テストは '@option{pyxversion}' の設定に依存します。
+
+もし '@option{pyxversion}' が 0 ならば最初に Python 3 がテストされ、使用可能でなければ Python 2 がテストされます。
+
+もし '@option{pyxversion}' が 2 または 3 であれば、Python 2 または 3 のそれぞれどちらか一方のみをテストします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that for `has('pythonx')` to work it may try to dynamically load Python 3
+or 2.  This may have side effects, especially when Vim can only load one of
+the two.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+`has('pythonx')` が動作するために、Python 3 または 2 を動的にロードしようとすることがある点に注意してください。これは特に Vim が 2 つのうち 1 つしかロードできない場合に副作用があります。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If a user prefers Python 2 and want to fallback to Python 3, he needs to set
+'pyxversion' explicitly in his |.vimrc|.  E.g.: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしもユーザーが Python 2 を優先し、Python 3 にフォールバックしたい場合は、|.vimrc| で '@option{pyxversion}' を明示的に設定する必要があります。例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	if has('python')
+	  set pyx=2
+	elseif has('python3')
+	  set pyx=3
+	endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+if has('python')
+  set pyx=2
+elseif has('python3')
+  set pyx=3
+endif
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+12. Building with Python support			*python-building*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{python-building}
+@cindex python-building
+@section 12. Python 対応付きでビルドする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A few hints for building with Python 2 or 3 support.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Python 2 または 3 対応付きでビルドするためのいくつかのヒントがあります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+UNIX
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec UNIX
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See src/Makefile for how to enable including the Python interface.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Python インターフェイスを有効にする方法は src/Makefile を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+On Ubuntu you will want to install these packages for Python 2:
+	python
+	python-dev
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ubuntu では Python 2 用にこれらのパッケージをインストールする必要があるでしょう:
+@example
+python
+python-dev
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+For Python 3:
+	python3
+	python3-dev
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Python 3 用は:
+@example
+python3
+python3-dev
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+For Python 3.6:
+	python3.6
+	python3.6-dev
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Python 3.6 用は:
+@example
+python3.6
+python3.6-dev
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you have more than one version of Python 3, you need to link python3 to the
+one you prefer, before running configure.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしも複数のバージョンの Python 3 がある場合は、configure を実行する前に python3 を望みのバージョンにリンクする必要があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
