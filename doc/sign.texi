@@ -1,0 +1,606 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node sign.txt, , , 目次
+@unnumbered デバッグ用の目印
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*sign.txt*      For Vim version 8.0.  Last change: 2016 Aug 17
+
+
+		  VIM REFERENCE MANUAL    by Gordon Prieur
+					  and Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*sign.txt*      For Vim バージョン 8.0.  Last change: 2016 Aug 17
+
+
+                VIMリファレンスマニュアル    by Gordon Prieur
+                                             and Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Sign Support Features				*sign-support*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign-support}
+@cindex sign-support
+目印機能
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Introduction				|sign-intro|
+2. Commands				|sign-commands|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. 機能紹介 @tab |@ref{sign-intro, , sign-intro}|
+@item 2. コマンド @tab |@ref{sign-commands, , sign-commands}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these features}
+{only available when compiled with the |+signs| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらの機能はない@}
+
+@{|+signs| 機能付きでコンパイルした場合にのみ利用可能@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Introduction					*sign-intro* *signs*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign-intro}
+@anchor{signs}
+@cindex sign-intro
+@cindex signs
+@section 1. 機能紹介
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When a debugger or other IDE tool is driving an editor it needs to be able
+to give specific highlights which quickly tell the user useful information
+about the file.  One example of this would be a debugger which had an icon
+in the left-hand column denoting a breakpoint.  Another example might be an
+arrow representing the Program Counter (PC).  The sign features allow both
+placement of a sign, or icon, in the left-hand side of the window and
+definition of a highlight which will be applied to that line.  Displaying the
+sign as an image is most likely only feasible in gvim (although Sun
+Microsystem's dtterm does support this it's the only terminal emulator I know
+of which does).  A text sign and the highlight should be feasible in any color
+terminal emulator.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デバッガやその他の IDE @{訳注: 統合開発環境@} ツールはエディタをコントロールする。そのエディタはユーザーにファイルについての役立つ情報を素早く提供するために特別なハイライトを表示できる必要がある。
+
+一例としては左のカラムにブレークポイントを示すアイコンを持つデバッガを挙げることができる。別の例としてはプログラムカウンタ (PC) を示す矢印が挙げられる。
+
+この目印機能により、ウィンドウの左端に目印やアイコン画像を置いたり、ある行に適用される強調を定義することができるようになる。画像による目印は gvim でだけ利用で可能である (しかし Sun Microsystems の dtterm はそれをサポートしている。これは著者が知り得る限りで唯一の端末エミュレータである)。
+
+テキストによる目印と色による強調表示は、あらゆるカラーの端末エミュレータで利用できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Signs and highlights are not useful just for debuggers.  Sun's Visual
+WorkShop uses signs and highlights to mark build errors and SourceBrowser
+hits.  Additionally, the debugger supports 8 to 10 different signs and
+highlight colors. |workshop|  Same for Netbeans |netbeans|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+目印と強調はデバッガにとってだけ便利なわけではない。Sun の Visual WorkShop はビルドエラーと SourceBrowser の検索一致箇所を示すのに目印と強調を使用する。加えて、デバッガは 8 個から 10 個の異なる目印と強調色をサポートする。|workshop| 参照。Netbeans は |netbeans| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are two steps in using signs:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+目印を使うには 2 つの段階がある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Define the sign.  This specifies the image, text and highlighting.  For
+   example, you can define a "break" sign with an image of a stop roadsign and
+   text "!!".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item 目印を定義する。画像とテキストと強調色を指定する。例えば "break" の目印として道路の停止の画像を使用し、テキストとして "!!" を使用して定義することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+2. Place the sign.  This specifies the file and line number where the sign is
+   displayed.  A defined sign can be placed several times in different lines
+   and files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 目印を設置する。目印を設置したいファイルと行番号を指定する。定義された目印は異なるファイルと異なる位置に複数箇所に置くことができる。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When signs are defined for a file, Vim will automatically add a column of two
+characters to display them in.  When the last sign is unplaced the column
+disappears again.  This behavior can be changed with the 'signcolumn' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイルに対して目印が定義されると、Vim は自動的に表示画面に 2 文字分のカラムを付け加える。全てのサインが取り除かれるとそのカラムは再度消滅する。この動作は '@option{signcolumn}' オプションにより変更可能できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The color of the column is set with the SignColumn group |hl-SignColumn|.
+Example to set the color: >
+
+	:highlight SignColumn guibg=darkgrey
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そのカラムは SignColumn の色を使う |hl-SignColumn| が設定される。色を設定するには次のようにする:
+@example
+:highlight SignColumn guibg=darkgrey
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Commands					*sign-commands* *:sig* *:sign*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign-commands}
+@anchor{:sig}
+@anchor{:sign}
+@cindex sign-commands
+@cindex :sig
+@cindex :sign
+@section 2. コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here is an example that places a sign "piet", displayed with the text ">>", in
+line 23 of the current file: >
+	:sign define piet text=>> texthl=Search
+	:exe ":sign place 2 line=23 name=piet file=" . expand("%:p")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の例ではカレントファイルの 23 行目に "piet" という目印を置いている。目印は ">>" という文字をともなって表示される。
+@example
+:sign define piet text=>> texthl=Search
+:exe ":sign place 2 line=23 name=piet file=" . expand("%:p")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+And here is the command to delete it again: >
+	:sign unplace 2
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+それをもう一度消すコマンドを追記しておく:
+@example
+:sign unplace 2
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that the ":sign" command cannot be followed by another command or a
+comment.  If you do need that, use the |:execute| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"@command{:sign}" コマンドの後には他のコマンドを続けられないことに注意すること。そのようにするには |:execute| を使う。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+DEFINING A SIGN.			*:sign-define* *E255* *E160* *E612*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sign-define}
+@anchor{E255}
+@anchor{E160}
+@anchor{E612}
+@cindex :sign-define
+@cindex E255
+@cindex E160
+@cindex E612
+@unnumberedsubsec 目印を定義する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign define {name} {argument}...
+		Define a new sign or set attributes for an existing sign.
+		The {name} can either be a number (all digits) or a name
+		starting with a non-digit.  Leading digits are ignored, thus
+		"0012", "012" and "12" are considered the same name.
+		About 120 different signs can be defined.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :sign define @{name@} @{argument@}...
+新しい目印を定義するか既にある目印に属性を設定する。@{name@} は番号 (全て数字) か非数字で始まる名前である。先導数字は無視されるので、"0012" と "012" と "12" は同じ名前として解釈される。約 120 の異なる目印を定義することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Accepted arguments:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+利用可能な引数:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	icon={bitmap}
+		Define the file name where the bitmap can be found.  Should be
+		a full path.  The bitmap should fit in the place of two
+		characters.  This is not checked.  If the bitmap is too big it
+		will cause redraw problems.  Only GTK 2 can scale the bitmap
+		to fit the space available.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item icon=@{bitmap@}
+目印に使用する画像ファイルを定義する。フルパス指定したほうが良い。画像は 2 文字の幅に納まるものでなければならない。これはチェックされない。大きすぎる画像を使用すると再描画の際に問題が生じることがある。GTK2 では画像がちょうど納まるように調整される。
+
+@{訳注: Windows では自動的に調整される@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			toolkit		supports ~
+			GTK 1		pixmap (.xpm)
+			GTK 2		many
+			Motif		pixmap (.xpm)
+			Win32		.bmp, .ico, .cur
+					pixmap (.xpm) |+xpm_w32|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@headitem toolkit @tab サポートフォーマット
+@item GTK 1 @tab pixmap (.xpm)
+@item GTK 2 @tab many
+@item Motif @tab pixmap (.xpm)
+@item Win32 @tab .bmp, .ico, .cur pixmap (.xpm) |+xpm_w32|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	linehl={group}
+		Highlighting group used for the whole line the sign is placed
+		in.  Most useful is defining a background color.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item linehl=@{group@}
+目印が設置された行全体を強調表示するのに使われるハイライトグループを定義する。背景色を定義するのに良く利用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	text={text}						*E239*
+		Define the text that is displayed when there is no icon or the
+		GUI is not being used.  Only printable characters are allowed
+		and they must occupy one or two display cells.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E239}
+@cindex E239
+@item text=@{text@}
+アイコンが無いか GUI ではない時に表示されるテキストを定義する。表示可能な文字のみ指定できる。これは表示幅で 1 文字か 2 文字分の文字を指定できる。
+
+@{訳注: アルファベットなら 1 or 2 文字。漢字なら 1 文字@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	texthl={group}
+		Highlighting group used for the text item.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item texthl=@{group@}
+テキスト部分に使用されるハイライトグループ。
+@end table
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+DELETING A SIGN						*:sign-undefine* *E155*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sign-undefine}
+@anchor{E155}
+@cindex :sign-undefine
+@cindex E155
+@unnumberedsubsec (定義した) 目印を削除する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign undefine {name}
+		Deletes a previously defined sign.  If signs with this {name}
+		are still placed this will cause trouble.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :sign undefine @{name@}
+既に定義された目印を削除する。@{name@} という名前の目印がまだ設置されたままの場合はトラブルを引き起こす。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+LISTING SIGNS						*:sign-list* *E156*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sign-list}
+@anchor{E156}
+@cindex :sign-list
+@cindex E156
+@unnumberedsubsec (定義した) 目印を一覧表示する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign list	Lists all defined signs and their attributes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :sign list
+全部の定義済み目印とその属性を一覧表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign list {name}
+		Lists one defined sign and its attributes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign list @{name@}
+@{name@} という名で定義された目印とその属性を表示する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+PLACING SIGNS						*:sign-place* *E158*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sign-place}
+@anchor{E158}
+@cindex :sign-place
+@cindex E158
+@unnumberedsubsec 目印を設置する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign place {id} line={lnum} name={name} file={fname}
+		Place sign defined as {name} at line {lnum} in file {fname}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :sign place @{id@} line=@{lnum@} name=@{name@} file=@{fname@}
+@{name@} として定義された目印をファイル @{fname@} の @{lnum@} 行目に設置する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*:sign-fname*
+		The file {fname} must already be loaded in a buffer.  The
+		exact file name must be used, wildcards, $ENV and ~ are not
+		expanded, white space must not be escaped.  Trailing white
+		space is ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sign-fname}
+@cindex :sign-fname
+ファイル名 @{fname@} は既に読込済みのバッファでなければならない。正確なファイル名でなければならず、ワイルドカードや環境変数そして "~" は展開されない。空白はエスケープされない。末尾の空白は無視される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The sign is remembered under {id}, this can be used for
+		further manipulation.  {id} must be a number.
+		It's up to the user to make sure the {id} is used only once in
+		each file (if it's used several times unplacing will also have
+		to be done several times and making changes may not work as
+		expected).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+目印は @{id@} という識別子で記憶され、後の操作に使用される。@{id@} は番号でなければならない。
+
+ユーザーは自分で、1 つの @{id@} が各々のファイルに1つしか無いように気をつけなければならない (同じ @{id@} を複数回設置したときには解除も同じ回数だけ行う必要がある。同じ @{id@} を使うことで目印の位置を変更しようという試みはうまく行かない)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign place {id} line={lnum} name={name} buffer={nr}
+		Same, but use buffer {nr}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign place @{id@} line=@{lnum@} name=@{name@} buffer=@{nr@}
+上に同じ。バッファ番号を使用していることが異なる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E885*
+:sign place {id} name={name} file={fname}
+		Change the placed sign {id} in file {fname} to use the defined
+		sign {name}.  See remark above about {fname} |:sign-fname|.
+		This can be used to change the displayed sign without moving
+		it (e.g., when the debugger has stopped at a breakpoint).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E885}
+@cindex E885
+@item :sign place @{id@} name=@{name@} file=@{fname@}
+ファイル @{fname@} に @{id@} で設置された目印を、@{name@} で定義されている目印に変更する。@{fname@} については上述の |:sign-fname| を参照すること。
+
+これは既に設置された目印を動かすことなく変更するのに使われる。(例: デバッガがブレークポイントで停止した時)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign place {id} name={name} buffer={nr}
+		Same, but use buffer {nr}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign place @{id@} name=@{name@} buffer=@{nr@}
+上に同じ。バッファ番号を使用していることが異なる。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+REMOVING SIGNS						*:sign-unplace* *E159*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sign-unplace}
+@anchor{E159}
+@cindex :sign-unplace
+@cindex E159
+@unnumberedsubsec (設置した) 目印を解除する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace {id} file={fname}
+		Remove the previously placed sign {id} from file {fname}.
+		See remark above about {fname} |:sign-fname|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :sign unplace @{id@} file=@{fname@}
+ファイル @{fname@} に @{id@} で設置された目印を解除する。@{fname@} については上述の |:sign-fname| を参照すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace * file={fname}
+		Remove all placed signs in file {fname}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace * file=@{fname@}
+ファイル @{fname@} に設置された目印をすべて解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace {id} buffer={nr}
+		Remove the previously placed sign {id} from buffer {nr}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace @{id@} buffer=@{nr@}
+バッファ @{nr@} に @{id@} で設置された目印を解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace * buffer={nr}
+		Remove all placed signs in buffer {nr}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace * buffer=@{nr@}
+バッファ @{nr@} に設置された目印をすべて解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace {id}
+		Remove the previously placed sign {id} from all files it
+		appears in.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace @{id@}
+@{id@} で設置された目印を、全てのファイルから削除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace *
+		Remove all placed signs.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace *
+設置された全ての目印を解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace
+		Remove the placed sign at the cursor position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace
+カーソル位置に設置されている目印を解除する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+LISTING PLACED SIGNS					*:sign-place-list*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sign-place-list}
+@cindex :sign-place-list
+@unnumberedsubsec (設置した) 目印を一覧表示する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign place file={fname}
+		List signs placed in file {fname}.
+		See remark above about {fname} |:sign-fname|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :sign place file=@{fname@}
+ファイル @{fname@} に設置されている目印を一覧表示する。@{fname@} については上述の |:sign-fname| を参照すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign place buffer={nr}
+		List signs placed in buffer {nr}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign place buffer=@{nr@}
+バッファ @{nr@} に設置されている目印を一覧表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign place	List placed signs in all files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign place
+全てのファイルに設置されている全ての目印を一覧表示する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+JUMPING TO A SIGN					*:sign-jump* *E157*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:sign-jump}
+@anchor{E157}
+@cindex :sign-jump
+@cindex E157
+@unnumberedsubsec (設置した) 目印へ移動する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign jump {id} file={fname}
+		Open the file {fname} or jump to the window that contains
+		{fname} and position the cursor at sign {id}.
+		See remark above about {fname} |:sign-fname|.
+		If the file isn't displayed in window and the current file can
+		not be |abandon|ed this fails.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :sign jump @{id@} file=@{fname@}
+ファイル @{fname@} を開くか、@{fname@} を編集中のウィンドウへ移動し、目印 @{id@} の位置へカーソルを移動させる。
+
+@{fname@} については上述の |:sign-fname| を参照すること。
+
+ファイルがウィンドウに表示されておらず、現在のファイルを放棄できない時には、これは失敗する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign jump {id} buffer={nr}					*E934*
+		Same, but use buffer {nr}.  This fails if buffer {nr} does not
+		have a name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E934}
+@cindex E934
+@item :sign jump @{id@} buffer=@{nr@}
+上に同じ。バッファ @{nr@} が名前を持っていない場合には失敗する。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset

@@ -1,0 +1,2785 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node netbeans.txt, , , 目次
+@unnumbered NetBeans External Editor インターフェイス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*netbeans.txt*  For Vim version 8.0.  Last change: 2016 Jul 15
+
+
+		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*netbeans.txt*  For Vim バージョン 8.0.  Last change: 2016 Jul 15
+
+
+                  VIMリファレンスマニュアル    by Gordon Prieur et al.
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+					*netbeans* *netbeans-support*
+
+Vim NetBeans Protocol: a socket interface for Vim integration into an IDE.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans}
+@anchor{netbeans-support}
+@cindex netbeans
+@cindex netbeans-support
+Vim NetBeans プロトコル: Vim と IDE を統合するためのソケットインターフェイス
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1.  Introduction				|netbeans-intro|
+2.  Integration features			|netbeans-integration|
+3.  Configuring Vim for NetBeans		|netbeans-configure|
+4.  Error Messages				|netbeans-messages|
+5.  Running Vim in NetBeans mode		|netbeans-run|
+6.  NetBeans protocol				|netbeans-protocol|
+7.  NetBeans commands				|netbeans-commands|
+8.  Known problems				|netbeans-problems|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. はじめに @tab |@ref{netbeans-intro, , netbeans-intro}|
+@item 2. NetBeans インターフェイスでできること @tab |@ref{netbeans-integration, , netbeans-integration}|
+@item 3. NetBeans 用に configure する @tab |@ref{netbeans-configure, , netbeans-configure}|
+@item 4. エラーメッセージ @tab |@ref{netbeans-messages, , netbeans-messages}|
+@item 5. Vim を NetBeans モードで起動する @tab |@ref{netbeans-run, , netbeans-run}|
+@item 6. NetBeans プロトコル @tab |@ref{netbeans-protocol, , netbeans-protocol}|
+@item 7. NetBeans コマンド @tab |@ref{netbeans-commands, , netbeans-commands}|
+@item 8. 既知の問題 @tab |@ref{netbeans-problems, , netbeans-problems}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+9.  Debugging NetBeans protocol			|netbeans-debugging|
+10. NetBeans External Editor
+    10.1. Downloading NetBeans			|netbeans-download|
+    10.2. NetBeans Key Bindings			|netbeans-keybindings|
+    10.3. Preparing NetBeans for Vim		|netbeans-preparation|
+    10.4. Obtaining the External Editor Module	|obtaining-exted|
+    10.5. Setting up NetBeans to run with Vim	|netbeans-setup|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 9. NetBeans プロトコルのデバッグ @tab |@ref{netbeans-debugging, , netbeans-debugging}|
+@item 10. NetBeans 外部エディタ
+@item @ @ @ @ 10.1. NetBeans をダウンロードする @tab |@ref{netbeans-download, ,netbeans-download}|
+@item @ @ @ @ 10.2. NetBeans のキーバインド @tab |@ref{netbeans-keybindings, , netbeans-keybindings}|
+@item @ @ @ @ 10.3. NetBeans 側の準備 @tab |@ref{netbeans-preparation, , netbeans-preparation}|
+@item @ @ @ @ 10.4. External Editor モジュールの入手 @tab |@ref{obtaining-exted, , obtaining-exted}|
+@item @ @ @ @ 10.5. NetBeans の設定 @tab |@ref{netbeans-setup, , netbeans-setup}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{Vi does not have any of these features}
+{only available when compiled with the |+netbeans_intg| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi にはこれらの機能はありません@}
+
+@{|+netbeans_intg| 機能つきでコンパイルされたときのみ利用可能@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Introduction						*netbeans-intro*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans-intro}
+@cindex netbeans-intro
+@section 1. はじめに
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The NetBeans interface was initially developed to integrate Vim into the
+NetBeans Java IDE, using the external editor plugin.  This NetBeans plugin no
+longer exists for recent versions of NetBeans but the protocol was developed
+in such a way that any IDE can use it to integrate Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+NetBeans インターフェイスは、最初は External Editor プラグインを使って Vim と NetBeans Java IDE を統合するために開発されました。その NetBeans プラグインは今はもう NetBeans の新しいバージョンに対応しておらず、このプロトコルは任意の IDE と Vim を統合させるために開発されています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The NetBeans protocol of Vim is a text based communication protocol, over a
+classical TCP socket. There is no dependency on Java or NetBeans. Any language
+or environment providing a socket interface can control Vim using this
+protocol. There are existing implementations in C, C++, Python and Java. The
+name NetBeans is kept today for historical reasons.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の NetBeans プロトコルは、古典的な TCP ソケットを使った、テキストベースの通信プロトコルです。Java や NetBeans にはまったく依存していません。ソケットインターフェイスさえ備えていれば、どんな言語・環境でもこのプロトコルを使って Vim をコントロールできます。C, C++, Python, Java の実装がすでに存在しています。歴史的な理由により NetBeans の名前が今も残されています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Current projects using the NetBeans protocol of Vim are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+NetBeans プロトコルを使ったプロジェクトは現在のところ、以下のものがあります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- VimIntegration, description of various projects doing Vim Integration:
+	http://www.freehackers.org/VimIntegration
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item VimIntegration, Vim の統合を行っている様々なプロジェクトの説明
+
+@url{http://www.freehackers.org/VimIntegration}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Agide, an IDE for the AAP project, written in Python:
+	http://www.a-a-p.org
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item Agide, AAP プロジェクト用の IDE。Python で書かれている。
+
+@url{http://www.a-a-p.org}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Clewn, a gdb integration into Vim, written in C:
+	http://clewn.sourceforge.net/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item Clewn, gdb 統合。C で書かれている。
+
+@url{http://clewn.sourceforge.net/}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Pyclewn, a gdb integration into Vim, written in Python:
+	http://pyclewn.sourceforge.net/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item Pyclewn, gdb 統合。Python で書かれている。
+
+@url{http://pyclewn.sourceforge.net/}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- VimPlugin, integration of Vim inside Eclipse:
+	http://vimplugin.sourceforge.net/wiki/pmwiki.php
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item VimPlugin, Eclipse の内部に Vim を取り込む。
+
+@url{http://vimplugin.sourceforge.net/wiki/pmwiki.php}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- PIDA, IDE written in Python integrating Vim:
+	http://pida.co.uk/
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item PIDA, Python で書かれた IDE。
+
+@url{http://pida.co.uk/}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- VimWrapper, library to easy Vim integration into IDE:
+	http://www.freehackers.org/VimWrapper
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item VimWrapper, Vim と IDE を簡単に統合するためのライブラリ
+
+@url{http://www.freehackers.org/VimWrapper}
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Check the specific project pages to see how to use Vim with these projects.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+詳しくは、それぞれのプロジェクトページを参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+An alternative is to use a channel, see |channel|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+別の方法としてチャンネルを使う方法があります。詳しくは |channel| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the rest of this help page, we will use the term "Vim Controller" to
+describe the program controlling Vim through the NetBeans socket interface.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このヘルプページの以降の部分で、NetBeans ソケットインターフェイスを使って Vim をコントロールするプログラムのことを「Vim コントローラ」と呼びます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+About the NetBeans IDE ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec NetBeans IDE について
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NetBeans is an open source Integrated Development Environment developed
+jointly by Sun Microsystems, Inc. and the netbeans.org developer community.
+Initially just a Java IDE, NetBeans has had C, C++, and Fortran support added
+in recent releases.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+NetBeans は、Sun Microsystems, Inc. と netbeans.org の開発者コミュニティが合同で開発しているオープンソースの統合開発環境 (IDE) です。最初は Java の IDE でしたが、今では C, C++, Fortran もサポートするようになっています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For more information visit the main NetBeans web site http://www.netbeans.org.
+The External Editor is now, unfortunately, declared obsolete.  See
+ http://externaleditor.netbeans.org.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+NetBeans に関してより詳しくは http://www.netbeans.org を参照してください。The External Editor は残念なことに obsolete と宣言されています。
+
+@url{http://externaleditor.netbeans.org}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Sun Microsystems, Inc. also ships NetBeans under the name Sun ONE Studio.
+Visit http://www.sun.com for more information regarding the Sun ONE Studio
+product line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Sun Microsystems, Inc. は NetBeans を Sun ONE Studio という名前でもリリースしています。Sun ONE Studio に関しては @url{http://www.sun.com} を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Current releases of NetBeans provide full support for Java and limited support
+for C, C++, and Fortran.  Current releases of Sun ONE Studio provide full
+support for Java, C, C++, and Fortran.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在のところ、NetBeans は Java を完全サポート、C, C++, Fortran を限定的にサポートしています。Sun ONE Studio は Java, C, C++, Fortran を完全サポートしています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Integration features					*netbeans-integration*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans-integration}
+@cindex netbeans-integration
+@section 2. NetBeans インターフェイスでできること
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The NetBeans socket interface of Vim allows to get information from Vim or to
+ask Vim to perform specific actions:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の NetBeans ソケットインターフェイスを使うと、Vim から情報を引き出したり、Vim に指定の動作をさせることができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- get information about buffer: buffer name, cursor position, buffer content,
+  etc.
+- be notified when buffers are open or closed
+- be notified of how the buffer content is modified
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item バッファに関する情報を取得する: バッファ名、カーソル位置、バッファの内容、など
+@item バッファが開く・閉じるとき通知してもらう
+@item バッファの内容がどのように変わったかを通知してもらう
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- load and save files
+- modify the buffer content
+- installing special key bindings
+- raise the window, control the window geometry
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ファイルを読み込む・保存する
+@item バッファの内容を修正する
+@item 特殊なキーバインドをインストールする
+@item ウィンドウを前面に出す。ウィンドウの位置・サイズを調整する
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For sending key strokes to Vim or for evaluating functions in Vim, you must
+use the |clientserver| interface.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim にキーストロークを送ったり、Vim の中で関数を評価するには |clientserver| インターフェイスを使う必要があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+3. Configuring Vim for NetBeans			*netbeans-configure*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans-configure}
+@cindex netbeans-configure
+@section 3. NetBeans 用に configure する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For more help about installing Vim, please read |usr_90.txt| in the Vim User
+Manual.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim のインストールについてより詳しくは、ユーザーマニュアルの |@ref{usr_90.txt, , usr_90.txt}| を読んでください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+On Unix:
+--------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec Unix では:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When running configure without arguments the NetBeans interface should be
+included.  That is, if the configure check to find out if your system supports
+the required features succeeds.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+configure を引数なしで起動した場合、NetBeans インターフェイスを有効にできるか configure がチェックし、可能なら有効にします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In case you do not want the NetBeans interface you can disable it by
+uncommenting a line with "--disable-netbeans" in the Makefile.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+NetBeans インターフェイスを有効にしたくない場合は、Makefile の中の "@samp{--disable-netbeans}" の行のコメントアウトを解除すれば無効にできます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Currently the NetBeans interface is supported by Vim running in a terminal and
+by gvim when it is run with one of the following GUIs: GTK, GNOME, Windows,
+Athena and Motif.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在 NetBeans インターフェイスは端末動作の Vim と GUI (GTK, GNOME, Windows, Athena, Motif) の GVim でのみサポートされています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If Motif support is required the user must supply XPM libraries.  See
+|workshop-xpm| for details on obtaining the latest version of XPM.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Motif をサポートするためには XPM ライブラリが必要です。XPM の最新バージョンを入手する方法については |workshop-xpm| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+On MS-Windows:
+--------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec MS-Windows では:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Win32 support is now in beta stage.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Win32 サポートは現在ベータ版の段階です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To use XPM signs on Win32 (e.g. when using with NetBeans) you can compile
+XPM by yourself or use precompiled libraries from http://iamphet.nm.ru/misc/
+(for MS Visual C++) or http://gnuwin32.sourceforge.net (for MinGW).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Win32 で XPM signs を使う(NetBeans と使う場合など)ためには、XPM を自分自身でコンパイルするか、コンパイル済みライブラリを使う必要があります。
+@itemize
+@item @url{http://iamphet.nm.ru/misc/} (MS Visual C++ 用)
+@item @url{http://gnuwin32.sourceforge.net} (MinGW 用)
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Enable debugging:
+-----------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec デバッグを有効化する:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To enable debugging of Vim and of the NetBeans protocol, the "NBDEBUG" macro
+needs to be defined.  Search in the Makefile of the platform you are using for
+"NBDEBUG" to see what line needs to be uncommented.  This effectively adds
+"-DNBDEBUG" to the compile command.  Also see |netbeans-debugging|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim と NetBeans プロトコルのデバッグを有効化するには、"NBDEBUG" マクロを定義する必要があります。お使いのプラットフォーム用の Makefile の中から "NBDEBUG" を検索し、どの行のコメントを解除すればよいかを調べてください。そうすればコンパイルコマンドに "-DNBDEBUG" が追加されます。|netbeans-debugging| も参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Error Messages					*netbeans-messages*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans-messages}
+@cindex netbeans-messages
+@section 4. エラーメッセージ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These error messages are specific to NetBeans socket protocol:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下のエラーメッセージは NetBeans ソケットプロトコルのものです:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E463*
+Region is guarded, cannot modify
+		The Vim Controller has defined guarded areas in the text,
+		which you cannot change.  Also sets the current buffer, if
+		necessary.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{E463}
+@cindex E463
+@item Region is guarded, cannot modify
+@itemx 日本語版: 領域が保護されているので, 変更できません
+Vim コントローラがテキスト中に保護領域を設定しており、そこを変更することはできません。必要に応じてカレントバッファもセットします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E532*
+The defineAnnoType highlighting color name is too long
+		The maximum length of the "fg" or "bg" color argument in the
+		defineAnnoType command is 32 characters.
+		New in version 2.5.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E532}
+@cindex E532
+@item The defineAnnoType highlighting color name is too long
+defineAnnoType コマンドの "fg" と "bg" の色指定引数の最大長は 32 文字です。
+
+バージョン 2.5 で新たに追加された仕様。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E656*
+Writes of unmodified buffers forbidden
+		Writes of unmodified buffers that were opened from the
+		Vim Controller are not possible.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E656}
+@cindex E656
+@item Writes of unmodified buffers forbidden
+Vim コントローラによって開かれている変更されていないバッファを書き出すことはできません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E657*
+Partial writes disallowed
+		Partial writes for buffers that were opened from the
+		Vim Controller are not allowed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E657}
+@cindex E657
+@item Partial writes disallowed
+Vim コントローラによって開かれているバッファの部分的な書き出しはできません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E658*
+Connection lost for this buffer
+		The Vim Controller has become confused about the state of
+		this file.  Rather than risk data corruption, it has severed
+		the connection for this file.  Vim will take over
+		responsibility for saving changes to this file and the
+		Vim Controller will no longer know of these changes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E658}
+@cindex E658
+@item Connection lost for this buffer
+@itemx 日本語版: バッファの NetBeans 接続が失われました
+Vim コントローラがこのファイルの状態について混乱してしまいました。データを破損する危険を冒すよりも、このファイルに対する接続を切断することを選びました。このファイルに対する変更を保存する責任は Vim が引き継ぎ、Vim コントローラはもうそれらについて関知しません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E744*
+Read-only file
+		Vim normally allows changes to a read-only file and only
+		enforces the read-only rule if you try to write the file.
+		However, NetBeans does not let you make changes to a file
+		which is read-only and becomes confused if Vim does this.
+		So Vim does not allow modifications to files when run
+		in NetBeans mode.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E744}
+@cindex E744
+@item Read-only file
+@itemx 日本語版: NetBeans は読込専用ファイルを変更することを許しません
+通常の Vim では、読み込み専用ファイルを変更することはでき、ファイルを書き出すときだけ読み込み専用のルールが適用されます。しかし、NetBeans はユーザーが読み込み専用ファイルに変更を施すことを許可しません。そのため、Vim が読み込み専用ファイルを変更すると混乱してしまいます。そのため、NetBeans モードで動作しているときは、Vim でもファイルへの変更を許可しないようにしています。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Running Vim in NetBeans mode				*netbeans-run*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans-run}
+@cindex netbeans-run
+@section 5. Vim を NetBeans モードで起動する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are two different ways to run Vim in NetBeans mode:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim を NetBeans モードで実行するには 2 つの方法があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	+ an IDE may start Vim with the |-nb| command line argument
+	+ NetBeans can be started from within Vim with the |:nbstart| command
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item IDE から起動するときなどに Vim に |-nb| 引数を付けて起動する
+@item Vim の中で |:nbstart| コマンドを使って開始する
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim uses a 3 second timeout on trying to make the connection.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は接続試行時に 3 秒のタイムアウトを用います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*netbeans-parameters*
+Three forms can be used to setup the NetBeans connection parameters.
+When started from the command line, the |-nb| command line argument may be:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans-parameters}
+@cindex netbeans-parameters
+NetBeans 接続情報を指定する形式は 3 通りあります。コマンドラインで |-nb| 引数を指定するときは次のように指定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	-nb={fname}				from a file
+	-nb:{hostname}:{addr}:{password}	directly
+	-nb					from a file or environment
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item -nb=@{fname@} @tab ファイルから
+@item -nb:@{hostname@}:@{addr@}:@{password@} @tab 直接指定
+@item -nb @tab ファイルまたは環境変数から
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When started from within Vim, the |:nbstart| optional argument may be:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の中で |:nbstart| コマンドの引数として指定するときは次のように指定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	={fname}				from a file
+	:{hostname}:{addr}:{password}	        directly
+	<MISSING ARGUMENT>			from a file or environment
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item =@{fname@} @tab ファイルから
+@item :@{hostname@}:@{addr@}:@{password@} @tab 直接指定
+@item <MISSING ARGUMENT> @tab ファイルまたは環境変数から
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*E660* *E668*
+When NetBeans is started from the command line, for security reasons, the best
+method is to write the information in a file readable only by the user.  The
+name of the file can be passed with the "-nb={fname}" argument or, when "-nb"
+is used without a parameter, the environment variable "__NETBEANS_CONINFO".
+The file must contain these three lines, in any order:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E660}
+@anchor{E668}
+@cindex E660
+@cindex E668
+NetBeans の開始をコマンドラインで指定するとき、セキュリティ上の理由からベストな方法は、情報をファイルに書き、自分だけが読めるようにしておくことです。ファイル名は "-nb=@{fname@}" で渡すか、または "-nb" をパラメーターなしで使うと環境変数 "__NETBEANS_CONINFO" が使われます。このファイルは以下の 3 行を含んでいなければなりません (順序は問わない):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	host={hostname}
+	port={addr}
+	auth={password}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+host=@{hostname@}
+port=@{addr@}
+auth=@{password@}
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Other lines are ignored.  The Vim Controller is responsible for deleting the
+file afterwards.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これ以外の行は無視されます。Vim コントローラが終了後にこのファイルを削除する責任を負います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{hostname} is the name of the machine where Vim Controller is running.  When
+omitted the environment variable "__NETBEANS_HOST" is used or the default
+"localhost".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{hostname@} は Vim コントローラが動作するマシンの名前です。省略されたときは、環境変数 "__NETBEANS_HOST" または既定値の "localhost" が使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{addr} is the port number for the NetBeans interface.  When omitted the
+environment variable "__NETBEANS_SOCKET" is used or the default 3219.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{addr@} は NetBeans インターフェイスのポート番号です。省略されたときは、環境変数 "__NETBEANS_SOCKET" または既定値の 3219 が使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+{password} is the password for connecting to NetBeans.  When omitted the
+environment variable "__NETBEANS_VIM_PASSWORD" is used or "changeme".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{password@} は NetBeans への接続のパスワードです。省略されたときは、環境変数 "__NETBEANS_VIM_PASSWORD" または "changeme" が使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will initiate a socket connection (client side) to the specified host and
+port upon startup. The password will be sent with the AUTH event when the
+connection has been established.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は起動時に、指定されたホスト・ポートへのソケット接続 (クライアント側) を初期化します。接続が確立されると、AUTH イベントによりパスワードが送信されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+6. NetBeans protocol					*netbeans-protocol*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans-protocol}
+@cindex netbeans-protocol
+@section 6. NetBeans プロトコル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The communication between the Vim Controller and Vim uses plain text
+messages.  This protocol was first designed to work with the external editor
+module of NetBeans.  Later it was extended to work with Agide (A-A-P GUI IDE,
+see http://www.a-a-p.org) and then with other IDE. The extensions are marked
+with "version 2.1".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim コントローラと Vim の通信にはプレーンテキストのメッセージが使われます。このプロトコルは、最初は NetBeans の External Editor モジュールと協調して動作するように設計されました。その後、Agide (A-A-P GUI IDE, @url{http://www.a-a-p.org} を参照) と、そして他の IDE とも動作するように拡張されました。この拡張は "version 2.1" とバージョンづけられています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Version 2.2 of the protocol has several minor changes which should only affect
+NetBeans users (ie, not Agide users).  However, a bug was fixed which could
+cause confusion.  The netbeans_saved() function sent a "save" protocol
+command.  In protocol version 2.1 and earlier this was incorrectly interpreted
+as a notification that a write had taken place.  In reality, it told NetBeans
+to save the file so multiple writes were being done.  This caused various
+problems and has been fixed in 2.2.  To decrease the likelihood of this
+confusion happening again, netbeans_saved() has been renamed to
+netbeans_save_buffer().
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロトコル version 2.2 は小さな変更で、NetBeans ユーザーにのみ影響し、Agide ユーザーには無関係なはずでした。しかし、あるバグが修正されました。netbeans_saved() 関数が "save" プロトコルコマンドを送信するのですが、プロトコル version 2.1 とそれ以前では、それが書き込みが行われたことの通知であると誤解されていました。
+
+実際は NetBeans に対して保存するよう通知するものだったので、複数の書き込みが行われました。これが様々な問題を引き起こし、2.2 で修正されました。以降、同じ間違いが起こらないようにするため、netbeans_saved() は netbeans_save_buffer() と名前が変更されました。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+We are now at version 2.5.  For the differences between 2.4 and 2.5 search for
+"2.5" below.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在のバージョンは 2.5 です。2.4 と 2.5 の違いは下記文章から "2.5" を検索してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The messages are currently sent over a socket.  Since the messages are in
+plain UTF-8 text this protocol could also be used with any other communication
+mechanism.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メッセージはソケットを通じて送られます。メッセージは UTF-8 のプレーンテキストなので、このプロトコルは他のどんな通信メカニズムでも使えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Netbeans messages are processed when Vim is idle, waiting for user input.
+When Vim is run in non-interactive mode, for example when running an automated
+test case that sources a Vim script, the idle loop may not be called often
+enough. In that case, insert |:sleep| commands in the Vim script. The |:sleep|
+command does invoke Netbeans messages processing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Netbeans メッセージは Vim がユーザー入力待ちでアイドル状態のときに処理されます。Vim が非対話モードのとき (例えば Vim script による自動テストを実行しているときなど) は、アイドルループは頻繁には呼ばれないのでメッセージ処理が追いつかないかもしれません。その場合は Vim script に |:sleep| コマンドを入れてください。|:sleep| コマンドは Netbeans メッセージの処理を呼び出します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+6.1 Kinds of messages		|nb-messages|
+6.2 Terms			|nb-terms|
+6.3 Commands			|nb-commands|
+6.4 Functions and Replies	|nb-functions|
+6.5 Events			|nb-events|
+6.6 Special messages		|nb-special|
+6.7 Protocol errors		|nb-protocol_errors|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 6.1 メッセージの種類 @tab |@ref{nb-messages, , nb-messages}|
+@item 6.2 用語 @tab |@ref{nb-terms, , nb-terms}|
+@item 6.3 コマンド @tab |@ref{nb-commands, , nb-commands}|
+@item 6.4 関数と応答 @tab |@ref{nb-functions, , nb-functions}|
+@item 6.5 イベント @tab |@ref{nb-events, , nb-events}|
+@item 6.6 特別なメッセージ @tab |@ref{nb-special, , nb-special}|
+@item 6.7 プロトコルエラー @tab |@ref{nb-protocol_errors, , nb-protocol_errors}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+6.1 Kinds of messages					*nb-messages*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{nb-messages}
+@cindex nb-messages
+@unnumberedsubsec 6.1 メッセージの種類
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are four kinds of messages:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メッセージには 4 つの種類があります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+kind		direction	comment ~
+Command		IDE -> editor	no reply necessary
+Function	IDE -> editor	editor must send back a reply
+Reply		editor -> IDE	only in response to a Function
+Event		editor -> IDE	no reply necessary
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .3 .5
+@headitem 種類 @tab 方向 @tab コメント
+@item コマンド @tab IDE -> editor @tab 応答は必要ない
+@item 関数 @tab IDE -> editor @tab エディタは応答を送信しなければならない
+@item 応答 @tab editor -> IDE @tab 関数への応答としてのみ送られる
+@item イベント @tab editor -> IDE @tab 応答は必要ない
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The messages are sent as a single line with a terminating newline character.
+Arguments are separated by a single space.  The first item of the message
+depends on the kind of message:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メッセージは、改行文字で終わる一行として送られます。引数は 1 つのスペースで区切られます。メッセージの最初の要素はメッセージの種類に依存します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+kind		first item		example ~
+Command		bufID:name!seqno	11:showBalloon!123 "text"
+Function	bufID:name/seqno	11:getLength/123
+Reply		seqno			123 5000
+Event		bufID:name=seqno	11:keyCommand=123 "S-F2"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .4 .4
+@headitem 種類 @tab 最初の要素 @tab 例
+@item コマンド @tab bufID:name!seqno @tab 11:showBalloon!123 "text"
+@item 関数 @tab bufID:name/seqno @tab 11:getLength/123
+@item 応答 @tab seqno @tab 123 5000
+@item イベント @tab bufID:name=seqno @tab 11:keyCommand=123 "S-F2"
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+
+@ifset EN
+6.2 Terms						*nb-terms*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{nb-terms}
+@cindex nb-terms
+@unnumberedsubsec 6.2 用語
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+bufID		Buffer number.  A message may be either for a specific buffer
+		or generic.  Generic messages use a bufID of zero.  NOTE: this
+		buffer ID is assigned by the IDE, it is not Vim's buffer
+		number.  The bufID must be a sequentially rising number,
+		starting at one.  When the 'switchbuf' option is set to
+		"usetab" and the "bufID" buffer is not found in the current
+		tab page, the netbeans commands and functions that set this
+		buffer as the current buffer will jump to the first open
+		window that contains this buffer in other tab pages instead of
+		replacing the buffer in the current window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item bufID
+バッファ ID。メッセージは特定のバッファ向けの場合も、全体用の場合もあります。全体用のメッセージは bufID 0 を使います。
+@quotation
+@strong{Note:} @*
+このバッファ ID は IDE によって割り当てられるもので、Vim のバッファ番号とは異なります。
+@end quotation
+bufID は連続して増加する番号で、1 から始まります。'@option{switchbuf}' オプションが "usetab" に設定されている状態で "bufID" のバッファが現在のタブページで見つからない場合に、netbeans コマンドおよび関数はカレントウィンドウでバッファを入れ替える代わりに他のタブページに含まれるこのバッファのうち最初のものへジャンプし、それをカレントバッファとして設定します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+seqno		The IDE uses a sequence number for Commands and Functions.  A
+		Reply must use the sequence number of the Function that it is
+		associated with.  A zero sequence number can be used for
+		Events (the seqno of the last received Command or Function can
+		also be used).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item seqno
+IDE が Vim にコマンド・関数を発行するときつけられる連続する番号です。応答は、その元メッセージと同じシーケンス番号を使わねばなりません。シーケンス番号 0 はイベント用に使われます (最後に受け取ったコマンドまたは関数のシーケンス番号が使われることもあります)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+string		Argument in double quotes.  Text is in UTF-8 encoding.  This
+		means ASCII is passed as-is.  Special characters are
+		represented with a backslash:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item string
+ダブルクォートで囲まれた文字列。UTF-8 でエンコードされます。よって ASCII 文字はそのままとなります。特殊文字はバックスラッシュをつけて表現されます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			\"	double quote
+			\n	newline
+			\r	carriage-return
+			\t	tab (optional, also works literally)
+			\\	backslash
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item \" @tab ダブルクォート
+@item \n @tab 改行
+@item \r @tab 復帰
+@item \t @tab タブ (任意。そのままでも使えます)
+@item \\ @tab バックスラッシュ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		NUL bytes are not allowed!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+NUL 文字は使用できません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+boolean		Argument with two possible values:
+			T	true
+			F	false
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item boolean
+次の 2 つの値のどちらかとなります。
+@multitable @columnfractions .5 .5
+@item T @tab true
+@item F @tab false
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+number		Argument with a decimal number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item number
+10 進数の数値。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+color		Argument with either a decimal number, "none" (without the
+		quotes) or the name of a color (without the quotes) defined
+		both in the color list in |highlight-ctermfg| and in the color
+		list in |gui-colors|.
+		New in version 2.5.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item color
+10 進数の数値か "none" (クォートなし) か色の名前 (クォートなし) のいずれか。色の名前は |highlight-ctermfg| と |gui-colors| で定義されている名前。
+
+バージョン 2.5 で新たに追加された仕様。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+offset		A number argument that indicates a byte position in a buffer.
+		The first byte has offset zero.  Line breaks are counted for
+		how they appear in the file (CR/LF counts for two bytes).
+		Note that a multi-byte character is counted for the number of
+		bytes it takes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item offset
+バッファ中のバイト位置を示す数値。第 1 バイト目のオフセットは 0 となります。改行は、ファイル中での表現と同じくカウントされます (CR/LF は 2 バイト)。
+@quotation
+@strong{Note:} @*
+マルチバイト文字は、そのバイト数カウントされます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+lnum/col	Argument with a line number and column number position.  The
+		line number starts with one, the column is the byte position,
+		starting with zero.  Note that a multi-byte character counts
+		for several columns.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item lnum/col
+行番号と桁番号。行番号は 1 から始まり、桁番号は 0 から始まるバイト位置となります。
+@quotation
+@strong{Note:} @*
+マルチバイト文字は 2 桁以上を占めることに注意してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+pathname	String argument: file name with full path.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item pathname
+文字列: フルパスでのファイル名
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+6.3 Commands						*nb-commands*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{nb-commands}
+@cindex nb-commands
+@unnumberedsubsec 6.3 Commands
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+actionMenuItem	Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item actionMenuItem
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+actionSensitivity
+		Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item actionSensitivity
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+addAnno serNum typeNum off len
+		Place an annotation in this buffer.
+		Arguments:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item addAnno serNum typeNum off len
+このバッファに annotation をつけます。
+
+引数:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   serNum	number	serial number of this placed
+					annotation, used to be able to remove
+					it
+		   typeNum	number	sequence number of the annotation
+					defined with defineAnnoType for this
+					buffer
+		   off		number	offset where annotation is to be placed
+		   len		number	not used
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .2 .6
+@item serNum @tab number @tab この annotation の通し番号。削除するときに使われます。
+@item typeNum @tab number @tab このバッファに対して defineAnnoType で定義された annotation タイプの番号。
+@item off @tab number @tab annotation をつける位置のオフセット
+@item len @tab number @tab 未使用
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		In version 2.1 "lnum/col" can be used instead of "off".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+version 2.1 では "off" の代わりに "lnum/col" が使えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+balloonResult text
+		Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item balloonResult text
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+close		Close the buffer.  This leaves us without current buffer, very
+		dangerous to use!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item close
+バッファを閉じます。これを使うとカレントバッファがない状態になります。非常に危険です!
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+create		Creates a buffer without a name.  Replaces the current buffer
+		(it's hidden when it was changed).
+		The Vim Controller should use this as the first command for a
+		file that is being opened.  The sequence of commands could be:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item create
+名前をつけてバッファを作成します。作成されたバッファがカレントバッファになります (元のバッファは、変更されていれば hidden 状態になります)。
+
+Vim コントローラは、開いているファイルに対する最初のコマンドとしてこのコマンドを使うべきです。一連のコマンドの例は次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			create
+			setCaretListener	(ignored)
+			setModified		(no effect)
+			setContentType		(ignored)
+			startDocumentListen
+			setTitle
+			setFullName
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .6 .4
+@item create @tab
+@item setCaretListener @tab (無視される)
+@item setModified @tab (効果なし)
+@item setContentType @tab (無視される)
+@item startDocumentListen @tab
+@item setTitle @tab
+@item setFullName @tab
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+defineAnnoType typeNum typeName tooltip glyphFile fg bg
+		Define a type of annotation for this buffer.
+		Arguments:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item defineAnnoType typeNum typeName tooltip glyphFile fg bg
+このバッファに対する annotation のタイプを定義します。
+
+引数:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   typeNum	number	sequence number (not really used)
+		   typeName	string	name that identifies this annotation
+		   tooltip	string	not used
+		   glyphFile	string	name of icon file
+		   fg		color	foreground color for line highlighting
+		   bg		color	background color for line highlighting
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .2 .6
+@item typeNum @tab number @tab シーケンス番号 (実際には使われない)
+@item typeName @tab string @tab この annotation を識別するための名前
+@item tooltip @tab string @tab 未使用
+@item glyphFile @tab string @tab アイコンのファイル名
+@item fg @tab color @tab 行の文字色
+@item bg @tab color @tab 行の背景色
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Vim will define a sign for the annotation.
+		When color is a number, this is the "#rrggbb" Red, Green and
+		Blue values of the color (see |gui-colors|) and the
+		highlighting is only defined for GVim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はこの annotation に対して目印を定義します。
+
+色を数値で指定するときは "#rrggbb" で赤緑青での色指定になり (|gui-colors| 参照) GVim でのみ定義されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When color is a name, this color is defined both for Vim
+		running in a color terminal and for GVim.
+		When both "fg" and "bg" are "none" no line highlighting is
+		used (new in version 2.1).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+色を名前で指定するときはその色はカラー端末上で動作する Vim と GVim の両方で定義されたものです。
+
+"fg" と "bg" が両方とも "none" の場合、行は強調されません (version 2.1 から)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When "glyphFile" is empty, no text sign is used (new in
+		version 2.1).
+		When "glyphFile" is one or two characters long, a text sign is
+		defined (new in version 2.1).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+"glyphFile" が空の場合、テキストの目印は使われません (version 2.1 から)。
+
+"glyphFile" が 1 または 2 文字である場合、テキストの目印が定義されます (version 2.1 から)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Note: the annotations will be defined in sequence, and the
+		sequence number is later used with addAnno.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+annotation にはシーケンス番号がつけられ、その番号は addAnno で使われます。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+editFile pathname
+		Set the name for the buffer and edit the file "pathname", a
+		string argument.
+		Normal way for the IDE to tell the editor to edit a file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item editFile pathname
+バッファの名前をセットし、ファイル "pathname" を開きます。IDE が開くファイルをエディタに伝える通常の方法です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		You must set a bufId different of 0 with this command to
+		assign a bufId to the buffer. It will trigger an event
+		fileOpened with a bufId of 0 but the buffer has been assigned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファに bufID を割り当てるため、このコマンドに対する bufID は 0 以外の値にしなければなりません。bufID 0 でイベント fileOpened が発生しますが、バッファは割り当てられています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If the IDE is going to pass the file text to the editor use
+		these commands instead:
+			setFullName
+			insert
+			initDone
+		New in version 2.1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+IDE からエディタにファイルのテキストを渡したい場合には、代わりに次のコマンドを使ってください:
+@example
+setFullName
+insert
+initDone
+@end example
+version 2.1 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+enableBalloonEval
+		Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item enableBalloonEval
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+endAtomic	End an atomic operation.  The changes between "startAtomic"
+		and "endAtomic" can be undone as one operation.  But it's not
+		implemented yet.  Redraw when necessary.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item endAtomic
+アトミックな操作を終了します。"startAtomic" と "endAtomic" の間に行われた変更は一つの操作として undo されます。しかし現在は未実装です。必要に応じて再描画をしてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+guard off len
+		Mark an area in the buffer as guarded.  This means it cannot
+		be edited.  "off" and "len" are numbers and specify the text
+		to be guarded.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item guard off len
+バッファ内の領域を保護します。保護された領域を変更することはできません。"off" と "len" は number で、保護されるテキストを指定します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+initDone	Mark the buffer as ready for use.  Implicitly makes the buffer
+		the current buffer.  Fires the BufReadPost autocommand event.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item initDone
+バッファの準備ができたとマークします。暗黙的にそのバッファをカレントバッファにします。オートコマンドイベント BufReadPost を発生させます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+insertDone
+		Sent by Vim Controller to tell Vim an initial file insert is
+		done.  This triggers a read message being printed.  Prior to
+		version 2.3, no read messages were displayed after opening a
+		file.  New in version 2.3.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item insertDone
+Vim コントローラから Vim へ、最初のファイルの挿入が行われたことを通知します。これにより、ファイル読み込みのメッセージが表示されます。version 2.3 より前は、ファイルを開いた後にメッセージが表示されませんでした。
+
+version 2.3 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+moveAnnoToFront serNum
+		Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item moveAnnoToFront serNum
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+netbeansBuffer isNetbeansBuffer
+		If "isNetbeansBuffer" is "T" then this buffer is "owned" by
+		NetBeans.
+		New in version 2.2.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item netbeansBuffer isNetbeansBuffer
+"isNetbeansBuffer" が "T" ならば、このバッファは NetBeans により「所有」されます。
+
+version 2.2 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+putBufferNumber pathname
+		Associate a buffer number with the Vim buffer by the name
+		"pathname", a string argument.  To be used when the editor
+		reported editing another file to the IDE and the IDE needs to
+		tell the editor what buffer number it will use for this file.
+		Also marks the buffer as initialized.
+		New in version 2.1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item putBufferNumber pathname
+pathname は string。"pathname" という名前のバッファにバッファ番号を割り当てます。エディタで新たにファイルが開かれると、そのことを IDE に通知します。そして IDE はそのファイルに対してバッファ番号を割り当てます。そのときこのコマンドが使われます。そのバッファは初期化済みとマークされます。
+
+version 2.1 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+raise		Bring the editor to the foreground.
+		Only when Vim is run with a GUI.
+		New in version 2.1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item raise
+エディタを前面に移動します。GUI Vim でのみ有効。
+
+version 2.1 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+removeAnno serNum
+		Remove a previously placed annotation for this buffer.
+		"serNum" is the same number used in addAnno.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item removeAnno serNum
+以前にこのバッファに対してつけられた annotation を削除します。"serNum" は addAnno で使われたのと同じ番号です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+save		Save the buffer when it was modified.  The other side of the
+		interface is expected to write the buffer and invoke
+		"setModified" to reset the "changed" flag of the buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item save
+バッファが変更されたとき保存します。インターフェイスのもう一方側はバッファを書き出し、"setModified" を呼び出してバッファの "changed" フラグをオフにすることを期待されています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The writing is skipped when one of these conditions is true:
+		- 'write' is not set
+		- the buffer is read-only
+		- the buffer does not have a file name
+		- 'buftype' disallows writing
+		New in version 2.2.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらの条件が真になる場合、書き込みはスキップされます:
+@itemize
+@item '@option{write}' がオフのとき
+@item バッファが読み込み専用のとき
+@item バッファがファイル名を持たないとき
+@item '@option{buftype}' により書き込みが禁止されているとき
+@end itemize
+version 2.2 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+saveDone
+		Sent by Vim Controller to tell Vim a save is done.  This
+		triggers a save message being printed.  Prior to version 2.3,
+		no save messages were displayed after a save.
+		New in version 2.3.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item saveDone
+Vim コントローラから Vim へ、保存が行われたことを通知します。これによって保存メッセージが表示されます。version 2.3 より前では、保存メッセージは表示されませんでした。
+
+version 2.3 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setAsUser	Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item setAsUser
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setBufferNumber pathname
+		Associate a buffer number with Vim buffer by the name
+		"pathname".  To be used when the editor reported editing
+		another file to the IDE and the IDE needs to tell the editor
+		what buffer number it will use for this file.
+		Has the side effect of making the buffer the current buffer.
+		See "putBufferNumber" for a more useful command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item setBufferNumber pathname
+"pathname" という名前のバッファにバッファ番号を割り当てます。エディタで新たにファイルが開かれると、そのことを IDE に通知します。そして IDE はそのファイルに対してバッファ番号を割り当てます。そのときこのコマンドが使われます。
+
+このバッファがカレントバッファになるという副作用があります。"putBufferNumber" の方がより便利なコマンドです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setContentType
+		Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item setContentType
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setDot off	Make the buffer the current buffer and set the cursor at the
+		specified position.  If the buffer is open in another window
+		than make that window the current window.
+		If there are folds they are opened to make the cursor line
+		visible.
+		In version 2.1 "lnum/col" can be used instead of "off".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item setDot off
+このバッファをカレントバッファにし、カーソルを指定した位置に移動します。バッファが他のウィンドウで開かれている場合は、そのウィンドウがカレントウィンドウになります。
+
+折り畳みがある場合、カーソル行が見えるように開かれます。version 2.1 では "off" の代わりに "lnum/col" が使えます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setExitDelay seconds
+		Set the delay for exiting to "seconds", a number.
+		This delay is used to give the IDE a chance to handle things
+		before really exiting.  The default delay is two seconds.
+		New in version 2.1.
+		Obsolete in version 2.3.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item setExitDelay seconds
+"seconds" は number。終了の遅延をセットします。この遅延によって、IDE に対して本当に終了するまえに何かをするチャンスを与えます。既定値は 2 秒です。
+
+version 2.1 から。
+
+version 2.3 から非推奨になりました。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setFullName pathname
+		Set the file name to be used for a buffer to "pathname", a
+		string argument.
+		Used when the IDE wants to edit a file under control of the
+		IDE.  This makes the buffer the current buffer, but does not
+		read the file.  "insert" commands will be used next to set the
+		contents.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item setFullName pathname
+バッファ "pathname" に対するファイル名をセットします。引数は string です。
+
+IDE の制御下にあるファイルを IDE が編集したいときに使われます。このバッファがカレントバッファになりますが、ファイルは読み込まれません。その内容をセットするため、次に "insert" コマンドが発行されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setLocAndSize	Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item setLocAndSize
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setMark		Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item setMark
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setModified modified
+		When the boolean argument "modified" is "T" mark the buffer as
+		modified, when it is "F" mark it as unmodified.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item setModified modified
+boolean の引数 "modified" が "T" のとき、バッファを modified 状態にします。"F" のときは unmodified にします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setModtime time
+		Update a buffers modification time after the file has been
+		saved directly by the Vim Controller.
+		New in version 2.3.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item setModtime time
+Vim コントローラによりファイルが直接保存されたあとに発行されます。バッファの変更時刻を更新します。
+
+version 2.3 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setReadOnly
+		Set a file as readonly
+		Implemented in version 2.3.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item setReadOnly
+ファイルを読み込み専用にします。
+
+version 2.3 で実装されました。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setStyle	Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item setStyle
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setTitle name
+		Set the title for the buffer to "name", a string argument.
+		The title is only used for the Vim Controller functions, not
+		by Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item setTitle name
+"name" という名前のバッファのタイトルをセットします。引数 "name" は string。このタイトルは Vim コントローラ関数でのみ使われ、Vim では使われません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setVisible visible
+		When the boolean argument "visible" is "T", goto the buffer.
+		The "F" argument does nothing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item setVisible visible
+boolean の引数 "visible" が "T" の場合は、そのバッファへ移動します。"F" の場合は何もしません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+showBalloon text
+		Show a balloon (popup window) at the mouse pointer position,
+		containing "text", a string argument.  The balloon should
+		disappear when the mouse is moved more than a few pixels.
+		Only when Vim is run with a GUI.
+		New in version 2.1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item showBalloon text
+マウスポインタの位置に、"text" という内容のバルーンウィンドウ (ポップアップウィンドウ) を表示します。引数 "text" は string です。マウスが 2, 3 ピクセル以上移動すると、バルーンウィンドウは消えます。
+
+GUI Vim でのみ有効。
+
+version 2.1 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+specialKeys
+		Map a set of keys (mostly function keys) to be passed back
+		to the Vim Controller for processing.  This lets regular IDE
+		hotkeys be used from Vim.
+		Implemented in version 2.3.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item specialKeys
+Vim コントローラに戻して処理させるキー (大抵はファンクションキー) を設定します。これによって Vim の中で IDE のホットキーを使うことができるようになります。
+
+version 2.3 で実装されました。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+startAtomic	Begin an atomic operation.  The screen will not be updated
+		until "endAtomic" is given.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item startAtomic
+アトミックな操作を開始します。"endAtomic" が発行されるまで画面の更新は行われません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+startCaretListen
+		Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item startCaretListen
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+startDocumentListen
+		Mark the buffer to report changes to the IDE with the
+		"insert" and "remove" events.  The default is to report
+		changes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item startDocumentListen
+そのバッファにおける変更を "insert" と "remove" イベントによってIDE に通知するようセットします。既定では通知するようになっています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+stopCaretListen
+		Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item stopCaretListen
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+stopDocumentListen
+		Mark the buffer to stop reporting changes to the IDE.
+		Opposite of startDocumentListen.
+		NOTE: if "netbeansBuffer" was used to mark this buffer as a
+		NetBeans buffer, then the buffer is deleted in Vim.  This is
+		for compatibility with Sun Studio 10.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item stopDocumentListen
+そのバッファにおける変更を IDE に通知しないようにします。 startDocumentListen の逆です。
+@quotation
+@strong{Note:} *
+"netbeansBuffer" によってこのバッファが NetBeans バッファであるとマークされている場合、このバッファは Vim の中で削除されます。Sun Studio 10 との互換性のためです。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+unguard off len
+		Opposite of "guard", remove guarding for a text area.
+		Also sets the current buffer, if necessary.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item unguard off len
+"guard" の逆で、テキスト領域に対する保護を解除します。必要に応じてカレントバッファもセットします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+version		Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item version
+未実装。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+6.4 Functions and Replies				*nb-functions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{nb-functions}
+@cindex nb-functions
+@section 6.4 関数と応答
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+getDot		Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item getDot
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+getCursor	Return the current buffer and cursor position.
+		The reply is:
+			seqno bufID lnum col off
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item getCursor
+カレントバッファの bufID とカーソル位置を返します。
+
+応答は次の形式:
+@example
+seqno bufID lnum col off
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		seqno = sequence number of the function
+		bufID = buffer ID of the current buffer (if this is unknown -1
+			is used)
+		lnum  = line number of the cursor (first line is one)
+		col   = column number of the cursor (in bytes, zero based)
+		off   = offset of the cursor in the buffer (in bytes)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item seqno @tab 関数のシーケンス番号
+@item bufID @tab カレントバッファの bufID (未知なら -1)
+@item lnum @tab カーソル位置の行番号 (1 から始まる)
+@item col @tab カーソル位置の桁番号 (バイト単位。0 から始まる)
+@item off @tab カーソル位置のバッファ内のオフセット (バイト単位)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		New in version 2.1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+version 2.1 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+getLength	Return the length of the buffer in bytes.
+		Reply example for a buffer with 5000 bytes:
+			123 5000
+		TODO: explain use of partial line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item getLength
+バッファの長さをバイト単位で返します。
+
+5000 バイトのバッファにおける応答の例:
+@example
+123 5000
+@end example
+@quotation
+@strong{TODO:} @*
+部分行の使い方を説明する。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+getMark		Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item getMark
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+getAnno serNum
+		Return the line number of the annotation in the buffer.
+		Argument:
+			serNum		serial number of this placed annotation
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item getAnno serNum
+指定された annotation の行番号を返す。
+
+引数:
+@multitable @columnfractions .2 .8
+@item serNum @tab annotation の通し番号
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The reply is:
+			123 lnum	line number of the annotation
+			123 0		invalid annotation serial number
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+応答は次の形式:
+@multitable @columnfractions .4 .6
+@item 123 lnum @tab annotation の行番号
+@item 123 0 @tab 無効な annotation 番号
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		New in version 2.4.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+version 2.4 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+getModified	When a buffer is specified: Return zero if the buffer does not
+		have changes, one if it does have changes.
+		When no buffer is specified (buffer number zero): Return the
+		number of buffers with changes.  When the result is zero it's
+		safe to tell Vim to exit.
+		New in version 2.1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item getModified
+バッファが指定された場合: バッファが変更されていないなら 0、変更されているなら 1 を返します。
+
+バッファが指定されない場合(bufID が 0 の場合): 変更されているバッファの数を返します。戻り値が 0 なら、Vim に終了するよう指示しても安全です。
+
+version 2.1 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+getText		Return the contents of the buffer as a string.
+		Reply example for a buffer with two lines
+			123 "first line\nsecond line\n"
+		NOTE: docs indicate an offset and length argument, but this is
+		not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item getText
+バッファの中身を文字列として返します。2 行だけのバッファにおける応答の例:
+@example
+123 "first line\nsecond line\n"
+@end example
+@quotation
+@strong{Note:} @*
+ドキュメントには引数 offset と length が記述されていますが、実装されていません。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+insert off text
+		Insert "text" before position "off".  "text" is a string
+		argument, "off" a number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item insert off text
+位置 "off" の前に "text" を挿入します。"text" は string、"off" は number です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		"text" should have a "\n" (newline) at the end of each line.
+		Or "\r\n" when 'fileformat' is "dos".  When using "insert" in
+		an empty buffer Vim will set 'fileformat' accordingly.
+		When "off" points to the start of a line the text is inserted
+		above this line.  Thus when "off" is zero lines are inserted
+		before the first line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"text" の行末には "\n" (改行) がつきます。'@option{fileformat}' が "dos" の場合には "\r\n" がつきます。空バッファに対して "insert" を行うと、Vim はそれに応じて '@option{fileformat}' を設定します。
+
+"off" が行頭を指している場合、その行の前に挿入されます。そのため、"off" が 0 の場合、最初の行の前に挿入されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When "off" points after the start of a line, possibly on the
+		NUL at the end of a line, the first line of text is appended
+		to this line.  Further lines come below it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"off" が行頭よりも後を指す場合 (行末の NUL を指す場合も含め)、テキストの最初の行はその行に追加されます。2 行目以降はその下にきます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Possible replies:
+			123		no problem
+			123 !message	failed
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+応答は次のようになります:
+@multitable @columnfractions .5 .5
+@item 123 @tab 問題なし
+@item 123 !message @tab 失敗
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Note that the message in the reply is not quoted.
+		Also sets the current buffer, if necessary.
+		Does not move the cursor to the changed text.
+		Resets undo information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+応答のメッセージはクォートされていません。必要に応じてこのバッファをカレントバッファにします。変更されたテキストへカーソルを移動させません。undo 情報をリセットします。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+remove off length
+		Delete "length" bytes of text at position "off".  Both
+		arguments are numbers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item remove off length
+位置 "off" のテキストを "length" バイト削除します。どちらの引数も number です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Possible replies:
+			123		no problem
+			123 !message	failed
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+応答は次のようになります:
+@multitable @columnfractions .5 .5
+@item 123 @tab 問題なし
+@item 123 !message @tab 失敗
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Note that the message in the reply is not quoted.
+		Also sets the current buffer, if necessary.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+応答のメッセージはクォートされていません。必要に応じてこのバッファをカレントバッファにします。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+saveAndExit	Perform the equivalent of closing Vim: ":confirm qall".
+		If there are no changed files or the user does not cancel the
+		operation Vim exits and no result is sent back.  The IDE can
+		consider closing the connection as a successful result.
+		If the user cancels the operation the number of modified
+		buffers that remains is returned and Vim does not exit.
+		New in version 2.1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item saveAndExit
+"@command{:confirm qall}" と同じことをします (Vim を閉じる)。変更されたファイルがない、またはユーザーが操作をキャンセルしなかった場合、Vim は終了し、戻り値は送信されません。IDE は接続が切断したことをもって成功と判断できます。ユーザーが操作をキャンセルした場合、変更されているバッファの番号が返され、Vim は終了しません。
+
+version 2.1 から。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+6.5 Events						*nb-events*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{nb-events}
+@cindex nb-events
+@unnumberedsubsec 6.5 イベント
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+balloonEval off len type
+		The mouse pointer rests on text for a short while.  When "len"
+		is zero, there is no selection and the pointer is at position
+		"off".  When "len" is non-zero the text from position "off" to
+		"off" + "len" is selected.
+		Only sent after "enableBalloonEval" was used for this buffer.
+		"type" is not yet defined.
+		Not implemented yet.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item balloonEval off len type
+マウスポインタが一定時間テキストの上に置かれました。"len" が 0 の場合、マウスポインタが "off" の位置にあり、選択がされていないことを意味します。
+
+"len" が 0 でない場合、"off" から "off" + "len" までのテキストが選択されていることを意味します。
+
+バッファに対して "enableBalloonEval" が使われた後でのみ送信されます。"type" はまだ定義されていません。
+
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+balloonText text
+		Used when 'ballooneval' is set and the mouse pointer rests on
+		some text for a moment.  "text" is a string, the text under
+		the mouse pointer.
+		Only when Vim is run with a GUI.
+		New in version 2.1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item balloonText text
+'@option{ballooneval}' がセットされており、マウスポインタが一定時間テキストの上に置かれたとき発生します。"text" は string で、マウスポインタの下のテキストを表します。
+
+GUI Vim でのみ有効。
+
+version 2.1 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+buttonRelease button lnum col
+		Report which button was pressed and the location of the cursor
+		at the time of the release.  Only for buffers that are owned
+		by the Vim Controller.  This event is not sent if the button
+		was released while the mouse was in the status line or in a
+		separator line.  If col is less than 1 the button release was
+		in the sign area.
+		New in version 2.2.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item buttonRelease button lnum col
+ボタンが離されたとき、どのボタンが押されたかと、カーソルの位置を報告します。Vim コントローラによって所有されているバッファにおいてのみ発生します。マウスがステータスラインまたはセパレータラインの中にあるときは、ボタンが離されても、このイベントは送信されません。col が 1 未満の場合、目印エリアの中でボタンが離されたことを意味します。
+
+version 2.2 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+disconnect
+		Tell the Vim Controller that Vim is exiting and not to try and
+		read or write more commands.
+		New in version 2.3.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item disconnect
+Vim が終了するので、これ以上コマンドを読み書きしないよう Vim コントローラに伝えます。
+
+version 2.3 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+fileClosed	Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item fileClosed
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+fileModified	Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item fileModified
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+fileOpened pathname open modified
+		A file was opened by the user.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item fileOpened pathname open modified
+ユーザーがファイルを開きました。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Arguments:
+		   pathname	string	  name of the file
+		   open		boolean   always "T"
+		   modified	boolean   always "F"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+引数:
+@multitable @columnfractions .33 .33 .33
+@item pathname @tab string @tab ファイル名
+@item open @tab boolean @tab 常に "T"
+@item modified @tab boolean @tab 常に "F"
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+geometry cols rows x y
+		Report the size and position of the editor window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item geometry cols rows x y
+エディタウィンドウのサイズと位置を報告します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Arguments:
+		   cols		number	  number of text columns
+		   rows		number	  number of text rows
+		   x		number	  pixel position on screen
+		   y		number	  pixel position on screen
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+引数:
+@multitable @columnfractions .3 .3 .4
+@item cols @tab number @tab テキストの桁数
+@item rows @tab number @tab テキストの行数
+@item x @tab number @tab 画面上のピクセル位置
+@item y @tab number @tab 画面上のピクセル位置
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Only works for Motif.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Motif でのみ動作します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+insert off text
+		Text "text" has been inserted in Vim at position "off".
+		Only fired when enabled, see "startDocumentListen".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item insert off text
+Vim において、"off" の位置にテキスト "text" が挿入されました。有効化されているときのみ発生します。"startDocumentListen" を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+invokeAction	Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item invokeAction
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+keyCommand keyName
+		Reports a special key being pressed with name "keyName", which
+		is a string.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item keyCommand keyName
+"keyName" という名前の特殊キーが押されたことを報告します。"keyName" は string です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Supported key names:
+			F1		function key 1
+			F2		function key 2
+			...
+			F12		function key 12
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+サポートされているキー名:
+@multitable @columnfractions .3 .7
+@item F1 @tab ファンクションキー 1
+@item F2 @tab ファンクションキー 2
+@item ... @tab
+@item F12 @tab ファンクションキー 12
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			' '		space (without the quotes)
+			!		exclamation mark
+			...		any other ASCII printable character
+			~		tilde
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ' ' @tab スペース (シングルクォートはつかない)
+@item ! @tab エクスクラメーションマーク
+@item ... @tab それ以外の ASCII 印字可能文字
+@item ~ @tab チルダ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			X		any unrecognized key
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item X @tab 認識されないキー
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The key may be prepended by "C", "S" and/or "M" for Control,
+		Shift and Meta (Alt) modifiers.  If there is a modifier a dash
+		is used to separate it from the key name.  For example:
+		"C-F2".
+		ASCII characters are new in version 2.1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+前に "C", "S", "M" がつくことがあります。それぞれ @key{Control}, @key{Shift}, @key{Meta} (@key{Alt}) キーを意味します。これらの修飾キーとキー名の間にはダッシュがつきます。例: "C-F2".
+
+ASCII 文字は version 2.1 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+keyAtPos keyName lnum/col
+		Like "keyCommand" and also report the line number and column
+		of the cursor.
+		New in version 2.1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item keyAtPos keyName lnum/col
+"keyName" と同様ですが、行番号と桁番号も報告します。
+
+version 2.1 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+killed		A file was deleted or wiped out by the user and the buffer
+		annotations have been removed.  The bufID number for this
+		buffer has become invalid.  Only for files that have been
+		assigned a bufID number by the IDE.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item killed
+ユーザーによってファイルが削除またはワイプアウトされ、annotation が削除されました。このバッファに対する bufID は無効になりました。IDE によって bufID が割り当てられたファイルに対してのみ発生します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+newDotAndMark off off
+		Reports the position of the cursor being at "off" bytes into
+		the buffer.  Only sent just before a "keyCommand" event.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item newDotAndMark off off
+カーソルがバッファの "off" バイトの位置にあることを報告します。"keyCommand" イベントの直前でのみ送信されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+quit		Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item quit
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+remove off len
+		Text was deleted in Vim at position "off" with byte length
+		"len".
+		Only fired when enabled, see "startDocumentListen".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item remove off len
+Vim において、"off" の位置から "len" バイトのテキストが削除されました。有効にされているときのみ発生します。"startDocumentListen" を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+revert		Not implemented.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item revert
+未実装。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+save		The buffer has been saved and is now unmodified.
+		Only fired when enabled, see "startDocumentListen".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item save
+バッファが保存され、「未変更」状態です。有効にされているときのみ発生します。"startDocumentListen" を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+startupDone	The editor has finished its startup work and is ready for
+		editing files.
+		New in version 2.1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item startupDone
+エディタがスタートアップ処理を完了し、ファイルを編集する準備が整いました。
+
+version 2.1 から。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+unmodified	The buffer is now unmodified.
+		Only fired when enabled, see "startDocumentListen".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item unmodified
+バッファが「未変更」状態になりました。有効にされているときのみ発生します。"startDocumentListen" を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+version vers	Report the version of the interface implementation.  Vim
+		reports "2.4" (including the quotes).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item version vers
+インターフェイスの実装のバージョンを報告します。Vim は "2.4" と報告します (ダブルクォートを含む)。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+6.6 Special messages					*nb-special*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{nb-special}
+@cindex nb-special
+@section 6.6 特別なメッセージ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These messages do not follow the style of the messages above.  They are
+terminated by a newline character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのメッセージは、前述のメッセージの形式に従いません。改行文字で終わります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ACCEPT		Not used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item ACCEPT
+未使用。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+AUTH password	editor -> IDE: First message that the editor sends to the IDE.
+		Must contain the password for the socket server, as specified
+		with the |-nb| argument.  No quotes are used!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item AUTH password
+editor -> IDE: エディタが IDE に送る最初のメッセージ。|-nb| で指定された、ソケットサーバーのパスワードを含んでいなければなりません。引用符は使われません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+DISCONNECT	IDE -> editor: break the connection.  The editor will exit.
+		The IDE must only send this message when there are no unsaved
+		changes!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item DISCONNECT
+IDE -> editor: 接続を切断します。その後エディタは終了します。IDE は、保存されていない変更がないときしかこのメッセージを送ってはなりません！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+DETACH		IDE -> editor: break the connection without exiting the
+		editor.  Used when the IDE exits without bringing down the
+		editor as well.
+		New in version 2.1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item DETACH
+IDE -> editor: エディタを終了させずに接続を切断します。エディタは終了させずに IDE を終了させるとき使われます。
+
+version 2.1 で導入されました。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+REJECT		Not used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item REJECT
+未使用。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+6.7 Protocol errors					*nb-protocol_errors*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{nb-protocol_errors}
+@cindex nb-protocol_errors
+@unnumberedsubsec 6.7 プロトコルエラー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These errors occur when a message violates the protocol:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メッセージがプロトコルに違反したとき、以下のエラーが発生します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*E627* *E628* *E629* *E632* *E633* *E634* *E635* *E636*
+*E637* *E638* *E639* *E640* *E641* *E642* *E643* *E644* *E645* *E646*
+*E647* *E648* *E649* *E650* *E651* *E652*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E627}
+@anchor{E628}
+@anchor{E629}
+@anchor{E632}
+@anchor{E633}
+@anchor{E634}
+@anchor{E635}
+@anchor{E636}
+@anchor{E637}
+@anchor{E638}
+@anchor{E639}
+@anchor{E640}
+@anchor{E641}
+@anchor{E642}
+@anchor{E643}
+@anchor{E644}
+@anchor{E645}
+@anchor{E646}
+@anchor{E647}
+@anchor{E648}
+@anchor{E649}
+@anchor{E650}
+@anchor{E651}
+@anchor{E652}
+@cindex E627
+@cindex E628
+@cindex E629
+@cindex E632
+@cindex E633
+@cindex E634
+@cindex E635
+@cindex E636
+@cindex E637
+@cindex E638
+@cindex E639
+@cindex E640
+@cindex E641
+@cindex E642
+@cindex E643
+@cindex E644
+@cindex E645
+@cindex E646
+@cindex E647
+@cindex E648
+@cindex E649
+@cindex E650
+@cindex E651
+@cindex E652
+@verbatim
+ *E627* *E628* *E629* *E632* *E633* *E634* *E635* *E636*
+ *E637* *E638* *E639* *E640* *E641* *E642* *E643* *E644* *E645* *E646*
+ *E647* *E648* *E649* *E650* *E651* *E652*
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+7. NetBeans commands					*netbeans-commands*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans-commands}
+@cindex netbeans-commands
+@section 7. NetBeans コマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:nbstart* *E511* *E838*
+:nbs[tart] {connection}	Start a new Netbeans session with {connection} as the
+			socket connection parameters.  The format of
+			{connection} is described in |netbeans-parameters|.
+			At any time, one may check if the netbeans socket is
+			connected by running the command:
+			':echo has("netbeans_enabled")'
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{:nbstart}
+@anchor{E511}
+@anchor{E838}
+@cindex :nbstart
+@cindex E511
+@cindex E838
+@item :nbs[tart] @{connection@}
+新しい Netbeans セッションを開始する。@{connection@} はソケット接続パラメーター。@{connection@} の書式は |netbeans-parameters| で説明されています。
+
+netbeans ソケットが接続されているかどうかは次のコマンドで確認できます: '@command{:echo has("netbeans_enabled")}'
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:nbclose*
+:nbc[lose]		Close the current NetBeans session. Remove all placed
+			signs.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:nbclose}
+@cindex :nbclose
+@item :nbc[lose]
+現在の NetBeans セッションを閉じる。目印はすべて削除されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:nbkey*
+:nb[key] {key}		Pass the {key} to the Vim Controller for processing.
+			When a hot-key has been installed with the specialKeys
+			command, this command can be used to generate a hotkey
+			message to the Vim Controller.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:nbkey}
+@cindex :nbkey
+@item :nb[key] @{key@}
+Vim コントローラに @{key@} を送信する。specialKeys コマンドによりホットキーがインストールされているとき、このコマンドを使ってホットキー・メッセージを Vim コントローラに送信できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			This command can also be used to pass any text to the
+			Vim  Controller. It is used by Pyclewn, for example,
+			to build the complete set of gdb commands as Vim user
+			commands.
+			The events newDotAndMark, keyCommand and keyAtPos are
+			generated (in this order).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドはどのようなテキストでも送信できます。これは例えば Pyclewn で gdb コマンドを Vim ユーザーコマンドとして構築するのに使われています。
+
+newDotAndMark, keyCommand, keyAtPos イベントが発生します (この順番で)。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+8. Known problems					*netbeans-problems*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans-problems}
+@cindex netbeans-problems
+@section 8. 既知の問題
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NUL bytes are not possible.  For editor -> IDE they will appear as NL
+characters.  For IDE -> editor they cannot be inserted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+NUL 文字は扱えません。editor -> IDE の通信では、NUL は NL に置換して送信されます。IDE -> editor では、NUL を含めることはできません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A NetBeans session may be initiated with Vim running in a terminal, and
+continued later in a GUI environment after running the |:gui| command. In this
+case, the highlighting defined for the NetBeans annotations may be cleared
+when the ":gui" command sources .gvimrc and this file loads a colorscheme
+that runs the command ":highlight clear".
+New in version 2.5.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+NetBeans セッションが端末動作の Vim で初期化され、後で |:gui| コマンドによって GUI 環境に引き継がれることがあります。この場合、"@command{:gui}" コマンドが @file{.gvimrc} を読み込み、カラースキームが読み込まれ、そこで "@command{:highlight clear}" コマンドが実行されることで、NetBeans annotation 用に定義された強調表示がクリアされるかもしれません。
+
+バージョン 2.5 で新たに追加された仕様。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+9. Debugging NetBeans protocol				*netbeans-debugging*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans-debugging}
+@cindex netbeans-debugging
+@section 9. NetBeans プロトコルのデバッグ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To debug the Vim protocol, you must first compile Vim with debugging support
+and NetBeans debugging support.  See |netbeans-configure| for instructions
+about Vim compiling and how to enable debug support.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim プロトコルをデバッグするには、まず Vim をデバッグサポートと NetBeans デバッグサポートつきでコンパイルします。|netbeans-configure| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When running Vim, set the following environment variables:
+
+    export SPRO_GVIM_DEBUG=netbeans.log
+    export SPRO_GVIM_DLEVEL=0xffffffff
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の環境変数をセットしてください:
+@example
+export SPRO_GVIM_DEBUG=netbeans.log
+export SPRO_GVIM_DLEVEL=0xffffffff
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim will then log all the incoming and outgoing messages of the NetBeans
+protocol to the file netbeans.log .
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すると、やりとりされるすべての NetBeans プロトコルメッセージが netbeans.log というファイルに記録されるようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The content of netbeans.log after a session looks like this:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+セッションを行った後の netbeans.log の内容は次のようになります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Tue May 20 17:19:27 2008
+EVT: 0:startupDone=0
+CMD 1: (1) create
+CMD 2: (1) setTitle "testfile1.txt"
+CMD 3: (1) setFullName "testfile1.txt"
+EVT(suppressed): 1:remove=3 0 -1
+EVT: 1:fileOpened=0 "d:\\work\\vimWrapper\\vimWrapper2\\pyvimwrapper\\tests\\testfile1.txt" T F
+CMD 4: (1) initDone
+FUN 5: (0) getCursor
+REP 5: 1 1 0 0
+CMD 6: (2) create
+CMD 7: (2) setTitle "testfile2.txt"
+CMD 8: (2) setFullName "testfile2.txt"
+EVT(suppressed): 2:remove=8 0 -1
+EVT: 2:fileOpened=0 "d:\\work\\vimWrapper\\vimWrapper2\\pyvimwrapper\\tests\\testfile2.txt" T F
+CMD 9: (2) initDone
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+ Tue May 20 17:19:27 2008
+ EVT: 0:startupDone=0
+ CMD 1: (1) create
+ CMD 2: (1) setTitle "testfile1.txt"
+ CMD 3: (1) setFullName "testfile1.txt"
+ EVT(suppressed): 1:remove=3 0 -1
+ EVT: 1:fileOpened=0 "d:\\work\\vimWrapper\\vimWrapper2\\pyvimwrapper\\tests\\testfile1.txt" T F
+ CMD 4: (1) initDone
+ FUN 5: (0) getCursor
+ REP 5: 1 1 0 0
+ CMD 6: (2) create
+ CMD 7: (2) setTitle "testfile2.txt"
+ CMD 8: (2) setFullName "testfile2.txt"
+ EVT(suppressed): 2:remove=8 0 -1
+ EVT: 2:fileOpened=0 "d:\\work\\vimWrapper\\vimWrapper2\\pyvimwrapper\\tests\\testfile2.txt" T F
+ CMD 9: (2) initDone
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+10. NetBeans External Editor
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@section 10. NetBeans 外部テキストエディタ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+NOTE: This information is obsolete!  Only relevant if you are using an old
+version of NetBeans.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:}
+この情報は古くなっています！NetBeans の古いバージョンを使っている場合だけ読んでください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+10.1. Downloading NetBeans			*netbeans-download*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans-download}
+@cindex netbeans-download
+@unnumberedsubsec 10.1. NetBeans をダウンロードする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The NetBeans IDE is available for download from netbeans.org.  You can download
+a released version, download sources, or use CVS to download the current
+source tree.  If you choose to download sources, follow directions from
+netbeans.org on building NetBeans.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+NetBeans IDE は netbeans.org からダウンロードできます。リリースされたバージョン、ソースをダウンロードでき、CVS を使って最新のソースを取得することもできます。ソースをダウンロードした場合、ビルド方法については netbeans.org にある説明に従ってください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Depending on the version of NetBeans you download, you may need to do further
+work to get the required External Editor module.  This is the module which lets
+NetBeans work with gvim (or xemacs :-).  See http://externaleditor.netbeans.org
+for details on downloading this module if your NetBeans release does not have
+it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+NetBeans のバージョンによっては、External Editor モジュールを使うためにもう少し手を加えなければならないかもしれません。External Editor モジュールによって NetBeans は gvim と協調して動作できるようになります (xemacs とも :-)。このモジュールが NetBeans に含まれていない場合、@url{http://externaleditor.netbeans.org} を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For C, C++, and Fortran support you will also need the cpp module.  See
+http://cpp.netbeans.org for information regarding this module.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+C, C++, Fortran サポートには、cpp モジュールも必要になります。@url{http://cpp.netbeans.org} を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can also download Sun ONE Studio from Sun Microsystems, Inc for a 30 day
+free trial.  See http://www.sun.com for further details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Sun Microsystems, Inc から Sun ONE Studio の 30 日間無料試用版をダウンロードすることもできます。@url{http://www.sun.com} を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+10.2. NetBeans Key Bindings			*netbeans-keybindings*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans-keybindings}
+@cindex netbeans-keybindings
+@unnumberedsubsec 10.2. NetBeans のキーバインド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim understands a number of key bindings that execute NetBeans commands.
+These are typically all the Function key combinations.  To execute a NetBeans
+command, the user must press the Pause key followed by a NetBeans key binding.
+For example, in order to compile a Java file, the NetBeans key binding is
+"F9".  So, while in vim, press "Pause F9" to compile a java file.  To toggle a
+breakpoint at the current line, press "Pause Shift F8".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は NetBeans コマンドを実行するキーバインドを理解します。これらは普通、ファンクションキーの組み合わせです。NetBeans コマンドを実行するには、@key{Pause} キーに続けて NetBeans のキーバインドをタイプします。たとえば、Java ファイルをコンパイルする NetBeans のキーバインドは "@key{F9}" です。なので、Vim で "@key{Pause} @key{F9}" と押すと Java ファイルをコンパイルできます。カレント行のブレークポイントをトグルするには "@key{Pause} @key{Shift} @key{F8}" を押します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Pause key is Function key 21.  If you don't have a working Pause key and
+want to use F8 instead, use: >
+
+	:map <F8> <F21>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@key{Pause} キーはファンクションキー 21 です。キーボードに @key{Pause} キーがなく、代わりに @key{F8} を使いたいという場合、次のようにします:
+@example
+:map <F8> <F21>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The External Editor module dynamically reads the NetBeans key bindings so vim
+should always have the latest key bindings, even when NetBeans changes them.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+External Editor モジュールは動的に NetBeans キーバインドを読み込むので、NetBeans がキーバインドを変更していても、Vim は常に最新のキーバインドに対応します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+10.3. Preparing NetBeans for Vim		*netbeans-preparation*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans-preparation}
+@cindex netbeans-preparation
+@unnumberedsubsec 10.3. NetBeans 側の準備
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In order for NetBeans to work with vim, the NetBeans External Editor module
+must be loaded and enabled.  If you have a Sun ONE Studio Enterprise Edition
+then this module should be loaded and enabled.  If you have a NetBeans release
+you may need to find another way of obtaining this open source module.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+NetBeans を Vim と協調動作させるには、NetBeans External Editor モジュールが読み込まれ、有効化されていなければなりません。Sun ONE Studio Enterprise Edition を使っているなら、デフォルトでこのモジュールが読み込まれ有効化されます。NetBeans を使っている場合は、このオープンソースのモジュールを入手しなければなりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can check if you have this module by opening the Tools->Options dialog
+and drilling down to the "Modules" list (IDE Configuration->System->Modules).
+If your Modules list has an entry for "External Editor" you must make sure
+it is enabled (the "Enabled" property should have the value "True").  If your
+Modules list has no External Editor see the next section on |obtaining-exted|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このモジュールが入っているかを確認するには Tools -> Options ダイアログを開き、IDE Configuration -> System -> Modules の "Modules" リストを見ます。そこに "External Editor" があれば、それが有効になっているか確認します ("Enabled" プロパティが "True" かどうか)。"External Editor" がなければ、次の節 |obtaining-exted| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+10.4. Obtaining the External Editor Module	*obtaining-exted*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{obtaining-exted}
+@cindex obtaining-exted
+@unnumberedsubsec 10.4. External Editor モジュールの入手
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are 2 ways of obtaining the External Editor module.  The easiest way
+is to use the NetBeans Update Center to download and install the module.
+Unfortunately, some versions do not have this module in their update
+center.  If you cannot download via the update center you will need to
+download sources and build the module.  I will try and get the module
+available from the NetBeans Update Center so building will be unnecessary.
+Also check http://externaleditor.netbeans.org for other availability options.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+External Editor モジュールを入手する方法は二通りあります。最も簡単な方法は、NetBeans Update Center を使ってダウンロード・インストールすることです。しかし残念なことに、いくつかのバージョンでは Update Center にこのモジュールが存在しません。Update Center にない場合は、モジュールのソースをダウンロードしてビルドする必要があります。私が NetBeans Update Center からダウンロードできるようにしますので、ビルドは不要になるでしょう。他の方法として @url{http://externaleditor.netbeans.org} もチェックしてください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To download the External Editor sources via CVS and build your own module,
+see http://externaleditor.netbeans.org and http://www.netbeans.org.
+Unfortunately, this is not a trivial procedure.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+CVS で External Editor のソースを取得して自分でビルドする方法は @url{http://externaleditor.netbeans.org} と @url{http://www.netbeans.org} を参照してください。残念ながら、これは簡単な道のりではありません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+10.5. Setting up NetBeans to run with Vim	*netbeans-setup*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{netbeans-setup}
+@cindex netbeans-setup
+@unnumberedsubsec 10.5. NetBeans の設定
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Assuming you have loaded and enabled the NetBeans External Editor module
+as described in |netbeans-preparation| all you need to do is verify that
+the gvim command line is properly configured for your environment.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+NetBeans External Editor モジュールを読み込み、有効化できたら、あとは gvim のコマンドラインを設定するだけです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Open the Tools->Options dialog and open the Editing category.  Select the
+External Editor.  The right hand pane should contain a Properties tab and
+an Expert tab.  In the Properties tab make sure the "Editor Type" is set
+to "Vim".  In the Expert tab make sure the "Vim Command" is correct.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Tools -> Options を開き、Editing カテゴリを表示します。External Editor を選択します。右側のペインに Properties タブと Expert タブがあるはずです。Properties タブで "Editor Type" を "Vim" にします。Expert タブで "Vim Command" を正しく設定してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You should be careful if you change the "Vim Command".  There are command
+line options there which must be there for the connection to be properly
+set up.  You can change the command name but that's about it.  If your gvim
+can be found by your $PATH then the Vim Command can start with "gvim".  If
+you don't want gvim searched from your $PATH then hard code in the full
+Unix path name.  At this point you should get a gvim for any source file
+you open in NetBeans.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"Vim Command" を変更するときは注意してください。接続するためには、いくつかのコマンドラインオプションを正しく設定する必要があります。コマンドの名前を変更することができますが、それくらいです。gvim が @env{$PATH} の中にあるなら、コマンドを "gvim" から始められます。gvim を @env{$PATH} から検索させたくないならフルパスで指定してください。以上で、NetBeans で開くファイルが gvim で開かれるようになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If some files come up in gvim and others (with different file suffixes) come
+up in the default NetBeans editor you should verify the MIME type in the
+Expert tab MIME Type property.  NetBeans is MIME oriented and the External
+Editor will only open MIME types specified in this property.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+gvim で開かれるファイルもあるが、NetBeans のエディタで開かれるファイルもある (拡張子が異なる) という場合、Expert タブの MIME Type プロパティを確認してください。NetBeans は MIME によって判断し、External Editor はこのプロパティで指定された MIME Type だけを開きます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
