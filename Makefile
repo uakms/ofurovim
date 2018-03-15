@@ -29,7 +29,9 @@ REFMANUALS = \
 	doc/if_cscop.texi doc/if_lua.texi doc/if_mzsch.texi doc/if_perl.texi \
 	doc/if_pyth.texi doc/if_tcl.texi doc/if_ole.texi doc/if_ruby.texi \
 	doc/debugger.texi doc/workshop.texi doc/netbeans.texi doc/sign.texi \
-	doc/vi_diff.texi
+	doc/vi_diff.texi \
+	doc/os_mac.texi doc/os_unix.texi \
+	doc/pi_getscript.texi doc/pi_spec.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
