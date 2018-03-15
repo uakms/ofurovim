@@ -1,0 +1,290 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node pi_spec.txt, , , 目次
+@unnumbered rpm spec ファイルで動作するファイルタイププラグイン
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*pi_spec.txt*   For Vim version 8.0.  Last change: 2006 Apr 24
+
+by Gustavo Niemeyer ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*pi_spec.txt*   For Vim バージョン 8.0.  Last change: 2006 Apr 24
+
+by Gustavo Niemeyer
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This is a filetype plugin to work with rpm spec files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ここでは RPM の spec ファイル用のプラグインについて解説する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Currently, this Vim plugin allows you to easily update the %changelog
+section in RPM spec files.  It will even create a section for you if it
+doesn't exist yet.  If you've already inserted an entry today, it will
+give you the opportunity to just add a new item in today's entry.  If you
+don't provide a format string (|spec_chglog_format|), it'll ask you an
+email address and build a format string by itself.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このプラグインを使用することで RPM の spec ファイルの %changelog セクションを簡単に更新することができる。まだセクションが存在していないならば、プラグインが作成してくれる。既に本日分のエントリがあるのならば、プラグインは本日のエントリに新しい項目を追加する機会を与えてくれる。書式設定文字列 (|spec_chglog_format|) を準備していないならば、プラグインは email アドレスをユーザーに問い合わせ、そこから書式文字列を構築する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. How to use it	|spec-how-to-use-it|
+2. Customizing		|spec-customizing|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. 使い方 @tab |@ref{spec-how-to-use-it, , spec-how-to-use-it}|
+@item 2. カスタマイズ @tab |@ref{spec-customizing, , spec-customizing}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. How to use it				*spec-how-to-use-it*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spec-how-to-use-it}
+@cindex spec-how-to-use-it
+@section 1. 使い方
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The spec_chglog plugin provides a map like the following:
+
+	:map <buffer> <LocalLeader>c <Plug>SpecChangelog
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+spec_chglog プラグインは以下のようなキーマップを提供する:
+@example
+:map <buffer> <LocalLeader>c <Plug>SpecChangelog
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It means that you may run the plugin inside a spec file by pressing
+your maplocalleader key (default is '\') plus 'c'.  If you do not have
+|spec_chglog_format| set, the plugin will ask you for an email address
+to use in this edit session.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは spec ファイルではマップローカルリーダー (デフォルトは'\') に続いて 'c' を押すことでプラグインが起動することを意味している。|@ref{spec_chglog_format, , spec_chglog_format}| を設定していない場合には、プラグインはユーザーに email アドレスを問い合わせこの編集セッションで使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Every time you run the plugin, it will check to see if the last entry in the
+changelog has been written today and by you.  If the entry matches, it will
+just insert a new changelog item, otherwise it will create a new changelog
+entry.  If you are running with |spec_chglog_release_info| enabled, it will
+also check if the name, version and release matches.  The plugin is smart
+enough to ask you if it should update the package release, if you have not
+done so.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プラグインを起動するたびに、changelog に本日分の項目が既に書かれているかをチェックする。そのようなエントリが存在すれば、新しい changelog 項目が追加され、存在しない場合には新しい changelog エントリが作成される。
+
+|@ref{spec_chglog_release_info, , spec_chglog_release_info}| を有効化して実行した場合には、名前とバージョンとリリースも一致するかが確認される。プラグインは充分に賢いので、パッケージリリースがアップデートされるべき時にはその旨を訊ねてくるから、ユーザーはわざわざそれをする必要はない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Setting a map					*spec-setting-a-map*
+-------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spec-setting-a-map}
+@cindex spec-setting-a-map
+@unnumberedsubsec キーマップ定義
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+As you should know, you can easily set a map to access any Vim command (or
+anything, for that matter).  If you don't like the default map of
+<LocalLeader>c, you may just set up your own key.  The following line
+shows you how you could do this in your .vimrc file, mapping the plugin to
+the <F5> key:
+
+	au FileType spec map <buffer> <F5> <Plug>SpecChangelog
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+既に知っているように、あらゆる Vim コマンド (その意味ではあらゆる事が可能) を実行するためのキーマップは簡単に定義できる。デフォルトのキーマップ <LocalLeader> c が気に入らないならば、独自のキーを設定するのも良いだろう。次はそれをファイル @file{.vimrc} で行う例で、プラグインを @key{<F5>} キーに割り当てている:
+@example
+au FileType spec map <buffer> <F5> <Plug>SpecChangelog
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note: the plugin will respect your desire to change the default mapping
+      and won't set it.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+プラグインはユーザーのマッピング変更の要望を尊重するので、再設定は行わない。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This command will add a map only in the spec file buffers.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドは spec ファイルのバッファにのみ適用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+2. Customizing					*spec-customizing*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spec-customizing}
+@cindex spec-customizing
+@section 2. カスタマイズ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The format string				*spec_chglog_format*
+-----------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spec_chglog_format}
+@cindex spec_chglog_format
+@unnumberedsubsec 書式設定文字列
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can easily customize how your spec file entry will look like.  To do
+this just set the variable "spec_chglog_format" in your .vimrc file like
+this: >
+
+	let spec_chglog_format = "%a %b %d %Y My Name <my@email.com>"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+spec ファイルがどのように表示されるかは簡単にカスタマイズできる。これを行うにはファイル @file{.vimrc} で次のように変数 "spec_chglog_format" を設定する:
+@example
+let spec_chglog_format = "%a %b %d %Y My Name <my@@email.com>"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that "%a %b %d %Y" is the most used time format.  If you don't provide
+a format string, when you run the SpecChangelog command for the first
+time, it will ask you an email address and build the |spec_chglog_format|
+variable for you.  This way, you will only need to provide your email
+address once.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+"%a %b %d %Y" はもっとも頻繁に使用される時刻の書式であることに注意。書式文字列を準備していなければ、SpecChangelog コマンドを最初に実行した時に、ユーザーに email アドレスを問い合わせアドレスから自動的に |@ref{spec_chglog_format, , spec_chglog_format}| を構築する。この方法でユーザーは一度 email アドレスを設定するだけで済む。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To discover which format options you can use, take a look at the strftime()
+function man page.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+どのような書式を使うことができるのかを知るには、strftime() 関数のマニュアルページを参照する。@{訳注: |@ref{strftime(), , strftime()}| も参照@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Where to insert new items			*spec_chglog_prepend*
+-------------------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spec_chglog_prepend}
+@cindex spec_chglog_prepend
+@unnumberedsubsec 新規項目の挿入箇所
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The plugin will usually insert new %changelog entry items (note that it's
+not the entry itself) after the existing ones.  If you set the
+spec_chglog_prepend variable >
+
+	let spec_chglog_prepend = 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プラグインは通常新しい %changelog エントリの項目 (エントリそのものではないことに注意) を、既に存在するものの後に挿入しようとする。変数 spec_chglog_prepend を設定すれば:
+@example
+let spec_chglog_prepend = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+it will insert new items before the existing ones.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+既に存在するものの前に新規項目を挿入するようになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Inserting release info				*spec_chglog_release_info*
+----------------------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{spec_chglog_release_info}
+@cindex spec_chglog_release_info
+@unnumberedsubsec リリース情報の挿入
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want, the plugin may automatically insert release information
+on each changelog entry.  One advantage of turning this feature on is
+that it may control if the release has been updated after the last
+change in the package or not.  If you have not updated the package
+version or release, it will ask you if it should update the package
+release for you.  To turn this feature on, just insert the following
+code in your .vimrc: >
+
+	let spec_chglog_release_info = 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+望むのならば、プラグインは changelog エントリごとのリリース情報を自動的に挿入することができる。この機能を利用することの利点の 1 つは、最後の変更の後にリリースを更新すべきかそうでないかをコントロールできることである。パッケージのバージョンかリリースを更新していない時には、パッケージリリースを更新すべきならばその旨をユーザーに問い合わせてくれる。この機能を利用するには、@file{.vimrc} に次のコードを書き加える:
+@example
+let spec_chglog_release_info = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Then, the first item in your changelog entry will be something like: >
+
+	+ name-1.0-1cl
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+こうすれば、changelog エントリの最初の項目が次のようなものの場合に問い合わせが発生する:
+@example
++ name-1.0-1cl
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you don't like the release updating feature and don't want to answer
+"No" each time it detects an old release, you may disable it with >
+
+	let spec_chglog_never_increase_release = 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+リリース更新機能が気に入らず、古いリリースを検出するたびに毎回 "No" と答えるのに嫌気が差したならば、次のようにして無効化できる:
+@example
+let spec_chglog_never_increase_release = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Good luck!!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+幸運を！！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+vim:tw=78:ts=8:ft=help:norl:
+@end ifset
