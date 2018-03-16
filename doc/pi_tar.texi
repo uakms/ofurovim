@@ -1,0 +1,413 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node pi_tar.txt, , , 目次
+@unnumbered Tar ファイルエクスプローラー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*pi_tar.txt*	For Vim version 8.0.  Last change: 2013 Apr 17
+
+		       +====================+
+		       | Tar File Interface |
+		       +====================+
+
+Author:  Charles E. Campbell  <NdrOchip@ScampbellPfamily.AbizM>
+	  (remove NOSPAM from Campbell's email first)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*pi_tar.txt*    For Vim バージョン 8.0.  Last change: 2013 Apr 17
+
+                       +====================+
+                       | Tar File Interface |
+                       +====================+
+
+Author:  Charles E. Campbell  <NdrOchip@ScampbellPfamily.AbizM>
+          (remove NOSPAM from Campbell's email first)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Copyright 2005-2012:					*tar-copyright*
+	The VIM LICENSE (see |copyright|) applies to the files in this
+	package, including tarPlugin.vim, tar.vim, and pi_tar.txt.  Like
+	anything else that's except use "tar.vim" instead of "VIM".  Like
+	anything else that's free, tar.vim and its associated files are
+	provided *as is* and comes with no warranty of any kind, either
+	expressed or implied.  No guarantees of merchantability.  No
+	guarantees of suitability for any purpose.  By using this plugin, you
+	agree that in no event will the copyright holder be liable for any
+	damages resulting from the use of this software. Use at your own risk!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tar-copyright}
+@cindex tar-copyright
+@verbatim
+Copyright 2005-2012:
+        The VIM LICENSE (see |copyright|) applies to the files in this
+        package, including tarPlugin.vim, tar.vim, and pi_tar.txt.  Like
+        anything else that's except use "tar.vim" instead of "VIM".  Like
+        anything else that's free, tar.vim and its associated files are
+        provided *as is* and comes with no warranty of any kind, either
+        expressed or implied.  No guarantees of merchantability.  No
+        guarantees of suitability for any purpose.  By using this plugin, you
+        agree that in no event will the copyright holder be liable for any
+        damages resulting from the use of this software. Use at your own risk!
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Contents					*tar* *tar-contents*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tar}
+@anchor{tar-contents}
+@cindex tar
+@cindex tar-contents
+@section 1. 目次
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   1. Contents..................................................|tar-contents|
+   2. Usage.....................................................|tar-usage|
+   3. Options...................................................|tar-options|
+   4. History...................................................|tar-history|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. 目次 @tab |@ref{tar-contents, , tar-contents}|
+@item 2. 使い方 @tab |@ref{tar-usage, , tar-usage}|
+@item 3. オプション @tab |@ref{tar-options, , tar-options}|
+@item 4. 開発履歴 @tab |@ref{tar-history, , tar-history}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Usage					*tar-usage* *tar-manual*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tar-usage}
+@anchor{tar-manual}
+@cindex tar-usage
+@cindex tar-manual
+@section 2. 使い方
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   When one edits a *.tar file, this plugin will handle displaying a
+   contents page.  Select a file to edit by moving the cursor atop
+   the desired file, then hit the <return> key.  After editing, one may
+   also write to the file.  Currently, one may not make a new file in
+   tar archives via the plugin.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+tar ファイルを開くと、このプラグインが動作し、ファイル一覧が表示されます。カーソルを動かして、開きたいファイルを選択し、@key{<return>} キーを押してください。編集後に保存することもできます。tar ファイルに新しいファイルを追加することはまだできません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:Vimuntar*
+   VIMUNTAR~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:Vimuntar}
+@cindex :Vimuntar
+@unnumberedsubsec VIMUNTAR
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   :Vimuntar [vimhome]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :Vimuntar [vimhome]
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	This command copies, if necessary, the tarball to the .vim or vimfiles
+	directory using the first writable directory in the |'runtimepath'|
+	when no [vimhome] is specified.  Otherwise, the [vimhome] argument
+	allows the user to specify that directory, instead.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドは (必要なら) tarball を .vim または vimfiles ディレクトリにコピーします。[vimhome] が指定されていなければ '@option{runtimepath}' の最初の書き込み可能なディレクトリにコピーされます。[vimhome] が指定されていればそのディレクトリが使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	The copy is done using the command in *g:tar_copycmd* , which is >
+		cp   for cygwin, unix, macunix
+		copy for windows (32, 95, 64, 16)
+<	The extraction is done with the command specified with
+	*g:tar_extractcmd* , which by default is >
+		"tar -xf"
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:tar_copycmd}
+@cindex g:tar_copycmd
+コピーには |@ref{g:tar_copycmd, , g:tar_copycmd}| に指定されたコマンドが使用されます。初期設定は:
+@example
+cp   for cygwin, unix, macunix
+copy for windows (32, 95, 64, 16)
+@end example
+@anchor{g:tar_extractcmd}
+@cindex g:tar_extractcmd
+ファイルの展開には |@ref{g:tar_extractcmd, , g:tar_extractcmd}| で指定されたコマンドが使用されます。初期設定は:
+@example
+"tar -xf"
+@end example
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*:TarDiff*
+   DIFFERENCING SUPPORT~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:TarDiff}
+@cindex :TarDiff
+@unnumberedsubsec 差分サポート
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   :TarDiff [filename]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item :TarDiff [filename]
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	This command will attempt to show the differences between the tarball
+	version of a file and the associated file on the system.  In order to
+	find that file on the system, the script uses the path associated with
+	the file mentioned in the tarball.  If the current directory is not
+	correct for that path, :TarDiff will fail to find the associated file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドは tarball の中のファイルと、システム上の関連付けられたファイルの差分を表示します。システム上のファイルを探すため、そのファイルに関連する tarball 内のファイルのパスが使われます。カレントディレクトリがそのパスと整合しなかった場合は、@command{:TarDiff} コマンドは関連付けられたファイルを見つけることができずに失敗します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	If the [filename] is given, that that filename (and path) will be used
+	to specify the associated file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+[filename] が指定された場合は、関連付けられたファイルとしてそのファイル名 (とパス) が使われます。
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+   PREVENTING LOADING~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec ロードの無効化
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   If for some reason you do not wish to use vim to examine tar'd files,
+   you may put the following two variables into your <.vimrc> to prevent
+   the tar plugin from loading: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしなんらかの理由で tar ファイルを vim で開きたくない場合は、次の 2 つの変数を <@file{.vimrc}> ファイルで設定すると、tar プラグインはロードされなくなります:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	let g:loaded_tarPlugin= 1
+	let g:loaded_tar      = 1
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+let g:loaded_tarPlugin= 1
+let g:loaded_tar      = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Options						*tar-options*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@section 3. オプション
+@anchor{tar-options}
+@cindex tar-options
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+   These options are variables that one may change, typically in one's
+   <.vimrc> file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらの変数を <@file{.vimrc}> ファイルなどで設定してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+                         Default
+   Variable               Value   Explanation
+   *g:tar_browseoptions*  "Ptf"   used to get a list of contents
+   *g:tar_readoptions*    "OPxf"  used to extract a file from a tarball
+   *g:tar_cmd*            "tar"   the name of the tar program
+   *g:tar_nomax*            0     if true, file window will not be maximized
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .2 .5
+@headitem 変数 @tab 初期設定 @tab 説明
+@anchor{g:tar_browseoptions}
+@cindex g:tar_browseoptions
+@item g:tar_browseoptions @tab "Ptf" @tab ファイル一覧を取得するときに使われる
+@anchor{g:tar_readoptions}
+@cindex g:tar_readoptions
+@item g:tar_readoptions @tab "OPxf" @tab tar ファイルを展開するときに使われる
+@anchor{g:tar_cmd}
+@cindex g:tar_cmd
+@item g:tar_cmd @tab "tar" @tab tar プログラムの名前
+@anchor{g:tar_nomax}
+@cindex g:tar_nomax
+@item g:tar_nomax @tab 0 @tab trueならファイルウィンドウが最大化されない
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   *g:tar_secure*         undef   if exists:
+					"--"s will be used to prevent unwanted
+					option expansion in tar commands.
+					Please be sure that your tar command
+					accepts "--"; Posix compliant tar
+					utilities do accept them.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:tar_secure}
+@cindex g:tar_secure
+@item g:tar_secure @tab undef @tab 変数が存在する場合: @*
+"@minus{}@minus{}" を使って、ファイル名がオプション指定として解釈されるのを防ぎます。tar コマンドが "@minus{}@minus{}" に対応している必要があります。Posix 互換の tar なら対応しているはずです。 @*
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				  if not exists:
+				  	The tar plugin will reject any tar
+					files or member files that begin with
+					"-"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+変数が存在しない場合: @*
+tar プラグインは "-" で始まる tar ファイルまたは中のファイルを受け付けません。 @*
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				  Not all tar's support the "--" which is why
+				  it isn't default.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+すべての tar が "@minus{}@minus{}" をサポートしているわけではないので、初期設定では無効になっています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   *g:tar_writeoptions*   "uf"    used to update/replace a file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{g:tar_writeoptions}
+@cindex g:tar_writeoptions
+@item g:tar_writeoptions @tab "uf" @tab ファイルを更新/置換するときに使われる
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+4. History						*tar-history*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tar-history}
+@cindex tar-history
+@section 4. 開発履歴
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+   v28 Jun 23, 2011 * a few more decompression options (tbz tb2 txz)
+   v27 May 31, 2011 * moved cygwin detection before g:tar_copycmd handling
+   		    * inserted additional |:keepj| modifiers
+		    * changed silent  to  sil!  (|:silent|)
+   v26 Aug 09, 2010 * uses buffer-local instead of window variables to hold
+		      tarfile name
+		    * inserted keepj before 0d to protect jump list
+   v25 Jun 19, 2010 * (Jan Steffens) added support for xz compression
+   v24 Apr 07, 2009 * :Untarvim command implemented
+       Sep 28, 2009 * Added lzma support
+   v22 Aug 08, 2008 * security fixes
+   v16 Jun 06, 2008 * tarfile:: used instead of tarfile: when editing files
+		      inside tarballs.  Fixes a problem with tarballs called
+		      things like c:\abc.tar. (tnx to Bill McCarthy)
+   v14 May 09, 2008 * arno caught a security bug
+       May 28, 2008 * various security improvements.  Now requires patch 299
+		      which provides the fnameescape() function
+       May 30, 2008 * allows one to view *.gz and *.bz2 files that are in
+		    *.tar files.
+   v12 Sep 07, 2007 * &shq now used if not the empty string for g:tar_shq
+   v10 May 02, 2006 * now using "redraw then echo" to show messages, instead
+		      of "echo and prompt user"
+   v9 May 02, 2006 * improved detection of masquerading as tar file
+   v8 May 02, 2006 * allows editing of files that merely masquerade as tar
+		     files
+   v7 Mar 22, 2006 * work on making tar plugin work across network
+      Mar 27, 2006 * g:tar_cmd now available for users to change the name
+		     of the tar program to be used.  By default, of course,
+		     it's "tar".
+   v6 Dec 21, 2005 * writing to files not in directories caused problems -
+		     fixed (pointed out by Christian Robinson)
+   v5 Nov 22, 2005 * report option workaround installed
+   v3 Sep 16, 2005 * handles writing files in an archive back to the
+		     archive
+      Oct 18, 2005 * <amatch> used instead of <afile> in autocmds
+      Oct 18, 2005 * handles writing to compressed archives
+      Nov 03, 2005 * handles writing tarfiles across a network using
+		     netrw#NetWrite()
+   v2              * converted to use Vim7's new autoload feature by
+		     Bram Moolenaar
+   v1 (original)   * Michael Toren (see http://michael.toren.net/code/)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+v28 Jun 23, 2011 * a few more decompression options (tbz tb2 txz)
+v27 May 31, 2011 * moved cygwin detection before g:tar_copycmd handling
+                 * inserted additional |:keepj| modifiers
+                 * changed silent  to  sil!  (|:silent|)
+v26 Aug 09, 2010 * uses buffer-local instead of window variables to hold
+                   tarfile name
+                 * inserted keepj before 0d to protect jump list
+v25 Jun 19, 2010 * (Jan Steffens) added support for xz compression
+v24 Apr 07, 2009 * :Untarvim command implemented
+    Sep 28, 2009 * Added lzma support
+v22 Aug 08, 2008 * security fixes
+v16 Jun 06, 2008 * tarfile:: used instead of tarfile: when editing files
+                   inside tarballs.  Fixes a problem with tarballs called
+                   things like c:\abc.tar. (tnx to Bill McCarthy)
+v14 May 09, 2008 * arno caught a security bug
+    May 28, 2008 * various security improvements.  Now requires patch 299
+                   which provides the fnameescape() function
+    May 30, 2008 * allows one to view *.gz and *.bz2 files that are in
+                 *.tar files.
+v12 Sep 07, 2007 * &shq now used if not the empty string for g:tar_shq
+v10 May 02, 2006 * now using "redraw then echo" to show messages, instead
+                   of "echo and prompt user"
+v9 May 02, 2006 * improved detection of masquerading as tar file
+v8 May 02, 2006 * allows editing of files that merely masquerade as tar
+                  files
+v7 Mar 22, 2006 * work on making tar plugin work across network
+   Mar 27, 2006 * g:tar_cmd now available for users to change the name
+                  of the tar program to be used.  By default, of course,
+                  it's "tar".
+v6 Dec 21, 2005 * writing to files not in directories caused problems -
+                  fixed (pointed out by Christian Robinson)
+v5 Nov 22, 2005 * report option workaround installed
+v3 Sep 16, 2005 * handles writing files in an archive back to the
+                  archive
+   Oct 18, 2005 * <amatch> used instead of <afile> in autocmds
+   Oct 18, 2005 * handles writing to compressed archives
+   Nov 03, 2005 * handles writing tarfiles across a network using
+                  netrw#NetWrite()
+v2              * converted to use Vim7's new autoload feature by
+                  Bram Moolenaar
+v1 (original)   * Michael Toren (see http://michael.toren.net/code/)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+vim:tw=78:ts=8:ft=help
+@end ifset

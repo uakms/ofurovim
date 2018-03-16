@@ -31,7 +31,9 @@ REFMANUALS = \
 	doc/debugger.texi doc/workshop.texi doc/netbeans.texi doc/sign.texi \
 	doc/vi_diff.texi \
 	doc/os_mac.texi doc/os_unix.texi \
-	doc/pi_getscript.texi doc/pi_spec.texi
+	doc/pi_getscript.texi doc/pi_gzip.texi doc/pi_logipat.texi \
+	doc/pi_netrw.texi doc/pi_paren.texi doc/pi_spec.texi doc/pi_tar.texi \
+	doc/pi_vimball.texi doc/pi_zip.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
