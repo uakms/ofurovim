@@ -47,12 +47,11 @@ USRMANUALS = \
 	doc/usr_43.texi doc/usr_44.texi doc/usr_45.texi doc/usr_90.texi
 
 # そのまま diff をかけると不都合があるので UTF-8 に変換するファイル
+# usr_24.txt, eval.txt は原文が UTF-8 になった。
 INCONVENIENTFILES = \
-	$(ORIG)/doc/usr_24.txt \
 	$(ORIG)/doc/quotes.txt \
 	$(ORIG)/doc/map.txt \
 	$(ORIG)/doc/spell.txt \
-	$(ORIG)/doc/eval.txt \
 	$(ORIG)/doc/mlang.txt \
 	$(ORIG)/doc/farsi.txt
 
