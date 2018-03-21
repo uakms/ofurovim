@@ -99,7 +99,7 @@ htmls/refman: $(REFMANUALS) $(USRMANUALS)
 pdfs/userman.pdf: $(USRMANUALS)
 	PDFTEX=xetex texi2pdf -c -o $@ $<
 
-pdfs/refrman.pdf: $(REFMANUALS)
+pdfs/refrman.pdf: $(REFMANUALS) $(USRMANUALS)
 	PDFTEX=xetex texi2pdf -c -o $@ $<
 
 htmls/tk-usrman.html: htmls/usrman.html
