@@ -1,8 +1,13 @@
 # Author: nakinor
 # Created: 2017-03-14
-# Revised: 2017-08-13
+# Revised: 2018-03-21
 
-ANCHOR = `grep "@anchor{" doc/*.texi | gawk 'BEGIN {FS="@anchor{"} ; {print $2}' | sed -e 's/}//' | sort`
+require 'yaml'
+File.open("anchors.yml") do |file|
+  AandC = YAML.load(file)
+end
+
+ANCHOR = `grep "@anchor{" doc/*.texi | gawk 'BEGIN {FS="@anchor{"} ; {print $2}' | sed -e 's/}$//' | sort`
 CINDEX = `grep "@cindex " doc/*.texi | gawk '{print $2}' | sort`
 
 def to_arr(data)
@@ -16,8 +21,9 @@ end
 anc = to_arr(ANCHOR)
 cin = to_arr(CINDEX)
 
-anc[anc.index("\\(")] = "("
-anc[anc.index("\\)")] = ")"
+AandC.each do |key, value|
+  anc[anc.index(key)] = value
+end
 
 puts "anchor の数は #{anc.size} です。"
 for i in anc - cin
@@ -33,4 +39,3 @@ for i in cin - anc
     puts i
   end
 end
-
