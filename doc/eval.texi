@@ -6896,6 +6896,7 @@ tolower({expr})			String	the String {expr} switched to lowercase
 toupper({expr})			String	the String {expr} switched to uppercase
 tr({src}, {fromstr}, {tostr})	String	translate chars of {src} in {fromstr}
 					to chars in {tostr}
+trim({text}[, {mask}]) 		String	trim characters in {mask} from {text}
 trunc({expr})			Float	truncate Float {expr}
 type({name})			Number	type of variable {name}
 @end ifset
@@ -6908,6 +6909,7 @@ type({name})			Number	type of variable {name}
 @item @ref{tolower(), , tolower}(@{expr@}) @tab 文字列 @tab 文字列 @{expr@} を小文字にする
 @item @ref{toupper(), , toupper}(@{expr@}) @tab 文字列 @tab 文字列 @{expr@} を大文字にする
 @item @ref{tr(), , tr}(@{src@}, @{fromstr@}, @{tostr@}) @tab 文字列 @tab @{src@} 中に現れる文字 @{fromstr@} を @{tostr@} に変換する
+@item @ref{trim(), , trim}(@{text@}[, @{mask@}]) @tab 文字列 @tab @{text@} から @{mask@} の文字を切り取る
 @item @ref{trunc(), , trunc}(@{expr@}) @tab 浮動小数点数 @tab 浮動小数点数 @{expr@} を切り詰める
 @item @ref{type(), , type}(@{name@}) @tab 数値 @tab 変数 @{name@} の型
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -22767,6 +22769,51 @@ echo tr("hello there", "ht", "HT")
 echo tr("<blob>", "<>", "@{@}")
 @end example
 戻り値は "@{blob@}" となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+trim({text}[, {mask}])						*trim()*
+		Return {text} as a String where any character in {mask} is
+		removed from the beginning and  end of {text}.
+		If {mask} is not given, {mask} is all characters up to 0x20,
+		which includes Tab, space, NL and CR, plus the non-breaking
+		space character 0xa0.
+		This code deals with multibyte characters properly.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{trim()}
+@cindex trim()
+@item trim(@{text@}[, @{mask@}])
+@{text@} の始めと終わりから、@{mask@} 内にあるどのような文字も削除された文字列として @{text@} を返す。
+
+もしも @{mask@} が与えられていなければ、@{mask@} は 0x20 までのすべての文字となる。これは Tab, space, NL や CR を含み、加えて ノーブレークスペースの 0xa0 も含む。
+
+このコードはマルチバイト文字を適切に扱う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Examples: >
+			echo trim("  \r\t\t\r RESERVE \t \t\n\x0B\x0B")."_TAIL"
+<		returns "RESERVE_TAIL" >
+			echo trim("needrmvRESERVEnnneeedddrrmmmmvv", "ednmrv")
+<		returns "RESERVE" >
+			echo trim("rm<blob1><blob2><any_chars>rrmm<blob1><blob2><blob2>", "rm<blob1><blob2>")
+<		returns "any_chas"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+echo trim("  \r\t\t\r RESERVE \t \t\n\x0B\x0B")."_TAIL"
+@end example
+"RESERVE_TAIL" を返す。
+@example
+echo trim("needrmvRESERVEnnneeedddrrmmmmvv", "ednmrv")
+@end example
+"RESERVE" を返す。
+@example
+echo trim("rm<blob1><blob2><any_chars>rrmm<blob1><blob2><blob2>", "rm<blob1><blob2>")
+@end example
+"any_chas" を返す。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
