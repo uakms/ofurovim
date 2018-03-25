@@ -1,6 +1,8 @@
 # Author: nakinor
 # Created: 2017-08-09
-# Revised: 2018-03-23
+# Revised: 2018-03-25
+
+# viewport 設定を追加する
 
 TXTFILES=`find . -name "*_002etxt.html"`
 # rgb_002etxt.html が入ってしまうが仕方なし。

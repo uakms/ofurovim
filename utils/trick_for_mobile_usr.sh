@@ -1,6 +1,10 @@
 # Author: nakinor
 # Created: 2017-02-26
-# Revised: 2017-03-18
+# Revised: 2018-03-25
+
+# ユーザーマニュアルでモバイルビューにした時に折り返しできない pre 部分を
+# タグ外に出すような小細工をする
+# その他にも気付いたものを改行できるように
 
 TAG_A='<meta name="viewport" content="width=device-width, initial-scale=1.0" />'
 TAG_B='</pre>'

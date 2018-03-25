@@ -4,6 +4,7 @@ NVCHECK_DICT = $(HOME)/dev/vimdoc-ja/dict.yml
 HTML_OPT_NS = --html --no-split --css-include=style.css
 HTML_OPT_S = --html --css-ref=style.css
 ORIG = $(HOME)/dev/vim/runtime
+MVIMORIG = $(HOME)/dev/macvim/runtime
 TRAN = ./
 
 REFMANUALS = \
@@ -46,6 +47,8 @@ USRMANUALS = \
 	doc/usr_32.texi doc/usr_40.texi doc/usr_41.texi doc/usr_42.texi \
 	doc/usr_43.texi doc/usr_44.texi doc/usr_45.texi doc/usr_90.texi
 
+MACVIMREF = doc/gui_mac.texi
+
 # そのまま diff をかけると不都合があるので UTF-8 に変換するファイル
 # usr_24.txt, eval.txt は原文が UTF-8 になった。
 INCONVENIENTFILES = \
@@ -85,10 +88,10 @@ htmls/usrman.html: $(USRMANUALS)
 	sh utils/trick_for_mobile_usr.sh $@
 	mv doc/org_usr_toc.texi doc/usr_toc.texi
 
-htmls/refman.html: $(REFMANUALS) $(USRMANUALS)
+htmls/refman.html: $(REFMANUALS) $(USRMANUALS) $(MACVIMREF)
 	${PRG} ${HTML_OPT_NS} -o $@ $<
 
-htmls/refman: $(REFMANUALS) $(USRMANUALS)
+htmls/refman: $(REFMANUALS) $(USRMANUALS) $(MACVIMREF)
 	cp style.css htmls/refman/
 	${PRG} ${HTML_OPT_S} -o $@ $<
 	sh utils/trick_for_mobile_usr.sh htmls/refman/usr_005ftoc_002etxt.html
@@ -99,7 +102,7 @@ htmls/refman: $(REFMANUALS) $(USRMANUALS)
 pdfs/userman.pdf: $(USRMANUALS)
 	PDFTEX=xetex texi2pdf -c -o $@ $<
 
-pdfs/refrman.pdf: $(REFMANUALS) $(USRMANUALS)
+pdfs/refrman.pdf: $(REFMANUALS) $(USRMANUALS) $(MACVIMREF)
 	PDFTEX=xetex texi2pdf -c -o $@ $<
 
 htmls/tk-usrman.html: htmls/usrman.html
@@ -112,6 +115,7 @@ diffja:
 	@sh utils/prepare_for_diff.sh -a $(INCONVENIENTFILES)
 	@ruby utils/diff_trans.rb --dir=$(ORIG) $(USRMANUALS) $(REFMANUALS)
 	@sh utils/prepare_for_diff.sh -z $(INCONVENIENTFILES)
+	@ruby utils/diff_trans.rb --dir=$(MVIMORIG) $(MACVIMREF)
 
 diffen:
 	@diff -q -r $(HOME)/dev/vimdoc-ja/en $(ORIG)/doc | grep differ | \

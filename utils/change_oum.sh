@@ -1,6 +1,9 @@
 # Author: nakinor
 # Created: 2017-03-18
-# Revised: 2017-03-18
+# Revised: 2018-03-25
+
+# ユーザーマニュアルのみを生成する場合にそのままではダメなので
+# いろいろと修正をする
 
 NODE_preA='@node usr_toc.txt, usr_01.txt'
 NODE_aftA='@node 目次, usr_01.txt'

@@ -1,8 +1,11 @@
 # Author: nakinor
 # Created: 2017-08-17
-# Revised: 2017-09-19
+# Revised: 2018-03-25
+#
+# DOCTYPE を HTML5 用に変更し、使われなくなった tt を code に変更する
+# また、hr と br も変更
 
-TXTFILES=`find htmls/refman -type file -size +8k`
+TXTFILES=`find htmls/refman -type file -size +5k`
 BEFORE_TAG_A='<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">'
 AFTER_TAG_A='<!DOCTYPE html>'
 

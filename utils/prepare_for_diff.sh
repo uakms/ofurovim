@@ -1,6 +1,9 @@
 # Author: nakinor
 # Created: 2017-08-15
-# Revised: 2017-08-15
+# Revised: 2018-03-25
+
+# そのまま diff をかけると不都合があるので iconv で UTF-8 に変換する
+# また z オプションでその逆も行なう
 
 while getopts az OPT
 do
