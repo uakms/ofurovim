@@ -3,14 +3,14 @@
 @unnumbered ターミナルウィンドウのサポート
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*terminal.txt*	For Vim version 8.0.  Last change: 2018 Mar 16
+*terminal.txt*	For Vim version 8.0.  Last change: 2018 Mar 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*terminal.txt*  For Vim バージョン 8.0.  Last change: 2018 Mar 16
+*terminal.txt*  For Vim バージョン 8.0.  Last change: 2018 Mar 25
 
 
                 VIMリファレンスマニュアル    by Bram Moolenaar
@@ -70,21 +70,29 @@ echo has('terminal')
 @item @ @ @ @ MS-Windows @tab |@ref{terminal-ms-windows, , terminal-ms-windows}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-2. Remote testing		|terminal-testing|
-3. Diffing screen dumps		|terminal-diff|
+2. Terminal communication	|terminal-communication|
+      Vim to job: term_sendkeys()	|terminal-to-job|
+      Job to Vim: JSON API 		|terminal-api|
+      Using the client-server feature	|terminal-client-server|
+3. Remote testing		|terminal-testing|
+4. Diffing screen dumps		|terminal-diff|
       Writing a screen dump test for Vim  |terminal-dumptest|
       Creating a screen dump		  |terminal-screendump|
       Comparing screen dumps		  |terminal-diffscreendump|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item 2. リモートテスト @tab |@ref{terminal-testing, , terminal-testing}|
-@item 3. スクリーンダンプの差分 @tab |@ref{terminal-diff, , terminal-diff}|
+@item 2. ターミナル通信 @tab |@ref{terminal-communication, , terminal-communication}|
+@item @ @ @ @ Vim からジョブへ: term_sendkeys() @tab |@ref{terminal-to-job, , terminal-to-job}|
+@item @ @ @ @ ジョブから Vim へ: JSON API @tab |@ref{terminal-api, , terminal-api}|
+@item @ @ @ @ client-server 機能を使う @tab |@ref{terminal-client-server, , terminal-client-server}|
+@item 3. リモートテスト @tab |@ref{terminal-testing, , terminal-testing}|
+@item 4. スクリーンダンプの差分 @tab |@ref{terminal-diff, , terminal-diff}|
 @item @ @ @ @ Vim のためのスクリーンダンプテストを書く@tab |@ref{terminal-dumptest, , terminal-dumptest}|
 @item @ @ @ @ スクリーンダンプを作成する @tab |@ref{terminal-screendump, , terminal-screendump}|
 @item @ @ @ @ スクリーンダンプを比較する @tab |@ref{terminal-diffscreendump, , terminal-diffscreendump}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-4. Debugging			|terminal-debug|
+5. Debugging			|terminal-debug|
       Starting				|termdebug-starting|
       Example session			|termdebug-example|
       Stepping through code		|termdebug-stepping|
@@ -94,7 +102,7 @@ echo has('terminal')
       Customizing			|termdebug-customizing|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item 4. デバッグ @tab |@ref{terminal-debug, , terminal-debug}|
+@item 5. デバッグ @tab |@ref{terminal-debug, , terminal-debug}|
 @item @ @ @ @ はじめに @tab |@ref{termdebug-starting, , termdebug-starting}|
 @item @ @ @ @ セッション例 @tab |@ref{termdebug-example, , termdebug-example}|
 @item @ @ @ @ コードをステップ実行する @tab |@ref{termdebug-stepping, , termdebug-stepping}|
@@ -929,32 +937,6 @@ Environment variables are used to pass information to the running job:
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
-@ifset EN
-The |client-server| feature can be used to communicate with the Vim instance
-where the job was started.  This only works when v:servername is not empty.
-If needed you can set it with: >
-	call remote_startserver('vim-server')
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-ジョブを開始した Vim インスタンスと通信するのに |@ref{client-server}| 機能を使えます。この方法は v:servername が空ではないときのみ機能します。必要ならば次のようにしてそれを設定できます:
-@example
-call remote_startserver('vim-server')
-@end example
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
-In the job you can then do something like: >
-	vim --servername $VIM_SERVERNAME --remote +123 some_file.c
-This will open the file "some_file.c" and put the cursor on line 123.
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-ジョブの中で以下の様なことができます:
-@verbatim
-vim --servername $VIM_SERVERNAME --remote +123 some_file.c
-@end verbatim
-これは "some_file.c" の 123 行目を開かせます。
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
 
 @ifset EN
 MS-Windows ~
@@ -1026,12 +1008,256 @@ VIM_SERVERNAME	v:servername
 
 @ifset EN
 ==============================================================================
-2. Remote testing					*terminal-testing*
+2. Terminal communication			 *terminal-communication*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-communication}
+@cindex terminal-communication
+@section 2. ターミナル通信
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are several ways to communicate with the job running in a terminal:
+- Use |term_sendkeys()| to send text and escape sequences from Vim to the job.
+- Use the JSON API to send encoded commands from the job to Vim.
+- Use the |client-server| mechanism. This works on machines with an X server
+  and on MS-Windows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ターミナル内でジョブを使って通信する方法がいくつかあります:
+@itemize
+@item Vim からジョブへテキストとエスケープシーケンスを送るために |@ref{term_sendkeys()}| を使います。
+@item ジョブから Vim へエンコードされたコマンドを送るために JSON API を使います。
+@item |@ref{client-server}| 機構を使います。これは X server と MS-Windows 上で動作します。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Vim to job: term_sendkeys() ~
+							*terminal-to-job*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-to-job}
+@cindex terminal-to-job
+@unnumberedsubsec Vim からジョブへ: term_sendkeys()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This allows for remote controlling the job running in the terminal.  It is a
+one-way mechanism.  The job can update the display to signal back to Vim.
+For example, if a shell is running in a terminal, you can do: >
+	call term_sendkeys(buf, "ls *.java\<CR>")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ターミナルで動作しているジョブをリモートコントロールすることができます。これは一方向の機構です。ジョブは Vim にシグナルを戻すことで画面をアップデートすることができます。例えば、ターミナルでシェルが動作しているなら、次のようにできます:
+@example
+call term_sendkeys(buf, "ls *.java\<CR>")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This requires for the job to be in the right state where it will do the right
+thing when receiving the keys.  For the above example, the shell must be
+waiting for a command to be typed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはジョブに正しい状態であることを要求します。これはキーを受信したときに正しい事をします。上記の例では、シェルは入力されたコマンドを待機していなければなりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For a job that was written for the purpose, you can use the JSON API escape
+sequence in the other direction.  E.g.: >
+	call term_sendkeys(buf, "\<Esc>]51;["response"]\x07")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブが意図したものとなるように、JSON API のエスケープシーケンスを逆向きに使うことができます。例:
+@example
+call term_sendkeys(buf, "\<Esc>]51;["response"]\x07")
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Job to Vim: JSON API ~
+							*terminal-api*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-api}
+@cindex terminal-api
+@unnumberedsubsec ジョブから Vim へ: JSON API
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The job can send JSON to Vim, using a special escape sequence.  The JSON
+encodes a command that Vim understands.  Example of such a message: >
+	<Esc>]51;["drop", "README.md"]<07>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブは特別なエスケープシーケンスを用いて Vim に JSON を送ることができます。JSON は Vim が理解するコマンドをエンコードします。例えば次のようなメッセージ:
+@example
+<Esc>]51;["drop", "README.md"]<07>
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The body is always a list, making it easy to find the end: ]<07>.
+The <Esc>]51;msg<07> sequence is reserved by xterm for "Emacs shell", which is
+similar to what we are doing here.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+本体は常にリストです。終了の @samp{]<07>} を見つけることは容易になっています。@samp{<Esc>]51;msg<07>} シーケエンスは "Emacs shell" のために xterm によって予約されています。これは我々がここで行なっていることと似ています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Currently supported commands:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec 現在サポートされているコマンド:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	call {funcname} {argument}
+
+		Call a user defined function with [argument].  The function is
+		called with the buffer number of the terminal and the decoded
+		argument.  The user function must sanity check the argument.
+		The function can use |term_sendkeys()| to send back a reply.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@item call @{funcname@} @{argument@}
+ユーザー定義関数を [argument] で呼びます。関数はターミナルのバッファ番号とデコードされた引数で呼ばれます。ユーザー関数は引数をちゃんとチェックしなければなりません。関数は応答を返すために |@ref{term_sendkeys()}| を使うことができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Example in JSON: >
+			["call", "Impression", ["play", 14]]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+JSON の例:
+@example
+["call", "Impression", ["play", 14]]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		Calls a function defined like this: >
+			function Impression(bufnum, arglist)
+			  if len(a:arglist) == 2
+			    echo "impression " . a:arglist[0]
+			    echo "count " . a:arglist[1]
+			  endif
+			endfunc
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のように定義された関数を呼びます:
+@example
+function Impression(bufnum, arglist)
+  if len(a:arglist) == 2
+    echo "impression " . a:arglist[0]
+    echo "count " . a:arglist[1]
+  endif
+endfunc
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	drop {filename}
+
+		Let Vim open a file, like the `:drop` command.  If {filename}
+		is already open in a window, switch to that window.  Otherwise
+		open a new window to edit {filename}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item drop @{filename@}
+`@command{:drop}` のように Vim にファイルを開いてもらいましょう。もしもウィンドウですでに @{filename@} が開いているならそのウィンドウに移動します。そうでなければ、@{filename@} を編集するために新規ウィンドウを開きます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Example in JSON: >
+			["drop", "path/file.txt", {"ff": "dos"}]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+JSON の例:
+@example
+["drop", "path/file.txt", @{"ff": "dos"@}]
+@end example
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A trick to have Vim send this escape sequence: >
+	exe "set t_ts=\<Esc>]51; t_fs=\x07"
+	let &titlestring = '["call","TryThis",["hello",123]]'
+	redraw
+	set t_ts& t_fs&
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim がこのエスケープシーケエンスを送るためのトリック:
+@example
+exe "set t_ts=\<Esc>]51; t_fs=\x07"
+let &titlestring = '["call","TryThis",["hello",123]]'
+redraw
+set t_ts& t_fs&
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Rationale: Why not allow for any command or expression?  Because that might
+create a security problem.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+論理的な根拠: どうしてすべてのコマンドや式を使うことが許可されていないの？それはセキュリティ的にマズいからじゃよ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Using the client-server feature ~
+						*terminal-client-server*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-client-server}
+@cindex terminal-client-server
+@unnumberedsubsec client-server 機能を使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+This only works when v:servername is not empty.  If needed you can set it,
+before opening the terminal, with: >
+	call remote_startserver('vim-server')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは v:servername が空ではないときのみ機能します。必要ならば次のようにしてターミナルが開く前に設定できます:
+@example
+call remote_startserver('vim-server')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+$VIM_SERVERNAME is set in the terminal to pass on the server name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+サーバー名を渡すために @env{$VIM_SERVERNAME} はターミナルで設定されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+In the job you can then do something like: >
+	vim --servername $VIM_SERVERNAME --remote +123 some_file.c
+This will open the file "some_file.c" and put the cursor on line 123.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブの中で以下の様なことができます:
+@verbatim
+vim --servername $VIM_SERVERNAME --remote +123 some_file.c
+@end verbatim
+これは "@file{some_file.c}" の 123 行目を開かせます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Remote testing					*terminal-testing*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{terminal-testing}
 @cindex terminal-testing
-@section 2. リモートテスト
+@section 3. リモートテスト
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1067,12 +1293,12 @@ term_scrape()		inspect terminal screen
 
 @ifset EN
 ==============================================================================
-3. Diffing screen dumps					*terminal-diff*
+4. Diffing screen dumps					*terminal-diff*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{terminal-diff}
 @cindex terminal-diff
-@section 3. スクリーンダンプの差分
+@section 4. スクリーンダンプの差分
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1317,12 +1543,12 @@ times so that you can spot the difference in the context of the text.
 
 @ifset EN
 ==============================================================================
-4. Debugging						*terminal-debug*
+5. Debugging						*terminal-debug*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{terminal-debug}
 @cindex terminal-debug
-@section 4. デバッグ
+@section 5. デバッグ
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
