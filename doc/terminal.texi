@@ -1117,48 +1117,64 @@ Currently supported commands:
 @ifset EN
 	call {funcname} {argument}
 
-		Call a user defined function with [argument].  The function is
-		called with the buffer number of the terminal and the decoded
-		argument.  The user function must sanity check the argument.
-		The function can use |term_sendkeys()| to send back a reply.
+		Call a user defined function with {argument}.
+		The function is called with two arguments: the buffer number
+		of the terminal and {argument}, the decoded JSON argument. 
+		The function name must start with "Tapi_" to avoid
+		accidentally calling a function not meant to be used for the
+		terminal API
+		The user function should sanity check the argument.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @table @asis
 @item call @{funcname@} @{argument@}
-ユーザー定義関数を [argument] で呼びます。関数はターミナルのバッファ番号とデコードされた引数で呼ばれます。ユーザー関数は引数をちゃんとチェックしなければなりません。関数は応答を返すために |@ref{term_sendkeys()}| を使うことができます。
+ユーザー定義関数を @{argument@} で呼びます。関数は 2 つの引数で呼ばれます: ターミナルのバッファ番号とデコードされた JSON 引数 @{argument@} です。
+
+関数名はターミナル API で使われることを意図されていない、偶発的な関数呼び出しを回避するために "Tapi_" で始まっていなければなりません。
+
+ユーザー関数は引数をちゃんとチェックしなければなりません。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+		The function can use |term_sendkeys()| to send back a reply.
 		Example in JSON: >
-			["call", "Impression", ["play", 14]]
+			["call", "Tapi_Impression", ["play", 14]]
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+関数は応答を返すために |@ref{term_sendkeys()}| を使うことができます。
 
 JSON の例:
 @example
-["call", "Impression", ["play", 14]]
+["call", "Tapi_Impression", ["play", 14]]
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 <		Calls a function defined like this: >
-			function Impression(bufnum, arglist)
+			function Tapi_Impression(bufnum, arglist)
 			  if len(a:arglist) == 2
-			    echo "impression " . a:arglist[0]
-			    echo "count " . a:arglist[1]
+			    echomsg "impression " . a:arglist[0]
+			    echomsg "count " . a:arglist[1]
 			  endif
 			endfunc
-<
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 次のように定義された関数を呼びます:
 @example
-function Impression(bufnum, arglist)
+function Tapi_Impression(bufnum, arglist)
   if len(a:arglist) == 2
-    echo "impression " . a:arglist[0]
-    echo "count " . a:arglist[1]
+    echomsg "impression " . a:arglist[0]
+    echomsg "count " . a:arglist[1]
   endif
 endfunc
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		Output from `:echo` may be erased by a redraw, use `:echomsg`
+		to be able to see it with `:messages`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+`@command{:echo}` からの出力は再描画によって消去されかもしれません。`@command{:messages}` を見れるようにするには `@command{:echomsg}` を使います。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
 	drop {filename}
 
@@ -1186,7 +1202,7 @@ JSON の例:
 @ifset EN
 A trick to have Vim send this escape sequence: >
 	exe "set t_ts=\<Esc>]51; t_fs=\x07"
-	let &titlestring = '["call","TryThis",["hello",123]]'
+	let &titlestring = '["call","Tapi_TryThis",["hello",123]]'
 	redraw
 	set t_ts& t_fs&
 @end ifset
@@ -1194,7 +1210,7 @@ A trick to have Vim send this escape sequence: >
 Vim がこのエスケープシーケエンスを送るためのトリック:
 @example
 exe "set t_ts=\<Esc>]51; t_fs=\x07"
-let &titlestring = '["call","TryThis",["hello",123]]'
+let &titlestring = '["call","Tapi_TryThis",["hello",123]]'
 redraw
 set t_ts& t_fs&
 @end example
