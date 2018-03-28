@@ -72,6 +72,7 @@ first:
 	@echo "	diffen:   本家との差分を調べる (en-en)"
 	@echo "	nvcheck:  表記のゆれをチェックする"
 	@echo "	tagcheck: タグのモレをチェックする"
+	@echo "	anccheck: アンカーのモレをチェックする"
 	@echo "	clean:    生成したものを削除する"
 	@echo
 
@@ -126,6 +127,9 @@ nvcheck:
 
 tagcheck:
 	@ruby utils/check_tag.rb
+
+anccheck:
+	@ruby utils/check_anchor.rb doc/*.texi
 
 clean:
 	@find htmls -name "*.html" | xargs rm
