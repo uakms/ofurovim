@@ -63,17 +63,20 @@ INCONVENIENTFILES = \
 
 first:
 	@echo
-	@echo "	usrhtml:  HTML 版のユーザーマニュアルを生成する"
-	@echo "	refhtml:  HTML 版のリファレンスマニュアルを生成する"
-	@echo "	usrpdf:   PDF 版のユーザーマニュアルを生成する"
-	@echo "	refpdf:   PDF 版のリファレンスマニュアルを生成する"
-	@echo "	kyukana:  旧字旧仮名に変換したユーザーマニュアルを生成する"
-	@echo "	diffja:   本家との差分を調べる (ja-en)"
-	@echo "	diffen:   本家との差分を調べる (en-en)"
-	@echo "	nvcheck:  表記のゆれをチェックする"
-	@echo "	tagcheck: タグのモレをチェックする"
-	@echo "	anccheck: アンカーのモレをチェックする"
-	@echo "	clean:    生成したものを削除する"
+	@echo "	usrhtml:   HTML 版のユーザーマニュアルを生成する"
+	@echo "	refhtml:   HTML 版のリファレンスマニュアルを生成する"
+	@echo "	usrpdf:    PDF 版のユーザーマニュアルを生成する"
+	@echo "	refpdf:    PDF 版のリファレンスマニュアルを生成する"
+	@echo "	kyukana:   旧字旧仮名に変換したユーザーマニュアルを生成する"
+	@echo "	diffja:    本家との差分を調べる (ja-en)"
+	@echo "	diffen:    本家との差分を調べる (en-en)"
+	@echo "	nvcheck:   表記のゆれをチェックする"
+	@echo "	tagcheck:  タグのモレをチェックする"
+	@echo "	termcheck  用語マークアップのモレをチェックする"
+	@echo "	         -bar:    バーティカルで囲まれたもの"
+	@echo "	         -quote:  クォートで囲まれたもの"
+	@echo "	         -dquote: ダブルクォートで囲まれたもの"
+	@echo "	clean:     生成したものを削除する"
 	@echo
 
 usrhtml: htmls/usrman.html ;
@@ -128,8 +131,12 @@ nvcheck:
 tagcheck:
 	@ruby utils/check_tag.rb
 
-anccheck:
-	@ruby utils/check_anchor.rb doc/*.texi
+termcheck-bar:
+	@ruby utils/check_vdj_terms.rb --bar doc/*.texi
+termcheck-quote:
+	@ruby utils/check_vdj_terms.rb --quote doc/*.texi
+termcheck-dquote:
+	@ruby utils/check_vdj_terms.rb --doublequote doc/*.texi
 
 clean:
 	@find htmls -name "*.html" | xargs rm
