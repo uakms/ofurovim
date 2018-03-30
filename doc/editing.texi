@@ -3,14 +3,14 @@
 @unnumbered ファイルの編集と保存
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*editing.txt*   For Vim version 8.0.  Last change: 2018 Feb 19
+*editing.txt*   For Vim version 8.0.  Last change: 2018 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*editing.txt*   For Vim バージョン 8.0.  Last change: 2018 Feb 19
+*editing.txt*   For Vim バージョン 8.0.  Last change: 2018 Mar 29
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -1058,13 +1058,6 @@ On Unix and a few other systems you can also use backticks for the file name
 argument, for example: >
 	:next `find . -name ver\\*.c -print`
 	:view `ls -t *.patch  \| head -n1`
-The backslashes before the star are required to prevent the shell from
-expanding "ver*.c" prior to execution of the find program.  The backslash
-before the shell pipe symbol "|" prevents Vim from parsing it as command
-termination.
-This also works for most other systems, with the restriction that the
-backticks must be around the whole item.  It is not possible to have text
-directly before the first or just after the last backtick.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{backtick-expansion}
@@ -1076,6 +1069,36 @@ Unix などではファイル名の引数にバッククォート '`' も使え�
 :next `find . -name ver\\*.c -print`
 :view `ls -t *.patch  \| head -n1`
 @end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Vim will run the command in backticks using the 'shell' and use the standard
+output as argument for the given Vim command (error messages from the shell
+command will be discarded).
+To see what shell command Vim is running, set the 'verbose' option to 4. When
+the shell command returns a non-zero exit code, an error message will be
+displayed and the Vim command will be aborted. To avoid this make the shell
+always return zero like so: >
+       :next `find . -name ver\\*.c -print \|\| true`
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は バッククォートの中のコマンドを 'shell' で実行し、与えられた Vim コマンドのために引数として標準出力を使う (シェルコマンドからのエラーメッセージは破棄される)。
+
+Vim で動作しているシェルコマンドが何かを知るには、'@option{verbose}' オプションを 4 に設定する。シェルコマンドが非ゼロの終了コードを返したとき、エラーメッセージが表示され、Vim コマンドは中断される。これを避けるには、次のようにシェルが常にゼロを返すようにする:
+@example
+:next `find . -name ver\\*.c -print \|\| true`
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The backslashes before the star are required to prevent the shell from
+expanding "ver*.c" prior to execution of the find program.  The backslash
+before the shell pipe symbol "|" prevents Vim from parsing it as command
+termination.
+This also works for most other systems, with the restriction that the
+backticks must be around the whole item.  It is not possible to have text
+directly before the first or just after the last backtick.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 アスタリスク '*' の前の '\' は、シェルが find を実行する前に "ver*.c" を展開してしまうのを防ぐために必要となる。シェルのパイプ記号 "|" の前のバックスラッシュは Vim がコマンドの終わりとしてパースするのを防ぐ。
 
 これは、必ず項目全体がバッククォートで括られているという制限付きで、他の多くのシステムでも機能する。最初のバッククォートの直前や最後のバッククォートの直後に文字列を書くことはできない。
@@ -1651,8 +1674,7 @@ list of the current window.
 			There is no check for duplicates, it is possible to
 			add a file to the argument list twice.
 			The currently edited file is not changed.
-			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+			{not in Vi}
 			Note: you can also use this method: >
 				:args ## x
 <			This will add the "x" item and sort the new list.
@@ -1661,8 +1683,6 @@ list of the current window.
 重複検査はないので、1 個のファイルを引数リストに 2 回加えることもできる。現在編集中のファイルは変更されない。
 
 @{Vi にはない@}
-
-@{Vimが |@ref{+listcmds}| 機能付きでコンパイルされたときのみ有効@}
 @quotation
 @strong{Note:} @*
 次の方法が使えることに注意。
@@ -1683,8 +1703,7 @@ list of the current window.
 			when it's deleted from the argument list.
 			Example: >
 				:argdel *.obj
-<			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+<			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:argd}
@@ -1704,8 +1723,6 @@ list of the current window.
 @end example
 
 @{Vi にはない@}
-
-@{Vimが |@ref{+listcmds}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1722,8 +1739,7 @@ list of the current window.
 <			Removes all the files from the arglist.
 			When the last number in the range is too high, up to
 			the last argument is deleted.
-			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item :[range]argd[elete]
@@ -1749,8 +1765,6 @@ list of the current window.
 引数リストから全てのファイルを削除する。範囲の上限が大きすぎるときは、最後の引数までが削除される。
 
 @{Vi にはない@}
-
-@{Vim が |@ref{+listcmds}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1761,8 +1775,7 @@ list of the current window.
 			when changes have been made and Vim does not want to
 			|abandon| the current buffer.
 			Also see |++opt| and |+cmd|.
-			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:argu}
@@ -1775,8 +1788,6 @@ list of the current window.
 |@ref{++opt}| と |@ref{+cmd}| も参照。
 
 @{Vi にはない@}
-
-@{Vim が |@ref{+listcmds}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1785,8 +1796,7 @@ list of the current window.
 			changes to the current buffer.  When [count] is
 			omitted the current entry is used.
 			Also see |++opt| and |+cmd|.
-			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item :[count]argu[ment]! [count] [++opt] [+cmd]
@@ -1795,8 +1805,6 @@ list of the current window.
 |@ref{++opt}| と |@ref{+cmd}| も参照。
 
 @{Vi にはない@}
-
-@{Vim が |@ref{+listcmds}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2175,12 +2183,9 @@ LOCAL ARGUMENT LIST
 
 @ifset EN
 {not in Vi}
-{not available when compiled without the |+windows| or |+listcmds| features}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @{Vi にはない@}
-
-@{Vim が |@ref{+windows}| 機能と |@ref{+listcmds}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2314,15 +2319,12 @@ etc.
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			{not in Vi} {not available when compiled without the
-			|+listcmds| feature}
+			{not in Vi}
 			Also see |:windo|, |:tabdo|, |:bufdo|, |:cdo|, |:ldo|,
 			|:cfdo| and |:lfdo|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @{Vi にはない@}
-
-@{Vim が |@ref{+listcmds}| 機能付きでコンパイルされたときのみ有効@}
 
 |@ref{:windo}|, |@ref{:tabdo}|, |@ref{:bufdo}|, |@ref{:cdo}|, |@ref{:ldo}|, |@ref{:cfdo}|, |@ref{:lfdo}| も参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------

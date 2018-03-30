@@ -50,11 +50,10 @@ USRMANUALS = \
 MACVIMREF = doc/gui_mac.texi
 
 # そのまま diff をかけると不都合があるので UTF-8 に変換するファイル
-# usr_24.txt, eval.txt は原文が UTF-8 になった。
+# 2018.03.19 usr_24.txt, eval.txt は原文が UTF-8 になった。
+# 2018.03.30 spell.txt, quotes.txt は原文が UTF-8 になった。
 INCONVENIENTFILES = \
-	$(ORIG)/doc/quotes.txt \
 	$(ORIG)/doc/map.txt \
-	$(ORIG)/doc/spell.txt \
 	$(ORIG)/doc/mlang.txt \
 	$(ORIG)/doc/farsi.txt
 
