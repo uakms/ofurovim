@@ -1,8 +1,13 @@
 # Author: nakinor
 # Created: 2018-03-27
-# Revised: 2018-03-29
+# Revised: 2018-03-31
 
 class VDJCheck
+
+  # *.texi ファイル中の @ifset JA ... @end ifset の部分を抜き出して、
+  # さらに @verbatim ... @end verbatim の範囲を除外して、
+  # さらに @example ... @end example の範囲を除外したものを、
+  # @buffer として配列に保存する。
   def initialize(file)
     @buffer = []
     tmp_list_a = []
@@ -21,11 +26,13 @@ class VDJCheck
     end
   end
 
+  # || ではさまれた単語を抽出する
+  # リンクを意味する単語の目印として使われている
+  # ここでは扱っていないが、被リンクは ** ではさまれている
   def check_bar()
     @buffer.each do |line|
-      line.scan(/\|[x21-x7b|x7d-x7e].*?\|/).each do |x|
-        # line.scan(/\|[x21-x7e].*?\|/).each do |x|
-        # line.scan(/\|[[:ascii:]].*?\|/).each do |x|
+      # line.scan(/\|[[:ascii:]].*?\|/).each do |x|
+      line.scan(/\|[\x21-\x7b\x7d-\x7e].*?\|/).each do |x|
         unless (x =~ /@ref{/) || (x=~ /[\u0080-\uffff]/) || (x =~ /b\\/)
           puts x.gsub("|","")
         end
@@ -33,21 +40,38 @@ class VDJCheck
     end
   end
 
+  # '' ではさまれた単語を抽出する
+  # オプションもしくはコマンド意味する単語の目印として使われている
   def check_quote()
     @buffer.each do |line|
-      line.scan(/'[x21-x7b|x7d-x7e].*?'/).each do |x|
-        unless (x =~ /@command{/) || (x =~ /@option{/) || (x=~ /[\u0080-\uffff]/)
+      line.scan(/'[\x21-\x7b\x7d-\x7e].*?'/).each do |x|
+        unless (x =~ /@command{/) || (x =~ /@option{/) || (x=~ /[\u0080-\uffff]/) || (x =~ / /)
           puts x.gsub("'","")
         end
       end
     end
   end
 
+  # "" ではさまれた単語を抽出する
+  # 変数を意味する単語の目印として使われている
   def check_double_quote()
     @buffer.each do |line|
-      line.scan(/"[x21-x7b|x7d-x7e].*?"/).each do |x|
-        unless (x =~ /@var{/) || (x =~ /@env{/) || (x=~ /[\u0080-\uffff]/)
-          puts x.gsub("'","")
+      line.scan(/"[\x21-\x7b\x7d-\x7e].*?"/).each do |x|
+        unless (x =~ /@var{/) || (x =~ /@env{/) || (x=~ /[\u0080-\uffff]/) || (x =~ / /)
+          puts x.gsub("\"","")
+        end
+      end
+    end
+  end
+
+  # `` ではさまれた単語を抽出する
+  # コマンドを意味する単語の目印として使われている
+  # 最近使いはじめられたが統一する意志はないようだ
+  def check_back_quote()
+    @buffer.each do |line|
+      line.scan(/`[\x21-\x7b\x7d-\x7e].*?`/).each do |x|
+        unless (x =~ /@command{/) || (x=~ /[\u0080-\uffff]/) || (x =~ / /)
+          puts x.gsub("`","")
         end
       end
     end
@@ -68,10 +92,6 @@ class VDJCheck
     puts "cindex: #{tmp_cindex_arr.size}"
     return [tmp_anchor_arr.size, tmp_cindex_arr.size]
   end
-
-  def print_buf()
-    puts @buffer
-  end
 end
 
 def main()
@@ -91,6 +111,11 @@ def main()
       puts "\033[32m" + f.split('/').last + "\033[0m:"
       VDJCheck.new(f).check_double_quote
     end
+  when "--backquote"
+    for f in ARGV.drop(1)
+      puts "\033[32m" + f.split('/').last + "\033[0m:"
+      VDJCheck.new(f).check_back_quote
+    end
   when "--tags"
     sum_arr = []
     for f in ARGV.drop(1)
@@ -104,6 +129,7 @@ def main()
     puts " --bar:         バーティカルバーではさまれた単語を抽出"
     puts " --quote:       シングルクォートではさまれた単語を抽出"
     puts " --doublequote: ダブルクォートではさまれた単語を抽出"
+    puts " --backquote:   バッククォートではさまれた単語を抽出"
     puts " --tags:        anchor と cindex を抽出"
   end
 end
