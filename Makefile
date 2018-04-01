@@ -1,5 +1,4 @@
 PRG = /usr/local/bin/texi2any
-PRG_MTO = $(HOME)/project/mto/src/mto.py
 NVCHECK_DICT = $(HOME)/dev/vimdoc-ja/dict.yml
 HTML_OPT_NS = --html --no-split --css-include=style.css
 HTML_OPT_S = --html --css-ref=style.css
@@ -57,39 +56,28 @@ INCONVENIENTFILES = \
 	$(ORIG)/doc/mlang.txt \
 	$(ORIG)/doc/farsi.txt
 
-.PHONY: usrhtml refonehtml refhtml usrpdf refpdf kyukana \
-	first diffja nvcheck clean
+.PHONY: first html onehtml pdf diffja nvcheck tagcheck clean
 
 first:
 	@echo
-	@echo "	usrhtml:   HTML 版のユーザーマニュアルを生成する"
-	@echo "	refhtml:   HTML 版のリファレンスマニュアルを生成する"
-	@echo "	usrpdf:    PDF 版のユーザーマニュアルを生成する"
-	@echo "	refpdf:    PDF 版のリファレンスマニュアルを生成する"
-	@echo "	kyukana:   旧字旧仮名に変換したユーザーマニュアルを生成する"
+	@echo "	html:      HTML 版のリファレンスマニュアルを生成する"
+	@echo "	onehtml:   1 ファイルの HTML 版のリファレンスマニュアルを生成する"
+	@echo "	pdf:       PDF 版のリファレンスマニュアルを生成する"
 	@echo "	diffja:    本家との差分を調べる (ja-en)"
 	@echo "	diffen:    本家との差分を調べる (en-en)"
 	@echo "	nvcheck:   表記のゆれをチェックする"
 	@echo "	tagcheck:  タグのモレをチェックする"
 	@echo "	termcheck  用語マークアップのモレをチェックする"
-	@echo "	         -bar:    バーティカルで囲まれたもの"
-	@echo "	         -quote:  クォートで囲まれたもの"
-	@echo "	         -dquote: ダブルクォートで囲まれたもの"
+	@echo "	  -bar:      バーティカルで囲まれたもの"
+	@echo "	  -quote:    クォートで囲まれたもの"
+	@echo "	  -dquote:   ダブルクォートで囲まれたもの"
+	@echo "	  -bquote:   バッククォートで囲まれたもの"
 	@echo "	clean:     生成したものを削除する"
 	@echo
 
-usrhtml: htmls/usrman.html ;
-refonehtml: htmls/refman.html ;
-refhtml: htmls/refman ;
-usrpdf: pdfs/userman.pdf ;
-refpdf: pdfs/refrman.pdf ;
-kyukana: htmls/tk-ok-usrman.html ;
-
-htmls/usrman.html: $(USRMANUALS)
-	sh utils/change_oum.sh doc/usr_toc.texi
-	${PRG} ${HTML_OPT_NS} -o $@ $<
-	sh utils/trick_for_mobile_usr.sh $@
-	mv doc/org_usr_toc.texi doc/usr_toc.texi
+html: htmls/refman ;
+onehtml: htmls/refman.html ;
+pdf: pdfs/refrman.pdf ;
 
 htmls/refman.html: $(REFMANUALS) $(USRMANUALS) $(MACVIMREF)
 	${PRG} ${HTML_OPT_NS} -o $@ $<
@@ -102,17 +90,8 @@ htmls/refman: $(REFMANUALS) $(USRMANUALS) $(MACVIMREF)
 	sh utils/trick_for_mobile.sh
 	sh utils/trick_for_html5.sh
 
-pdfs/userman.pdf: $(USRMANUALS)
-	PDFTEX=xetex texi2pdf -c -o $@ $<
-
 pdfs/refrman.pdf: $(REFMANUALS) $(USRMANUALS) $(MACVIMREF)
 	PDFTEX=xetex texi2pdf -c -o $@ $<
-
-htmls/tk-usrman.html: htmls/usrman.html
-	python3 $(PRG_MTO) tradkana $< > $@
-
-htmls/tk-ok-usrman.html: htmls/tk-usrman.html
-	python3 $(PRG_MTO) oldkanji $< > $@
 
 diffja:
 	@sh utils/prepare_for_diff.sh -a $(INCONVENIENTFILES)
@@ -136,6 +115,8 @@ termcheck-quote:
 	@ruby utils/check_vdj_terms.rb --quote doc/*.texi
 termcheck-dquote:
 	@ruby utils/check_vdj_terms.rb --doublequote doc/*.texi
+termcheck-bquote:
+	@ruby utils/check_vdj_terms.rb --backquote doc/*.texi
 
 clean:
 	@find htmls -name "*.html" | xargs rm
