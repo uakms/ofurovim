@@ -5,6 +5,8 @@ HTML_OPT_S = --html --css-ref=style.css
 ORIG = $(HOME)/dev/vim/runtime
 MVIMORIG = $(HOME)/dev/macvim/runtime
 TRAN = ./
+HTMLFILES=`find htmls/refman -name "*.html" -size +4k`
+MISCFILES="htmls/refman/Mu-Ci-.html htmls/refman/usr_005ftoc_002etxt.html"
 
 REFMANUALS = \
 	doc/help.texi \
@@ -60,9 +62,9 @@ INCONVENIENTFILES = \
 
 first:
 	@echo
-	@echo "	html:      HTML 版のリファレンスマニュアルを生成する"
-	@echo "	onehtml:   1 ファイルの HTML 版のリファレンスマニュアルを生成する"
-	@echo "	pdf:       PDF 版のリファレンスマニュアルを生成する"
+	@echo "	onehtml:   1 ファイルの HTML 版マニュアルを生成する"
+	@echo "	html:      HTML 版マニュアルを生成する"
+	@echo "	pdf:       PDF 版マニュアルを生成する"
 	@echo "	diffja:    本家との差分を調べる (ja-en)"
 	@echo "	diffen:    本家との差分を調べる (en-en)"
 	@echo "	nvcheck:   表記のゆれをチェックする"
@@ -75,20 +77,26 @@ first:
 	@echo "	clean:     生成したものを削除する"
 	@echo
 
-html: htmls/refman ;
 onehtml: htmls/refman.html ;
+html: htmls/refman ;
 pdf: pdfs/refrman.pdf ;
 
 htmls/refman.html: $(REFMANUALS) $(USRMANUALS) $(MACVIMREF)
 	${PRG} ${HTML_OPT_NS} -o $@ $<
+	@echo "trick for mobile..."
+	@sh utils/trick_for_mobile.sh -a $@
+	@sh utils/trick_for_mobile.sh -b $@
+	@echo "trick for html5..."
+	@sh utils/trick_for_html5.sh $@
 
 htmls/refman: $(REFMANUALS) $(USRMANUALS) $(MACVIMREF)
 	cp style.css htmls/refman/
 	${PRG} ${HTML_OPT_S} -o $@ $<
-	sh utils/trick_for_mobile_usr.sh htmls/refman/usr_005ftoc_002etxt.html
-	sh utils/trick_for_mobile_ref.sh htmls/refman/Mu-Ci-.html
-	sh utils/trick_for_mobile.sh
-	sh utils/trick_for_html5.sh
+	@echo "trick for mobile..."
+	@sh utils/trick_for_mobile.sh -a $(HTMLFILES)
+	@sh utils/trick_for_mobile.sh -b $(MISCFILES)
+	@echo "trick for html5..."
+	@sh utils/trick_for_html5.sh $(HTMLFILES)
 
 pdfs/refrman.pdf: $(REFMANUALS) $(USRMANUALS) $(MACVIMREF)
 	PDFTEX=xetex texi2pdf -c -o $@ $<
@@ -111,10 +119,13 @@ tagcheck:
 
 termcheck-bar:
 	@ruby utils/check_vdj_terms.rb --bar doc/*.texi
+
 termcheck-quote:
 	@ruby utils/check_vdj_terms.rb --quote doc/*.texi
+
 termcheck-dquote:
 	@ruby utils/check_vdj_terms.rb --doublequote doc/*.texi
+
 termcheck-bquote:
 	@ruby utils/check_vdj_terms.rb --backquote doc/*.texi
 
