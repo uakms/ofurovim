@@ -1,11 +1,11 @@
 PRG = /usr/local/bin/texi2any
 NVCHECK_DICT = $(HOME)/dev/vimdoc-ja/dict.yml
 HTML_OPT_NS = --html --no-split --css-include=style.css
-HTML_OPT_S = --html --css-ref=style.css
+HTML_OPT_S = --no-node-files --html --css-ref=style.css
 ORIG = $(HOME)/dev/vim/runtime
 MVIMORIG = $(HOME)/dev/macvim/runtime
 TRAN = ./
-HTMLFILES=`find htmls/refman -name "*.html" -size +4k`
+HTMLFILES=`find htmls/refman -name "*.html" -size +3k`
 MISCFILES="htmls/refman/Mu-Ci-.html htmls/refman/usr_005ftoc_002etxt.html"
 
 REFMANUALS = \
