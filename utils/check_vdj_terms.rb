@@ -1,6 +1,6 @@
 # Author: nakinor
 # Created: 2018-03-27
-# Revised: 2018-03-31
+# Revised: 2018-04-03
 
 class VDJCheck
 
@@ -77,20 +77,24 @@ class VDJCheck
     end
   end
 
-  def check_tags()
+  def check_tags(flag)
     tmp_anchor_arr = []
-    tmp_cindex_arr = []
+    tmp_xindex_arr = []
     @buffer.each do |line|
       line.scan(/@anchor{.*?}\n/).each do |x|
-        tmp_anchor_arr << x
+        x =~ /@anchor{(.*)?}\n/
+        tmp_anchor_arr << $1
       end
-      line.scan(/@cindex .*?\n/).each do |x|
-        tmp_cindex_arr << x
+      line.scan(/@[cfkptv]index .*?\n/).each do |x|
+        x =~ /@[cfkptv]index (.*)?\n/
+        tmp_xindex_arr << $1
       end
     end
-    puts "anchor: #{tmp_anchor_arr.size}"
-    puts "cindex: #{tmp_cindex_arr.size}"
-    return [tmp_anchor_arr.size, tmp_cindex_arr.size]
+    if flag == true
+      puts "anchor: #{tmp_anchor_arr.size}"
+      puts "xindex: #{tmp_xindex_arr.size}"
+    end
+    return [tmp_anchor_arr, tmp_xindex_arr]
   end
 end
 
@@ -117,20 +121,61 @@ def main()
       VDJCheck.new(f).check_back_quote
     end
   when "--tags"
-    sum_arr = []
+    term_arr = []
     for f in ARGV.drop(1)
       puts "\033[32m" + f.split('/').last + "\033[0m:"
-      sum_arr << VDJCheck.new(f).check_tags
+      term_arr << VDJCheck.new(f).check_tags(true)
     end
     puts "-------"
+    sum_arr = []
+    for x in term_arr
+      sum_arr << [x[0].size, x[1].size]
+    end
     puts sum_arr.transpose.map {|x| x.inject(:+)}
+  when "--show-anchors"
+    for f in ARGV.drop(1)
+      puts "\033[32m" + f.split('/').last + "\033[0m:"
+      puts VDJCheck.new(f).check_tags(false)[0]
+    end
+  when "--show-indexes"
+    for f in ARGV.drop(1)
+      puts "\033[32m" + f.split('/').last + "\033[0m:"
+      puts VDJCheck.new(f).check_tags(false)[1]
+    end
+  when "--diff"
+    anchor_xindex = {}
+    require 'yaml'
+    File.open("anchors.yml") do |file|
+      anchor_xindex = YAML.load(file)
+    end
+    for f in ARGV.drop(1)
+      puts "\033[32m" + f.split('/').last + "\033[0m:"
+      tmp_arr = VDJCheck.new(f).check_tags(false)
+      only_anchor = tmp_arr[0] - tmp_arr[1]
+      only_xindex = tmp_arr[1] - tmp_arr[0]
+      # puts "anchor の数は #{only_anchor.size} です。"
+      for x in only_anchor
+        unless anchor_xindex.has_key?(x)
+          puts x
+        end
+      end
+      # puts "xindex の数は #{only_cindex.size} です。"
+      for x in only_xindex
+        unless anchor_xindex.has_value?(x)
+          puts x
+        end
+      end
+    end
   else
     puts "#{File.basename($0)} [options] file..."
-    puts " --bar:         バーティカルバーではさまれた単語を抽出"
-    puts " --quote:       シングルクォートではさまれた単語を抽出"
-    puts " --doublequote: ダブルクォートではさまれた単語を抽出"
-    puts " --backquote:   バッククォートではさまれた単語を抽出"
-    puts " --tags:        anchor と cindex を抽出"
+    puts " --bar:          バーティカルバーではさまれた単語を抽出"
+    puts " --quote:        シングルクォートではさまれた単語を抽出"
+    puts " --doublequote:  ダブルクォートではさまれた単語を抽出"
+    puts " --backquote:    バッククォートではさまれた単語を抽出"
+    puts " --tags:         anchor と cindex の数を抽出"
+    puts " --diff:         anchor と cindex の差分を抽出"
+    puts " --show-anchors: anchor を表示する"
+    puts " --show-indexes: index を表示する"
   end
 end
 
