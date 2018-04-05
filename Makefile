@@ -115,7 +115,7 @@ nvcheck:
 	nvcheck -d $(NVCHECK_DICT) doc/*.texi
 
 tagcheck:
-	@ruby utils/check_tag.rb
+	@ruby utils/check_vdj_terms.rb --tags doc/*.texi
 
 termcheck-bar:
 	@ruby utils/check_vdj_terms.rb --bar doc/*.texi
