@@ -6851,6 +6851,7 @@ term_dumpload({filename} [, {options}])
 term_dumpwrite({buf}, {filename} [, {options}])
 				none	dump terminal window contents
 term_getaltscreen({buf})	Number	get the alternate screen flag
+term_getansicolors({buf})	List	get ANSI palette in GUI color mode
 term_getattr({attr}, {what})	Number	get the value of attribute {what}
 term_getcursor({buf})		List	get the cursor position of a terminal
 term_getjob({buf})		Job	get the job associated with a terminal
@@ -6863,6 +6864,8 @@ term_gettty({buf}, [{input}])	String	get the tty name of a terminal
 term_list()			List	get the list of terminal buffers
 term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
+term_setansicolors({buf}, {colors})
+				none	set ANSI palette in GUI color mode
 term_setkill({buf}, {how}) 	none	set signal to stop job in terminal
 term_setrestore({buf}, {command}) none	set command to restore terminal
 term_start({cmd}, {options})	Job	open a terminal window and run a job
@@ -6873,6 +6876,7 @@ term_wait({buf} [, {time}])	Number  wait for screen to be updated
 @item @ref{term_dumpload(), , term_dumpload}(@{filename@} [, @{options@}])  @tab 数値 @tab スクリーンダンプを表示する
 @item @ref{term_dumpwrite(), , term_dumpwrite}(@{buf@}, @{filename@} [, @{options@}]) @tab なし @tab ターミナルウィンドウの内容をダンプする
 @item @ref{term_getaltscreen(), , term_getaltscreen}(@{buf@}) @tab 数値 @tab 代替スクリーンのフラグを取得する
+@item @ref{term_getansicolors(), , term_getansicolors}(@{buf@}) @tab リスト @tab GUI カラーモードで ANSI パレットを取得する
 @item @ref{term_getattr(), , term_getattr}(@{attr@}, @{what@}) @tab 数値 @tab @{what@} 属性の値を取得する
 @item @ref{term_getcursor(), , term_getcursor}(@{buf@}) @tab リスト @tab ターミナルのカーソル位置を取得する
 @item @ref{term_getjob(), , term_getjob}(@{buf@}) @tab ジョブ @tab ターミナルと関連するジョブを取得する
@@ -6885,6 +6889,7 @@ term_wait({buf} [, {time}])	Number  wait for screen to be updated
 @item @ref{term_list(), , term_list}() @tab リスト @tab ターミナルバッファのリストを取得する
 @item @ref{term_scrape(), , term_scrape}(@{buf@}, @{row@}) @tab リスト @tab ターミナルスクリーンの桁を取得する
 @item @ref{term_sendkeys(), , term_sendkeys}(@{buf@}, @{keys@}) @tab なし @tab ーミナルにキーストロークを送る
+@item @ref{term_setansicolors(), , term_setansicolors}(@{buf@}, @{colors@}) @tab なし @tab GUI カラーモードで ANSI パレットを設定する
 @item @ref{term_setkill(), , term_setkill}(@{buf@}, @{how@}) @tab なし @tab ターミナルのジョブを停止するシグナルを設定する
 @item @ref{term_setrestore(), , term_setrestore}(@{buf@}, @{command@}) @tab なし @tab ターミナルを復帰するコマンドを設定する
 @item @ref{term_start(), , term_start}(@{cmd@}, @{options@}) @tab ジョブ @tab ターミナルウィンドウを開いてジョブを開始する
@@ -21737,6 +21742,33 @@ term_getaltscreen({buf})				*term_getaltscreen()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+term_getansicolors({buf})				*term_getansicolors()*
+		Get the ANSI color palette in use by terminal {buf}.
+		Returns a List of length 16 where each element is a String
+		representing a color in hexadecimal "#rrggbb" format.
+		Also see |term_setansicolors()| and |g:terminal_ansi_colors|.
+		If neither was used returns the default colors.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{term_getansicolors()}
+@findex term_getansicolors()
+@item term_getansicolors(@{buf@})
+ターミナル @{buf@} で使われている ANSI カラーパレットを取得する。16 の長さのリストを返す。それぞれの項目は 16 進数の "#rrggbb" フォーマットで表わされているカラーです。|@ref{term_setansicolors()}| と |@ref{g:terminal_ansi_colors}| も参照。もしもどちらも使われていなければ、デフォルト色が返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{buf} is used as with |term_getsize()|.  If the buffer does not
+		exist or is not a terminal window, an empty list is returned.
+		{only available when compiled with the |+terminal| feature and
+		with GUI enabled and/or the |+termguicolors| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{buf@} は |@ref{term_getsize()}| と同様に使われる。もしもバッファが存在しないか端末ウィンドウでなければ、空のリストが返される。
+
+@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたとき、かつ GUI が有効のとき、かつ/または |@ref{+termguicolors}| 機能付きでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 term_getattr({attr}, {what})				*term_getattr()*
 		Given {attr}, a value returned by term_scrape() in the "attr"
 		item, return whether {what} is on.  {what} can be one of:
@@ -22070,6 +22102,34 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+term_setansicolors({buf}, {colors})			*term_setansicolors()*
+		Set the ANSI color palette used by terminal {buf}.
+		{colors} must be a List of 16 valid color names or hexadecimal
+		color codes, like those accepted by |highlight-guifg|.
+		Also see |term_getansicolors()| and |g:terminal_ansi_colors|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{term_setansicolors()}
+@findex term_setansicolors()
+@item term_setansicolors(@{buf@}, @{colors@})
+ターミナル @{buf@} で使われている ANSI カラーパレットを設定する。@{colors@} は 正しい 16 ANSI カラーか、|@ref{highlight-guifg}| で認められているような 16 進数のカラーコードのリストでなければならない。|@ref{term_getansicolors()}| と |@ref{g:terminal_ansi_colors}| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		These colors are used in the GUI and in the terminal when
+		'termguicolors' is set.  When not using GUI colors (GUI mode
+		or |termguicolors|), the terminal window always uses the 16
+		ANSI colors of the underlying terminal.
+		{only available when compiled with the |+terminal| feature and
+		with GUI enabled and/or the |+termguicolors| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのカラーは '@option{termguicolors}' が設定されているときに GUI と端末で使われる。GUI カラーが使われていないとき (GUI モードもしくは |@ref{'termguicolors'}| が設定されている)、端末ウィンドウは常に、端末の根底にある 16 ANSI カラーを使う。
+
+@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたとき、かつ GUI が有効のとき、かつ/または |@ref{+termguicolors}| 機能付きでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 term_setkill({buf}, {how})				*term_setkill()*
 		When exiting Vim or trying to close the terminal window in
 		another way, {how} defines whether the job in the terminal can
@@ -22282,12 +22342,17 @@ term_start({cmd}, {options})				*term_start()*
 				     CTRL-D is used on MS-Windows. For Python
 				     use CTRL-Z or "exit()". For a shell use
 				     "exit".  A CR is always added.
+		   "ansi_colors"     A list of 16 color names or hex codes
+				     defining the ANSI palette used in GUI
+				     color modes.  See |g:terminal_ansi_colors|.
 
 		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item "eof_chars" @tab
 ターミナルに書き込まれるすべてのバッファ行のあとに送られるテキスト。これが設定されていないとき、MS-Windows では CTRL-D が使われる。Python では CTRL-Z か "exit()" が使われる。シェルでは "exit" が使われる。CR は常に付加される。
+@item "ansi_colors" @tab
+16 ANSI カラーの名前か GUI カラーモードで使われている ANSI パレットで定義されている 16 進数のカラーコードのリスト。|@ref{g:terminal_ansi_colors}| を参照
 @end multitable
 @{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
