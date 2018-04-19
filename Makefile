@@ -1,6 +1,6 @@
 PRG = /usr/local/bin/texi2any
 NVCHECK_DICT = $(HOME)/dev/vimdoc-ja/dict.yml
-HTML_OPT_NS = --html --no-split --css-include=style.css
+HTML_OPT_NS = --no-split --html --css-include=style.css
 HTML_OPT_S = --no-node-files --html --css-ref=style.css
 ORIG = $(HOME)/dev/vim/runtime
 MVIMORIG = $(HOME)/dev/macvim/runtime
