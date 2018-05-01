@@ -12711,8 +12711,8 @@ getqflist([{what}])					*getqflist()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 			changedtick	get the total number of changes made
-					to the list
-			context	get the context stored with |setqflist()|
+					to the list |quickfix-changedtick|
+			context	get the |quickfix-context|
 			efm	errorformat to use when parsing "lines". If
 				not present, then the 'errorformat' option
 				value is used.
@@ -12721,34 +12721,34 @@ getqflist([{what}])					*getqflist()*
 				current list or the list specified by "nr"
 			idx	index of the current entry in the list
 			items	quickfix list entries
-			lines	use 'errorformat' to extract items from a list
-				of lines and return the resulting entries.
-				Only a |List| type is accepted.  The current
-				quickfix list is not modified.
+			lines	parse a list of lines using 'efm' and return
+				the resulting entries.  Only a |List| type is
+				accepted.  The current quickfix list is not
+				modified. See |quickfix-parse|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .2 .8
-@item changedtick @tab リストを変更した総数を取得する
-@item context @tab |@ref{setqflist()}| で格納されたコンテキストを取得する
+@item changedtick @tab リストを変更した総数を取得する |@ref{quickfix-changedtick}|
+@item context @tab |@ref{quickfix-context}| を取得する
 @item efm @tab "lines" をパースする時に使う errorformat。もしも存在しなければ '@option{errorformat}' オプションの値が使われる
 @item id @tab |@ref{quickfix-ID}| の quickfix リストの情報を取得する。0 はカレントリストの id もしくは "nr" で指定されたリストということを意味する
 @item idx @tab リスト内の現在のエントリのインデックス
 @item items @tab quickfix リストのエントリ
-@item lines @tab 行のリストから項目を抽出し結果のエントリを返すのに '@option{errorformat}' を使う。|@ref{List}| タイプのみを受け取る。現在の quickfix リストは変更されない
+@item lines @tab '@option{efm}' を使って行のリストをパースし、項目の結果を返す。|@ref{List}| 型のみ受け取られる。現在の quickfix リストは変更されない。|@ref{quickfix-parse}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 			nr	get information for this quickfix list; zero
 				means the current quickfix list and "$" means
 				the last quickfix list
 			size	number of entries in the quickfix list
-			title	get the list title
+			title	get the list title |quickfix-title|
 			winid	get the quickfix |window-ID|
 			all	all of the above quickfix properties
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item nr @tab この quickfix リストの情報を取得。0 は現在の quickfix リストを意味する。"$" は quickfix リストの最後を意味する
 @item size @tab quickfix リスト内のエントリ数
-@item title @tab リストタイトルを取得
+@item title @tab |@ref{quickfix-title}| のリストタイトルを取得
 @item winid @tab quickfix の |@ref{window-ID}| を取得
 @item all @tab 上記の quickfix のすべてのプロパティ
 @end multitable
@@ -12782,7 +12782,7 @@ quickfix スタックのリスト数を得るために、@{what@} の "nr" を "
 		The returned dictionary contains the following entries:
 			changedtick	total number of changes made to the
 					list |quickfix-changedtick|
-			context	context information stored with |setqflist()|.
+			context	quickfix list context. See |quickfix-context|
 				If not present, set to "".
 			id	quickfix list ID |quickfix-ID|. If not
 				present, set to 0.
@@ -12800,7 +12800,7 @@ quickfix スタックのリスト数を得るために、@{what@} の "nr" を "
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 返される辞書には、次のエントリが含まれる:
 @multitable @columnfractions .2 .8
-@item changedtick @tab リストを変更した総数 |@ref{quickfix-changedtick}|
+@item changedtick @tab quickfix リストのコンテキスト。|quickfix-context| を参照。
 @item context @tab |@ref{setqflist()}| に格納されたコンテキスト情報。もし存在しなければ "" に設定する。
 @item id @tab quickfix リストの ID |@ref{quickfix-ID}|。もし存在しなければ 0 に設定する。
 @item idx @tab リスト内の現在のエントリのインデックス。もし存在しなければ 0 に設定する。
@@ -12813,14 +12813,14 @@ quickfix スタックのリスト数を得るために、@{what@} の "nr" を "
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-		Examples: >
+		Examples (See also |getqflist-examples|): >
 			:echo getqflist({'all': 1})
 			:echo getqflist({'nr': 2, 'title': 1})
 			:echo getqflist({'lines' : ["F1:10:L10"]})
 <
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-例:
+例 (|@ref{getqflist-examples}| も参照):
 @example
 :echo getqflist(@{'all': 1@})
 :echo getqflist(@{'nr': 2, 'title': 1@})
@@ -19201,7 +19201,7 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 オプショナル引数の辞書 @{what@} が提供される場合、@{what@} で指定されるアイテムのみが設定される。最初の @{list@} は無視される。@{what@} では以下のアイテムを指定する事ができる:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-		    context	any Vim type can be stored as a context
+		    context	quickfix list context. See |quickfix-context|
 		    efm		errorformat to use when parsing text from
 				"lines". If this is not present, then the
 				'errorformat' option value is used.
@@ -19218,7 +19218,7 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .2 .8
-@item context @tab Vim タイプはどれもコンテキストとして保存されうる
+@item context @tab quickfix リストのコンテキスト。|@ref{quickfix-context}| を参照
 @item efm @tab "lines" からテキストをパースする時に使われる errorformat。もしも存在しなければ '@option{errorformat}' オプションの値が使われる
 @item id @tab quickfix リストの識別子 |@ref{quickfix-ID}|
 @item items @tab quickfix エントリのリスト。@{list@} 引数と同じ
@@ -19241,18 +19241,18 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-		Examples: >
+		Examples (See also |setqflist-examples|): >
 		   :call setqflist([], 'r', {'title': 'My search'})
 		   :call setqflist([], 'r', {'nr': 2, 'title': 'Errors'})
-		   :call setqflist([], 'a', {'id':myid, 'lines':["F1:10:L10"]})
+		   :call setqflist([], 'a', {'id':qfid, 'lines':["F1:10:L10"]})
 <
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-例:
+例 (|@ref{setqflist-examples}| も参照):
 @example
 :call setqflist([], 'r', @{'title': 'My search'@})
 :call setqflist([], 'r', @{'nr': 2, 'title': 'Errors'@})
-:call setqflist([], 'a', @{'id':myid, 'lines':["F1:10:L10"]@})
+:call setqflist([], 'a', @{'id':qfid, 'lines':["F1:10:L10"]@})
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
