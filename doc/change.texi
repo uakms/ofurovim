@@ -3,14 +3,14 @@
 @unnumbered テキストの削除と変更
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*change.txt*    For Vim version 8.0.  Last change: 2018 Apr 17
+*change.txt*    For Vim version 8.0.  Last change: 2018 May 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*change.txt*    For Vim バージョン 8.0.  Last change: 2018 Apr 17
+*change.txt*    For Vim バージョン 8.0.  Last change: 2018 May 12
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -327,7 +327,7 @@ is an error when 'cpoptions' includes the 'E' flag.
 J			Join [count] lines, with a minimum of two lines.
 			Remove the indent and insert up to two spaces (see
 			below).  Fails when on the last line of the buffer.
-			If [count] is too big it is reduce to the number of
+			If [count] is too big it is reduced to the number of
 			lines available.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -1293,7 +1293,7 @@ This depends on the 'nrformats' option:
 @ifset EN
 For decimals a leading negative sign is considered for incrementing/
 decrementing, for binary, octal and hex values, it won't be considered.  To
-ignore the sign Visually select the number before using CTRL-A or CTRL-X. 
+ignore the sign Visually select the number before using CTRL-A or CTRL-X.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 10 進数では先頭の負の符号は増加/減少に対して考慮される。しかし 2 進数、8 進数および 16 進数では考慮されない。符号を無視するには @kbd{CTRL-A} または @kbd{CTRL-X} を使う前に数字をビジュアル選択する。
@@ -4214,6 +4214,125 @@ program.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 オプション '@option{formatexpr}' でテキストの整形に使う expression を設定したり、'@option{formatprg}' で外部プログラムの名前を設定することができる。外部プログラムによる整形処理には、'@option{textwidth}' や他のオプションは何の影響も与えない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+                                                        *format-formatexpr*
+The 'formatexpr' option can be set to a Vim Script function that performs
+reformatting of the buffer.  This should usually happen in an |ftplugin|,
+since formatting is highly dependent on the type of file.  It makes
+sense to use an |autoload| script, so the corresponding script is only loaded
+when actually needed and the script should be called <filetype>format.vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{format-formatexpr}
+@cindex format-formatexpr
+'@option{formatexpr}' オプションは、バッファの再整形を実行する Vim script 関数を設定する。整形はファイルのタイプに強く依存しているので、これはたいてい |@ref{ftplugin}| で発生する。実際に必要となり、スクリプトが <filetype>format.vim に呼ばれるときに対応するスクリプトがロードのみされるので、|@ref{autoload}| スクリプトを使うのが理にかなっている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, the XML filetype plugin distributed with Vim in the $VIMRUNTIME
+directory, sets the 'formatexpr' option to: >
+
+   setlocal formatexpr=xmlformat#Format()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、Vim の @env{$VIMRUNTIME} ディレクトリに同梱されている XML ファイルタイププラグインは、'@option{formatexpr}' オプションを次のように設定している:
+@example
+setlocal formatexpr=xmlformat#Format()
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+That means, you will find the corresponding script, defining the
+xmlformat#Format() function, in the directory:
+`$VIMRUNTIME/autoload/xmlformat.vim`
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはディレクトリ中で xmlformat#Format() 関数を定義しているスクリプトを探すという意味だ: `$VIMRUNTIME/autoload/xmlformat.vim`
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Here is an example script that removes trailing whitespace from the selected
+text.  Put it in your autoload directory, e.g. ~/.vim/autoload/format.vim: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ここに選択したテキストから末尾の空白を除去するスクリプト例がある。これを autoload ディレクトリに置こう。例えば ~/.vim/autoload/format.vim:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+  func! format#Format()
+    " only reformat on explicit gq command
+    if mode() != 'n'
+      " fall back to Vims internal reformatting
+      return 1
+    endif
+    let lines = getline(v:lnum, v:lnum + v:count - 1)
+    call map(lines, {key, val -> substitute(val, '\s\+$', '', 'g')})
+    call setline('.', lines)
+
+    " do not run internal formatter!
+    return 0
+  endfunc
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+func! format#Format()
+  " only reformat on explicit gq command
+  if mode() != 'n'
+    " fall back to Vims internal reformatting
+    return 1
+  endif
+  let lines = getline(v:lnum, v:lnum + v:count - 1)
+  call map(lines, {key, val -> substitute(val, '\s\+$', '', 'g')})
+  call setline('.', lines)
+
+  " do not run internal formatter!
+  return 0
+endfunc
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can then enable the formatting by executing: >
+  setlocal formatexpr=format#Format()
+>
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次を実行することで整形を有効にすることができる:
+@example
+setlocal formatexpr=format#Format()
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Note: this function explicitly returns non-zero when called from insert mode
+(which basically means, text is inserted beyond the 'textwidth' limit).  This
+causes Vim to fall back to reformat the text by using the internal formatter.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+この関数は挿入モードから呼ばれたときは明白に非ゼロを返すことに注意 (基本的には テキストが '@option{textwidth}' の制限を超えて挿入される)。これはテキストを整形するために、内部フォーマッタを使用することによって Vim にフォールバックを引き起す。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+However, if the |gq| command is used to reformat the text, the function
+will receive the selected lines, trim trailing whitespace from those lines and
+put them back in place.  If you are going to split single lines into multiple
+lines, be careful not to overwrite anything.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+しかしながら、テキストを再整形するために |@ref{gq}| コマンドが使用されると、関数は選択された行を受け取り、これらの行から末尾の空白を取り除き、元の場所に戻すだろう。もしも 1 行を複数行に分割しようと思うなら、何も上書きしないように注意すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to allow reformatting of text from insert or replace mode, one has
+to be very careful, because the function might be called recursively.  For
+debugging it helps to set the 'debug' option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+挿入モードや置換モードでのテキストの再整形ができるようにしたいなら、関数が再帰的呼ばれるかもしれないので十分に注意しなければならない。デバッグには '@option{debug}' オプションを設定すると役にたつ。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN

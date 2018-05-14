@@ -53,10 +53,8 @@ MACVIMREF = doc/gui_mac.texi
 # そのまま diff をかけると不都合があるので UTF-8 に変換するファイル
 # 2018.03.19 usr_24.txt, eval.txt は原文が UTF-8 になった。
 # 2018.03.30 spell.txt, quotes.txt は原文が UTF-8 になった。
-INCONVENIENTFILES = \
-	$(ORIG)/doc/map.txt \
-	$(ORIG)/doc/mlang.txt \
-	$(ORIG)/doc/farsi.txt
+# 2018.05.07 map.txt, mlang.txt は原文が UTF-8 になった。
+INCONVENIENTFILES = $(ORIG)/doc/farsi.txt
 
 .PHONY: first html onehtml pdf diffja nvcheck tagcheck clean
 
