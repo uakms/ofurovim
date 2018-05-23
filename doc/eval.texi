@@ -6599,9 +6599,22 @@ range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
 readfile({fname} [, {binary} [, {max}]])
 				List	get list of lines from file {fname}
+reg_executing()			Number	get the executing register name
+reg_recording()			String	get the recording register name
 reltime([{start} [, {end}]])	List	get time value
 reltimefloat({time})		Float	turn the time value into a Float
 reltimestr({time})		String	turn time value into a String
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{range(), , range}(@{expr@} [, @{max@} [, @{stride@}]]) @tab リスト @tab @{expr@} から @{max@} までの要素のリスト
+@item @ref{readfile(), , readfile}(@{fname@} [, @{binary@} [, @{max@}]]) @tab リスト @tab ファイル @{fname@} から行のリストを取得
+@item @ref{reg_executing()} @tab 文字列 @tab 実行しているレジスタ名を取得
+@item @ref{reg_recording()} @tab 文字列 @tab 記録しているレジスタ名を取得
+@item @ref{reltime(), , reltime}([@{start@} [, @{end@}]]) @tab リスト @tab 時刻の値を取得
+@item @ref{reltimefloat(), , reltimefloat}(@{time@}) @tab 浮動小数点数 @tab 時刻の値を浮動小数点に変換
+@item @ref{reltimestr(), , reltimestr}(@{time@}) @tab 文字列 @tab 時刻の値を文字列に変換
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 remote_expr({server}, {string} [, {idvar} [, {timeout}]])
 				String	send expression
 remote_foreground({server})	Number	bring Vim server to the foreground
@@ -6615,11 +6628,6 @@ remote_startserver({name})	none	become server {name}
 				String	send key sequence
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item @ref{range(), , range}(@{expr@} [, @{max@} [, @{stride@}]]) @tab リスト @tab @{expr@} から @{max@} までの要素のリスト
-@item @ref{readfile(), , readfile}(@{fname@} [, @{binary@} [, @{max@}]]) @tab リスト @tab ファイル @{fname@} から行のリストを取得
-@item @ref{reltime(), , reltime}([@{start@} [, @{end@}]]) @tab リスト @tab 時刻の値を取得
-@item @ref{reltimefloat(), , reltimefloat}(@{time@}) @tab 浮動小数点数 @tab 時刻の値を浮動小数点に変換
-@item @ref{reltimestr(), , reltimestr}(@{time@}) @tab 文字列 @tab 時刻の値を文字列に変換
 @item @ref{remote_expr(), , remote_expr}(@{server@}, @{string@} [, @{idvar@} [, @{timeout@}]]) @tab 文字列 @tab 式を送信する
 @item @ref{remote_foreground(), , remote_foreground}(@{server@}) @tab 数値 @tab Vim サーバーを前面に出す
 @item @ref{remote_peek(), , remote_peek}(@{serverid@} [, @{retvar@}]) @tab 数値 @tab 返信文字列を確認する
@@ -15477,10 +15485,11 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 
 @ifset EN
 		When there is no mapping for {name}, an empty String is
-		returned.
+		returned.  When the mapping for {name} is empty, then "<Nop>"
+		is returned.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{name@} というキーマップが存在しない場合、空文字列が返される。
+@{name@} というキーマップが存在しない場合、空文字列が返される。@{name@} のマッピングが空の場合、"<Nop>" が返される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -15643,13 +15652,14 @@ maparg() との違いは、mapcheck() は @{name@} にマッチするマップ�
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 		When there is no mapping that starts with {name}, an empty
-		String is returned.  If there is one, the rhs of that mapping
+		String is returned.  If there is one, the RHS of that mapping
 		is returned.  If there are several mappings that start with
-		{name}, the rhs of one of them is returned.
+		{name}, the RHS of one of them is returned.  This will be
+		"<Nop>" if the RHS is empty.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 
-@{name@} にマッチするキーマップが存在しない時には、空文字列が返される。結果が 1 つならばマップされた rhs が返される。複数見つかった場合には、それらのうちどれか 1 つの rhs が返される。
+@{name@} にマッチするキーマップが存在しない時には、空文字列が返される。結果が 1 つならばマップされた RHS が返される。複数見つかった場合には、それらのうちどれか 1 つの RHS が返される。RHS が空ならば "<Nop>" になるだろう。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 		The mappings local to the current buffer are checked first,
@@ -17401,6 +17411,31 @@ readfile({fname} [, {binary} [, {max}]])
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 ファイルを開けないときはエラーメッセージを表示し、空リストを返す。|@ref{writefile()}| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+reg_executing()						*reg_executing()*
+		Returns the single letter name of the register being executed.
+		Returns an empty string when no register is being executed.
+		See |@|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{reg_executing()}
+@findex reg_executing()
+@item reg_executing()
+実行されているレジスタ名の一文字を返す。実行されているレジスタが無ければ空文字を返す。|@ref{@@}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+
+reg_recording()						*reg_recording()*
+		Returns the single letter name of the register being recorded.
+		Returns an empty string string when not recording.  See |q|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{reg_recording()}
+@findex reg_recording()
+@item reg_recording()
+記録されているレジスタ名の一文字を返す。記録が無ければ空文字を返す。|@ref{q}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -23982,57 +24017,42 @@ There are four types of features:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 <							*has-patch*
-3.  Included patches.  The "patch123" feature means that patch 123 has been
-    included.  Note that this form does not check the version of Vim, you need
-    to inspect |v:version| for that.
-    Example (checking version 6.2.148 or later): >
-	:if v:version > 602 || v:version == 602 && has("patch148")
-<    Note that it's possible for patch 147 to be omitted even though 148 is
-    included.
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@anchor{has-patch}
-@cindex has-patch
-@item 適用済みパッチ。"patch123" はパッチ 123 が適用されていることを示す。
-@quotation
-@strong{Note:} @*
-この形式は Vim のバージョンをチェックしない。あなたは |@ref{v:version}| を解析する必要がある。
-
-例 (6.2.148 以降かどうかを確認する):
-@example
-:if v:version > 602 || v:version == 602 && has("patch148")
-@end example
-@end quotation
-@quotation
-@strong{Note:} @*
-148 が適用されていても、147 が抜けていることもありうるので注意。
-@end quotation
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
-4.  Beyond a certain version or at a certain version and including a specific
-    patch.  The "patch-7.4.237" feature means that the Vim version is 7.5 or
-    later, or it is version 7.4 and patch 237 was included.
-    Note that this only works for patch 7.4.237 and later, before that you
-    need to use the example above that checks v:version.  Example: >
+3.  Beyond a certain version or at a certain version and including a specific
+    patch.  The "patch-7.4.248" feature means that the Vim version is 7.5 or
+    later, or it is version 7.4 and patch 248 was included.  Example: >
 	:if has("patch-7.4.248")
-<    Note that it's possible for patch 147 to be omitted even though 148 is
-    included.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item 特定のバージョン以降であるか、またはバージョンが同じで特定のパッチが含まれているかどうか。"patch-7.4.237" は、Vim のバージョンが 7.5 以降か、または 7.4 でパッチ 237 を含んでいるかどうかを示す。
-@quotation
-@strong{Note:} @*
-これはパッチ 7.4.237 以降でのみ機能する。それ以前では上述のように v:version を確認する必要がある。例:
+@item 特定のバージョン以降であるか、またはバージョンが同じで特定のパッチが含まれているかどうか。"patch-7.4.248" は、Vim のバージョンが 7.5 以降か、または 7.4 でパッチ 248 を含んでいるかどうかを示す。例:
 @example
 :if has("patch-7.4.248")
 @end example
-@end quotation
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<    Note that it's possible for patch 248 to be omitted even though 249 is
+    included.  Only happens when cherry-picking patches.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @quotation
 @strong{Note:} @*
-148 が適用されていても、147 が抜けていることもありうるので注意。
+249 が適用されていても、248 が抜けていることもありうるので注意。cherry-pick パッチの時にのみ生じる。
 @end quotation
-@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    Note that this form only works for patch 7.4.237 and later, before that
+    you need to check for the patch and the  v:version.  Example (checking
+    version 6.2.148 or later): >
+	:if v:version > 602 || (v:version == 602 && has("patch148"))
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+これはパッチ 7.4.237 以降でのみ機能する。それ以前では上述のように v:version を確認する必要がある。例 (6.2.148 以降かどうかを確認する):
+@end quotation
+@example
+:if v:version > 602 || (v:version == 602 && has("patch148"))
+@end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
