@@ -57,6 +57,7 @@ Netbeans インターフェイスもチャンネルを使っています。|@ref
 9. Starting a job without a channel	|job-start-nochannel|
 10. Job options				|job-options|
 11. Controlling a job			|job-control|
+12. Using a prompt buffer		|prompt-buffer|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .6 .4
@@ -71,6 +72,7 @@ Netbeans インターフェイスもチャンネルを使っています。|@ref
 @item 9. チャンネルなしでジョブを開始する @tab |@ref{job-start-nochannel}|
 @item 10. ジョブオプション @tab |@ref{job-options}|
 @item 11. ジョブを制御する @tab |@ref{job-control}|
+@item 12. プロンプトバッファを使う @tab |@ref{prompt-buffer}|
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -2369,6 +2371,108 @@ For more options see |job_stop()|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 他のオプションについては、|@ref{job_stop()}| 参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+12. Using a prompt buffer				*prompt-buffer*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prompt-buffer}
+@cindex prompt-buffer
+@section 12. プロンプトバッファを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to type input for the job in a Vim window you have a few options:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim ウィンドウでジョブに入力を打ち込みたいのなら、いくつかのオプションがある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Use a normal buffer and handle all possible commands yourself.
+  This will be complicated, since there are so many possible commands.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item ノーマルバッファを使い、できる限りすべてのコマンドを自分自身で取り扱う。コマンドがとても多いので、これはひどく込み入ったものになるだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Use a terminal window.  This works well if what you type goes directly to
+  the job and the job output is directly displayed in the window.
+  See |terminal-window|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ターミナルウィンドウを使う。これはジョブに直接入力を送り、ジョブが直接ウィンドウに表示する場合なら良いだろう。|@ref{terminal-window}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Use a prompt window. This works well when entering a line for the job in Vim
+  while displaying (possibly filtered) output from the job.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item プロンプトウィンドウを使う。これはジョブからの出力を表示 (フィルターされていても可能) しつつ、Vim 内のジョブに 1 行を入力ときには良いだろう。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A prompt buffer is created by setting 'buftype' to "prompt". You would
+normally only do that in a newly created buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロンプトバッファは '@option{buftype}' を "@var{prompt}" に設定することで作成される。普通は新たに作成されたバッファでのみ、そのようにしたいだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The user can edit and enter one line of text at the very last line of the
+buffer.  When pressing Enter in the prompt line the callback set with
+|prompt_setcallback()| is invoked.  It would normally send the line to a job.
+Another callback would receive the output from the job and display it in the
+buffer, below the prompt (and above the next prompt).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザーは編集しテキストの 1 行をバッファの最終行に入力することができる。プロンプト行で Enter が押されると、コールバックは |@ref{prompt_setcallback()}| が呼び出されたものに設定する。普通はジョブに行を送るだろう。もうひとつのコールバックはジョブからの出力を受け取り、それをバッファのプロンプト下 (次のプロンプトの上) に表示するだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Only the text in the last line, after the prompt, is editable. The rest of the
+buffer is not modifiable with Normal mode commands.  It can be modified by
+calling functions, such as |append()|.  Using other commands may mess up the
+buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロンプト後の最終行のテキストのみ編集することができる。バッファの残りはノーマルモードコマンドでは変更不可である。|@ref{append()}| のようなコマンドを呼び出すことによって編集することができる。その他のコマンドの使用はバッファをめちゃくちゃにしてしまうだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+After setting 'buftype' to "prompt" Vim does not automatically start Insert
+mode, use `:startinsert` if you want to enter Insert mode, so that the user
+can start typing a line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{buftype}' を "@var{prompt}" に設定したあとは、Vim は自動的に挿入モードを開始しない。もしも挿入モードに入りたいのなら、`@command{:startinsert}` を使う。そうすると、ユーザーは行の入力を開始することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The text of the prompt can be set with the |prompt_setprompt()| function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロンプトのテキストは |@ref{prompt_setprompt()}| 関数で設定することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The user can go to Normal mode and navigate through the buffer.  This can be
+useful see older output or copy text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ユーザーはノーマルモードに移行し、バッファを移動することができる。これは古い出力を見たりテキストをコピーするのに有用であるだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Any command that starts Insert mode, such as "a", "i", "A" and "I", will move
+the cursor to the last line, after the prompt.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"a", "i", "A" そして "I" のような挿入モードを開始するどのようなコマンドも、カーソルをプロンプトの後の最終行に移動するだろう。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 
