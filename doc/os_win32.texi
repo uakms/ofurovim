@@ -1,0 +1,784 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node os_win32.txt, , , 目次
+@unnumbered MS-Windows 95/98/NT
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*os_win32.txt*  For Vim version 8.1.  Last change: 2017 Mar 21
+
+
+		  VIM REFERENCE MANUAL    by George Reilly
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+*os_win32.txt*  For Vim バージョン 8.1.  Last change: 2017 Mar 21
+
+
+		  VIMリファレンスマニュアル    by George Reilly
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+						*win32* *Win32* *MS-Windows*
+This file documents the idiosyncrasies of the Win32 version of Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32}
+@anchor{Win32}
+@anchor{MS-Windows}
+@cindex win32
+@cindex Win32
+@cindex MS-Windows
+このファイルは Vim Win32 バージョンに特有の事柄についての文書である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Win32 version of Vim works on Windows XP, Vista, 7, 8 and 10.  There are
+both console and GUI versions.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Win32 版の Vim は Windows XP, Vista, 7, 8, 10 で実行可能である。コンソール版と GUI 版がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The 32 bit version also runs on 64 bit MS-Windows systems.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+32 ビット版 Vim は 64 ビット版 MS-Windows システム上でも実行可能である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Known problems		|win32-problems|
+2. Startup			|win32-startup|
+3. Restore screen contents	|win32-restore|
+4. Using the mouse		|win32-mouse|
+5. Running under Windows 95	|win32-win95|
+6. Running under Windows 3.1	|win32-win3.1|
+7. Win32 mini FAQ		|win32-faq|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. 知られている問題点 @tab |@ref{win32-problems}|
+@item 2. Vim の起動 @tab |@ref{win32-startup}|
+@item 3. スクリーン内容の復帰 @tab |@ref{win32-restore}|
+@item 4. マウスの使用 @tab |@ref{win32-mouse}|
+@item 5. Windows 95 での使用 @tab |@ref{win32-win95}|
+@item 6. Windows 3.1 での使用 @tab |@ref{win32-win3.1}|
+@item 7. Win32 ミニ FAQ @tab |@ref{win32-faq}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Additionally, there are a number of common Win32 and DOS items:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+付け加えて、Win32 と DOS 共通の項目がいくつかある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+File locations			|dos-locations|
+Using backslashes		|dos-backslash|
+Standard mappings		|dos-standard-mappings|
+Screen output and colors	|dos-colors|
+File formats			|dos-file-formats|
+:cd command			|dos-:cd|
+Interrupting			|dos-CTRL-Break|
+Temp files			|dos-temp-files|
+Shell option default		|dos-shell|
+
+Win32 GUI			|gui-w32|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item ファイルの位置 @tab |dos-locations|
+@item バックスラッシュの使用 @tab |dos-backslash|
+@item 標準のマッピング @tab |dos-standard-mappings|
+@item 画面出力とカラー @tab |dos-colors|
+@item ファイルフォーマット @tab |dos-file-formats|
+@item :cd コマンド @tab |dos-:cd|
+@item 割り込み (インタラプト) @tab |dos-CTRL-Break|
+@item 一時ファイル @tab |dos-temp-files|
+@item Shellオプションのデフォルト @tab |dos-shell|
+@item @tab 
+@item Win32 GUI @tab |@ref{gui-w32}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Credits:
+The Win32 version was written by George V. Reilly <george@reilly.org>.
+The original Windows NT port was done by Roger Knobbe <RogerK@wonderware.com>.
+The GUI version was made by George V. Reilly and Robert Webb.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+クレジット: @*
+Win32 バージョンは George V. Reilly <george@@reilly.org> による。
+
+オリジナルの Windows NT への移植は Roger Knobbe <RogerK@@wonderware.com> による。
+
+GUI バージョンは George V. Reilly と Robert Webb によって作成された。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For compiling see "src/INSTALLpc.txt".			*win32-compiling*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32-compiling}
+@cindex win32-compiling
+コンパイルする場合は "src/INSTALLpc.txt" を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Known problems					*win32-problems*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32-problems}
+@cindex win32-problems
+@section 1. 知られている問題点
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When doing file name completion, Vim also finds matches for the short file
+name.  But Vim will still find and use the corresponding long file name.  For
+example, if you have the long file name "this_is_a_test" with the short file
+name "this_i~1", the command ":e *1" will start editing "this_is_a_test".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル名補完を行っているとき、Vim は短いファイル名への一致も見つける。しかし、それでも Vim は長いファイル名への一致を見つけ、採用する。例えば、もしあなたが短いファイル名 "this_i~1" を持つ、長いファイル名のファイル "this_is_a_test" を持っているなら、コマンド ":e *1" は "this_is_a_test" の編集を始める。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Startup						*win32-startup*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32-startup}
+@cindex win32-startup
+@section 2. Vim の起動
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Current directory					*win32-curdir*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32-curdir}
+@cindex win32-curdir
+@unnumberedsubsec カレントディレクトリ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If Vim is started with a single file name argument, and it has a full path
+(starts with "x:\"), Vim assumes it was started from the file explorer and
+will set the current directory to where that file is.  To avoid this when
+typing a command to start Vim, use a forward slash instead of a backslash.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim にフルパスのファイル名 ("x:\" の形で始まる) を指定したとき、Vim はエクスプローラーから起動されたと仮定してそのファイルのあるディレクトリをカレントディレクトリにする。そうならないようにするにはファイルのパスにバックスラッシュ (\) の代わりにスラッシュ (/) を使うこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Example: >
+
+	vim c:\text\files\foo.txt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+vim c:\text\files\foo.txt
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Will change to the "C:\text\files" directory. >
+
+	vim c:/text\files\foo.txt
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはカレントディレクトリを "C:\text\files" に変更する。
+@example
+vim c:/text\files\foo.txt
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Will use the current directory.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+こうすればカレントディレクトリを変更しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Term option						*win32-term*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32-term}
+@cindex win32-term
+@unnumberedsubsec 端末オプション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The only kind of terminal type that the Win32 version of Vim understands is
+"win32", which is built-in.  If you set 'term' to anything else, you will
+probably get very strange behavior from Vim.  Therefore Vim does not obtain
+the default value of 'term' from the environment variable "TERM".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Win32 バージョンの Vim が認識できる唯一の端末の種類は "win32" であり、これは組み込みである。'@option{term}' に他の何かを設定すると、Vim はたぶんとても奇妙な振る舞いを見せることだろう。それゆえ、Vim は '@option{term}' のデフォルト値を環境変数 "@var{TERM}" から取得しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+$PATH							*win32-PATH*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32-PATH}
+@cindex win32-PATH
+@unnumberedsubsec $PATH
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The directory of the Vim executable is appended to $PATH.  This is mostly to
+make "!xxd" work, as it is in the Tools menu.  And it also means that when
+executable() returns 1 the executable can actually be executed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim 実行ファイルのディレクトリが $PATH に追加される。これは主に「ツール」メニューにある "!xxd" が動作するようにするためである。また、これにより executable() が 1 を返すときは実際にその実行ファイルが実行可能であるようになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Command line arguments					*win32-cmdargs*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32-cmdargs}
+@cindex win32-cmdargs
+@unnumberedsubsec コマンドライン引数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Analysis of a command line into parameters is not standardised in MS Windows.
+Vim and gvim used to use different logic to parse it (before 7.4.432), and the
+logic was also depended on what it was compiled with.  Now Vim and gvim both
+use the CommandLineToArgvW() Win32 API, so they behave in the same way.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドラインからパラメーターへの解析は MS Windows で標準化されていない。Vim と gvim はかつては (7.4.432 以前)、それをパースするために異なるロジックを用いており、さらにどのコンパイラでコンパイルしたかにも依存していた。現在では Vim も gvim も CommandLineToArgvW() Win32 API を使用しており、どちらも同じように動作する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The basic rules are:					*win32-backslashes*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32-backslashes}
+@cindex win32-backslashes
+@unnumberedsubsubsec 基本的なルール:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+      a) A parameter is a sequence of graphic characters.
+      b) Parameters are separated by white space.
+      c) A parameter can be enclosed in double quotes to include white space.
+      d) A sequence of zero or more backslashes (\) and a double quote (")
+	is special.  The effective number of backslashes is halved, rounded
+	down.  An even number of backslashes reverses the acceptability of
+	spaces and tabs, an odd number of backslashes produces a literal
+	double quote.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .9
+@item a) @tab パラメーターは表示可能文字である
+@item b) @tab パラメーターはスペースで区切られている
+@item c) @tab ダブルクォートで囲めばパラメーターにスペースを含むことができる
+@item d) @tab バックスラッシュ (\) が 1 つ以上の後に続くダブルクォート (") は特別な文字である。バックスラッシュの数を半分に割って小数を切捨てた数に意味がある。奇数ならバックスラッシュはスペースやタブの効果を変える。偶数ならバックスラッシュはリテラルのダブルクォートを作る。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+So:
+	"	is a special double quote
+	\"	is a literal double quote
+	\\"	is a literal backslash and a special double quote
+	\\\"	is a literal backslash and a literal double quote
+	\\\\"	is 2 literal backslashes and a special double quote
+	\\\\\"	is 2 literal backslashes and a literal double quote
+	etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+つまり:
+@multitable @columnfractions .1 .9
+@item " @tab は特別なダブルクォート
+@item \" @tab はリテラルのダブルクォート
+@item \\" @tab はリテラルのバックスラッシュと特別なダブルクォート
+@item \\\" @tab はリテラルのバックスラッシュとリテラルのダブルクォート
+@item \\\\" @tab はリテラルのバックスラッシュ二つと特別なダブルクォート
+@item \\\\\" @tab はリテラルのバックスラッシュ二つとリテラルのダブルクォート
+@end multitable
+など。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example: >
+	vim "C:\My Music\freude" +"set ignorecase" +/"\"foo\\" +\"bar\\\"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+gvim "C:\My Music\freude" +"set ignorecase" +/"\"foo\\" +\"bar\\\"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+opens "C:\My Music\freude" and executes the line mode commands: >
+	set ignorecase; /"foo\ and /bar\"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+は "C:\My Music\freude" を開き、次のコマンドを実行する:
+@example
+set ignorecase; /"foo\ and /bar\"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These rules are also described in the reference of the CommandLineToArgvW API:
+    https://msdn.microsoft.com/en-us/library/windows/desktop/bb776391.aspx
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのルールは CommandLineToArgvW API のリファレンスにも記載されている:
+
+@url{https://msdn.microsoft.com/en-us/library/windows/desktop/bb776391.aspx}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*win32-quotes*
+There are additional rules for quotes (which are not well documented).
+As described above, quotes inside a file name (or any other command line
+argument) can be escaped with a backslash.  E.g. >
+	vim -c "echo 'foo\"bar'"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32-quotes}
+@cindex win32-quotes
+クォートには追加のルールがある (これらはちゃんとドキュメント化されていない)。前述の通り、ファイル名 (もしくは他のコマンドライン引数) の中のクォートはバックスラッシュでエスケープできる。例。
+@example
+vim -c "echo 'foo\"bar'"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Alternatively use three quotes to get one: >
+	vim -c "echo 'foo"""bar'"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+その代わりにクォートを3つ使う事もできる:
+@example
+vim -c "echo 'foo"""bar'"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The quotation rules are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsubsec クォートのルールは:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. A `"` starts quotation.
+2. Another `"` or `""` ends quotation. If the quotation ends with `""`, a `"`
+   is produced at the end of the quoted string.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@enumerate
+@item 1 つの `"` はクォートの始まり。
+@item 他の `"` や `""` はクォートの終わり。もしクォートが `""` で終わっているならクォートされた文字列の終わりに `"` が生成される。
+@end enumerate
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples, with [] around an argument:
+        "foo"           -> [foo]
+        "foo""          -> [foo"]
+        "foo"bar        -> [foobar]
+        "foo" bar       -> [foo], [bar]
+        "foo""bar       -> [foo"bar]
+        "foo"" bar      -> [foo"], [bar]
+        "foo"""bar"     -> [foo"bar]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例えば、引数を1つずつ [] で囲った場合:
+@verbatim
+"foo"           -> [foo]
+"foo""          -> [foo"]
+"foo"bar        -> [foobar]
+"foo" bar       -> [foo], [bar]
+"foo""bar       -> [foo"bar]
+"foo"" bar      -> [foo"], [bar]
+"foo"""bar"     -> [foo"bar]
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+3. Restore screen contents				*win32-restore*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32-restore}
+@cindex win32-restore
+@section 3. スクリーン内容の復帰
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When 'restorescreen' is set (which is the default), Vim will restore the
+original contents of the console when exiting or when executing external
+commands.  If you don't want this, use ":set nors".	|'restorescreen'|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{restorescreen}' がセットされているとき (これはデフォルト)、終了時、または外部コマンド実行時、Vim はコンソールの元の内容を復帰する。これを行いたくない場合は、"@command{:set nors}" を使うとよい。|@ref{'restorescreen'}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Using the mouse					*win32-mouse*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32-mouse}
+@cindex win32-mouse
+@section 4. マウスの使用
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The Win32 version of Vim supports using the mouse.  If you have a two-button
+mouse, the middle button can be emulated by pressing both left and right
+buttons simultaneously - but note that in the Win32 GUI, if you have the right
+mouse button pop-up menu enabled (see 'mouse'), you should err on the side of
+pressing the left button first.				|mouse-using|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Win32 バージョンの Vim はマウスの使用をサポートする。2 ボタンマウスを使用している場合、中ボタンは左と右の両方のボタンを同時に押すことによってエミュレートできる - しかし、Win32 GUI で右ボタンクリックによるポップアップメニューを有効にしていると ('@option{mouse}' を参照)、左ボタンを先にクリックした際、エラーが発生する。|@ref{mouse-using}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the mouse doesn't work, try disabling the "Quick Edit Mode" feature of
+the console.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マウスが機能しない場合には、コンソールの "簡易編集モード" プロパティを無効にしてみよ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. Running under Windows 95				*win32-win95*
+					*windows95* *windows98* *windowsme*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@section 5. Windows 95 での使用
+@anchor{win32-win95}
+@anchor{windows95}
+@anchor{windows98}
+@anchor{windowsme}
+@cindex win32-win95
+@cindex windows95
+@cindex windows98
+@cindex windowsme
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Windows 95/98/ME support was removed in patch 8.0.0029  If you want to use it
+you will need to get a version older than that.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Windows 95/98/ME のサポートはパッチ 8.0.0029 にて削除された。これを使いたいときは、これよりも古いバージョンを入手する必要がある。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Running under Windows 3.1				*win32-win3.1*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32-win3.1}
+@cindex win32-win3.1
+@section 6. Windows 3.1 での使用
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+					*win32s* *windows-3.1* *gui-w32s*
+There was a special version of gvim that runs under Windows 3.1 and 3.11.
+Support was removed in patch 7.4.1363.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32s}
+@anchor{windows-3.1}
+@anchor{gui-w32s}
+@cindex win32s
+@cindex windows-3.1
+@cindex gui-w32s
+かつて Windows 3.1 や 3.11 上で動作する gvim の特別なバージョンがあった。パッチ 7.4.1363 にてサポートは削除された。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. Win32 mini FAQ					*win32-faq*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win32-faq}
+@cindex win32-faq
+@section 7. Win32 ミニ FAQ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Q. How do I change the font?
+A. In the GUI version, you can use the 'guifont' option.  Example: >
+	:set guifont=Lucida_Console:h15:cDEFAULT
+<  In the console version, you need to set the font of the console itself.
+   You cannot do this from within Vim.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{Q.} フォントを変える方法は？ @*
+@strong{A.} GUIバージョンでは、'@option{guifont}' オプションを使用すればよい。例:
+@example
+:set guifont=Lucida_Console:h15:cDEFAULT
+@end example
+コンソールバージョンでは、コンソール自体のフォントを設定する必要がある。これは Vim から行うことはできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Q. How do I type dead keys on Windows NT?
+A. Dead keys work on NT 3.51.  Just type them as you would in any other
+   application.
+   On NT 4.0, you need to make sure that the default locale (set in the
+   Keyboard part of the Control Panel) is the same as the currently active
+   locale.  Otherwise the NT code will get confused and crash!  This is a NT
+   4.0 problem, not really a Vim problem.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{Q.} Windows NT上でデッドキーを打つ方法は？ @*
+@strong{A.} デッドキーは NT 3.51 上で機能する。単に、他のアプリケーションでやっているのと同じようにすればよい。
+
+NT 4.0では、標準のロケール (コントロールパネルのキーボードで設定する) が、現在アクティブなロケールと同じであることを確認する必要がある。そうしないと、NT のコードは混乱しクラッシュしてしまう！これは NT 4.0 の問題であり、本質的に Vim の問題ではない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Q. I'm using Vim to edit a symbolically linked file on a Unix NFS file server.
+   When I write the file, Vim does not "write through" the symlink.  Instead,
+   it deletes the symbolic link and creates a new file in its place.  Why?
+A. On Unix, Vim is prepared for links (symbolic or hard).  A backup copy of
+   the original file is made and then the original file is overwritten.  This
+   assures that all properties of the file remain the same.  On non-Unix
+   systems, the original file is renamed and a new file is written.  Only the
+   protection bits are set like the original file.  However, this doesn't work
+   properly when working on an NFS-mounted file system where links and other
+   things exist.  The only way to fix this in the current version is not
+   making a backup file, by ":set nobackup nowritebackup"     |'writebackup'|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{Q.} Vim で Unix NFS ファイルサーバー上のシンボリックリンクファイルを編集している。ファイルを書込むとき、Vim はシンボリックリンクを "介して書込む" ことをしない。代わりに、シンボリックリンクを削除し、その場所に新しいファイルを作成する。これは何故か？ @*
+@strong{A.} Unix では、Vim はリンク (シンボリック、ハード) に対応している。オリジナルファイルのバックアップが作られ、そしてオリジナルファイルが上書きされる。これはファイルの全てのプロパティが保たれることを保証する。非 Unix システムでは、オリジナルファイルは改名され、新しいファイルが書込まれる。保護ビットのみがオリジナルファイルと同じように設定される。しかし、これはリンクなどの機構の存在する、NFS マウントされたファイルシステムにおいて適切に動作しない。現在のバージョンにおいてこの問題を避ける唯一の方法は、"@command{:set nobackup nowritebackup}" によって、バックアップファイルを作らないことである。|@ref{'writebackup'}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Q. I'm using Vim to edit a file on a Unix file server through Samba.  When I
+   write the file, the owner of the file is changed.  Why?
+A. When writing a file Vim renames the original file, this is a backup (in
+   case writing the file fails halfway).  Then the file is written as a new
+   file.  Samba then gives it the default owner for the file system, which may
+   differ from the original owner.
+   To avoid this set the 'backupcopy' option to "yes".  Vim will then make a
+   copy of the file for the backup, and overwrite the original file.  The
+   owner isn't changed then.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{Q.} Samba を通して Unix ファイルサーバー上のファイルを Vim で編集している。このファイルを書き込むと、ファイルの所有者が変わってしまう。なぜか？ @*
+@strong{A.} ファイルを書き込むとき、Vim は元のファイルをリネームし、それをバックアップとする (ファイルの書き込みが途中で失敗した場合に備えるため)。そしてバッファが新規ファイルとして書き込まれる。すると Samba はそのファイルに対してファイルシステムのデフォルト所有者を設定する。その結果、元の所有者と変わってしまう。これを避けるには、オプション '@option{backupcopy}' を "@var{yes}" にすること。するとバックアップ用に元のファイルのコピーを作ってから、元のファイルを上書き保存するようになる。こうすればファイルの所有者は変わらない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Q. How do I get to see the output of ":make" while it's running?
+A. Basically what you need is to put a tee program that will copy its input
+   (the output from make) to both stdout and to the errorfile.  You can find a
+   copy of tee (and a number of other GNU tools) at
+   http://gnuwin32.sourceforge.net or http://unxutils.sourceforge.net
+   Alternatively, try the more recent Cygnus version of the GNU tools at
+   http://www.cygwin.com  Other Unix-style tools for Win32 are listed at
+   http://directory.google.com/Top/Computers/Software/Operating_Systems/Unix/Win32/
+   When you do get a copy of tee, you'll need to add >
+	:set shellpipe=\|\ tee
+<  to your _vimrc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{Q.} ":make" の出力を実行中に見たい場合は？ @*
+@strong{A.} 基本的には、入力 (この場合は make の出力) を標準出力とエラーファイルの両方にコピーする、tee プログラムを使えばよい。tee (とその他多くの GNU ツール)は、@url{http://gnuwin32.sourceforge.net か http://unxutils.sourceforge.net} から得られる。もしくは、最新の GNU ツールの Cygnus バージョン @url{http://www.cygwin.com} を使ってみてもよい。その他の Win32 用の Unix コマンドはこのサイトに列挙されている。@url{http://directory.google.com/Top/Computers/Software/Operating_Systems/Unix/Win32/}
+
+tee を手に入れたら、_vimrcに、以下のように設定する
+@example
+set shellpipe=\|\ tee
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Q. I'm storing files on a remote machine that works with VisionFS, and files
+   disappear!
+A. VisionFS can't handle certain dot (.) three letter extension file names.
+   SCO declares this behavior required for backwards compatibility with 16bit
+   DOS/Windows environments.  The two commands below demonstrate the behavior:
+>
+	echo Hello > file.bat~ 
+	dir > file.bat
+<
+   The result is that the "dir" command updates the "file.bat~" file, instead
+   of creating a new "file.bat" file.  This same behavior is exhibited in Vim
+   when editing an existing file named "foo.bat" because the default behavior
+   of Vim is to create a temporary file with a '~' character appended to the
+   name.  When the file is written, it winds up being deleted.
+
+   Solution: Add this command to your _vimrc file: >
+	:set backupext=.temporary
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{Q.} VisionFS が動いているリモートマシンにファイルを保存しておいたところ、それらが消えてしまった！ @*
+@strong{A.} VisionFS は、ある種のドット (.) と 3 文字の拡張子のファイル名を扱えない。SCO によれば、この振舞いは 16 ビット DOS/Windows 環境との互換性のために必要とされるそうである。以下の 2 つのコマンドで、この振舞いを実演できる:
+@example
+echo Hello > file.bat~
+dir > file.bat
+@end example
+この結果、"dir" コマンドは新しい "file.bat" というファイルを作成しないで、"file.bat~" を更新する。Vim においても、"foo.bat" という名前の既存のファイルを編集するときにこれと同じことが起こる、Vim の標準の機能では、'~' をファイル名の後に付け加えてテンポラリファイルを作成するからである。ファイルが書込まれたとき、これは上書きされる羽目になる。
+
+解決法: _vimrcファイルに次のコマンドを加える:
+@example
+set backupext=.temporary
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Q. How do I change the blink rate of the cursor?
+A. You can't!  This is a limitation of the NT console.  NT 5.0 is reported to
+   be able to set the blink rate for all console windows at the same time.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{Q.} カーソルの点滅頻度を変更する方法は？ @*
+@strong{A.} できない！ これは NT コンソールの制限である。NT 5.0 では全てのコンソールウィンドウに対して、同時に点滅頻度を設定できるようになるといわれている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*:!start*
+Q. How can I asynchronously run an external command or program, or open a
+   document or URL with its default program?
+A. When using :! to run an external command, you can run it with "start". For
+   example, to run notepad: >
+	:!start notepad
+<   To open "image.jpg" with the default image viewer: >
+        :!start image.jpg
+<   To open the folder of the current file in Windows Explorer: >
+        :!start %:h
+<   To open the Vim home page with the default browser: >
+        :!start http://www.vim.org/
+<
+   Using "start" stops Vim switching to another screen, opening a new console,
+   or waiting for the program to complete; it indicates that you are running a
+   program that does not affect the files you are editing.  Programs begun
+   with :!start do not get passed Vim's open file handles, which means they do
+   not have to be closed before Vim.
+   To avoid this special treatment, use ":! start".
+   There are two optional arguments (see the next Q):
+       /min  the window will be minimized
+       /b    no console window will be opened
+   You can use only one of these flags at a time.  A second one will be
+   treated as the start of the command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:!start}
+@pindex :!start
+@strong{Q.} 非同期的に外部コマンドやプログラムを実行したり、ドキュメントや URL を既定のプログラムで開くにはどうしたらよいか？ @*
+@strong{A.} :! を使って外部コマンドを実行している場合、"start" と共に実行できる。例えば notepad を起動するには:
+@example
+:!start notepad
+@end example
+既定のイメージビューワーで "image.jpg" を開くには:
+@example
+:!start image.jpg
+@end example
+現在のファイルのフォルダーを Windows エクスプローラーで開くには:
+@example
+:!start %:h
+@end example
+既定のブラウザーで Vim のホームページを開くには:
+@example
+:!start http://www.vim.org/
+@end example
+"start" を使うと、Vim は他のスクリーンに切り替えたり、新しいコンソールを開いたり、プログラムが終了するまで待ったりしなくなる; つまり、走らせるプログラムは編集中のファイルに何の影響も与えない。:!start で始まったプログラムは、Vim の開いたファイルハンドルを受け渡されないため、Vim より早く終了する必要はない。
+
+このような特別な動作を避けるには ":! start" を使う。
+
+利用可能な引数が 2 つある (次の Q 参照):
+@multitable @columnfractions .2 .8
+@item /min @tab ウィンドウが最小化される。
+@item /b @tab コンソールウィンドウが表示されない。
+@end multitable
+指定できるのはどちらか一方だけである。2 番目の引数が start コマンドで実行される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Q. How do I avoid getting a window for programs that I run asynchronously?
+A. You have two possible solutions depending on what you want:
+   1) You may use the /min flag in order to run program in a minimized state
+      with no other changes. It will work equally for console and GUI
+      applications.
+   2) You can use the /b flag to run console applications without creating a
+      console window for them (GUI applications are not affected). But you
+      should use this flag only if the application you run doesn't require any
+      input.  Otherwise it will get an EOF error because its input stream
+      (stdin) would be redirected to \\.\NUL (stdout and stderr too).
+
+   Example for a console application, run Exuberant ctags: >
+        :!start /min ctags -R .
+<  When it has finished you should see file named "tags" in your current
+   directory.  You should notice the window title blinking on your taskbar.
+   This is more noticeable for commands that take longer.
+   Now delete the "tags" file and run this command: >
+        :!start /b ctags -R .
+<  You should have the same "tags" file, but this time there will be no
+   blinking on the taskbar.
+   Example for a GUI application: >
+        :!start /min notepad
+        :!start /b notepad
+<  The first command runs notepad minimized and the second one runs it
+   normally.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{Q.} プログラムを非同期で実行したときにそのウィンドウを非表示にするには？ @*
+@strong{A.} あなたの実際の目的に応じて 2 つの解決方法がある:
+@multitable @columnfractions .1 .9
+@item 1) @tab /min フラグを使ってプログラムを最小化ウィンドウで実行する (他はそのまま)。この方法はコンソールアプリケーションでも GUI アプリケーションでも使える。
+@item 2) @tab /b フラグを使って、コンソールウィンドウを作成せずにコンソールアプリケーションを実行する (GUI アプリケーションに対しては効果なし)。このフラグは、実行するアプリケーションが入力を必要としないことがわかっている場合のみ使うこと。その入力ストリーム (stdin) は \\.\NUL にリダイレクトされるので (stdout と stderr も同じ)、入力が使われる場合は EOF エラーが発生するだろう。
+@end multitable
+コンソールアプリケーションの例。Exuberant ctags を実行する:
+@example
+:!start /min ctags -R .
+@end example
+実行が完了すると "tags" ファイルがカレントディレクトリに作成される。タスクバーでウィンドウタイトルが点滅するのに気づくだろう。時間が掛かるコマンドならはっきりと見える。
+
+では、"tags" ファイルを削除して次のコマンドを実行する:
+@example
+:!start /b ctags -R .
+@end example
+先程と同じ "tags" ファイルが作成されるが、今回はタスクバーは点滅しない。
+
+GUI アプリケーションの例:
+@example
+!start /min notepad
+!start /b notepad
+@end example
+最初のコマンドは notepad を最小化状態で実行する。2 番目のものは notepad を普通に実行する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*windows-icon*
+Q. I don't like the Vim icon, can I change it?
+A. Yes, place your favorite icon in bitmaps/vim.ico in a directory of
+   'runtimepath'.  For example ~/vimfiles/bitmaps/vim.ico.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{windows-icon}
+@cindex windows-icon
+@strong{Q.} Vim のアイコンが好きではないのだが、変えられるだろうか？ @*
+@strong{A.} はい、'@option{runtimepath}' のディレクトリの中の bitmaps/vim.ico に好きなアイコンを置くとよい。例: ~/vimfiles/bitmaps/vim.ico
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ vim:tw=78:fo=tcq2:ts=8:ft=help:norl:
+@end ifset
