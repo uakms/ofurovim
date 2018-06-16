@@ -2,8 +2,7 @@ PRG = /usr/local/bin/texi2any
 NVCHECK_DICT = $(HOME)/dev/vimdoc-ja/dict.yml
 HTML_OPT_NS = --no-split --html --css-include=style.css
 HTML_OPT_S = --no-node-files --html --css-ref=style.css
-ORIG = $(HOME)/dev/vim/runtime
-MVIMORIG = $(HOME)/dev/macvim/runtime
+ORIG = $(HOME)/dev/macvim/runtime
 TRAN = ./
 HTMLFILES=`find htmls/refman -name "*.html" -size +3k`
 MISCFILES="htmls/refman/Mu-Ci-.html htmls/refman/usr_005ftoc_002etxt.html"
@@ -35,7 +34,7 @@ REFMANUALS = \
 	doc/os_mac.texi doc/os_unix.texi \
 	doc/pi_getscript.texi doc/pi_gzip.texi doc/pi_logipat.texi \
 	doc/pi_netrw.texi doc/pi_paren.texi doc/pi_spec.texi doc/pi_tar.texi \
-	doc/pi_vimball.texi doc/pi_zip.texi
+	doc/pi_vimball.texi doc/pi_zip.texi doc/gui_mac.texi
 
 USRMANUALS = \
 	doc/usr_toc.texi \
@@ -47,8 +46,6 @@ USRMANUALS = \
 	doc/usr_28.texi doc/usr_29.texi doc/usr_30.texi doc/usr_31.texi \
 	doc/usr_32.texi doc/usr_40.texi doc/usr_41.texi doc/usr_42.texi \
 	doc/usr_43.texi doc/usr_44.texi doc/usr_45.texi doc/usr_90.texi
-
-MACVIMREF = doc/gui_mac.texi
 
 # そのまま diff をかけると不都合があるので UTF-8 に変換するファイル
 # 2018.03.19 usr_24.txt, eval.txt は原文が UTF-8 になった。
@@ -103,7 +100,6 @@ diffja:
 	@sh utils/prepare_for_diff.sh -a $(INCONVENIENTFILES)
 	@ruby utils/diff_trans.rb --dir=$(ORIG) $(USRMANUALS) $(REFMANUALS)
 	@sh utils/prepare_for_diff.sh -z $(INCONVENIENTFILES)
-	@ruby utils/diff_trans.rb --dir=$(MVIMORIG) $(MACVIMREF)
 
 diffen:
 	@diff -q -r $(HOME)/dev/vimdoc-ja/en $(ORIG)/doc | grep differ | \
