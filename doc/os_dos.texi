@@ -1,0 +1,807 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node os_dos.txt, , , 目次
+@unnumbered MS-DOS と MS-Windows NT/95 の共通事項
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*os_dos.txt*    For Vim version 8.1.  Last change: 2006 Mar 30
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+*os_dos.txt*    For Vim バージョン 8.1.  Last change: 2006 Mar 30
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+							*dos* *DOS*
+This file documents the common particularities of the MS-DOS and Win32
+versions of Vim.  Also see |os_win32.txt| and |os_msdos.txt|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{dos}
+@anchor{DOS}
+@cindex dos
+@cindex DOS
+このファイルは MS-DOS および Win32 バージョンの Vim に共通の特殊事項をまとめる。|@ref{os_win32.txt}| や |os_msdos.txt| も参照すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. File locations		|dos-locations|
+2. Using backslashes		|dos-backslash|
+3. Standard mappings		|dos-standard-mappings|
+4. Screen output and colors	|dos-colors|
+5. File formats			|dos-file-formats|
+6. :cd command			|dos-:cd|
+7. Interrupting			|dos-CTRL-Break|
+8. Temp files			|dos-temp-files|
+9. Shell option default		|dos-shell|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. ファイルの位置 @tab |@ref{dos-locations}|
+@item 2. バックスラッシュを使う @tab |@ref{dos-backslash}|
+@item 3. 標準マッピング @tab |@ref{dos-standard-mappings}|
+@item 4. 画面出力と色 @tab |@ref{dos-colors}|
+@item 5. ファイルの書式 @tab |@ref{dos-file-formats}|
+@item 6. :cd コマンド @tab |@ref{dos-:cd}|
+@item 7. 中断 @tab |@ref{dos-CTRL-Break}|
+@item 8. 一時ファイル @tab |@ref{dos-temp-files}|
+@item 9. 標準のシェルオプション @tab |@ref{dos-shell}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. File locations					*dos-locations*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{dos-locations}
+@cindex dos-locations
+@section 1. ファイルの位置
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you keep the Vim executable in the directory that contains the help and
+syntax subdirectories, there is no need to do anything special for Vim to
+work.  No registry entries or environment variables need to be set.  Just make
+sure that the directory is in your search path, or use a shortcut on the
+desktop.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の実行ファイルと同じディレクトリに、ヘルプおよび構文のサブディレクトリがあるならば、特に何もする必要はない。レジストリや環境変数も設定する必要はない。ただ Vim のディレクトリが検索パスに含まれるか、デスクトップ上のショートカットを利用するだけでよい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Your vimrc files ("_vimrc" and "_gvimrc") are normally located one directory
+up from the runtime files.  If you want to put them somewhere else, set the
+environment variable $VIM to the directory where you keep them.  Example: >
+	set VIM=C:\user\piet
+Will find "c:\user\piet\_vimrc".
+Note: This would only be needed when the computer is used by several people.
+Otherwise it's simpler to keep your _vimrc file in the default place.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+vimrc ファイル ("_vimrc" と "_gvimrc") は通常、ランタイムファイルがあるディレクトリの 1 つ上のディレクトリに置かれる。もしどこか違う場所に置きたいならば、環境変数 $VIM にそのディレクトリを設定する。例:
+@example
+set VIM=C:\user\piet
+@end example
+これは "c:\user\piet\_vimrc" を見つけるだろう。
+@quotation
+@strong{Note:} @*
+これはコンピュータを複数人で使う時のために用意されている。普通はデフォルトの場所に _vimrc ファイルを置くこと。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you move the executable to another location, you also need to set the $VIM
+environment variable.  The runtime files will be found in "$VIM/vim{version}".
+Example: >
+	set VIM=E:\vim
+Will find the version 5.4 runtime files in "e:\vim\vim54".
+Note: This is _not_ recommended.  The preferred way is to keep the executable
+in the runtime directory.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実行ファイルを別の場所に移動したい場合は、環境変数 @env{$VIM} を設定する必要がある。ランタイムファイルは "$VIM/vim@{version@}" から見つけられる。例:
+@example
+set VIM=E:\vim
+@end example
+これはバージョン 5.4 のランタイムファイルを "e:\vim\vim54" から見つけるだろう。
+@quotation
+@strong{Note:} @*
+これは推奨しない。ランタイムディレクトリに実行ファイルを入れておくことをお勧めする。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you move your executable AND want to put your "_vimrc" and "_gvimrc" files
+somewhere else, you must set $VIM to where you vimrc files are, and set
+$VIMRUNTIME to the runtime files.  Example: >
+	set VIM=C:\usr\piet
+	set VIMRUNTIME=E:\vim\vim54
+Will find "c:\user\piet\_vimrc" and the runtime files in "e:\vim\vim54".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+実行ファイルを移動し、「かつ」 "_vimrc" と "_gvimrc" を他の場所に置きたい場合は、$VIMにvimrcファイルの場所を、$VIMRUNTIMEにランタイムファイルの場所を設定する。例:
+@example
+set VIM=C:\usr\piet
+set VIMRUNTIME=E:\vim\vim54
+@end example
+これは "c:\user\piet\_vimrc" ファイルと "e:\vim\vim54" にあるランタイムファイルを見つけるだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See |$VIM| and |$VIMRUNTIME| for more information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さらに情報が欲しいときは |@ref{$VIM}| と |@ref{$VIMRUNTIME}| を参照すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Under Windows 95, you can set $VIM in your C:\autoexec.bat file.  For
+example: >
+  set VIM=D:\vim
+Under Windows NT, you can set environment variables for each user separately
+under "Start/Settings/Control Panel->System", or through the properties in the
+menu of "My Computer", under the Environment Tab.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Windows 95 では、$VIM を C:\autoexec.bat ファイルに設定できる。例:
+@example
+set VIM=D:\vim
+@end example
+Windows NT では、環境変数をユーザーごとに別々に設定することができる。"スタート/設定/コントロールパネル -> システム"、もしくは "マイ コンピュータ" のプロパティを通して、環境変数のタブに行く。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Using backslashes					*dos-backslash*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{dos-backslash}
+@cindex dos-backslash
+@section 2. バックスラッシュを使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Using backslashes in file names can be a problem.  Vi halves the number of
+backslashes for some commands.  Vim is a bit more tolerant and does not remove
+backslashes from a file name, so ":e c:\foo\bar" works as expected.  But when
+a backslash occurs before a special character (space, comma, backslash, etc.),
+Vim removes the backslash.  Use slashes to avoid problems: ":e c:/foo/bar"
+works fine.  Vim replaces the slashes with backslashes internally to avoid
+problems with some MS-DOS programs and Win32 programs.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル名にバックスラッシュを使うことは問題となり得る。Vi ではいくつかのコマンドにおいて、バックスラッシュの数を半分にする。Vim はもう少し寛大で、ファイル名からバックスラッシュを取り除かないので、":e c:\foo\bar" は期待通りに機能する。しかしバックスラッシュが特別な文字(スペース、コンマ、バックスラッシュなど)の前に現れた場合は、Vim はバックスラッシュを取り除く。問題を避けるにはスラッシュを使用する: ":e c:/foo/bar" はうまく機能する。MS-DOS プログラムや Win32 プログラムのなかにはこれが問題となるものもあるので、Vim は問題を避けるために内部でスラッシュをバックスラッシュに置き換える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you prefer to use forward slashes, set the 'shellslash' option.  Vim will
+then replace backslashes with forward slashes when expanding file names.  This
+is especially useful when using a Unix-like 'shell'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スラッシュを使うのを好むのなら、'@option{shellslash}' オプションを設定する。すると Vim はファイル名を展開するときにバックスラッシュをスラッシュに置き換える。これは Unix-like の '@option{shell}' を使用しているときに特に有用である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Standard mappings				*dos-standard-mappings*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{dos-standard-mappings}
+@cindex dos-standard-mappings
+@section 3. 標準マッピング
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The mappings for CTRL-PageUp and CTRL-PageDown have been removed, they now
+jump to the next or previous tab page |<C-PageUp>| |<C-PageDown>|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以前の CTRL-PageUp と CTRL-PageDown へのマッピングは削除された。今、これらのキーはそれぞれ次、前のタブページへジャンプする。|@ref{<C-PageUp>}| |@ref{<C-PageDown>}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want them to move to the first and last screen line you can use these
+mappings:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらのキーを画面上の最初、最後の行へジャンプに使いたければ次のマッピングをすればよい:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+key		key code     Normal/Visual mode	    Insert mode ~
+CTRL-PageUp	<M-N><M-C-D>	    H		    <C-O>H
+CTRL-PageDown	<M-N>v		    L$		    <C-O>L<C-O>$
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .25 .25 .25
+@headitem キー @tab キーコード @tab Normal/Visualモード @tab 挿入モード
+@item CTRL-PageUp @tab <M-N><M-C-D> @tab H @tab <C-O>H
+@item CTRL-PageDown @tab <M-N>v @tab L$@ tab <C-O>L<C-O>$
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Additionally, these keys are available for copy/cut/paste.  In the Win32
+and DJGPP versions, they also use the clipboard.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さらに、次のキーがコピー/切り取り/貼り付けに利用できる。Win32 と DJGPP バージョンでのみ、これらはクリップボードを使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Shift-Insert	paste text (from clipboard)			*<S-Insert>*
+CTRL-Insert	copy Visual text (to clipboard)			*<C-Insert>*
+CTRL-Del	cut Visual text (to clipboard)			*<C-Del>*
+Shift-Del	cut Visual text (to clipboard)			*<S-Del>*
+CTRL-X		cut Visual text (to clipboard)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@anchor{<S-Insert>}
+@cindex <S-Insert>
+@item Shift-Insert @tab テキストを貼り付ける (クリップボードから)
+@anchor{<C-Insert>}
+@cindex <C-Insert>
+@item CTRL-Insert @tab ビジュアルモードでテキストをコピーする (クリップボードに)
+@anchor{<C-Del>}
+@cindex <C-Del>
+@item CTRL-Del @tab ビジュアルモードでテキストを切り取る (クリップボードに)
+@anchor{<S-Del>}
+@cindex <S-Del>
+@item Shift-Del @tab ビジュアルモードでテキストを切り取る (クリップボードに)
+@item CTRL-X @tab ビジュアルモードでテキストを切り取る (クリップボードに)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These mappings accomplish this (Win32 and DJGPP versions of Vim):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下のマッピングは同様の目的を果たす (Vim の Win32 と DJGPP バージョン):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+key		key code     Normal	Visual	    Insert ~
+Shift-Insert	<M-N><M-T>   "*P	"-d"*P      <C-R><C-O>*
+CTRL-Insert	<M-N><M-U>		"*y
+Shift-Del	<M-N><M-W>		"*d
+CTRL-Del	<M-N><M-X>		"*d
+CTRL-X		<C-X>			"*d
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .2 .2 .2 .2
+@headitem キー @tab キーコード @tab  Normal @tab Visual @tab 挿入モード
+@item Shift-Insert @tab <M-N><M-T> @tab "*P @tab "-d"*P @tab <C-R><C-O>*
+@item CTRL-Insert @tab <M-N><M-U> @tab @tab "*y @tab
+@item Shift-Del @tab <M-N><M-W> @tab @tab "*d @tab
+@item CTRL-Del @tab <M-N><M-X> @tab @tab "*d @tab
+@item CTRL-X @tab <C-X> @tab @tab "*d @tab
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Or these mappings (non-Win32 version of Vim):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしくは次のマッピング (Vim の Win32 ではないバージョン):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+key		key code     Normal	Visual	    Insert ~
+Shift-Insert	<M-N><M-T>   P		"-dP	    <C-R><C-O>"
+CTRL-Insert	<M-N><M-U>		y
+Shift-Del	<M-N><M-W>		d
+CTRL-Del	<M-N><M-X>		d
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .2 .2 .2 .2
+@headitem キー @tab キーコード @tab Normal @tab Visual @tab 挿入モード
+@item Shift-Insert @tab <M-N><M-T> @tab P @tab d"0P @tab <C-R><C-O>"
+@item CTRL-Insert @tab <M-N><M-U> @tab @tab y @tab
+@item Shift-Del @tab <M-N><M-W> @tab @tab d @tab
+@item CTRL-Del @tab <M-N><M-X> @tab @tab d @tab
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the clipboard is supported, the "* register is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+クリップボードがサポートされているときは、レジスタの "* が使える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+4. Screen output and colors				*dos-colors*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{dos-colors}
+@cindex dos-colors
+@section 4. 画面出力と色
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The default output method for the screen is to use bios calls.  This works
+right away on most systems.  You do not need ansi.sys.  You can use ":mode" to
+set the current screen mode.  See |:mode|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+画面出力の方法は、標準では bios コールを使用する。これはたいていのシステムで直ちに機能する。ansi.sys は必要ない。現在の画面モードを設定するには ":mode" を使う。|@ref{:mode}| を参照すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To change the screen colors that Vim uses, you can use the |:highlight|
+command.  The Normal highlight group specifies the colors Vim uses for normal
+text.  For example, to get grey text on a blue background: >
+	:hi Normal ctermbg=Blue ctermfg=grey
+See |highlight-groups| for other groups that are available.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が使用する画面の色を変更するには |@ref{:highlight}| コマンドを使用する。Normal 強調表示グループは Vim が普通のテキストに使う色を特定する。例えば、背景色が青で文字色が灰色にするには:
+@example
+:hi Normal ctermbg=Blue ctermfg=grey
+@end example
+他に利用できるグループについては |@ref{highlight-groups}| を参照すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A DOS console does not support attributes like bold and underlining.  You can
+set the color used in five modes with nine terminal options.  Note that this
+is not necessary since you can set the color directly with the ":highlight"
+command; these options are for backward compatibility with older Vim versions.
+The |'highlight'| option specifies which of the five modes is used for which
+action. >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+DOS コンソールは太字や下線のような属性をサポートしていない。5 つのモードで使用する色は 9 つの端末のオプションで設定できる。"@command{:highlight}" コマンドによって直接色を設定した場合には必要ないので注意すること; これらのオプションは古いバージョンの Vim に互換性がある。|@ref{'highlight'}| オプションは 5 つのモードがどの操作のときに使用されるかを特定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set t_mr=^V^[\|xxm		start of invert mode
+	:set t_md=^V^[\|xxm		start of bold mode
+	:set t_me=^V^[\|xxm		back to normal text
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item :set t_mr=^V^[\|xxm @tab 反転モードの開始
+@item :set t_md=^V^[\|xxm @tab 太字モードの開始
+@item :set t_me=^V^[\|xxm @tab 普通のテキストに戻る
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set t_so=^V^[\|xxm		start of standout mode
+	:set t_se=^V^[\|xxm		back to normal text
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :set t_so=^V^[\|xxm @tab standout モードの開始
+@item :set t_se=^V^[\|xxm @tab 普通のテキストに戻る
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set t_us=^V^[\|xxm		start of underline mode
+	:set t_ue=^V^[\|xxm		back to normal text
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :set t_us=^V^[\|xxm @tab 下線モードの開始
+@item :set t_ue=^V^[\|xxm @tab 普通のテキストに戻る
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	:set t_ZH=^V^[\|xxm		start of italics mode
+	:set t_ZR=^V^[\|xxm		back to normal text
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :set t_ZH=^V^[\|xxm @tab 斜字モードの開始
+@item :set t_ZR=^V^[\|xxm @tab 普通のテキストに戻る
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+^V is CTRL-V
+^[ is <Esc>
+You must replace xx with a decimal code, which is the foreground color number
+and background color number added together:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+^V は CTRL-V @*
+^[ は <Esc>
+
+xx は前景色と背景色の数字を足した 10 進数の数値に置き換える:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+COLOR			FOREGROUND	BACKGROUND	~
+Black			    0		    0
+DarkBlue		    1		   16
+DarkGreen		    2		   32
+DarkCyan		    3		   48
+DarkRed			    4		   64
+DarkMagenta		    5		   80
+Brown, DarkYellow	    6		   96
+LightGray		    7		  112
+DarkGray		    8		  128 *
+Blue, LightBlue		    9		  144 *
+Green, LightGreen	   10		  160 *
+Cyan, LightCyan		   11		  176 *
+Red, LightRed		   12		  192 *
+Magenta, LightMagenta	   13		  208 *
+Yellow, LightYellow	   14		  224 *
+White			   15		  240 *
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .25 .25
+@headitem 色 @tab 前景色 @tab 背景色
+@item Black @tab 0 @tab 0
+@item DarkBlue @tab 1 @tab 16
+@item DarkGreen @tab 2 @tab 32
+@item DarkCyan @tab 3 @tab 48
+@item DarkRed @tab 4 @tab 64
+@item DarkMagenta @tab 5 @tab 80
+@item Brown, DarkYellow @tab 6 @tab 96
+@item LightGray @tab 7 @tab 112
+@item DarkGray @tab 8 @tab 128 *
+@item Blue, LightBlue @tab 9 @tab 144 *
+@item Green, LightGreen @tab 10 @tab 160 *
+@item Cyan, LightCyan @tab 11 @tab 176 *
+@item Red, LightRed @tab 12 @tab 192 *
+@item Magenta, LightMagenta @tab 13 @tab 208 *
+@item Yellow, LightYellow @tab 14 @tab 224 *
+@item White @tab 15 @tab 240 *
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+* Depending on the display mode, the color codes above 128 may not be
+  available, and code 128 will make the text blink.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+- ディスプレイモードによっては 128 以上の色コードは利用できず、コード 128 は文字を点滅させるだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When you use 0, the color is reset to the one used when you started Vim
+(usually 7, lightgray on black, but you can override this.  If you have
+overridden the default colors in a command prompt, you may need to adjust
+some of the highlight colors in your vimrc---see below).
+This is the default for t_me.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+0 を使用した場合は、Vim の開始時の色にリセットされる (普通は 7 で背景色が黒、文字色が淡い灰色であるが、これは上書きできる。もしコマンドプロンプトから標準色を上書きした場合は、vimrc 内の強調表示色をいくつか調整する必要があるかもしれない---下を参照)。
+
+これが t_me のデフォルトである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The defaults for the various highlight modes are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+それぞれの強調表示モードの標準:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	t_mr	112	 reverse mode: Black text (0) on LightGray (112)
+	t_md	 15	 bold mode: White text (15) on Black (0)
+	t_me	  0	 normal mode (revert to default)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .2 .6
+@item t_mr @tab 112 @tab 反転モード: 文字色 Black (0)、背景色 LightGray (112)
+@item t_md @tab 15 @tab 太字モード: 文字色 White (15)、背景色 Black (0)
+@item t_me @tab 0 @tab 通常モード (標準に戻る)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	t_so	 31	 standout mode: White (15) text on DarkBlue (16)
+	t_se	  0	 standout mode end (revert to default)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item t_so @tab 31 @tab standout モード: 文字色 White (15)、背景色 DarkBlue (16)
+@item t_se @tab 0 @tab standout モードの終了 (標準に戻る)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	t_czh	225	 italic mode: DarkBlue text (1) on Yellow (224)
+	t_czr	  0	 italic mode end (revert to default)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item t_czh @tab 225 @tab 斜字モード: 文字色 DarkBlue (1)、背景色 Yellow (224)
+@item t_czr @tab 0 @tab 斜字モードの終了 (標準に戻る)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	t_us	 67	 underline mode: DarkCyan text (3) on DarkRed (64)
+	t_ue	  0	 underline mode end (revert to default)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item t_us @tab 67 @tab 下線モード: 文字色 DarkCyan (3)、背景色 DarkRed (64)
+@item t_ue @tab 0 @tab 下線モードの終了 (標準に戻る)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+These colors were chosen because they also look good when using an inverted
+display, but you can change them to your liking.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらは反転表示でも良く見えるようために選ばれているが、好みで変更してよい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Example: >
+  :set t_mr=^V^[\|97m	" start of invert mode: DarkBlue (1) on Brown (96)
+  :set t_md=^V^[\|67m	" start of bold mode: DarkCyan (3) on DarkRed (64)
+  :set t_me=^V^[\|112m	" back to normal mode: Black (0) on LightGray (112)
+
+  :set t_so=^V^[\|37m	" start of standout mode: DarkMagenta (5) on DarkGreen
+									(32)
+  :set t_se=^V^[\|112m	" back to normal mode: Black (0) on LightGray (112)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+:set t_mr=^V^[\|97m   " 反転モードの開始: DarkBlue (1) on Brown (96)
+:set t_md=^V^[\|67m   " 太字モードの開始: DarkCyan (3) on DarkRed (64)
+:set t_me=^V^[\|112m  " ノーマルモードに戻る: Black (0) on LightGray (112)
+
+:set t_so=^V^[\|37m   " standoutモードの開始: DarkMagenta (5) on DarkGreen(32)
+:set t_se=^V^[\|112m  " ノーマルモードに戻る: Black (0) on LightGray (112)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+5. File formats						*dos-file-formats*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{dos-file-formats}
+@cindex dos-file-formats
+@section 5. ファイルの書式
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the 'fileformat' option is set to "dos" (which is the default), Vim accepts
+a single <NL> or a <CR><NL> pair for end-of-line (<EOL>).  When writing a
+file, Vim uses <CR><NL>.  Thus, if you edit a file and write it, Vim replaces
+<NL> with <CR><NL>.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{fileformat}' オプションに "@var{dos}" が設定されている場合 (標準)、Vim は <NL> と <CR><NL> を end-of-line (<EOL>) として認識する。ファイルを保存したときは、Vim は <CR><NL> を使用する。このため、ファイルを編集して保存した場合は、Vim は <NL> を <CR><NL> で置き換える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the 'fileformat' option is set to "unix", Vim uses a single <NL> for <EOL>
+and shows <CR> as ^M.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{fileformat}' オプションが "@var{unix}" であるならば、Vim は <NL> を <EOL> として使用し、<CR> を ^M と表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can use Vim to replace <NL> with <CR><NL> by reading in any mode and
+writing in Dos mode (":se ff=dos").
+You can use Vim to replace <CR><NL> with <NL> by reading in Dos mode and
+writing in Unix mode (":se ff=unix").
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はどんなモードで読み込んでも Dos モードで保存する (":se ff=dos") ことによって、<NL> を <CR><NL> に置き換えることができる。
+
+Vim は Dos モードで読み込み、Unix モードで保存する (":se ff=unix") ことによって、<CR><NL> を <NL> に置き換えることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim sets 'fileformat' automatically when 'fileformats' is not empty (which is
+the default), so you don't really have to worry about what you are doing.
+					|'fileformat'| |'fileformats'|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は '@option{fileformats}' が設定されている (標準) ときには自動的に '@option{fileformat}' を設定するので、あなたがしていることについて全く悩む必要がない。|@ref{'fileformat'}| |@ref{'fileformats'}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you want to edit a script file or a binary file, you should set the
+'binary' option before loading the file.  Script files and binary files may
+contain single <NL> characters which Vim would replace with <CR><NL>.  You can
+set 'binary' automatically by starting Vim with the "-b" (binary) option.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スクリプトファイルやバイナリファイルを編集したいのならば、ファイルを読み込む前に '@option{binary}' オプションを設定するとよい。スクリプトファイルやバイナリファイルは <NL> を含んでいて、Vim によって <CR><NL> に置き換えられてしまうかもしれない。Vim の起動時に "-b" (binary) オプションをつけることによって、自動的に '@option{binary}' を設定することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. :cd command						*dos-:cd*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{dos-:cd}
+@cindex dos-:cd
+@section 6. :cdコマンド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The ":cd" command recognizes the drive specifier and changes the current
+drive.  Use ":cd c:" to make drive C the active drive.  Use ":cd d:\foo" to go
+to the directory "foo" in the root of drive D.  Vim also recognizes UNC names
+if the system supports them; e.g., ":cd \\server\share\dir".  |:cd|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@command{:cd}" コマンドはドライブレターを認識し、カレントドライブを変更する。C ドライブにするには "@command{:cd c:}" とする。D ドライブの "foo" ディレクトリに移動するには "@command{:cd d:\foo}" とする。もしシステムがサポートしているならば、Vim は UNC 名も認識する; 例えば、"@command{:cd \\server\share\dir}"。|@ref{:cd}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. Interrupting						*dos-CTRL-Break*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{dos-CTRL-Break}
+@cindex dos-CTRL-Break
+@section 7. 中断
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Use CTRL-Break instead of CTRL-C to interrupt searches.  Vim does not detect
+the CTRL-C until it tries to read a key.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+検索を中断するには CTRL-C の代わりに CTRL-Break を使用する。Vim はキーを読み終えるまで CTRL-C を検知しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+8. Temp files						*dos-temp-files*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{dos-temp-files}
+@cindex dos-temp-files
+@section 8. 一時ファイル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Only for the 16 bit and 32 bit DOS version:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec 16 ビットもしくは 32 ビットの DOS のみ:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Vim puts temporary files (for filtering) in the first of these directories
+that exists and in which Vim can create a file:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は以下のリストの順番で、ディレクトリが存在し、かつ Vim がファイルを生成できる最初のディレクトリに一時ファイル (フィルタ用) を置く:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	$TMP
+	$TEMP
+	C:\TMP
+	C:\TEMP
+	current directory
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+$TMP
+$TEMP
+C:\TMP
+C:\TEMP
+現在のディレクトリ
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For the Win32 version (both console and GUI):
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec Win32 バージョン (コンソール、GUI ともに):
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Vim uses standard Windows functions to obtain a temporary file name (for
+filtering).  The first of these directories that exists and in which Vim can
+create a file is used:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim は標準的な Windows 関数を使って一時ファイル名 (フィルタ用) を取得する。以下のリストの順番で、ディレクトリが存在し、かつ Vim がファイルを生成できる最初のディレクトリが使用される:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	$TMP
+	$TEMP
+	current directory
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+$TMP
+$TEMP
+現在のディレクトリ
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+9. Shell option default					*dos-shell*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{dos-shell}
+@cindex dos-shell
+@section 9. 標準のシェルオプション
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The default for the 'sh' ('shell') option is "command.com" on Windows 95 and
+"cmd.exe" on Windows NT.  If SHELL is defined, Vim uses SHELL instead, and if
+SHELL is not defined but COMSPEC is, Vim uses COMSPEC.  Vim starts external
+commands with "<shell> /c <command_name>".  Typing CTRL-Z starts a new command
+subshell.  Return to Vim with "exit".	|'shell'| |CTRL-Z|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+'@option{sh}' ('@option{shell}') オプションは Windows 95 では "command.com"、Windows NT では "cmd.exe" が標準で設定されている。Vim は SHELL が定義されている場合は SHELL を、SHELL が定義されていない状態で COMSPEC が定義されている場合は COMSPEC を代わりに使用する。Vim は外部コマンドを "<shell> /c <command_name>" として起動する。新しいコマンドシェルを起動するには @kbd{CTRL-Z} をタイプする。"exit" で Vim に戻る。|@ref{'shell'}| |@ref{CTRL-Z}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you are running a third-party shell, you may need to set the
+|'shellcmdflag'| ('shcf') and |'shellquote'| ('shq') or |'shellxquote'|
+('sxq') options.  Unfortunately, this also depends on the version of Vim used.
+For example, with the MKS Korn shell or with bash, the values of the options
+should be:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+サードパーティのシェルを使用する場合は、|@ref{'shellcmdflag'}| ('@option{shcf}') と |@ref{'shellquote'}| ('@option{shq}') か |@ref{'shellxquote'}| ('@option{sxq}') オプションを設定する必要があるかもしれない。不幸なことに、これは使っている Vim のバージョンに依存する。例えば、MKS Korn シェルや bash では、オプションの値を以下のようになる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		DOS 16 bit	    DOS 32 bit		Win32  ~
+'shellcmdflag'	   -c			-c		 -c
+'shellquote'	   "
+'shellxquote'						 "
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .25 .25 .25 .25
+@headitem @tab DOS 16ビット @tab DOS 32ビット @tab Win32
+@item '@option{shellcmdflag}' @tab -c @tab -c @tab -c
+@item '@option{shellquote}' @tab " @tab
+@item '@option{shellxquote}' @tab @tab "
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For Dos 16 bit this starts the shell as:
+	<shell> -c "command name" >file
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Dos 16 ビットの例は次のようにシェルを起動する:
+@example
+<shell> -c "command name" >file
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+For Win32 as:
+	<shell> -c "command name >file"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Win32 の例:
+@example
+<shell> -c "command name >file"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+For DOS 32 bit, DJGPP does this internally somehow.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+DOS 32 ビットでは、DJGPP が内部的にどうにかして処理する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When starting up, Vim checks for the presence of "sh" anywhere in the 'shell'
+option.  If it is present, Vim sets the 'shellcmdflag' and 'shellquote' or
+'shellxquote' options will be set as described above.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+起動時に Vim は "sh" が '@option{shell}' オプション内のどこにあるかをチェックする。存在するならば、Vim は '@option{shellcmdflag}' と '@option{shellquote}' または '@option{shellxquote}' オプションを上記のように設定するだろう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ vim:tw=78:ts=8:ft=help:norl:
+@end ifset
