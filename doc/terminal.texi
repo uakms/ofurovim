@@ -100,6 +100,7 @@ echo has('terminal')
       Stepping through code		|termdebug-stepping|
       Inspecting variables		|termdebug-variables|
       Other commands			|termdebug-commands|
+      Prompt mode			|termdebug-prompt|
       Communication			|termdebug-communication|
       Customizing			|termdebug-customizing|
 @end ifset
@@ -110,6 +111,7 @@ echo has('terminal')
 @item @ @ @ @ コードをステップ実行する @tab |@ref{termdebug-stepping}|
 @item @ @ @ @ 変数を検査する @tab |@ref{termdebug-variables}|
 @item @ @ @ @ その他のコマンド @tab |@ref{termdebug-commands}|
+@item @ @ @ @ プロンプトモード @tab |@ref{termdebug-prompt}|
 @item @ @ @ @ 通信 @tab |@ref{termdebug-communication}|
 @item @ @ @ @ カスタマイズ @tab |@ref{termdebug-customizing}|
 @end multitable
@@ -253,7 +255,8 @@ to the job.  For example:
 	'termwinkey' CTRL-W    move focus to the next window
 	'termwinkey' :	       enter an Ex command
 	'termwinkey' 'termwinkey' send 'termwinkey' to the job in the terminal
-	'termwinkey' .	       send a CTRL-W to the job in the terminal
+	'termwinkey' .	       send 'termwinkey' to the job in the terminal
+	'termwinkey' CTRL-\    send a CTRL-\ to the job in the terminal
 	'termwinkey' N	       go to terminal Normal mode, see below
 	'termwinkey' CTRL-N    same as CTRL-W N
 	'termwinkey' CTRL-C    same as |t_CTRL-W_CTRL-C|
@@ -263,7 +266,8 @@ to the job.  For example:
 @item '@option{termwinkey}' @kbd{CTRL-W} @tab 次のウィンドウにフォーカスを移動する
 @item '@option{termwinkey}' @key{:} @tab Ex コマンドに入る
 @item '@option{termwinkey}' '@option{termwinkey}' @tab 端末内のジョブに '@option{termwinkey}' を送信する
-@item '@option{termwinkey}' @key{.} @tab 端末内のジョブに @kbd{CTRL-W} を送信する
+@item '@option{termwinkey}' @key{.} @tab 端末内のジョブに '@option{termwinkey}' を送信する
+@item '@option{termwinkey}' @key{CTRL-\} @tab 端末内のジョブに @kbd{CTRL-W} を送信する
 @item '@option{termwinkey}' @key{N} @tab Terminal-Normal モードへ移行、以下を参照
 @item '@option{termwinkey}' @kbd{CTRL-N} @tab @kbd{CTRL-W N} と同じ
 @item '@option{termwinkey}' @kbd{CTRL-C} @tab |@ref{t_CTRL-W_CTRL-C}| と同じ
@@ -1661,6 +1665,15 @@ Vim this also works remotely over an ssh connection.
 Vim のウィンドウでソースコードを表示しながらプログラムを gdb でデバッグするのに、端末デバッグプラグインが利用できます。これは Vim の中だけで完結するので、SSH 接続が 1 つあればリモートで機能します。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+@ifset EN
+When the |+terminal| feature is missing, the plugin will use the "prompt"
+buffer type, if possible.  The running program will then use a newly opened
+terminal window.  See |termdebug-prompt| below for details.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{+terminal}| 機能が有効でないとき、プラグインは可能であれば "prompt" バッファタイプを使用するだろう。実行しているプログラムはそれから一番新しく開いたターミナルウィンドウを使用するだろう。詳細は下記の |@ref{termdebug-prompt}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 Starting ~
@@ -2214,6 +2227,57 @@ Other commands ~
 
 
 @ifset EN
+Prompt mode ~
+						*termdebug-prompt*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{termdebug-prompt}
+@cindex termdebug-prompt
+@unnumberedsubsec プロンプトモード
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+When the |+terminal| feature is not supported and on MS-Windows, gdb will run
+in a buffer with 'buftype' set to "prompt".  This works slightly differently:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{+terminal}| 機能がサポートされていない時と MS-Windows 上では、gdb は '@option{buftype}' が "@var{prompt}" に設定されたバッファ内で動作するだろう。これは少し異なった動作をする:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- The gdb window will be in Insert mode while typing commands.  Go to Normal
+  mode with <Esc>, then you can move around in the buffer, copy/paste, etc.
+  Go back to editing the gdb command with any command that starts Insert mode,
+  such as `a` or `i`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item gdb ウィンドウはコマンドを入力している間は挿入モードになる。<Esc> でノーマルモードに移行し、バッファ内を動き回ったり、コピー＆ペースト等をすることができる。`a` や `i` のような挿入モードを開始するコマンドで gdb コマンドの編集に戻る。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- The program being debugged will run in a separate window.  On MS-Windows
+  this is a new console window.  On Unix, if the |+terminal| feature is
+  available a Terminal window will be opened to run the debugged program in.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item デバッグされているプログラムは別々のウィンドウで動作する。MS-Windows 上ではこれは新規のコーンソールウィンドウだ。Unix 上では、もしも |@ref{+terminal}| 機能が有効であれば、デバッグするプログラムを実行するためにターミナルウィンドウが開かれるだろう。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*termdebug_use_prompt*
+Prompt mode can be used even when the |+terminal| feature is present with: >
+	let g:termdebug_use_prompt = 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{termdebug_use_prompt}
+@cindex termdebug_use_prompt
+|@ref{+terminal}| 機能が有効であっても、次のようにしてプロンプトモードを使うことができる:
+@example
+let g:termdebug_use_prompt = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
 Communication ~
 						*termdebug-communication*
 @end ifset
@@ -2326,6 +2390,30 @@ When 'background' is "dark":
 hi debugPC term=reverse ctermbg=darkblue guibg=darkblue
 hi debugBreakpoint term=reverse ctermbg=red guibg=red
 @end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Shorcuts						*termdebug_shortcuts*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{termdebug_shortcuts}
+@cindex termdebug_shortcuts
+@unnumberedsubsubsec ショートカット
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+You can define your own shortcuts (mappings) to control gdb, that can work in
+any window, using the TermDebugSendCommand() function.  Example: >
+	map ,w :call TermDebugSendCommand('where')<CR>
+The argument is the gdb command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+どのウィンドウ内でも gdb を制御するために、TermDebugSendCommand() 関数を使って自分用のショートカット (マッピング) を定義することができる。例:
+@example
+map ,w :call TermDebugSendCommand('where')<CR>
+@end example
+引数は gdb コマンドである。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 
