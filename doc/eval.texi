@@ -14641,6 +14641,47 @@ let job = job_start(['sh', '-c', "myserver </dev/null >/dev/null"])
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+		Note that the job object will be deleted if there are no
+		references to it.  This closes the stdin and stderr, which may
+		cause the job to fail with an error.  To avoid this keep a
+		reference to the job.  Thus instead of: >
+	call job_start('my-command')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ジョブオブジェクトはそれに対する参照がなくなると、削除されるだろうことに注意。これはジョブがエラーを引き起す失敗を生ずる、標準入力と標準エラーを閉じる。これを回避するためにはジョブを参照し続ける。それゆえ、次の代わりに：
+@example
+call job_start('my-command')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		use: >
+	let myjob = job_start('my-command')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+こちらを使う:
+@example
+let myjob = job_start('my-command')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		and unlet "myjob" once the job is not needed or is past the
+		point where it would fail (e.g. when it prints a message on
+		startup).  Keep in mind that variables local to a function
+		will cease to exist if the function returns.  Use a
+		script-local variable if needed: >
+	let s:myjob = job_start('my-command')
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ひとたびジョブが不要になったり、失敗するような過去のもの (例えばスタートアップ時にメッセージを指す時) になったら "myjob" を削除する。もしも関数が返るなら、関数へのローカル変数は存在しなくなるだろうことに留意すること。もしも必要であればスクリプトローカル変数を使う:
+@example
+let s:myjob = job_start('my-command')
+@end example
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 		{options} must be a Dictionary.  It can contain many optional
 		items, see |job-options|.
 @end ifset
