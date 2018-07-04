@@ -1539,7 +1539,7 @@ If the 'smartindent' option is on, or 'cindent' is on and 'cinkeys' contains
 This can be changed with the 'cino' option, see |cino-#|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-'@option{shiftwidth}' がオンのとき、あるいは '@option{cindent}' がオンで '@option{cinkeys}' が値 0 の '@var{#}' を含むとき、右方向へのシフトは '#' で始まる行に適用されない (これらの行は、行の最初に位置すべき C プリプロセッサー指令であると考えられる)。'@option{cino}' オプションで変更することができる。|@ref{cino-#}| を参照。
+'@option{shiftwidth}' がオンのとき、あるいは '@option{cindent}' がオンで '@option{cinkeys}' が値 0 の '@var{#}' を含むとき、右方向へのシフトは '#' で始まる行に適用されない (これらの行は、行の最初に位置すべき C プリプロセッサー指令であると考えられる)。これは '@option{cino}' オプションで変更することができる。|@ref{cino-#}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2871,7 +2871,7 @@ s/E/\="\<Char-0x20ac>"/g
 
 `@command{:retab!}` も空白の連続を <Tab> 文字に変えてしまい、printf() の出力をめちゃくちゃにするかもしれない。
 
-もしも |@ref{+vartabs}| 機能が有効ならば、コンマによって区切られたタブ幅のリストが 1 つのタブストップ代わりに使われるだろう。リストのそれぞれの値は、残りのすべてのタブストップに適用される最後の値を除き、1 つのタブストップの幅を表す。
+|@ref{+vartabs}| 機能が有効な場合、単一の tabstop の代わりにコンマで分けられたタブ幅のリストが使用されるだろう。リストのそれぞれの値は 1 つの tabstop の幅を意味するが、最後の値だけは後続するすべての tabstop に適用される。
 
 @{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -4239,7 +4239,7 @@ when actually needed and the script should be called <filetype>format.vim.
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{format-formatexpr}
 @cindex format-formatexpr
-'@option{formatexpr}' オプションは、バッファの再整形を実行する Vim script 関数を設定する。整形はファイルのタイプに強く依存しているので、これはたいてい |@ref{ftplugin}| で発生する。実際に必要となり、スクリプトが <filetype>format.vim に呼ばれるときに対応するスクリプトがロードのみされるので、|@ref{autoload}| スクリプトを使うのが理にかなっている。
+'@option{formatexpr}' オプションには、バッファの再整形を行う Vim script 関数を設定することができる。整形はファイルの種類に強く依存するので、これは通常 |@ref{ftplugin}| で発生するべきである。対応するスクリプトは実際に必要とされるときにだけ読み込まれ、かつそのスクリプト名は <filetype>format.vim とされるべきなので、|@ref{autoload}| スクリプトを使用することは理にかなっている。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -4249,7 +4249,7 @@ directory, sets the 'formatexpr' option to: >
    setlocal formatexpr=xmlformat#Format()
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-例えば、Vim の @env{$VIMRUNTIME} ディレクトリに同梱されている XML ファイルタイププラグインは、'@option{formatexpr}' オプションを次のように設定している:
+例えば、Vim と共に配布され @env{$VIMRUNTIME} ディレクトリに配置されている XML ファイルタイププラグインは、'@option{formatexpr}' オプションを以下のように設定する:
 @example
 setlocal formatexpr=xmlformat#Format()
 @end example
@@ -4261,7 +4261,9 @@ xmlformat#Format() function, in the directory:
 `$VIMRUNTIME/autoload/xmlformat.vim`
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-これはディレクトリ中で xmlformat#Format() 関数を定義しているスクリプトを探すという意味だ: `$VIMRUNTIME/autoload/xmlformat.vim`
+これは xmlformat#Format() 関数を定義しているスクリプトが以下のディレクトリで見つかることを意味している:
+
+`$VIMRUNTIME/autoload/xmlformat.vim`
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -4269,7 +4271,7 @@ Here is an example script that removes trailing whitespace from the selected
 text.  Put it in your autoload directory, e.g. ~/.vim/autoload/format.vim: >
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-ここに選択したテキストから末尾の空白を除去するスクリプト例がある。これを autoload ディレクトリに置こう。例えば ~/.vim/autoload/format.vim:
+以下は、選択されたテキストから末尾の空白を取り除くスクリプトの例である。これを autoload ディレクトリに置くこと。例、~/.vim/autoload/format.vim:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -4290,16 +4292,16 @@ text.  Put it in your autoload directory, e.g. ~/.vim/autoload/format.vim: >
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
 func! format#Format()
-  " only reformat on explicit gq command
+  " 明示的な gq コマンドの場合だけ再整形する
   if mode() != 'n'
-    " fall back to Vims internal reformatting
+    " Vim の内部再整形に立ち戻る
     return 1
   endif
   let lines = getline(v:lnum, v:lnum + v:count - 1)
   call map(lines, {key, val -> substitute(val, '\s\+$', '', 'g')})
   call setline('.', lines)
 
-  " do not run internal formatter!
+  " 内部の整形は実行させない！
   return 0
 endfunc
 @end verbatim
@@ -4311,7 +4313,7 @@ You can then enable the formatting by executing: >
 >
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-次を実行することで整形を有効にすることができる:
+その後以下のように整形を有効にすることができる:
 @example
 setlocal formatexpr=format#Format()
 @end example
@@ -4324,7 +4326,7 @@ causes Vim to fall back to reformat the text by using the internal formatter.
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @quotation
 @strong{Note:} @*
-この関数は挿入モードから呼ばれたときは明白に非ゼロを返すことに注意 (基本的には テキストが '@option{textwidth}' の制限を超えて挿入される)。これはテキストを整形するために、内部フォーマッタを使用することによって Vim にフォールバックを引き起す。
+この関数は、挿入モードから呼ばれた場合に明示的に非ゼロを返す (基本的に '@option{textwidth}' の制限を超えてテキストが挿入されることを意味する)。これは Vim に内部の整形機能に立ち戻って再整形させることになる。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -4335,7 +4337,7 @@ put them back in place.  If you are going to split single lines into multiple
 lines, be careful not to overwrite anything.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-しかしながら、テキストを再整形するために |@ref{gq}| コマンドが使用されると、関数は選択された行を受け取り、これらの行から末尾の空白を取り除き、元の場所に戻すだろう。もしも 1 行を複数行に分割しようと思うなら、何も上書きしないように注意すること。
+しかしながら、テキストを再整形するために |@ref{gq}| コマンドが使用された場合、その関数は選択された行を受け取り、それらの行から末尾の空白を取り除き、そして所定の位置にそのテキストを配置しなおす。もし 1 つの行を複数行に分割しようとしている場合、何か上書きしてしまわないよう注意すること。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -4344,7 +4346,7 @@ to be very careful, because the function might be called recursively.  For
 debugging it helps to set the 'debug' option.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-挿入モードや置換モードでのテキストの再整形ができるようにしたいなら、関数が再帰的呼ばれるかもしれないので十分に注意しなければならない。デバッグには '@option{debug}' オプションを設定すると役にたつ。
+挿入もしくは置換モードからのテキストの再整形を可能にしたい場合、関数が再帰的に呼び出されることがあるため注意しなければならない。これをデバッグするためには、'@option{debug}' オプションを設定することが役に立つ。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN

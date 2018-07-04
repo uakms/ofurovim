@@ -181,7 +181,7 @@ effects.  Be careful not to destroy your text.
 @{pat@} |@ref{autocmd-patterns}| に一致するファイルで、@{event@} のときに自動的に実行するコマンドのリストに、@{cmd@} を加える。
 @quotation
 @strong{Note:} @*
-クォートされた文字は :autocmd への引数として見られ、コメントの開始ではないことに注意。
+クォートは :autocmd への引数として見なされ、コメントを開始しないことに注意。
 @end quotation
 @{cmd@} は常に既存の自動コマンドの後に追加されるので、自動コマンドは指定された順に実行される。 [nested] については |@ref{autocmd-nested}| を参照。
 @end table
@@ -226,12 +226,12 @@ Or use `:execute`: >
 	:augroup mine | exe "au BufRead * set tw=70" | augroup END
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-その代わり、コマンド内に group 名を書くことができる:
+代わりにグループ名をコマンドの中に置くことができる:
 @example
 :au! mine BufRead *
 :au mine BufRead * set tw=70
 @end example
-もしくは `:execute` を使う:
+もしくは `:execute` を使用する:
 @example
 :augroup mine | exe "au! BufRead *" | augroup END
 :augroup mine | exe "au BufRead * set tw=70" | augroup END
@@ -279,7 +279,8 @@ that you can easily clear them: >
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
 augroup vimrc
-  autocmd!      " 「全ての」vimrcの自動コマンドを削除する
+  " 「全ての」vimrcの自動コマンドを削除する
+  autocmd!
   au BufNewFile,BufRead *.html so <sfile>:h/html.vim
 augroup END
 @end verbatim
@@ -426,7 +427,7 @@ prompt.  When one command outputs two messages this can happen anyway.
 「全ての」自動コマンドを除去する。
 @quotation
 @strong{Note:} @*
-クォートされた文字は :autocmd への引数として見られ、コメントの開始ではないことに注意。
+クォートは :autocmd への引数と見なされ、コメントを開始しないことに注意。
 @end quotation
 @quotation
 @strong{警告:} @*
@@ -853,8 +854,8 @@ Name			triggered by ~
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ @tab
-@item |@ref{QuitPre}| @tab `@command{:quit}` を使ったとき、本当に閉じるか決定する前
-@item |@ref{ExitPre}| @tab Vim を終了かもしれないコマンドを使ったとき
+@item |@ref{QuitPre}| @tab `@command{:quit}` を使ったとき、本当に終了するか決定する前
+@item |@ref{ExitPre}| @tab Vim を終了するコマンドを使ったとき
 @item |@ref{VimLeavePre}| @tab Vim を終了する前、viminfo ファイルを書き出す前
 @item |@ref{VimLeave}| @tab Vim を終了する前、viminfo ファイルを書き出した後
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -877,7 +878,7 @@ Name			triggered by ~
 |DirChanged|		after the working directory has changed
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item |@ref{DirChanged}| @tab ワーキングディレクトリが変更された後
+@item |@ref{DirChanged}| @tab 作業ディレクトリが変更された後
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -956,9 +957,9 @@ Name			triggered by ~
 |CmdlineLeave|		before the cursor leaves the command line
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item |@ref{CmdlineChanged}| @tab 変更がコマンドラインテキストを作成した後
+@item |@ref{CmdlineChanged}| @tab コマンドラインのテキストに変更が加えられた後
 @item |@ref{CmdlineEnter}| @tab カーソルがコマンドラインに移動した後
-@item |@ref{CmdlineLeave}| @tab カーソルがコマンドラインから離れる前
+@item |@ref{CmdlineLeave}| @tab カーソルがコマンドラインを離れる前
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -987,8 +988,8 @@ Name			triggered by ~
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ @tab
 @item |@ref{TextChanged}| @tab ノーマルモードでテキストが変更された後
-@item |@ref{TextChangedI}| @tab 挿入モードでテキストが変更された後 (ポップアップメニューが不可視のとき)
-@item |@ref{TextChangedP}| @tab 挿入モードでテキストが変更された後 (ポップアップメニューが可視のとき)
+@item |@ref{TextChangedI}| @tab ポップアップメニューが表示されていないときに、挿入モードでテキストが変更された後
+@item |@ref{TextChangedP}| @tab ポップアップメニューが表示されているときに、挿入モードでテキストが変更された後
 @item |@ref{TextYankPost}| @tab テキストがヤンクもしくは削除された後
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -1323,7 +1324,7 @@ BufWinEnter			After a buffer is displayed in a window.  This
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 引数なしで |@ref{:split}| をしたときや、既にウィンドウに表示されているバッファを指定して "@command{:split}" をしたときは、同じバッファを開いたままなので、このイベントは発生しない。既存のバッファがそのまま使われるためである。しかし、カレントバッファの名前を指定して "@command{:split}" をすると、そのバッファを再読み込みすることになるので、発生する。
 
-Terminal-Job モードと Normal モードではコマンドの起動ができないので、端末ウィンドウでは発生しない。代わりに |@ref{TerminalOpen}| を使う。
+端末ウィンドウでは発生しない。何故なら Terminal-Job モードで開始され、Normal モードコマンドは機能しないからである。代わりに |@ref{TerminalOpen}| を使用すること。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*BufWinLeave*
@@ -1460,7 +1461,8 @@ CmdlineChanged			After a change was made to the text in the
 @anchor{CmdlineChanged}
 @cindex CmdlineChanged
 @item CmdlineChanged
-コマンドライン内でテキストが変更された後。コマンドラインを台無しにしないように Vim をロックするかもしれないことに注意。<afile> は command-line の種類を示す 1 文字に設定される。|@ref{cmdwin-char}|
+コマンドラインのテキストに変更が加えられた後。Vim が固まってしまう可能性があるので、コマンドラインで間違いを起こさないよう注意すること。<afile> はコマンドラインの種類を示す 1 文字に設定される。
+|@ref{cmdwin-char}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*CmdlineEnter*
@@ -1475,7 +1477,8 @@ CmdlineEnter			After moving the cursor to the command line,
 @anchor{CmdlineEnter}
 @cindex CmdlineEnter
 @item CmdlineEnter
-カーソルをコマンドラインに移動した後、ユーザーはそこでコマンドや検索語を入力することができる。<afile> は、command-line の種類を示す 1 文字に設定される。|@ref{cmdwin-char}|
+ユーザーがコマンドを入力もしくは文字列を検索できるコマンドラインにカーソルが移動した後。<afile> はコマンドラインの種類を示す 1 文字に設定される。
+|@ref{cmdwin-char}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*CmdlineLeave*
@@ -1492,11 +1495,11 @@ CmdlineLeave			Before leaving the command line.
 @anchor{CmdlineLeave}
 @cindex CmdlineLeave
 @item CmdlineLeave
-コマンドラインを離れる前。また @kbd{CTRL-C} や @key{<Esc>} でコマンドラインを途中で止めた時。
+カーソルがコマンドラインを離れる前。@kbd{CTRL-C} もしくは @key{<Esc>} の入力によってコマンドラインを放棄する場合も同様。
 
-コマンドがエラーで終った場合、コマンドラインは実行されたままである。
+コマンドの結果がエラーとなる場合は、コマンドラインは引き続き実行中となる。
 
-<afile> は、command-line の種類を示す 1 文字に設定される。|@ref{cmdwin-char}|
+<afile> はコマンドラインの種類を示す 1 文字に設定される。|@ref{cmdwin-char}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*CmdwinEnter*
@@ -1558,7 +1561,7 @@ ColorSchemePre			Before loading a color scheme. |:colorscheme|
 @item ColorSchemePre
 カラースキームを読み込む前。|@ref{:colorscheme}|
 
-他のカラースキームが読み込まれる前に、カラースキームによって追加されたものを削除するセットアップに有用。
+あるカラースキームが読み込まれる前に、それ以前に別のカラースキームによって追加されたものを取り除くのに便利。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1808,16 +1811,16 @@ DirChanged			The working directory has changed in response
 @anchor{DirChanged}
 @cindex DirChanged
 @item DirChanged
-ワーキングディレクトリは |@ref{:cd}| や |@ref{:lcd}| コマンドへの応答の中、'@option{autochdir}' オプションの結果として変更される。
+|@ref{:cd}| もしくは |@ref{:lcd}| コマンドによって、もしくは '@option{autochdir}' オプションの結果として作業ディレクトリが変更された後。
 
-パターンは次のようにできるだろう:
+パターンは以下のようになる:
 @example
-"window" to trigger on `:lcd
-"global" to trigger on `:cd`
-"auto"   to trigger on 'autochdir'.
-"drop"	 to trigger on editing a file
+"window" `:lcd` により発生する
+"global" `:cd`により発生する
+"auto"   'autochdir' により発生する
+"drop"	 ファイルの編集により発生する
 @end example
-<afile> は新しいディレクトリの名前に設定される。
+<afile> は新ディレクトリ名に設定される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*ExitPre*
@@ -1833,7 +1836,7 @@ ExitPre				When using `:quit`, `:wq` in a way it makes
 @anchor{ExitPre}
 @cindex ExitPre
 @item ExitPre
-`@command{:quit}` や Vim を終了すような `@command{:wq}` もしくは `@command{:qall}` や |@ref{QuitPre}| を使用したすぐ後。不必要なウィンドウを閉じることができる。もしも自動的に保存されていない変更されたバッファがあるなら、終了はキャンセルされるかもしれない。本当に終了するには |@ref{VimLeavePre}| を使用する。
+Vim を終了させる `@command{:quit}`, `@command{:wq}` もしくは `@command{:qall}` wo使用したときで、|@ref{QuitPre}| の直後。不必要なウィンドウを閉じるのに使うことができる。自動的に保存されない変更済みのバッファがある場合には、終了はまだキャンセルされる可能性がある。本当に終了するときのためには |@ref{VimLeavePre}| を使用すること。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*FileChangedShell*
@@ -1982,7 +1985,7 @@ FileType			When the 'filetype' option has been set.  The
 @anchor{FileType}
 @cindex FileType
 @item FileType
-オプション '@option{filetype}' が設定されたとき。パターンはファイルタイプに対して照合される。<afile> は '@option{filetype}' が設定されたファイルの名前として使える。<amatch> は '@option{filetype}' の新しい値として使える。他のウィンドウやバッファのナビゲーションは許されていない。|@ref{filetypes}| を参照。
+オプション '@option{filetype}' が設定されたとき。パターンはファイルタイプに対して照合される。<afile> は '@option{filetype}' が設定されたファイルの名前として使える。<amatch> は '@option{filetype}' の新しい値として使える。他のウィンドウもしくはバッファへの移動は許されていない。|@ref{filetypes}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*FileWriteCmd*
@@ -2201,7 +2204,7 @@ InsertCharPre			When a character is typed in Insert mode,
 |@ref{v:char}| に 2 つ以上の文字を入れた場合はそのテキストはそのまま (literally) 挿入される。
 テキストを変更することはできない |@ref{textlock}|。このイベントは '@option{paste}' がオンに設定されているときは発行されない。
 
-@{+eval 機能が有効のときのみ@}
+@{+eval 機能が有効な場合のみ@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*InsertEnter*
@@ -2565,7 +2568,7 @@ SwapExists			Detected an existing swap file when starting
 @erindex E812
 ここでは他のバッファに切り替えること、バッファ名を変更すること、ディレクトリを変更することは許可されていない。
 
-@{+eval 機能付きのときのみ利用できる@}
+@{+eval 機能が有効な場合のみ@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*Syntax*
@@ -2652,7 +2655,7 @@ TerminalOpen			Just after a terminal buffer was created, with
 @anchor{TerminalOpen}
 @cindex TerminalOpen
 @item TerminalOpen
-`@command{:terminal}` や |@ref{term_start()}| でターミナルバッファが作成されたちょうど後。たとえ ++hidden オプションによってウィンドウなしにバッファが作成されたとしても、このイベントは引き起される。
+`@command{:terminal}` もしくは |@ref{term_start()}| により端末バッファが生成された直後。このイベントは、++hidden オプションによってウィンドウなしにバッファが生成された場合でも発生する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*TermResponse*
@@ -2723,7 +2726,7 @@ TextChangedP			After a change was made to the text in the
 @anchor{TextChangedP}
 @cindex TextChangedP
 @item TextChangedP
-挿入モードでカレントバッファのテキストが変更されたとき。ただしポップアップメニューが可視のときのみ。他は TextChanged と同じ。
+挿入モードでカレントバッファのテキストに変更が加えられた後で、ポップアップメニューが表示されている場合に限られる。そうでなければ TextChanged と同じ。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*TextYankPost*
@@ -2736,7 +2739,7 @@ TextYankPost			After text has been yanked or deleted in the
 @anchor{TextYankPost}
 @cindex TextYankPost
 @item TextYankPost
-テキストがカレントバッファでヤンクもしくは削除された後。次の |@ref{v:event}| の値は autocmd を引き起す動作を決めるために使われる:
+カレントバッファでテキストがヤンクもしくは削除された後。|@ref{v:event}| の以下の値は、この autocmd を発生させた操作を特定するのに使用できる:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 				   operator    	The operation performed.
@@ -2752,13 +2755,13 @@ TextYankPost			After text has been yanked or deleted in the
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .3 .7
-@item operator @tab 実行するオペレーション
-@item regcontents @tab 次のような行のリストとしてレジスタに保存されたテキスト:
+@item operator @tab オペレーションが実行された。
+@item regcontents @tab 行のリストとしてレジスタに格納されたテキスト、例:
 @example
 getreg(r, 1, 1)
 @end example
-@item regname @tab |@ref{register}| の名前もしくは無名レジスタのための空文字列
-@item regtype @tab レジスタのタイプ。|@ref{getregtype()}| を参照
+@item regname @tab |@ref{register}| の名前、もしくは無名レジスタの場合は空文字列。
+@item regtype @tab レジスタの種類。|@ref{getregtype()}| を参照
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -2769,9 +2772,9 @@ getreg(r, 1, 1)
 				{only when compiled with the +eval feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-|@ref{quote_}| が使われるか再帰的に呼ばれる時は引き起こされない。バッファのテキストを変更することは許されていない。|@ref{textlock}| を参照。
+|@ref{quote_}| が使用された場合、もしくは再帰的に呼び出された場合には発生しない。バッファのテキストを変更することは許されていない、|@ref{textlock}| を参照。
 
-@{+eval 機能付きでコンパイルされたときのみ@}
+@{+eval 機能付きでコンパイルされた場合のみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2795,7 +2798,7 @@ User				Never executed automatically.  To be used for
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @quotation
 @strong{Note:} @*
-自動コマンドが見つからないときに `@command{:doautocmd User MyEvent}` を使用すると、エラーになることに注意。もしもこうしたくなければ、ダミーの自動コマンドを自分で定義すること。
+該当する自動コマンドが存在しないときに `@command{:doautocmd User MyEvent}` が使用された場合、エラーが発生する。これを回避したい場合、ダミーの自動コマンドを自身で定義すること。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -2919,7 +2922,7 @@ WinEnter			After entering another window.  Not done for
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @quotation
 @strong{Note:} @*
-split と tabpage コマンドのために、WinEnter イベントは split もしくは tab コマンドの後にトグルされるが、ファイルが読み込まれる前ではないことに注意。
+split と tabpage コマンドに関しては、WinEnter イベントが発生するのは分割もしくはタブコマンドの後だが、ファイルが読み込まれる前であることに注意。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
