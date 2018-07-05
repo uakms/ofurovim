@@ -4,7 +4,7 @@ HTML_OPT_NS = --no-split --html --css-include=style.css
 HTML_OPT_S = --no-node-files --html --css-ref=style.css
 ORIG = $(HOME)/dev/macvim/runtime
 TRAN = ./
-HTMLFILES=`find htmls/refman -name "*.html" -size +3k`
+HTMLFILES=`find htmls/refman -name "*.html"`
 MISCFILES="htmls/refman/Mu-Ci-.html htmls/refman/usr_005ftoc_002etxt.html"
 
 REFMANUALS = \
