@@ -16029,7 +16029,7 @@ echo match("testing", "..", 0, 2)
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-					*matchadd()* *E798* *E799* *E801*
+				*matchadd()* *E798* *E799* *E801* *E957*
 matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 		Defines a pattern to be highlighted in the current window (a
 		"match").  It will be highlighted with {group}.  Returns an
@@ -16041,10 +16041,12 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 @anchor{E798}
 @anchor{E799}
 @anchor{E801}
+@anchor{E957}
 @findex matchadd()
 @erindex E798
 @erindex E799
 @erindex E801
+@erindex E957
 @item matchadd(@{group@}, @{pattern@} [, @{priority@} [, @{id@} [, @{dict@}]]])
 カレントウィンドウで強調表示するパターンを定義する。このパターンのことを「マッチ」と呼ぶ。構文グループ @{group@} で強調する。戻り値は、マッチを識別する ID である。|@ref{matchdelete()}| でこの ID を指定してマッチを削除することができる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -16105,11 +16107,15 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 			conceal	    Special character to show instead of the
 				    match (only for |hl-Conceal| highlighted
 				    matches, see |:syn-cchar|)
+			window	    Instead of the current window use the
+				    window with this number or window ID.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @table @asis
 @item conceal
 マッチ (|@ref{hl-Conceal}| のためだけにハイライトされたマッチ、|@ref{:syn-cchar}| を参照) の代わりに表示する特別な文字
+@item window
+現在のウィンドウの代わりに、この番号もしくはウィンドウ ID のウィンドウを使用する
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -16564,19 +16570,25 @@ mode([expr])	Return a string that indicates the current mode.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-			n	Normal, Terminal-Normal
-			no	Operator-pending
-			v	Visual by character
-			V	Visual by line
-			CTRL-V	Visual blockwise
-			s	Select by character
-			S	Select by line
-			CTRL-S	Select blockwise
+		   n	    Normal, Terminal-Normal
+		   no	    Operator-pending
+		   niI	    Normal using |i_CTRL-O| in |Insert-mode|
+		   niR	    Normal using |i_CTRL-O| in |Replace-mode|
+		   niV	    Normal using |i_CTRL-O| in |Virtual-Replace-mode|
+		   v	    Visual by character
+		   V	    Visual by line
+		   CTRL-V   Visual blockwise
+		   s	    Select by character
+		   S	    Select by line
+		   CTRL-S   Select blockwise
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .3 .7
 @item n @tab ノーマル、Terminal-Normal
 @item no @tab オペレータ待機
+@item niI @tab |@ref{Insert-mode}| で |@ref{i_CTRL-O}| を使用しているノーマル
+@item niR @tab |@ref{Replace-mode}| で |@ref{i_CTRL-O}| を使用しているノーマル
+@item niV @tab |@ref{Virtual-Replace-mode}| で |@ref{i_CTRL-O}| を使用しているノーマル
 @item v @tab 文字単位ビジュアル
 @item V @tab 行単位ビジュアル
 @item @kbd{CTRL-V} @tab 矩形ビジュアル
@@ -16585,13 +16597,13 @@ mode([expr])	Return a string that indicates the current mode.
 @item @kbd{CTRL-S} @tab 矩形選択
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			i	Insert
-			ic	Insert mode completion |compl-generic|
-			ix	Insert mode |i_CTRL-X| completion
-			R	Replace |R|
-			Rc	Replace mode completion |compl-generic|
-			Rv	Virtual Replace |gR|
-			Rx	Replace mode |i_CTRL-X| completion
+		   i	    Insert
+		   ic	    Insert mode completion |compl-generic|
+		   ix	    Insert mode |i_CTRL-X| completion
+		   R	    Replace |R|
+		   Rc	    Replace mode completion |compl-generic|
+		   Rv	    Virtual Replace |gR|
+		   Rx	    Replace mode |i_CTRL-X| completion
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item i @tab 挿入
@@ -16603,14 +16615,14 @@ mode([expr])	Return a string that indicates the current mode.
 @item Rx @tab 置換モード |@ref{i_CTRL-X}| 補完
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			c	Command-line editing
-			cv	Vim Ex mode |gQ|
-			ce	Normal Ex mode |Q|
-			r	Hit-enter prompt
-			rm	The -- more -- prompt
-			r?	A |:confirm| query of some sort
-			!	Shell or external command is executing
-			t	Terminal-Job mode: keys go to the job
+		   c	    Command-line editing
+		   cv	    Vim Ex mode |gQ|
+		   ce	    Normal Ex mode |Q|
+		   r	    Hit-enter prompt
+		   rm	    The -- more -- prompt
+		   r?	    A |:confirm| query of some sort
+		   !	    Shell or external command is executing
+		   t	    Terminal-Job mode: keys go to the job
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item c @tab コマンドライン編集
@@ -16627,11 +16639,17 @@ mode([expr])	Return a string that indicates the current mode.
 		This is useful in the 'statusline' option or when used
 		with |remote_expr()| In most other places it always returns
 		"c" or "n".
+		Note that in the future more modes and more specific modes may
+		be added. It's better not to compare the whole string but only
+		the leading character(s).
 		Also see |visualmode()|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 これらはオプション '@option{statusline}' の中や、|@ref{remote_expr()}| といっしょに使うと便利である。他のほとんどの場所では "c" または "n" しか返さない。
-
+@quotation
+@strong{Note:} @*
+将来的にはより多くのモードとより多くの特殊なモードが追加されるであろうことに注意。文字列全体を比較することよりも文字列を読み込むことのみの方が良い。
+@end quotation
 |@ref{visualmode()}| も参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -24382,6 +24400,7 @@ amiga			Amiga version of Vim.
 arabic			Compiled with Arabic support |Arabic|.
 arp			Compiled with ARP support (Amiga).
 autocmd			Compiled with autocommand support. |autocommand|
+autochdir		Compiled with support for 'autochdir'
 autoservername		Automatically enable |clientserver|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -24392,6 +24411,7 @@ autoservername		Automatically enable |clientserver|
 @item arabic @tab アラビア語をサポート |@ref{Arabic}|
 @item arp @tab ARP をサポート (Amiga)
 @item autocmd @tab オートコマンドをサポート |@ref{autocommand}|
+@item autochdir @tab '@option{autochdir}' をサポート
 @item autoservername @tab 自動的に動作する |@ref{clientserver}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -30713,5 +30733,5 @@ Find more information in the file src/testdir/README.txt.
 
 
 @ifset EN
- vim:tw=78:ts=8:ft=help:norl:
+ vim:tw=78:ts=8:noet:ft=help:norl:
 @end ifset
