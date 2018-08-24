@@ -6844,6 +6844,7 @@ submatch({nr} [, {list}])	String or List
 					specific match in ":s" or substitute()
 substitute({expr}, {pat}, {sub}, {flags})
 				String	all {pat} in {expr} replaced with {sub}
+swapinfo({fname})		Dict	information about swap file {fname}
 synID({lnum}, {col}, {trans})	Number	syntax ID at {lnum} and {col}
 synIDattr({synID}, {what} [, {mode}])
 				String	attribute {what} of syntax ID {synID}
@@ -6856,6 +6857,7 @@ systemlist({expr} [, {input}])	List	output of shell command/filter {expr}
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{submatch(), , submatch}(@{nr@} [, @{list@}]) @tab 文字列/リスト @tab "@command{:s}" や substitute() における特定のマッチ
 @item @ref{substitute(), , substitute}(@{expr@}, @{pat@}, @{sub@}, @{flags@}) @tab 文字列 @tab @{expr@} の @{pat@} を @{sub@} に置換え
+@item @ref{swapinfo(), , swapinfo}(@{fname@}) @tab 辞書 @tab スワップファイル @{fname@} に関する情報
 @item @ref{synID(), , synID}(@{line@}, @{col@}, @{trans@}) @tab 数値 @tab @{line@} と @{col@} の syntax ID を取得
 @item @ref{synIDattr(), , synIDattr}(@{synID@}, @{what@} [, @{mode@}]) @tab 文字列 @tab syntax ID @{synID@} の属性 @{what@} を取得
 @item @ref{synIDtrans(), , synIDtrans}(@{synID@}) @tab 数値 @tab @{synID@} の翻訳された syntax ID
@@ -7062,12 +7064,13 @@ winheight({nr})			Number	height of window {nr}
 @item @ref{win_gotoid(), , win_gotoid}(@{expr@}) @tab 数値 @tab ID @{expr@} のウィンドウに行く
 @item @ref{win_id2tabwin(), , win_id2tabwin}(@{expr@}) @tab リスト @tab ウィンドウ ID からタブとウィンドウ nr 取得
 @item @ref{win_id2win(), , win_id2win}(@{expr@}) @tab 数値 @tab ウィンドウ ID からウィンドウ nr 取得
-@item @ref{win_screenpos(), , win_screenpos(@{nr@})} @tab リスト @tab ウィンドウ @{nr@} のスクリーン位置を取得
+@item @ref{win_screenpos(), , win_screenpos}(@{nr@}) @tab リスト @tab ウィンドウ @{nr@} のスクリーン位置を取得
 @item @ref{winbufnr(), , winbufnr}(@{nr@}) @tab 数値 @tab ウィンドウ @{nr@} のバッファ番号
 @item @ref{wincol(), , wincol}() @tab 数値 @tab カーソル位置のウィンドウ桁
 @item @ref{winheight(), , winheight}(@{nr@}) @tab 数値 @tab ウィンドウ @{nr@} の高さ
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+winlayout([{tabnr}])		List	layout of windows in tab {tabnr}
 winline()			Number	window line of the cursor
 winnr([{expr}])			Number	number of current window
 winrestcmd()			String	returns command to restore window sizes
@@ -7080,6 +7083,7 @@ writefile({list}, {fname} [, {flags}])
 xor({expr}, {expr})		Number	bitwise XOR
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{winlayout(), , winlayout}([@{tabnr@}]) @tab リスト @tab タブ @{tabnr@} 中のウィンドウレイアウト
 @item @ref{winline(), , winline}() @tab 数値 @tab カーソル位置のウィンドウ行
 @item @ref{winnr(), , winnr}([@{expr@}]) @tab 数値 @tab 現在のウィンドウの番号
 @item @ref{winrestcmd(), , winrestcmd}() @tab 文字列 @tab ウィンドウサイズを復元するコマンド
@@ -21141,6 +21145,61 @@ substitute({expr}, {pat}, {sub}, {flags})		*substitute()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+swapinfo({fname})					swapinfo()
+		The result is a dictionary, which holds information about the
+		swapfile {fname}. The available fields are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{swapinfo()}
+@cindex swapinfo()
+@item swapinfo(@{fname@})
+結果は辞書で、スワップファイル @{fname@} に関する情報を保持している。フィールドには次のようなものがある:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			version VIM version
+			user	user name
+			host	host name
+			fname	original file name
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item version @tab VIM のバージョン
+@item user @tab ユーザー名
+@item host @tab ホスト名
+@item fname @tab オリジナルのファイル名
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			pid	PID of the VIM process that created the swap
+				file
+			mtime	last modification time in seconds
+			inode	Optional: INODE number of the file
+			dirty	1 if file was modified, 0 if not
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item pid @tab スワップファイルを生成した VIM プロセスの PID
+@item mtime @tab 秒単位の最終修正時刻
+@item inode @tab オプション: ファイルの INODE 番号
+@item dirty @tab もしも変更されていたなら 1、そうでなければ 0
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		In case of failure an "error" item is added with the reason:
+			Cannot open file: file not found or in accessible
+			Cannot read file: cannot read first block
+			Not a swap file: does not contain correct block ID
+			Magic number mismatch: Info in first block is invalid
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+失敗する場合、根拠に "エラー" 項目が追加される:
+@multitable @columnfractions .3 .7
+@item Cannot open file: @tab ファイルが見つからないかアクセスができない
+@item Cannot read file: @tab 最初のブロックを読み込むことができない
+@item Not a swap file: @tab 正しいブロック ID が含まれていない
+@item Magic number mismatch: @tab 無効な最初のブロックの情報
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 synID({lnum}, {col}, {trans})				*synID()*
 		The result is a Number, which is the syntax ID at the position
 		{lnum} and {col} in the current window.
@@ -23907,6 +23966,82 @@ winheight({nr})						*winheight()*
 例:
 @example
 :echo "The current window has " . winheight(0) . " lines."
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+winlayout([{tabnr}])					*winlayout()*
+		The result is a nested List containing the layout of windows
+		in a tabpage.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{winlayout()}
+@findex winlayout()
+@item winlayout([@{tabnr@}])
+結果はタブページ内のウィンドウレイアウトを含む、ネストされたリスト。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Without {tabnr} use the current tabpage, otherwise the tabpage
+		with number {tabnr}. If the tabpage {tabnr} is not found,
+		returns an empty list.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{tabnr@} を指定しないと現在のタブページが使われ、そうでなければ番号 @{tabnr@} のタブページが使われる。もしもタブページ @{tabnr@} が見つからなければ、空のリストが返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		For a leaf window, it returns:
+			['leaf', {winid}]
+		For horizontally split windows, which form a column, it
+		returns:
+			['col', [{nested list of windows}]]
+		For vertically split windows, which form a row, it returns:
+			['row', [{nested list of windows}]]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+leaf ウィンドウなら、次のものが返る:
+@example
+['leaf', @{winid@}]
+@end example
+水平分割したウィンドウなら、桁の方式で次のものが返る:
+@example
+['col', [@{nested list of windows@}]]
+@end example
+垂直分割したウィンドウなら、行の方式で次のものが返る:
+@example
+['row', [@{nested list of windows@}]]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Example: >
+			" Only one window in the tab page
+			:echo winlayout()
+			['leaf', 1000]
+			" Two horizontally split windows
+			:echo winlayout()
+			['col', [['leaf', 1000], ['leaf', 1001]]]
+			" Three horizontally split windows, with two
+			" vertically split windows in the middle window
+			:echo winlayout(2)
+			['col', [['leaf', 1002], ['row', ['leaf', 1003],
+					     ['leaf', 1001]]], ['leaf', 1000]]
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+" タブページにウィンドウが 1 つのみ
+:echo winlayout()
+['leaf', 1000]
+" 水平分割されたウィンドウが 2 つ
+:echo winlayout()
+['col', [['leaf', 1000], ['leaf', 1001]]]
+" 3 つの水平分割されたウィンドウで、真ん中のウィンドウは
+" 垂直分割されたウィンドウが 2 つある
+:echo winlayout(2)
+['col', [['leaf', 1002], ['row', ['leaf', 1003],
+                     ['leaf', 1001]]], ['leaf', 1000]]
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
