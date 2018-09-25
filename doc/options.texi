@@ -2388,7 +2388,7 @@ MacVim でのこのオプションのサポートは完璧ではない。特に�
 	'{A-Z0-9}, or `{A-Z0-9} command takes one to another file.
 	Note that for some commands the 'autowrite' option is not used, see
 	'autowriteall' for that.
-	Some buffers will not be written, specifically when 'buttype' is
+	Some buffers will not be written, specifically when 'buftype' is
 	"nowrite", "nofile", "terminal" or "prompt".
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -2410,7 +2410,7 @@ MacVim でのこのオプションのサポートは完璧ではない。特に�
 @strong{Note:} @*
 '@option{autowrite}' が適用されないコマンドもあることに注意。それについてはオプション '@option{autowriteall}' を参照。
 @end quotation
-いくつかのバッファは書き込まれない。特に 'buttype' が "nowrite", "nofile", "terminal", "prompt" の場合。
+いくつかのバッファは書き込まれない。特に 'buftype' が "nowrite", "nofile", "terminal", "prompt" の場合。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -6998,8 +6998,8 @@ au WinEnter * set cursorline cursorcolumn
 			{not in Vi}
 			{not available when compiled without the |+diff|
 			feature}
-	Expression which is evaluated to obtain an ed-style diff file from two
-	versions of a file.  See |diff-diffexpr|.
+	Expression which is evaluated to obtain a diff file (either ed-style
+	or unified-style) from two versions of a file.  See |diff-diffexpr|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 @end ifset
@@ -7014,14 +7014,14 @@ au WinEnter * set cursorline cursorcolumn
 @{Vi にはない@} @*
 @{Vim が |@ref{+diff}| 機能付きでコンパイルされたときのみ有効@}
 
-2 個のファイル間の差異を求めるとき、ed 形式の diff ファイルを求めるために評価される expression。|@ref{diff-diffexpr}| を参照。
+2 個のファイル間の差異を求めるとき、(ed もしくは unified 形式の) diff ファイルを求めるために評価される expression。|@ref{diff-diffexpr}| を参照。
 
 安全上の理由から、このオプションをモードライン |@ref{modeline}| やサンドボックス |@ref{sandbox}| の中で設定することはできない。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 						*'dip'* *'diffopt'*
-'diffopt' 'dip'		string	(default "filler")
+'diffopt' 'dip'		string	(default "internal,filler")
 			global
 			{not in Vi}
 			{not available when compiled without the |+diff|
@@ -7035,7 +7035,7 @@ au WinEnter * set cursorline cursorcolumn
 @vindex 'dip'
 @vindex 'diffopt'
 @item 'diffopt' 'dip'
-文字列 (既定では "filler") @*
+文字列 (既定では "internal,filler") @*
 グローバル @*
 @{Vi にはない@} @*
 @{Vim が |@ref{+diff}| 機能付きでコンパイルされたときのみ有効@}
@@ -7051,7 +7051,7 @@ au WinEnter * set cursorline cursorcolumn
 				is set.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@multitable @columnfractions .2 .8
+@multitable @columnfractions .3 .7
 @item filler @tab 片方のウィンドウ内のテキストのある位置に行が挿入されていたときに、ウィンドウのスクロールを同調させるために、埋め立て用の行を表示する。ウィンドウが隣り合っていて、オプション '@option{scrollbind}' がオンのときには大抵便利である。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -7116,23 +7116,70 @@ au WinEnter * set cursorline cursorcolumn
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item foldcolumn:@{n@} @tab 差分モードの開始時にオプション '@option{foldcolumn}' を @{n@} に設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		internal	Use the internal diff library.  This is
+				ignored when 'diffexpr' is set.  *E960*
+				When running out of memory when writing a
+				buffer this item will be ignored for diffs
+				involving that buffer.  Set the 'verbose'
+				option to see when this happens.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item internal @tab 内蔵する diff ライブラリを使う。これは '@option{diffexpr}' が設定されているときは無視される。
+@anchor{E960}
+@erindex E960
+
+バッファを書き込んでいるときにメモリ不足になると、バッファと関係する diff のために、この項目は無視されるだろう。何が置きているのかを見るには、'@option{verbose}' オプションを設定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		indent-heuristic
+                                 Use the indent heuristic for the internal
+                                 diff library.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item indent-heuristic @tab 内蔵する diff ライブラリのためにヒューリスティックなインデントを使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+                algorithm:{text} Use the specified diff algorithm with the
+				internal diff engine. Currently supported 
+				algorithms are:
+				myers      the default algorithm
+				minimal    spend extra time to generate the
+					   smallest possible diff
+				patience   patience diff algorithm
+				histogram  histogram diff algorithm
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item algorithm:@{text@} @tab 内蔵する diff エンジンと共に、指定した diff アルゴリズムを使う。現在サポートしているアルゴリズムは:
+@multitable @columnfractions .4 .6
+@item myers @tab デフォルトのアルゴリズム
+@item minimal @tab 可能な限り小さい diff を生成するために膨大な時間を使う
+@item patience @tab ペイシェンス diff アルゴリズム
+@item histogram @tab ヒストグラム diff アルゴリズム
+@end multitable
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 	Examples: >
 
-		:set diffopt=filler,context:4
+		:set diffopt=internal,filler,context:4
 		:set diffopt=
-		:set diffopt=filler,foldcolumn:3
+		:set diffopt=internal,filler,foldcolumn:3
+		:set diffopt-=internal  " do NOT use the internal diff parser
 <
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 例:
 @example
-:set diffopt=filler,context:4
+:set diffopt=internal,filler,context:4
 :set diffopt=
-:set diffopt=filler,foldcolumn:3
+:set diffopt=internal,filler,foldcolumn:3
+:set diffopt-=internal  " 内蔵 diff パーサーを使わない
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN

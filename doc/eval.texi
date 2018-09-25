@@ -6862,6 +6862,15 @@ submatch({nr} [, {list}])	String or List
 substitute({expr}, {pat}, {sub}, {flags})
 				String	all {pat} in {expr} replaced with {sub}
 swapinfo({fname})		Dict	information about swap file {fname}
+swapname({expr})		String	swap file of buffer {expr}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{submatch(), , submatch}(@{nr@} [, @{list@}]) @tab 文字列/リスト @tab "@command{:s}" や substitute() における特定のマッチ
+@item @ref{substitute(), , substitute}(@{expr@}, @{pat@}, @{sub@}, @{flags@}) @tab 文字列 @tab @{expr@} の @{pat@} を @{sub@} に置換え
+@item @ref{swapinfo(), , swapinfo}(@{fname@}) @tab 辞書 @tab スワップファイル @{fname@} に関する情報
+@item @ref{swapname(), , swapname}(@{expr@}) @tab 文字列 @tab スワップファイルもしくはバッファ @{expr@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 synID({lnum}, {col}, {trans})	Number	syntax ID at {lnum} and {col}
 synIDattr({synID}, {what} [, {mode}])
 				String	attribute {what} of syntax ID {synID}
@@ -6872,9 +6881,6 @@ system({expr} [, {input}])	String	output of shell command/filter {expr}
 systemlist({expr} [, {input}])	List	output of shell command/filter {expr}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item @ref{submatch(), , submatch}(@{nr@} [, @{list@}]) @tab 文字列/リスト @tab "@command{:s}" や substitute() における特定のマッチ
-@item @ref{substitute(), , substitute}(@{expr@}, @{pat@}, @{sub@}, @{flags@}) @tab 文字列 @tab @{expr@} の @{pat@} を @{sub@} に置換え
-@item @ref{swapinfo(), , swapinfo}(@{fname@}) @tab 辞書 @tab スワップファイル @{fname@} に関する情報
 @item @ref{synID(), , synID}(@{line@}, @{col@}, @{trans@}) @tab 数値 @tab @{line@} と @{col@} の syntax ID を取得
 @item @ref{synIDattr(), , synIDattr}(@{synID@}, @{what@} [, @{mode@}]) @tab 文字列 @tab syntax ID @{synID@} の属性 @{what@} を取得
 @item @ref{synIDtrans(), , synIDtrans}(@{synID@}) @tab 数値 @tab @{synID@} の翻訳された syntax ID
@@ -6999,18 +7005,23 @@ test_null_string()		String	null value for testing
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{test_null_channel(), , test_null_channel}() @tab チャネル @tab テスト用の null 値
-@item @ref{test_null_dict(), , test_null_dict}() @tab 辞書 @tab テスト用の null 値
+@item @ref{test_null_dict(), , test_null_dict}() @tab 辞書@ @tab テスト用の null 値
 @item @ref{test_null_job(), , test_null_job}() @tab ジョブ @tab テスト用の null 値
 @item @ref{test_null_list(), , test_null_list}() @tab リスト @tab テスト用の null 値
 @item @ref{test_null_partial(), , test_null_partial}() @tab Funcref @tab テスト用の null 値
 @item @ref{test_null_string(), , test_null_string}() @tab 文字列 @tab テスト用の null 値
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+test_option_not_set({name})    none	reset flag indicating option was set
 test_override({expr}, {val})    none	test with Vim internal overrides
+test_scrollbar({which}, {value}, {dragging})
+				none	scroll in the GUI for testing
 test_settime({expr})		none	set current time for testing
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{test_option_not_set(), , test_option_not_set}(@{name@}) @tab なし@tab 指定するフラグをリセットする
 @item @ref{test_override(), , test_override}(@{expr@}, @{val@}) @tab なし @tab Vim の内部処理を置き換えてテストする
+@item @ref{test_scrollbar(), , test_scrollbar}(@{which@}, @{value@}, @{dragging@}) @tab なし @tab GUI のテスト中にスクロールする
 @item @ref{test_settime(), , test_settime}(@{expr@}) @tab なし @tab テスト用に現在の時刻を設定する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -10312,7 +10323,10 @@ expand({expr} [, {nosuf} [, {list}]])				*expand()*
 @ifset EN
 			<amatch>	autocmd matched name
 			<sfile>		sourced script file or function name
-			<slnum>		sourced script file line number
+			<slnum>		sourced script line number or function
+					line number
+			<sflnum>	script file line number, also when in
+					a function
 			<cword>		word under the cursor
 			<cWORD>		WORD under the cursor
 			<client>	the {clientid} of the last received
@@ -10320,7 +10334,8 @@ expand({expr} [, {nosuf} [, {list}]])				*expand()*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item <sfile> @tab 取り込み (source) 中のファイル名、関数名
-@item <slnum> @tab 取り込み (source) 中の行番号
+@item <slnum> @tab 取り込み (source) 中の行番号もしくは関数の行番号
+@item <sflnum> @tab 関数内であってもスクリプトファイルの行番号
 @item <cword> @tab カーソル下の単語 (word)
 @item <cWORD> @tab カーソル下の単語 (WORD)
 @item <client> @tab 最後に受け取ったメッセージの @{clientid@} |@ref{server2client()}|
@@ -15776,6 +15791,7 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 				     (|mapmode-ic|)
 		  "sid"	     The script local ID, used for <sid> mappings
 			     (|<SID>|).
+		  "lnum"     The line number in "sid", zero if unknown.
 		  "nowait"   Do not wait for other, longer mappings.
 			     (|:map-<nowait>|).
 @end ifset
@@ -15786,6 +15802,7 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 @item "!" @tab 挿入、コマンドラインモード (|@ref{mapmode-ic}|)
 @end multitable
 @item "sid" @tab <sid> マッピングで使用されるスクリプトローカル ID (|@ref{<SID>}|)。
+@item "lnum" @tab "sid" 内の行番号。もしも不明ならば 0
 @item "nowait" @tab 他の長いマッピングを待たない。(|@ref{:map-<nowait>}|)。
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -15912,18 +15929,23 @@ match({expr}, {pat} [, {start} [, {count}]])			*match()*
 @item match(@{expr@}, @{pat@} [, @{start@} [, @{count@}]])
 @{expr@} がリスト |@ref{List}| の場合は、@{pat@} にマッチする最初の要素のインデックスを返す。各要素は文字列として扱われる。リスト |@ref{Lists}| と辞書 |@ref{Dictionaries}| は echo したときと同じように文字列表現に変換される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
 		Otherwise, {expr} is used as a String.  The result is a
 		Number, which gives the index (byte offset) in {expr} where
 		{pat} matches.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+それ以外の場合は、@{expr@} は文字列として扱われる。@{expr@} の中で @{pat@} にマッチするインデックス (バイト単位のオフセット) を表す数値を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 		A match at the first character or |List| item returns zero.
 		If there is no match -1 is returned.
+
 		For getting submatches see |matchlist()|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-
-それ以外の場合は、@{expr@} は文字列として扱われる。@{expr@} の中で @{pat@} にマッチするインデックス (バイト単位のオフセット) を表す数値を返す。
-
 最初の文字またはリスト |@ref{List}| の最初の要素にマッチしたときは 0 を返す。マッチがないときは -1 を返す。サブマッチを取得するには |@ref{matchlist()}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -21232,6 +21254,21 @@ swapinfo({fname})					*swapinfo()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+swapname({expr})					*swapname()*
+		The result is the swap file path of the buffer {expr}.
+		For the use of {expr}, see |bufname()| above.
+		If buffer {expr} is the current buffer, the result is equal to
+		|:swapname| (unless no swap file).
+		If buffer {expr} has no swap file, returns an empty string.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{swapname()}
+@findex swapname()
+@item swapname(@{expr@})
+結果はバッファ @{expr@} のスワップファイルへのパス。@{expr@} の使い方は上記の |@ref{bufname()}| を参照。もしもバッファ @{expr@} が現在のバッファなら、結果は |@ref{:swapname}| (スワップファイルがあるのであれば) と同じ。もしもバッファ @{expr@} がスワップファイルを持たないのであれば、空文字が返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 synID({lnum}, {col}, {trans})				*synID()*
 		The result is a Number, which is the syntax ID at the position
 		{lnum} and {col} in the current window.
@@ -22132,7 +22169,9 @@ term_dumpwrite({buf}, {filename} [, {options}])
 		Dump the contents of the terminal screen of {buf} in the file
 		{filename}.  This uses a format that can be used with
 		|term_dumpload()| and |term_dumpdiff()|.
-		If {filename} already exists an error is given.	*E953*
+		If the job in the terminal already finished an error is given:
+		*E958*
+		If {filename} already exists an error is given:	*E953*
 		Also see |terminal-diff|.
 
 		{options} is a dictionary with these optional entries:
@@ -22145,9 +22184,13 @@ term_dumpwrite({buf}, {filename} [, {options}])
 @item term_dumpwrite(@{buf@}, @{filename@} [, @{options@}])
 ファイル @{filename@} 内の @{buf@} のターミナル画面の内容をダンプする。これは |@ref{term_dumpload()}| と |@ref{term_dumpdiff()}| で使われるフォーマットを使う。
 
+@anchor{E958}
+@erindex E958
+もしもターミナル中のジョブがすでに終了しているのなら、E958 のエラーが与えられる。
+
 @anchor{E953}
 @erindex E953
-もしも @{filename@} がすでに存在しているならエラーが与えられる。|@ref{terminal-diff}| も参照。
+もしも @{filename@} がすでに存在しているなら、E953 のエラーが与えられる。|@ref{terminal-diff}| も参照。
 
 @{options@} は次のオプションを持つ辞書:
 @multitable @columnfractions .3 .7
@@ -23019,6 +23062,28 @@ null の String を返す。これはテストのみに使われる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+test_option_not_set({name})				*test_option_not_set()*
+		Reset the flag that indicates option {name} was set.  Thus it
+		looks like it still has the default value. Use like this: >
+			set ambiwidth=double
+			call test_option_not_set('ambiwidth')
+<		Now the 'ambiwidth' option behaves like it was never changed,
+		even though the value is "double".
+		Only to be used for testing!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_option_not_set()}
+@findex test_option_not_set()
+@item test_option_not_set(@{name@})
+オプション @{name@} が設定されていることを示すフラグをリセットする。そのため、既定値のままであるように見える。次のように使う:
+@example
+set ambiwidth=double
+call test_option_not_set('ambiwidth')
+@end example
+現在は、その値は "double" であるけれども、'@option{ambiwidth}' は決っして変更されていないかのように振る舞う。テストのみで使われる！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 test_override({name}, {val})				*test_override()*
 		Overrides certain parts of Vims internal processing to be able
 		to run tests. Only to be used for testing Vim!
@@ -23085,6 +23150,46 @@ call test_override('starting', 1)
 @example
 call test_override('starting', 0)
 @end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+test_scrollbar({which}, {value}, {dragging})		*test_scrollbar()*
+		Pretend using scrollbar {which} to move it to position
+		{value}.  {which} can be:
+			left	Left scrollbar of the current window
+			right	Right scrollbar of the current window
+			hor	Horizontal scrollbar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_scrollbar()}
+@findex test_scrollbar()
+@item test_scrollbar(@{which@}, @{value@}, @{dragging@})
+@{which@} のスクロールバーを使用し @{value@} 位置に移動しているかのように振る舞う。@{which@} の値は:
+@multitable @columnfractions .3 .7
+@item left @tab 現在のウィンドウの左側のスクロールバー
+@item right @tab 現在のウィンドウの右側のスクロールバー
+@item hor @tab 水平のスクロールバー
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		For the vertical scrollbars {value} can be 1 to the
+		line-count of the buffer.  For the horizontal scrollbar the
+		{value} can be between 1 and the maximum line length, assuming
+		'wrap' is not set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+垂直スクロールバーのための @{value@} は、1 からバッファの行数になる。水平スクロールバーのための @{value@}は、1 と最大桁数となる。'@option{wrap}' は設定されていないと想定する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When {dragging} is non-zero it's like dragging the scrollbar,
+		otherwise it's like clicking in the scrollbar.
+		Only works when the {which} scrollbar actually exists,
+		obviously only when using the GUI.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{dragging@} が非ゼロの場合、スクロールバーをドラッグしているかのようになり、そうでなければ、スクロールバーをクリックしているかのようになる。@{which@} スクロールバーが確かに存在している時にのみ動作する。明らかに GUI を使用している時のみである。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
