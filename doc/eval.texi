@@ -5993,18 +5993,18 @@ appendbufline({expr}, {lnum}, {text})
 @item @ref{appendbufline(), , appendbufline}(@{expr@}, @{lnum@}, @{text@}) @tab 数値 @tab @{expr@} バッファの @{lnum@} 行目の次に @{text@} を加える
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-argc()				Number	number of files in the argument list
+argc( [{winid}])		Number	number of files in the argument list
 argidx()			Number	current index in the argument list
 arglistid([{winnr} [, {tabnr}]]) Number	argument list id
-argv({nr})			String	{nr} entry of the argument list
-argv()				List	the argument list
+argv({nr} [, {winid}])		String	{nr} entry of the argument list
+argv([-1, {winid}])		List	the argument list
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item @ref{argc(), , argc}() @tab 数値 @tab 引数内のファイルの数
+@item @ref{argc(), , argc}([@{winid@}]) @tab 数値 @tab 引数内のファイルの数
 @item @ref{argidx(), , argidx}() @tab 数値 @tab 引数リスト内の現在のインデックス
 @item @ref{arglistid(), , arglistid}([@{winnr@} [, @{tabnr@}]]) @tab 数値 @tab 引数リストID
-@item @ref{argv(), , argv}(@{nr@}) @tab 文字列 @tab 引数の第 @{nr@} 番目
-@item @ref{argv(), , argv}() @tab リスト @tab 引数リスト
+@item @ref{argv(), , argv}(@{nr@} [, @{winid@}]) @tab 文字列 @tab 引数の第 @{nr@} 番目
+@item @ref{argv(), , argv}([-1, @{winid@}]) @tab リスト @tab 引数リスト
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 assert_beeps({cmd})		Number	assert {cmd} causes a beep
@@ -7328,14 +7328,27 @@ appendbufline({expr}, {lnum}, {text})			*appendbufline()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*argc()*
-argc()		The result is the number of files in the argument list of the
-		current window.  See |arglist|.
+argc([{winid}])
+		The result is the number of files in the argument list.  See
+		|arglist|.
+		If {winid} is not supplied, the argument list of the current
+		window is used.
+		If {winid} is -1, the global argument list is used.
+		Otherwise {winid} specifies the window of which the argument
+		list is used: either the window number or the window ID.
+		Returns -1 if the {winid} argument is invalid.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{argc()}
 @findex argc()
-@item argc()
-カレントウィンドウの引数リスト内の、ファイルの数を返す。|@ref{arglist}| を参照。
+@item argc([@{winid@}])
+引数リスト内のファイルの数を返す。|@ref{arglist}| を参照。
+
+もしも @{winid@} が与えられていないなら、カレントウィンドウの引数リストが使われる。もしも @{winid@} が -1 なら、大域の引数リストが使われる。
+
+@{winid@} が与えられているなら、どちらかのウィンドウ引数リストが使われる: ウィンドウ番号もしくはウィンドウ ID
+
+もしも @{winid@} の引数が不正ならば -1 を返す。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -7356,7 +7369,7 @@ arglistid([{winnr} [, {tabnr}]])
 		Return the argument list ID.  This is a number which
 		identifies the argument list being used.  Zero is used for the
 		global argument list.  See |arglist|.
-		Return -1 if the arguments are invalid.
+		Returns -1 if the arguments are invalid.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{arglistid()}
@@ -7378,14 +7391,14 @@ arglistid([{winnr} [, {tabnr}]])
 
 @ifset EN
 							*argv()*
-argv([{nr}])	The result is the {nr}th file in the argument list of the
-		current window.  See |arglist|.  "argv(0)" is the first one.
-		Example: >
+argv([{nr} [, {winid}])
+		The result is the {nr}th file in the argument list.  See
+		|arglist|.  "argv(0)" is the first one.  Example: >
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{argv()}
 @findex argv()
-@item argv([@{nr@}])
+@item argv([@{nr@} [, @{winid@}]])
 結果は引数リスト内の @{nr@} 番目のファイル。|@ref{arglist}| を参照。 "argv(0)" は一番最初のファイルを示す。例:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -7395,8 +7408,8 @@ argv([{nr}])	The result is the {nr}th file in the argument list of the
 	:  exe 'amenu Arg.' . f . ' :e ' . f . '<CR>'
 	:  let i = i + 1
 	:endwhile
-<		Without the {nr} argument a |List| with the whole |arglist| is
-		returned.
+<		Without the {nr} argument, or when {nr} is -1, a |List| with
+		the whole |arglist| is returned.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
@@ -7407,7 +7420,14 @@ argv([{nr}])	The result is the {nr}th file in the argument list of the
 :  let i = i + 1
 :endwhile
 @end verbatim
-引数 @{nr@} が指定されなかった場合は、引数リスト |@ref{arglist}| 全体を返す。
+引数 @{nr@} が指定されなかった、もしくは @{nr@} が -1 の場合は、引数リスト |@ref{arglist}| 全体を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The {winid} argument specifies the window ID, see |argc()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{winid@} 引数はウィンドウ ID を指定する。|@ref{argc()}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
