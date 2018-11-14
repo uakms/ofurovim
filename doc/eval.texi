@@ -6379,6 +6379,7 @@ gettabvar({nr}, {varname} [, {def}])
 				any	variable {varname} in tab {nr} or {def}
 gettabwinvar({tabnr}, {winnr}, {name} [, {def}])
 				any	{name} in {winnr} in tab page {tabnr}
+gettagstack([{nr}])		Dict	get the tag stack of window {nr}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{getpid(), , getpid}() @tab 数値 @tab Vim のプロセス ID
@@ -6389,6 +6390,7 @@ gettabwinvar({tabnr}, {winnr}, {name} [, {def}])
 @item @ref{gettabinfo(), , gettabinfo}([@{expr@}]) @tab リスト @tab タブページのリスト
 @item @ref{gettabvar(), , gettabvar}(@{nr@}, @{varname@} [, @{def@}]) @tab 任意 @tab タブ @{nr@} の変数 @{varname@} または @{def@}
 @item @ref{gettabwinvar(), , gettabwinvar}(@{tabnr@}, @{winnr@}, @{name@} [, @{def@}]) @tab 任意 @tab タブページ @{tabnr@} の @{winnr@} の @{name@}
+@item @ref{gettagstack(), , gettagstack}([@{nr@}]) @tab 辞書 @tab ウィンドウ @{nr@} のタグスタックを取得する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 getwininfo([{winid}])		List	list of info about each window
@@ -6773,6 +6775,8 @@ settabvar({nr}, {varname}, {val}) none	set {varname} in tab page {nr} to {val}
 settabwinvar({tabnr}, {winnr}, {varname}, {val})
 				none	set {varname} in window {winnr} in tab
 					page {tabnr} to {val}
+settagstack({nr}, {dict} [, {action}])
+				Number	modify tag stack using {dict}
 setwinvar({nr}, {varname}, {val}) none	set {varname} in window {nr} to {val}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -6783,6 +6787,7 @@ setwinvar({nr}, {varname}, {val}) none	set {varname} in window {nr} to {val}
 @item @ref{setreg(), , setreg}(@{n@}, @{v@} [, @{opt@}]) @tab 数値 @tab レジスタの値とタイプを設定
 @item @ref{settabvar(), , settabvar}(@{nr@}, @{varname@}, @{val@}) @tab なし @tab タブページ @{nr@} の変数 @{varname@} を @{val@} に設定する
 @item @ref{settabwinvar(), , settabwinvar}(@{tabnr@}, @{winnr@}, @{varname@}, @{val@}) @tab なし @tab タブページ @{tabnr@} 内のウィンドウ @{winnr@} の変数 @{varname@} に @{val@} をセット
+@item @ref{settagstack(), , settagstack}(@{nr@}, @{dict@} [, @{action@}]) @tab 数値 @tab @{dict@} を用いてタグスタックを変更する
 @item @ref{setwinvar(), , setwinvar}(@{nr@}, @{varname@}, @{val@}) @tab なし @tab ウィンドウ @{nr@} の変数 @{varname@} に @{val@} をセット
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -13256,6 +13261,76 @@ gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])		*gettabwinvar()*
 @example
 gettabwinvar(@{tabnr@}, @{winnr@}, '&')
 @end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+gettagstack([{nr}])					*gettagstack()*
+		The result is a Dict, which is the tag stack of window {nr}.
+		{nr} can be the window number or the |window-ID|.
+		When {nr} is not specified, the current window is used.
+		When window {nr} doesn't exist, an empty Dict is returned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{gettagstack()}
+@findex gettagstack()
+@item gettagstack([@{nr@}])
+結果は辞書で、ウィンドウ @{nr@} のタグスタック。@{nr@} はウィンドウ番号か |@ref{window-ID}| が可能。@{nr@} が指定されていない場合は現在のウィンドウが使われる。ウィンドウ @{nr@} が存在しない場合は空の辞書が返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The returned dictionary contains the following entries:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+返される辞書には次の内容が含まれている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			curidx		Current index in the stack. When at
+					top of the stack, set to (length + 1).
+					Index of bottom of the stack is 1.
+			items		List of items in the stack. Each item
+					is a dictionary containing the
+					entries described below.
+			length		Number of entries in the stack.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item curidx @tab スタック中の現在のインデックス。スタックの一番上にある場合、(length + 1) を設定するスタックの一番下のインデックスは 1。
+@item items @tab スタック中の項目リスト。それぞれの項目は下記に説明するエントリを含む辞書。
+@item length @tab スタック中のエントリの番号。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Each item in the stack is a dictionary with the following
+		entries:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+スタック中のそれぞれの項目は次のような内容を持つ辞書になっている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			bufnr		buffer number of the current jump
+			from		cursor position before the tag jump.
+					See |getpos()| for the format of the
+					returned list.
+			matchnr		current matching tag number. Used when
+					multiple matching tags are found for a
+					name.
+			tagname		name of the tag
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item bufnr @tab 現在のジャンプのバッファ番号
+@item from @tab タグジャンプ前のカーソル位置。返されたリストのフォーマットについては |@ref{getpos()}| を参照。
+@item matchnr @tab 現在マッチしているタグ番号。タグのマッチが複数ある場合は、名前が使われる。
+@item tagname @tab タグの名前
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |tagstack| for more information about the tag stack.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+タグスタックについての詳細は |@ref{tagstack}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -19908,6 +19983,101 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 この関数は |@ref{sandbox}| の中では使用できない。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+@ifset EN
+settagstack({nr}, {dict} [, {action}])			*settagstack()*
+		Modify the tag stack of the window {nr} using {dict}.
+		{nr} can be the window number or the |window-ID|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{settagstack()}
+@findex settagstack()
+@item settagstack(@{nr@}, @{dict@} [, @{action@}])
+@{dict@} を使用しているウィンドウ @{nr@} のタグスタックを変更する。@{nr@} はウィンドウ番号か |@ref{window-ID}| になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		For a list of supported items in {dict}, refer to
+		|gettagstack()|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{dict@} でサポートされている項目のリストのために |@ref{gettagstack()}| を参照する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*E962*
+		If {action} is not present or is set to 'r', then the tag
+		stack is replaced. If {action} is set to 'a', then new entries
+		from {dict} are pushed onto the tag stack.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E962}
+@erindex E962
+@{action@}
+もしも @{action@} が存在しないか '@var{r}' に設定されている場合、タグスタックは置き換えられる。@{action@} が '@var{a}' に設定されている場合、@{dict@} からの新しい項目はタグスタックの上に積まれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns zero for success, -1 for failure.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+成功した場合は 0、失敗した場合は -1 を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Examples:
+		    Set current index of the tag stack to 4: >
+			call settagstack(1005, {'curidx' : 4})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+タグスタックの現在のインデックスを 4 に設定する:
+@verbatim
+call settagstack(1005, {'curidx' : 4})
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<		    Empty the tag stack of window 3: >
+			call settagstack(3, {'items' : []})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウ 3 のタグスタックを空にする:
+@verbatim
+call settagstack(3, {'items' : []})
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<		    Push a new item onto the tag stack: >
+			let pos = [bufnr('myfile.txt'), 10, 1, 0]
+			let newtag = [{'tagname' : 'mytag', 'from' : pos}]
+			call settagstack(2, {'items' : newtag}, 'a')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新規項目をタグスタックの上に積む:
+@verbatim
+let pos = [bufnr('myfile.txt'), 10, 1, 0]
+let newtag = [{'tagname' : 'mytag', 'from' : pos}]
+call settagstack(2, {'items' : newtag}, 'a')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<		    Save and restore the tag stack: >
+			let stack = gettagstack(1003)
+			" do something else
+			call settagstack(1003, stack)
+			unlet stack
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+タグスタックを保存し復元する:
+@verbatim
+let stack = gettagstack(1003)
+" do something else
+call settagstack(1003, stack)
+unlet stack
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 setwinvar({nr}, {varname}, {val})			*setwinvar()*
 		Like |settabwinvar()| for the current tab page.
