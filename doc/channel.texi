@@ -66,7 +66,7 @@ Netbeans インターフェイスもチャネルを使っています。|@ref{ne
 @item 3. チャネルを開く @tab |@ref{channel-open}|
 @item 4. JSON, JS チャネルを使う @tab |@ref{channel-use}|
 @item 5. チャネルコマンド @tab |@ref{channel-commands}|
-@item 6. RAW, NL チャネルをつかう @tab |@ref{channel-raw}|
+@item 6. RAW, NL チャネルを使う @tab |@ref{channel-raw}|
 @item 7. その他のチャネル機能 @tab |@ref{channel-more}|
 @item 8. チャネルでジョブを開始する @tab |@ref{job-start}|
 @item 9. チャネルなしでジョブを開始する @tab |@ref{job-start-nochannel}|
@@ -1456,7 +1456,7 @@ This might not always work when called early, put in the callback handler or
 use a timer to call it after the job has started.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-ジョブを Vim のバックグラウンドで起動できるか、ジョブに移行するかはシステムに依存する。これを避けるには `foreground()` 関数を使う。コールバックハンドラーの初期に呼ばれるか、ジョブが起動した後に呼ぶためにタイマーが使われると、常に機能するかはわからない。
+システムによっては、ジョブを開始するとVimをバックグラウンドに移動することがあり、開始されたジョブはフォーカスを取得します。これを避けるには `foreground()` 関数を使用してください。これは、早く呼び出されたとき、コールバックハンドラ内に置いたとき、またはジョブが開始した後にタイマーを使用して呼び出すときは、必ずしも機能しない場合があります。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1537,7 +1537,7 @@ job stdin.  This allows for editing the last line and sending it when pressing
 Enter.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-特殊モードは、in_top が 0 に設定され、in_bot が設定されていない場合です。バッファに行が追加されるたびに、最後の 1 行がジョブ stdin に送信されます。これにより、最後の行を編集し、Enter を押したときに送信することができます。
+特殊モードは、"in_top" が 0 に設定され、"in_bot" が設定されていない場合です。バッファに行が追加されるたびに、最後の 1 行がジョブ stdin に送信されます。これにより、最後の行を編集し、Enter を押したときに送信することができます。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*channel-close-in*
@@ -1949,7 +1949,7 @@ Vim が終了してもジョブを停止しません。デフォルトは "term"
 @anchor{job-term}
 @cindex job-term
 @item "term": "open"
-新しいウィンドウ中でターミナルを起動し、ジョブ stdin/stdout/stderr を接続します。`:terminal` を使うのと似ている。
+新しいウィンドウでターミナルを起動し、ジョブ stdin/stdout/stderr を接続します。`:terminal` を使用することと同じです。
 @quotation
 @strong{Note:} @*
 まだ実装されていません！
@@ -1979,7 +1979,7 @@ Vim が終了してもジョブを停止しません。デフォルトは "term"
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item "pty": 1
-可能ならパイプの代わりに pty (pseudo-tty) を使う。ターミナルウィンドウと組み合せるととても有用だ。|@ref{terminal}| を参照。
+可能であれば、パイプのかわりに pty (pseudo-tty) を使います。これは端末ウィンドウとの組み合せで最も便利です。|@ref{terminal}| を参照。
 
 @{Unix と Unix系 のシステムでのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -2213,7 +2213,7 @@ stderr はバッファに追加する (下記参照)
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item "cwd": "/path/to/dir"
-新しいプロセスのためのカレントディレクトリ。ディレクトリが存在しなければエラーが与えられる。
+新しいプロセスのためのカレント作業ディレクトリ。ディレクトリが存在しない場合は、エラーが発生します。
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -2427,7 +2427,7 @@ For more options see |job_stop()|.
 If you want to type input for the job in a Vim window you have a few options:
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-Vim ウィンドウでジョブに入力を打ち込みたいのなら、いくつかのオプションがある:
+Vim のウィンドウでジョブのための入力をタイプしたい場合、いくつかのオプションがあります:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 - Use a normal buffer and handle all possible commands yourself.
@@ -2435,7 +2435,7 @@ Vim ウィンドウでジョブに入力を打ち込みたいのなら、いく�
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @itemize
-@item ノーマルバッファを使い、できる限りすべてのコマンドを自分自身で取り扱う。コマンドがとても多いので、これはひどく込み入ったものになるだろう。
+@item 通常のバッファを使用して、すべての起こりうるコマンドを自分で処理します。たくさんの起こりうるコマンドが存在するので、これは複雑になります。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 - Use a terminal window.  This works well if what you type goes directly to
@@ -2443,14 +2443,14 @@ Vim ウィンドウでジョブに入力を打ち込みたいのなら、いく�
   See |terminal-window|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item ターミナルウィンドウを使う。これはジョブに直接入力を送り、ジョブが直接ウィンドウに表示する場合なら良いだろう。|@ref{terminal-window}| を参照。
+@item 端末ウィンドウを使用します。入力した内容がジョブに送られ、ジョブの出力がウィンドウに直接表示される場合は、これはうまく機能します。|@ref{terminal-window}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 - Use a prompt window. This works well when entering a line for the job in Vim
   while displaying (possibly filtered) output from the job.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item プロンプトウィンドウを使う。これはジョブからの出力を表示 (フィルターされていても可能) しつつ、Vim 内のジョブに 1 行を入力ときには良いだろう。
+@item プロンプトウィンドウを使用します。これは、Vim でジョブからの出力 (フィルタリングされている可能性もある) を表示している間に、ジョブのための行を入力しているときにうまく動作します。
 @end itemize
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -2459,7 +2459,7 @@ A prompt buffer is created by setting 'buftype' to "prompt". You would
 normally only do that in a newly created buffer.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-プロンプトバッファは '@option{buftype}' を "@var{prompt}" に設定することで作成される。普通は新たに作成されたバッファでのみ、そのようにしたいだろう。
+プロンプトバッファは '@option{buftype}' を "@var{prompt}" に設定することによって作成されます。通常は新規作成バッファでのみおこないます。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2470,7 +2470,7 @@ Another callback would receive the output from the job and display it in the
 buffer, below the prompt (and above the next prompt).
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-ユーザーは編集しテキストの 1 行をバッファの最終行に入力することができる。プロンプト行で Enter が押されると、コールバックは |@ref{prompt_setcallback()}| が呼び出されたものに設定する。普通はジョブに行を送るだろう。もうひとつのコールバックはジョブからの出力を受け取り、それをバッファのプロンプト下 (次のプロンプトの上) に表示するだろう。
+ユーザーは、バッファの最後の行に 1 行のテキストを編集して入力することができます。プロンプト行で @key{Enter} キーを押すと、|@ref{prompt_setcallback()}| で設定されたコールバックが呼び出されます。通常は、その行をジョブに送信します。別のコールバックは、ジョブからの出力を受け取り、バッファ内のプロンプトの下 (次のプロンプトの上) に表示します。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2480,7 +2480,7 @@ calling functions, such as |append()|.  Using other commands may mess up the
 buffer.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-プロンプト後の最終行のテキストのみ編集することができる。バッファの残りはノーマルモードコマンドでは変更不可である。|@ref{append()}| のようなコマンドを呼び出すことによって編集することができる。その他のコマンドの使用はバッファをめちゃくちゃにしてしまうだろう。
+プロンプトの後の最後の行のテキストのみが編集可能です。残りのバッファはノーマルモードのコマンドでは変更できません。|@ref{append()}| などの関数を呼び出すことで変更できます。他のコマンドを使用すると、バッファを壊す可能性があります。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2489,14 +2489,14 @@ mode, use `:startinsert` if you want to enter Insert mode, so that the user
 can start typing a line.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-'@option{buftype}' を "@var{prompt}" に設定したあとは、Vim は自動的に挿入モードを開始しない。もしも挿入モードに入りたいのなら、`@command{:startinsert}` を使う。そうすると、ユーザーは行の入力を開始することができる。
+'@option{buftype}' を "@var{prompt}" に設定した後、Vim は自動的に挿入モードを開始しません。挿入モードに入るには `@command{:startinsert}` を使います。これにより、ユーザーは行の入力を開始できます。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 The text of the prompt can be set with the |prompt_setprompt()| function.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-プロンプトのテキストは |@ref{prompt_setprompt()}| 関数で設定することができる。
+プロンプトのテキストは |@ref{prompt_setprompt()}| 関数で設定することができます。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2504,7 +2504,7 @@ The user can go to Normal mode and navigate through the buffer.  This can be
 useful see older output or copy text.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-ユーザーはノーマルモードに移行し、バッファを移動することができる。これは古い出力を見たりテキストをコピーするのに有用であるだろう。
+ユーザーはノーマルモードに移行し、バッファ内を移動できます。これは、古い出力の参照やテキストのコピーに便利です。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2514,7 +2514,7 @@ to delete a word). When leaving the window Insert mode will be stopped.  When
 coming back to the prompt window Insert mode will be restored.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@kbd{CTRL-W} キーは、次のウィンドウにスイッチする @kbd{CTRL-W w} のような、ウィンドウコマンドを開始するために使うことができる。これはまた挿入モード (単語を削除するために @kbd{Shift-CTRL-W} を使う) で動作する。挿入モードのウィンドウを離れたときは停止するだろう。挿入モードのプロンプトウィンドウに戻ってきたときは復元されるだろう。
+@kbd{CTRL-W} キーを使用して次のウィンドウに切り替えるための @kbd{CTRL-W w} などのウィンドウコマンドを開始できます。これは挿入モードでも機能します (単語を削除するには @kbd{Shift-CTRL-W} を使用します)。ウィンドウを離れたとき挿入モードは停止します。プロンプトウィンドウに戻ると、挿入モードが復元されます。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2523,7 +2523,7 @@ the cursor to the last line.  "A" will move to the end of the line, "I" to the
 start of the line.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-"a", "i", "A" そして "I" のような挿入モードを開始するどのようなコマンドも、カーソルを最終行に移動するだろう。"A" は 行の最後に移動し、"I" は行の最初に移動するだろう。
+"a", "i", "A" や "I" などの挿入モードを開始するコマンドは、最終行にカーソルを移動します。"A" は 行末に移動し、"I" は行頭に移動します。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 
