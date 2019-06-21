@@ -16,16 +16,19 @@ REFMANUALS = \
 	doc/tips.texi doc/message.texi doc/quotes.texi doc/debug.texi \
 	doc/develop.texi \
 	doc/starting.texi doc/editing.texi doc/motion.texi doc/scroll.texi \
-	doc/insert.texi doc/change.texi doc/indent.texi doc/undo.texi \
-	doc/repeat.texi doc/visual.texi doc/various.texi doc/recover.texi \
+	doc/insert.texi doc/change.texi doc/undo.texi doc/repeat.texi \
+	doc/visual.texi doc/various.texi doc/recover.texi \
 	doc/cmdline.texi doc/options.texi doc/pattern.texi doc/map.texi \
-	doc/tagsrch.texi doc/quickfix.texi doc/windows.texi doc/tabpage.texi \
-	doc/syntax.texi doc/spell.texi doc/diff.texi doc/autocmd.texi \
-	doc/filetype.texi doc/eval.texi doc/channel.texi doc/fold.texi \
+	doc/tagsrch.texi doc/windows.texi doc/tabpage.texi doc/spell.texi \
+	doc/diff.texi doc/autocmd.texi doc/eval.texi doc/channel.texi \
+	doc/fold.texi \
 	doc/print.texi doc/remote.texi doc/term.texi doc/terminal.texi \
-	doc/digraph.texi doc/mbyte.texi doc/mlang.texi doc/arabic.texi \
-	doc/farsi.texi doc/hebrew.texi doc/russian.texi doc/ft_ada.texi \
-	doc/ft_rust.texi doc/ft_sql.texi doc/hangulin.texi doc/rileft.texi \
+	doc/popup.texi \
+	doc/indent.texi doc/syntax.texi doc/textprop.texi doc/filetype.texi \
+	doc/quickfix.texi doc/ft_ada.texi doc/ft_rust.texi doc/ft_sql.texi \
+	doc/digraph.texi doc/mbyte.texi doc/mlang.texi doc/rileft.texi \
+	doc/arabic.texi doc/farsi.texi doc/hebrew.texi doc/russian.texi \
+	doc/hangulin.texi \
 	doc/gui.texi doc/gui_w32.texi doc/gui_x11.texi \
 	doc/if_cscop.texi doc/if_lua.texi doc/if_mzsch.texi doc/if_perl.texi \
 	doc/if_pyth.texi doc/if_tcl.texi doc/if_ole.texi doc/if_ruby.texi \

@@ -1,0 +1,303 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node textprop.txt, , , 目次
+@unnumbered テキストに適用されているプロパティを表示する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*textprop.txt*  For Vim version 8.1.  Last change: 2018 Dec 13
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*textprop.txt*  For Vim バージョン 8.1.  Last change: 2018 Dec 13
+
+
+                VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Displaying text with properties attached.		*text-properties*
+
+THIS IS UNDER DEVELOPMENT - ANYTHING MAY STILL CHANGE  *E967*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{text-properties}
+@cindex text-properties
+Displaying text with properties attached.
+
+THIS IS UNDER DEVELOPMENT - ANYTHING MAY STILL CHANGE  *E967*
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+What is not working yet:
+- Adjusting column/length when inserting text
+- Text properties spanning more than one line
+- prop_find()
+- callbacks when text properties are outdated
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+What is not working yet:
+- Adjusting column/length when inserting text
+- Text properties spanning more than one line
+- prop_find()
+- callbacks when text properties are outdated
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1. Introduction			|text-prop-intro|
+2. Functions			|text-prop-functions|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. Introduction @tab |text-prop-intro|
+@item 2. Functions @tab |text-prop-functions|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+{Vi does not have text properties}
+{not able to use text properties when the |+textprop| feature was
+disabled at compile time}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vi does not have text properties@}
+@{not able to use text properties when the |+textprop| feature was disabled at compile time@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Introduction						*text-prop-intro*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{text-prop-intro}
+@cindex text-prop-intro
+@section 1. Introduction
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Text properties can be attached to text in a buffer.  They will move with the
+text: If lines are deleted or inserted the properties move with the text they
+are attached to.  Also when inserting/deleting text in the line before the
+text property.  And when inserting/deleting text inside the text property, it
+will increase/decrease in size.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Text properties can be attached to text in a buffer.  They will move with the text: If lines are deleted or inserted the properties move with the text they are attached to.  Also when inserting/deleting text in the line before the text property.  And when inserting/deleting text inside the text property, it will increase/decrease in size.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The main use for text properties is to highlight text.  This can be seen as a
+replacement for syntax highlighting.  Instead of defining patterns to match
+the text, the highlighting is set by a script, possibly using the output of an
+external parser.  This only needs to be done once, not every time when
+redrawing the screen, thus can be much faster, after the initial cost of
+attaching the text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+The main use for text properties is to highlight text.  This can be seen as a replacement for syntax highlighting.  Instead of defining patterns to match the text, the highlighting is set by a script, possibly using the output of an external parser.  This only needs to be done once, not every time when redrawing the screen, thus can be much faster, after the initial cost of attaching the text properties.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Text properties can also be used for other purposes to identify text.  For
+example, add a text property on a function name, so that a search can be
+defined to jump to the next/previous function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Text properties can also be used for other purposes to identify text.  For example, add a text property on a function name, so that a search can be defined to jump to the next/previous function.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A text property is attached at a specific line and column, and has a specified
+length.  The property can span multiple lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+A text property is attached at a specific line and column, and has a specified length.  The property can span multiple lines.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A text property has these fields:
+	"id"		a number to be used as desired
+	"type"		the name of a property type
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+A text property has these fields:
+@multitable @columnfractions .3 .7
+@item "id" @tab a number to be used as desired
+@item "type" @tab the name of a property type
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Property Types ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec Property Types
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*E971*
+A text property normally has the name of a property type, which defines 
+how to highlight the text.  The property type can have these entries:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E971}
+@erindex E971
+A text property normally has the name of a property type, which defines  how to highlight the text.  The property type can have these entries:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	"highlight"	name of the highlight group to use
+	"priority"	when properties overlap, the one with the highest
+			priority will be used.
+	"start_incl"	when TRUE inserts at the start position will be
+			included in the text property
+	"end_incl"    	when TRUE inserts at the end position will be
+			included in the text property
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .4 .6
+@item "highlight" @tab name of the highlight group to use
+@item "priority" @tab when properties overlap, the one with the highest priority will be used.
+@item "start_incl" @tab when TRUE inserts at the start position will be included in the text property
+@item "end_incl" @tab when TRUE inserts at the end position will be included in the text property
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Example ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec Example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Suppose line 11 in a buffer has this text (excluding the indent):
+
+	The number 123 is smaller than 4567.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Suppose line 11 in a buffer has this text (excluding the indent):
+@example
+The number 123 is smaller than 4567.
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To highlight the numbers: >
+	call prop_type_add('number', {'highlight': 'Constant'})
+	call prop_add(11, 12, {'length': 3, 'type': 'number})
+	call prop_add(11, 32, {'length': 4, 'type': 'number})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+To highlight the numbers:
+@verbatim
+call prop_type_add('number', {'highlight': 'Constant'})
+call prop_add(11, 12, {'length': 3, 'type': 'number})
+call prop_add(11, 32, {'length': 4, 'type': 'number})
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Setting "start_incl" and "end_incl" is useful when white space surrounds the
+text, e.g. for a function name.  Using false is useful when the text starts
+and/or ends with a specific character, such as the quote surrounding a string.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Setting "start_incl" and "end_incl" is useful when white space surrounds the text, e.g. for a function name.  Using false is useful when the text starts and/or ends with a specific character, such as the quote surrounding a string.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	func FuncName(arg) ~
+	     ^^^^^^^^        property with start_incl and end_incl set
+
+	var = "text"; ~
+	      ^^^^^^	     property with start_incl and end_incl not set
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@example
+func FuncName(arg) ~
+     ^^^^^^^^        property with start_incl and end_incl set
+
+var = "text"; ~
+      ^^^^^^         property with start_incl and end_incl not set
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Nevertheless, when text is inserted or deleted the text may need to be parsed
+and the text properties updated.  But this can be done asynchrnously.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Nevertheless, when text is inserted or deleted the text may need to be parsed and the text properties updated.  But this can be done asynchrnously.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Functions						*text-prop-functions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{text-prop-functions}
+@cindex text-prop-functions
+@section 2. 関数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Manipulating text property types:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec テキストプロパティタイプの操作:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+prop_type_add({name}, {props})		define a new property type
+prop_type_change({name}, {props})	change an existing property type
+prop_type_delete({name} [, {props}])	delete a property type
+prop_type_get([{name} [, {props}])	get property type values
+prop_type_list([{props}])		get list of property types
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item prop_type_add(@{name@}, @{props@}) @tab 新しいプロパティタイプを定義
+@item prop_type_change(@{name@}, @{props@}) @tab 既存のプロパティタイプを変更
+@item prop_type_delete(@{name@} [, @{props@}]) @tab プロパティタイプを削除
+@item prop_type_get([@{name@} [, @{props@}]) @tab プロパティタイプの値を取得
+@item prop_type_list([@{props@}]) @tab プロパティタイプのリストを取得
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Manipulating text properties:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec テキストプロパティの操作:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+prop_add({lnum}, {col}, {props})  	add a text property
+prop_clear({lnum} [, {lnum_end} [, {bufnr}]])
+					remove all text properties
+prop_find({props} [, {direction}])	search for a text property
+prop_list({lnum} [, {props})  		text properties in {lnum}
+prop_remove({props} [, {lnum} [, {lnum_end}]])
+					remove a text property
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item prop_add(@{lnum@}, @{col@}, @{props@}) @tab テキストプロパティを追加
+@item prop_clear(@{lnum@} [, @{lnum_end@} [, @{bufnr@}]]) @tab 全てのテキストプロパティを削除
+@item prop_find(@{props@} [, @{direction@}]) @tab テキストプロパティを検索
+@item prop_list(@{lnum@} [, @{props@}) @tab @{lnum@} のテキストプロパティ
+@item prop_remove(@{props@} [, @{lnum@} [, @{lnum_end@}]]) @tab テキストプロパティを削除
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ vim:tw=78:ts=8:noet:ft=help:norl:
+@end ifset
