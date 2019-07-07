@@ -3,14 +3,14 @@
 @unnumbered イベントに応じて自動的にコマンドを実行する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*autocmd.txt*   For Vim version 8.1.  Last change: 2018 May 03
+*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Jun 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*autocmd.txt*   For Vim バージョン 8.1.  Last change: 2018 May 03
+*autocmd.txt*   For Vim バージョン 8.1.  Last change: 2019 Jun 22
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -66,12 +66,6 @@ For a basic explanation, see section |40.3| in the user manual.
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
-@ifset EN
-{Vi does not have any of these commands}
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{Vi にはこれらのコマンドはない@}
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 ==============================================================================
@@ -161,15 +155,10 @@ effects.  Be careful not to destroy your text.
 
 @ifset EN
 							*:au* *:autocmd*
-:au[tocmd] [group] {event} {pat} [nested] {cmd}
+:au[tocmd] [group] {event} {pat} [++once] [++nested] {cmd}
 			Add {cmd} to the list of commands that Vim will
 			execute automatically on {event} for a file matching
 			{pat} |autocmd-patterns|.
-			Note: A quote character is seen as argument to the
-			:autocmd and won't start a comment.
-			Vim always adds the {cmd} after existing autocommands,
-			so that the autocommands execute in the order in which
-			they were given.  See |autocmd-nested| for [nested].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @table @asis
@@ -177,14 +166,36 @@ effects.  Be careful not to destroy your text.
 @anchor{:autocmd}
 @pindex :au
 @pindex :autocmd
-@item :au[tocmd] [group] @{event@} @{pat@} [nested] @{cmd@}
+@item :au[tocmd] [group] @{event@} @{pat@} [++once] [++nested] @{cmd@}
 @{pat@} |@ref{autocmd-patterns}| に一致するファイルで、@{event@} のときに自動的に実行するコマンドのリストに、@{cmd@} を加える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Note: A quote character is seen as argument to the
+			:autocmd and won't start a comment.
+			Vim always adds the {cmd} after existing autocommands,
+			so that the autocommands execute in the order in which
+			they were given.
+			See |autocmd-nested| for [++nested].  "nested"
+			(without the ++) can also be used, for backwards
+			compatibility.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @quotation
 @strong{Note:} @*
 クォートは :autocmd への引数として見なされ、コメントを開始しないことに注意。
 @end quotation
-@{cmd@} は常に既存の自動コマンドの後に追加されるので、自動コマンドは指定された順に実行される。 [nested] については |@ref{autocmd-nested}| を参照。
+@{cmd@} は常に既存の自動コマンドの後に追加されるので、自動コマンドは指定された順に実行される。 [nested] については |@ref{autocmd-nested}| を参照。後方互換性のために、"nested" (++ なし) も使用できる。
 @end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*autocmd-once*
+			If [++once] is supplied the command is executed once,
+			then removed ("one shot").
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{autocmd-once}
+@cindex autocmd-once
+[++once] が指定されている場合、コマンドは 1 回実行されると削除される ("one shot")。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -368,14 +379,15 @@ prompt.  When one command outputs two messages this can happen anyway.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-:au[tocmd]! [group] {event} {pat} [nested] {cmd}
+:au[tocmd]! [group] {event} {pat} [++once] [++nested] {cmd}
 			Remove all autocommands associated with {event} and
-			{pat}, and add the command {cmd}.  See
-			|autocmd-nested| for [nested].
+			{pat}, and add the command {cmd}.
+			See |autocmd-once| for [++once].
+			See |autocmd-nested| for [++nested].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @table @asis
-@item :au[tocmd]! [group] @{event@} @{pat@} [nested] @{cmd@}
+@item :au[tocmd]! [group] @{event@} @{pat@} [++once] [++nested] @{cmd@}
 @{event@} と @{pat@} に関連づけられた全ての自動コマンドを除去し、コマンド @{cmd@} を加える。 [nested] については |@ref{autocmd-nested}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -386,7 +398,7 @@ prompt.  When one command outputs two messages this can happen anyway.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item :au[tocmd]! [group] @{event@} @{pat@}
-@{event@} と @{pat@} に関連づけられた全ての自動コマンドを除去する。
+@{event@} と @{pat@} に関連づけられた全ての自動コマンドを除去し、コマンド @{cmd@} を加える。[++once] については |@ref{autocmd-once}| を参照。[++nested] については |@ref{autocmd-nested}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -898,6 +910,7 @@ Name			triggered by ~
 |FuncUndefined|		a user function is used but it isn't defined
 |SpellFileMissing|	a spell file is used but it can't be found
 |SourcePre|		before sourcing a Vim script
+|SourcePost|		after sourcing a Vim script
 |SourceCmd|		before sourcing a Vim script |Cmd-event|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -906,6 +919,7 @@ Name			triggered by ~
 @item |@ref{FuncUndefined}| @tab 呼び出そうとしたユーザー定義関数が定義されていなかったとき
 @item |@ref{SpellFileMissing}| @tab スペリングファイルを使おうとしたが見つからなかったとき
 @item |@ref{SourcePre}| @tab Vim script を読み込む前
+@item |@ref{SourcePost}| @tab Vim script を読み込んだ後
 @item |@ref{SourceCmd}| @tab Vim script を読み込む前 |@ref{Cmd-event}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -1033,11 +1047,13 @@ Name			triggered by ~
 
 @ifset EN
 |MenuPopup|		just before showing the popup menu
+|CompleteChanged|	after Insert mode completion menu changed
 |CompleteDone|		after Insert mode completion is done
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ @tab
 @item |@ref{MenuPopup}| @tab ポップアップメニューを表示する直前
+@item |@ref{CompleteChanged}| @tab 挿入モード補完メニューが変更されたとき
 @item |@ref{CompleteDone}| @tab 挿入モード補完が完了したとき
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -1565,7 +1581,49 @@ ColorSchemePre			Before loading a color scheme. |:colorscheme|
 
 あるカラースキームが読み込まれる前に、それ以前に別のカラースキームによって追加されたものを取り除くのに便利。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+CompleteChanged 					*CompleteChanged*
+				After each time the Insert mode completion
+				menu changed.  Not fired on popup menu hide,
+				use |CompleteDone| for that.  Never triggered
+				recursively.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{CompleteChanged}
+@cindex CompleteChanged
+@item CompleteChanged
+挿入モード補完メニューが変更される度。ポップアップメニューが非表示時には発生しない。そのためには |@ref{CompleteDone}| を使用すること。再帰的に発生することはない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+@ifset EN
+				Sets these |v:event| keys:
+				    completed_item	See |complete-items|.
+				    height		nr of items visible
+				    width		screen cells
+				    row			top screen row
+				    col			leftmost screen column
+				    size		total nr of items
+				    scrollbar		TRUE if visible
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これらの |@ref{v:event}| キーを設定する:
+@multitable @columnfractions .5 .5
+@item completed_item @tab |@ref{complete-items}| 参照
+@item height @tab 表示項目数
+@item width @tab 画面セル数
+@item row @tab 画面上端の行
+@item col @tab 画面最左の桁
+@item size @tab 全項目数
+@item scrollbar @tab 表示時 TRUE
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				It is not allowed to change the text |textlock|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストの |@ref{textlock}| を変更することはできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*CompleteDone*
 CompleteDone			After Insert mode completion is done.  Either
@@ -1679,6 +1737,8 @@ CursorMoved			After the cursor was moved in Normal or Visual
 				Not triggered when there is typeahead or when
 				an operator is pending.
 				For an example see |match-parens|.
+				Note: This can not be skipped with
+				`:noautocmd`.
 				Careful: This is triggered very often, don't
 				do anything that the user does not expect or
 				that is slow.
@@ -1688,6 +1748,10 @@ CursorMoved			After the cursor was moved in Normal or Visual
 @cindex CursorMoved
 @item CursorMoved
 ノーマルモードかビジュアルモードでカーソルが移動した後。カーソル行のテキストが変更されたときにも発生する(例: "x", "rx", "p"などで)。先行入力があったりオペレータが実行待ちになっている場合は発生しない。|@ref{match-parens}| の例を参照。
+@quotation
+@strong{Note:} @*
+この自動イベントは `@command{:noautocmd}` を付けてもスキップできない。
+@end quotation
 @quotation
 @strong{Careful:} @*
 このイベントは頻繁に発生するので、ユーザーが予期しないことや時間のかかる処理は行わないこと。
@@ -1813,27 +1877,29 @@ diff が更新された後。どの diff (内蔵もしくは外部) が使われ
 @ifset EN
 							*DirChanged*
 DirChanged			The working directory has changed in response
-				to the |:cd| or |:lcd| commands, or as a
-				result of the 'autochdir' option.
+				to the |:cd| or |:tcd| or |:lcd| commands, or
+				as a result of the 'autochdir' option.
 				The pattern can be:
-					"window" to trigger on `:lcd`
-					"global" to trigger on `:cd`
-					"auto"   to trigger on 'autochdir'.
-					"drop"	 to trigger on editing a file
+					"window"  to trigger on `:lcd`
+					"tabpage" to trigger on `:tcd`
+					"global"  to trigger on `:cd`
+					"auto"    to trigger on 'autochdir'.
+					"drop"	  to trigger on editing a file
 				<afile> is set to the new directory name.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{DirChanged}
 @cindex DirChanged
 @item DirChanged
-|@ref{:cd}| もしくは |@ref{:lcd}| コマンドによって、もしくは '@option{autochdir}' オプションの結果として作業ディレクトリが変更された後。
+|@ref{:cd}|, |@ref{:tcd}| もしくは |@ref{:lcd}| コマンドによって、もしくは '@option{autochdir}' オプションの結果として作業ディレクトリが変更された後。
 
 パターンは以下のようになる:
 @example
-"window" `:lcd` により発生する
-"global" `:cd`により発生する
-"auto"   'autochdir' により発生する
-"drop"	 ファイルの編集により発生する
+"window"  `:lcd` により発生する
+"tabpage" `:tcd` により発生する
+"global"  `:cd`により発生する
+"auto"    'autochdir' により発生する
+"drop"	  ファイルの編集により発生する
 @end example
 <afile> は新ディレクトリ名に設定される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -2072,7 +2138,8 @@ FilterReadPre			Before reading a file from a filter command.
 @ifset EN
 							*FilterWritePost*
 FilterWritePost			After writing a file for a filter command or
-				making a diff.
+				making a diff with an external diff (see
+				DiffUpdated for internal diff).
 				Vim checks the pattern against the name of
 				the current buffer as with FilterWritePre.
 				Not triggered when 'shelltemp' is off.
@@ -2081,12 +2148,12 @@ FilterWritePost			After writing a file for a filter command or
 @anchor{FilterWritePost}
 @cindex FilterWritePost
 @item FilterWritePost
-フィルタコマンド用のファイルを書き込んだり、差分表示用のファイルを作った後。Vimは FilterWritePre と同様、現在のバッファの名前に対してパターンをチェックする。'@option{shelltemp}' がオフのときは発生しない。
+フィルタコマンド用のファイルを書き込んだり、外部 diff で差分表示用のファイルを作った後 (内部 diff については |@ref{DiffUpdated}| を参照)。Vimは FilterWritePre と同様、現在のバッファの名前に対してパターンをチェックする。'@option{shelltemp}' がオフのときは発生しない。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*FilterWritePre*
 FilterWritePre			Before writing a file for a filter command or
-				making a diff.
+				making a diff with an external diff.
 				Vim checks the pattern against the name of
 				the current buffer, not the name of the
 				temporary file that is the output of the
@@ -2097,7 +2164,7 @@ FilterWritePre			Before writing a file for a filter command or
 @anchor{FilterWritePre}
 @cindex FilterWritePre
 @item FilterWritePre
-フィルタコマンド用のファイルを書き込んだり、差分表示用のファイルを作る前。Vim はフィルタコマンドの出力である一時ファイルの名前ではなく、現在のバッファの名前に対してパターンをチェックする。'@option{shelltemp}' がオフのときは発生しない。
+フィルタコマンド用のファイルを書き込んだり、外部 diff で差分表示用のファイルを作る前。Vim はフィルタコマンドの出力である一時ファイルの名前ではなく、現在のバッファの名前に対してパターンをチェックする。'@option{shelltemp}' がオフのときは発生しない。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*FocusGained*
@@ -2289,26 +2356,71 @@ MenuPopup			Just before showing the popup menu (under the
 							*OptionSet*
 OptionSet			After setting an option.  The pattern is
 				matched against the long option name.
-				The |v:option_old| variable indicates the
-				old option value, |v:option_new| variable
-				indicates the newly set value, the
-				|v:option_type| variable indicates whether
-				it's global or local scoped and |<amatch>|
-				indicates what option has been set.
+				|<amatch>| indicates what option has been set.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{OptionSet}
 @cindex OptionSet
 @item OptionSet
-オプションが設定された後。パターンは長い (短縮しない) オプション名に対してマッチする。変数 |@ref{v:option_old}| に変更前の値が格納され、|@ref{v:option_new}| には新しく設定された値が格納され、|@ref{v:option_type}| にはオプションの変更のスコープがグローバルかローカルかが格納される。|@ref{<amatch>}| は対象のオプション名が設定される。
+オプションが設定された後。パターンは長い (短縮しない) オプション名に対してマッチする。|@ref{<amatch>}| は対象のオプション名が設定される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-				Is not triggered on startup and for the 'key'
-				option for obvious reasons.
+				|v:option_type| indicates whether it's global
+				or local scoped.
+				|v:option_command| indicates what type of
+				set/let command was used (follow the tag to
+				see the table).
+				|v:option_new| indicates the newly set value.
+				|v:option_oldlocal| has the old local value.
+				|v:option_oldglobal| has the old global value.
+				|v:option_old| indicates the old option value.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-'@option{key}' の変更の際にはあえてイベントが発生しないようにしている。
+|@ref{v:option_type}| はオプションの変更のスコープがグローバルかローカルかが格納される。
+
+|@ref{v:option_command}| はどのコマンドで値が設定されたかが格納される。(タグのジャンプ先にある表を参照)
+
+|@ref{v:option_new}| は新しく設定された値が格納される。
+
+|@ref{v:option_oldlocal}| は変更前のローカルの値が格納される。
+
+|@ref{v:option_oldglobal}| は変更前のグローバルの値が格納される。
+
+|@ref{v:option_old}| は変更前の値が格納される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				|v:option_oldlocal| is only set when |:set|
+				or |:setlocal| or a |modeline| was used to set
+				the option. Similarly |v:option_oldglobal| is
+				only set when |:set| or |:setglobal| was used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{v:option_oldlocal}| には |@ref{:set}| か |@ref{:setlocal}|、|@ref{modeline}| のいずれかが使用された場合に値が格納される。同様に |@ref{v:option_oldglobal}| には |@ref{:set}| か |@ref{:setglobal}| が使用された場合に値が格納される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				Note that when setting a |global-local| string
+				option with |:set|, then |v:option_old| is the
+				old global value. However, for all other kinds
+				of options (local string options, global-local
+				number options, ...) it is the old local
+				value.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+|@ref{global-local}| なオプションと |@ref{:set}| を利用して文字列をセットした場合、|@ref{v:option_old}| には古いグローバルの値が格納されるが、それ以外の場合 (例えばローカルな文字列や |@ref{global-local}| な数値等) は古いローカルの値が格納されるので注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				OptionSet is not triggered on startup and for
+				the 'key' option for obvious reasons.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+OptionSet は起動時と 'key' の変更の際にはあえてイベントが発生しないようにしている。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2473,6 +2585,20 @@ SourcePre			Before sourcing a Vim script. |:source|
 @cindex SourcePre
 @item SourcePre
 Vim script を読み込む前。|@ref{:source}| <afile> は読み込まれるファイルの名前となる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*SourcePost*
+SourcePost			After sourcing a Vim script. |:source|
+				<afile> is the name of the file being sourced.
+				Not triggered when sourcing was interrupted.
+				Also triggered after a SourceCmd autocommand
+				was triggered.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{SourcePost}
+@cindex SourcePost
+@item SourcePost
+Vim script を読み込んだ後。|@ref{:source}| <afile> は読み込んだファイルの名前となる。読み込みが中断された場合はトリガーされない。自動コマンド SourceCmd がトリガーされた後にもトリガーされる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*SourceCmd*
@@ -2705,8 +2831,10 @@ TermResponse			After the response to |t_RV| is received from
 @ifset EN
 							*TextChanged*
 TextChanged			After a change was made to the text in the
-				current buffer in Normal mode.  That is when
-				|b:changedtick| has changed.
+				current buffer in Normal mode.  That is after
+				|b:changedtick| has changed (also when that
+				happened before the TextChanged autocommand
+				was defined).
 				Not triggered when there is typeahead or when
 				an operator is pending.
 @end ifset
@@ -2714,7 +2842,19 @@ TextChanged			After a change was made to the text in the
 @anchor{TextChanged}
 @cindex TextChanged
 @item TextChanged
-ノーマルモードでカレントバッファのテキストが変更されたとき。つまり |@ref{b:changedtick}| が更新されるとき。未処理のキー入力がまだあるとき、またはオペレータを待機しているときは、発生しない。
+ノーマルモードでカレントバッファのテキストが変更されたとき。つまり |@ref{b:changedtick}| が更新されるとき。つまり |@ref{b:changedtick}| が更新された後 (自動コマンド TextChanged が定義される前にそれが起こったときも同様)。
+
+未処理のキー入力がまだあるとき、またはオペレータを待機しているときは、発生しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				Note: This can not be skipped with
+				`:noautocmd`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+この自動イベントは `@command{:noautocmd}` を付けてもスキップできない。
+@end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 				Careful: This is triggered very often, don't
@@ -3571,7 +3711,7 @@ option will not cause any commands to be executed.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-					*:do* *:doau* *:doautocmd* *E217*
+				*:do* *:doau* *:doaut* *:doautocmd* *E217*
 :do[autocmd] [<nomodeline>] [group] {event} [fname]
 			Apply the autocommands matching [fname] (default:
 			current file name) for {event} to the current buffer.
@@ -3583,10 +3723,12 @@ option will not cause any commands to be executed.
 @table @asis
 @anchor{:do}
 @anchor{:doau}
+@anchor{:doaut}
 @anchor{:doautocmd}
 @anchor{E217}
 @pindex :do
 @pindex :doau
+@pindex :doaut
 @pindex :doautocmd
 @erindex E217
 @item :do[autocmd] [<nomodeline>] [group] @{event@} [fname]
@@ -3878,11 +4020,11 @@ instead of ":q!".
 
 @ifset EN
 							*autocmd-nested* *E218*
-By default, autocommands do not nest.  If you use ":e" or ":w" in an
-autocommand, Vim does not execute the BufRead and BufWrite autocommands for
+By default, autocommands do not nest.  For example, if you use ":e" or ":w" in
+an autocommand, Vim does not execute the BufRead and BufWrite autocommands for
 those commands.  If you do want this, use the "nested" flag for those commands
 in which you want nesting.  For example: >
-  :autocmd FileChangedShell *.c nested e!
+  :autocmd FileChangedShell *.c ++nested e!
 The nesting is limited to 10 levels to get out of recursive loops.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -3890,9 +4032,9 @@ The nesting is limited to 10 levels to get out of recursive loops.
 @anchor{E218}
 @cindex autocmd-nested
 @erindex E218
-既定では、自動コマンドはネストしない (入れ子にならない)。自動コマンド内で "@command{:e}" や "@command{:w}" を使っても、これらに対してはイベント BufRead や BufWrite による自動コマンドは実行されない。もしこれを実行してほしいなら、ネストしてほしいコマンド内でフラグ "nested" を使うこと。例:
+既定では、自動コマンドはネストしない (入れ子にならない)。例えば、自動コマンド内で "@command{:e}" や "@command{:w}" を使っても、これらに対してはイベント BufRead や BufWrite による自動コマンドは実行されない。もしこれを実行してほしいなら、ネストしてほしいコマンド内でフラグ "nested" を使うこと。例:
 @example
-:autocmd FileChangedShell *.c nested e!
+:autocmd FileChangedShell *.c ++nested e!
 @end example
 再帰的ループを避けるために、ネストは 10 段階までに制限されている。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -4233,6 +4375,17 @@ gzip plugin.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 これは gzip プラグインで定義された自動コマンドを発生させずにファイルを書き込む。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that some autocommands are not triggered right away, but only later.
+This specifically applies to |CursorMoved| and |TextChanged|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+処理の最中ではなく、終わった後で呼び出される自動コマンドもある。特に |@ref{CursorMoved}| や |@ref{TextChanged}| があてはまる。
+@end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 

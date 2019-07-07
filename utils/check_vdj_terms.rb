@@ -1,6 +1,6 @@
 # Author: nakinor
 # Created: 2018-03-27
-# Revised: 2018-04-03
+# Revised: 2019-07-04
 
 class VDJCheck
 
@@ -12,17 +12,10 @@ class VDJCheck
     @buffer = []
     tmp_list_a = []
     tmp_list_b = []
-    File.open(file, "r").each do |line|
-      next unless line =~ /@ifset JA  @c/ .. line =~ /@end ifset @c/
-      tmp_list_a << line
-    end
-    tmp_list_a.each do |line|
-      next if line =~ /@verbatim/ .. line =~ /@end verbatim/
-      tmp_list_b << line
-    end
-    tmp_list_b.each do |line|
-      next if line =~ /@example/ .. line =~ /@end example/
-      @buffer << line
+    File.open(file, "r") do |buf|
+      tmp_list_a = buf.read.scan(/@ifset JA  @c.*?@end ifset @c/m)
+      tmp_list_b = tmp_list_a.reject {|x| x =~ /@verbatim.*?@end verbatim/m}
+      @buffer = tmp_list_b.reject {|x| x =~ /@example.*?@end example/m}
     end
   end
 
@@ -85,8 +78,8 @@ class VDJCheck
         x =~ /@anchor{(.*)?}\n/
         tmp_anchor_arr << $1
       end
-      line.scan(/@[cfkptv]index .*?\n/).each do |x|
-        x =~ /@[cfkptv]index (.*)?\n/
+      line.scan(/@[cfkptv]index .*?\n|@erindex .*?\n/).each do |x|
+        x =~ /@[cfkptv]index (.*)?\n|@erindex (.*)?\n/
         tmp_xindex_arr << $1
       end
     end

@@ -3,14 +3,14 @@
 @unnumbered 構文強調
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*syntax.txt*	For Vim version 8.1.  Last change: 2018 Apr 30
+*syntax.txt*	For Vim version 8.1.  Last change: 2019 Jun 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*syntax.txt*	For Vim バージョン 8.1.  Last change: 2018 Apr 30
+*syntax.txt*	For Vim バージョン 8.1.  Last change: 2019 Jun 13
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -68,42 +68,44 @@ In the User Manual:
 1.  Quick start			|:syn-qstart|
 2.  Syntax files		|:syn-files|
 3.  Syntax loading procedure	|syntax-loading|
-4.  Syntax file remarks		|:syn-file-remarks|
-5.  Defining a syntax		|:syn-define|
-6.  :syntax arguments		|:syn-arguments|
-7.  Syntax patterns		|:syn-pattern|
-8.  Syntax clusters		|:syn-cluster|
-9.  Including syntax files	|:syn-include|
-10. Synchronizing		|:syn-sync|
-11. Listing syntax items	|:syntax|
-12. Highlight command		|:highlight|
-13. Linking groups		|:highlight-link|
-14. Cleaning up			|:syn-clear|
-15. Highlighting tags		|tag-highlight|
-16. Window-local syntax		|:ownsyntax|
-17. Color xterms		|xterm-color|
-18. When syntax is slow		|:syntime|
+4.  Converting to HTML		|2html.vim|
+5.  Syntax file remarks		|:syn-file-remarks|
+6.  Defining a syntax		|:syn-define|
+7.  :syntax arguments		|:syn-arguments|
+8.  Syntax patterns		|:syn-pattern|
+9.  Syntax clusters		|:syn-cluster|
+10. Including syntax files	|:syn-include|
+11. Synchronizing		|:syn-sync|
+12. Listing syntax items	|:syntax|
+13. Highlight command		|:highlight|
+14. Linking groups		|:highlight-link|
+15. Cleaning up			|:syn-clear|
+16. Highlighting tags		|tag-highlight|
+17. Window-local syntax		|:ownsyntax|
+18. Color xterms		|xterm-color|
+19. When syntax is slow		|:syntime|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .5 .5
 @item 1. クイックスタート @tab |@ref{:syn-qstart}|
 @item 2. 構文ファイル @tab |@ref{:syn-files}|
 @item 3. 構文ファイル読込の手順 @tab |@ref{syntax-loading}|
-@item 4. 構文ファイルの覚書 @tab |@ref{:syn-file-remarks}|
-@item 5. 構文を定義する @tab |@ref{:syn-define}|
-@item 6. :syntax の引数 @tab |@ref{:syn-arguments}|
-@item 7. syntax のパターン @tab |@ref{:syn-pattern}|
-@item 8. クラスタ @tab |@ref{:syn-cluster}|
-@item 9. 構文ファイルのインクルード @tab |@ref{:syn-include}|
-@item 10. 表示のシンクロナイズ @tab |@ref{:syn-sync}|
-@item 11. 構文アイテムのリストを表示する @tab |@ref{:syntax}|
-@item 12. ハイライトコマンド @tab |@ref{:highlight}|
-@item 13. グループのリンク @tab |@ref{:highlight-link}|
-@item 14. 構文の消去 @tab |@ref{:syn-clear}|
-@item 15. 関数名などのハイライト @tab |@ref{tag-highlight}|
-@item 16. ウィンドウローカル構文 @tab |@ref{:ownsyntax}|
-@item 17. カラー対応 xterm @tab |@ref{xterm-color}|
-@item 18. シンタックスが遅い時には @tab |@ref{:syntime}|
+@item 4. HTMLへの変換 @tab |@ref{2html.vim}|
+@item 5. 構文ファイルの覚書 @tab |@ref{:syn-file-remarks}|
+@item 6. 構文を定義する @tab |@ref{:syn-define}|
+@item 7. :syntax の引数 @tab |@ref{:syn-arguments}|
+@item 8. syntax のパターン @tab |@ref{:syn-pattern}|
+@item 9. クラスタ @tab |@ref{:syn-cluster}|
+@item 10. 構文ファイルのインクルード @tab |@ref{:syn-include}|
+@item 11. 表示のシンクロナイズ @tab |@ref{:syn-sync}|
+@item 12. 構文アイテムのリストを表示する @tab |@ref{:syntax}|
+@item 13. ハイライトコマンド @tab |@ref{:highlight}|
+@item 14. グループのリンク @tab |@ref{:highlight-link}|
+@item 15. 構文の消去 @tab |@ref{:syn-clear}|
+@item 16. 関数名などのハイライト @tab |@ref{tag-highlight}|
+@item 17. ウィンドウローカル構文 @tab |@ref{:ownsyntax}|
+@item 18. カラー対応 xterm @tab |@ref{xterm-color}|
+@item 19. シンタックスが遅い時には @tab |@ref{:syntime}|
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -974,38 +976,7 @@ runtime! syntax/<name>.vim
 
 @ifset EN
 ==============================================================================
-4. Syntax file remarks					*:syn-file-remarks*
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@anchor{:syn-file-remarks}
-@cindex :syn-file-remarks
-@cindex 構文ファイルの覚書
-@section 4. 構文ファイルの覚書
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
-						*b:current_syntax-variable*
-Vim stores the name of the syntax that has been loaded in the
-"b:current_syntax" variable.  You can use this if you want to load other
-settings, depending on which syntax is active.	Example: >
-   :au BufReadPost * if b:current_syntax == "csh"
-   :au BufReadPost *   do-some-things
-   :au BufReadPost * endif
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@anchor{b:current_syntax-variable}
-@cindex b:current_syntax-variable
-Vim はロードした構文の名前を変数 "b:current_syntax" に記憶している。ある構文が有効な場合だけある設定を行うにはこの変数が利用できる。例:
-@example
-:au BufReadPost * if b:current_syntax == "csh"
-:au BufReadPost *   do-some-things
-:au BufReadPost * endif
-@end example
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-
-@ifset EN
-2HTML						*2html.vim* *convert-to-HTML*
+4. Conversion to HTML				*2html.vim* *convert-to-HTML*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{2html.vim}
@@ -1013,15 +984,15 @@ Vim はロードした構文の名前を変数 "b:current_syntax" に記憶し�
 @cindex 2html.vim
 @cindex convert-to-HTML
 @cindex 2HTML
-@unnumberedsubsec 2HTML
+@section 4. HTML への変換
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-This is not a syntax file itself, but a script that converts the current
+2html is not a syntax file itself, but a script that converts the current
 window into HTML. Vim opens a new window in which it builds the HTML file.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-これは構文ファイルではなくて、現在のウィンドウの内容を HTML に変換するスクリプトである。Vim は新しいウィンドウを作成しそこに HTML ファイルを構築する。
+2html は構文ファイルではなくて、現在のウィンドウの内容を HTML に変換するスクリプトである。Vim は新しいウィンドウを作成しそこに HTML ファイルを構築する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1068,7 +1039,7 @@ Remarks:
   incorrect for an old Vim without GUI support compiled in.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@unnumberedsubsubsec 覚書き:
+@unnumberedsubsec 覚書き:
 @itemize
 @item いくつかの本当に古いブラウザーでは背景色が表示されないことがある。
 @item 大半のブラウザーでは (なんとカラーで) 印刷することができる！
@@ -1949,6 +1920,38 @@ When 1, generate XHTML 1.0 instead (XML compliant HTML).
 @end example
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+==============================================================================
+5. Syntax file remarks					*:syn-file-remarks*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:syn-file-remarks}
+@cindex :syn-file-remarks
+@cindex 構文ファイルの覚書
+@section 4. 構文ファイルの覚書
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*b:current_syntax-variable*
+Vim stores the name of the syntax that has been loaded in the
+"b:current_syntax" variable.  You can use this if you want to load other
+settings, depending on which syntax is active.	Example: >
+   :au BufReadPost * if b:current_syntax == "csh"
+   :au BufReadPost *   do-some-things
+   :au BufReadPost * endif
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{b:current_syntax-variable}
+@cindex b:current_syntax-variable
+Vim はロードした構文の名前を変数 "b:current_syntax" に記憶している。ある構文が有効な場合だけある設定を行うにはこの変数が利用できる。例:
+@example
+:au BufReadPost * if b:current_syntax == "csh"
+:au BufReadPost *   do-some-things
+:au BufReadPost * endif
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
 
 @ifset EN
 ABEL						*abel.vim* *ft-abel-syntax*
@@ -4803,7 +4806,7 @@ The g:lisp_rainbow option provides 10 levels of individual colorization for
 the parentheses and backquoted parentheses.  Because of the quantity of
 colorization levels, unlike non-rainbow highlighting, the rainbow mode
 specifies its highlighting using ctermfg and guifg, thereby bypassing the
-usual colorscheme control using standard highlighting groups.  The actual
+usual color scheme control using standard highlighting groups.  The actual
 highlighting used depends on the dark/bright setting  (see |'bg'|).
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -6667,7 +6670,7 @@ you may add this to your |vimrc|: >
 	let rmd_fenced_languages = ['r', 'python']
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-デフォルトでは、R コードのチャンクは R 言語のルールに則ってハイライトされるでしょう。もしも他言語のチャンクを本来のシンタックスハイライトにしたいなら、それらを `markdown_fenced_languages` か `rmd_fenced_languages` に追加するべきでしょう。例えば、R と Pyhton のどちらも正しくハイライトするには、|vimrc| に次を追加できるでしょう:
+デフォルトでは、R コードのチャンクは R 言語のルールに則ってハイライトされるでしょう。もしも他言語のチャンクを本来のシンタックスハイライトにしたいなら、それらを `markdown_fenced_languages` か `rmd_fenced_languages` に追加するべきでしょう。例えば、R と Pyhton のどちらも正しくハイライトするには、|@ref{vimrc}| に次を追加できるでしょう:
 @example
 let rmd_fenced_languages = ['r', 'python']
 @end example
@@ -6730,9 +6733,12 @@ later, and part earlier) adds.
 @ifset EN
 RESTRUCTURED TEXT			*rst.vim* *ft-rst-syntax*
 
-You may set what syntax definitions should be used for code blocks via >
+Syntax highlighting is enabled for code blocks within the document for a
+select number of file types.  See $VIMRUNTIME/syntax/rst.vim for the default
+syntax list.
+
+To set a user-defined list of code block syntax highlighting: >
 	let rst_syntax_code_list = ['vim', 'lisp', ...]
-<
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{rst.vim}
@@ -6740,11 +6746,66 @@ You may set what syntax definitions should be used for code blocks via >
 @cindex rst.vim
 @cindex ft-rst-syntax
 @unnumberedsubsec RESTRUCTURED TEXT
-コードブロックで有効にしたい構文定義を定義できる。
+選択したファイルタイプの数について、文書内のコードブロックに対して構文ハイライトが有効になる。デフォルトの構文リストについては、$VIMRUNTIME/syntax/rst.vim を参照。
+
+ユーザー定義のコードブロック構文ハイライトの一覧を設定するには:
 @example
 let rst_syntax_code_list = ['vim', 'lisp', ...]
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To assign multiple code block types to a single syntax, define
+`rst_syntax_code_list` as a mapping: >
+	let rst_syntax_code_list = {
+		\ 'cpp' = ['cpp', 'c++'],
+                \ 'bash' = ['bash', 'sh'],
+		...
+	}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+複数のコードブロックタイプを単一の構文に割り当てるには、マッピングとして
+@verbatim
+let rst_syntax_code_list = {
+        \ 'cpp' = ['cpp', 'c++'],
+        \ 'bash' = ['bash', 'sh'],
+        ...
+}
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To use color highlighting for emphasis text: >
+	let rst_use_emphasis_colors = 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+強調テキストにカラーハイライトを使用するには:
+@example
+let rst_use_emphasis_colors = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To enable folding of sections: >
+	let rst_fold_enabled = 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+セクションの折りたたみを有効にするには:
+@example
+let rst_fold_enabled = 1
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that folding can cause performance issues on some platforms.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+一部のプラットフォームでは、折りたたみによってパフォーマンスの問題が発生する可能性があることに注意。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 REXX						*rexx.vim* *ft-rexx-syntax*
@@ -7794,13 +7855,13 @@ modeline at the end of your LaTeX file: >
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 If your system becomes too slow, then you might wish to look into >
-	https://vimhelp.appspot.com/vim_faq.txt.html#faq-29.7
+	https://vimhelp.org/vim_faq.txt.html#faq-29.7
 <
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 これによってシステムが遅くなり過ぎる場合は次のリンクを参照すること
 
-@url{https://vimhelp.appspot.com/vim_faq.txt.html#faq-29.7}
+@url{https://vimhelp.org/vim_faq.txt.html#faq-29.7}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 						*g:tex_nospell*
@@ -8745,7 +8806,7 @@ difference defined in the syntax file.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @quotation
-@strong{Note} @*
+@strong{Note:} @*
 @end quotation
 実際にはスキーマは、プレーンなスカラーに限定されるものではない、これが YAML 仕様の定義に存在する唯一の違いであり、唯一異なるシンタックスが定義されているという点を注意しておく。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -8772,7 +8833,7 @@ The syntax script for zsh allows for syntax-based folding: >
 
 @ifset EN
 ==============================================================================
-5. Defining a syntax					*:syn-define* *E410*
+6. Defining a syntax					*:syn-define* *E410*
 
 Vim understands three types of syntax items:
 @end ifset
@@ -8782,7 +8843,7 @@ Vim understands three types of syntax items:
 @cindex :syn-define
 @erindex E410
 @cindex 構文を定義する
-@section 5. 構文を定義する
+@section 6. 構文を定義する
 構文アイテムには 3 つのタイプがある。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -9727,13 +9788,13 @@ The maximum number of syntax groups is 19999.
 
 @ifset EN
 ==============================================================================
-6. :syntax arguments					*:syn-arguments*
+7. :syntax arguments					*:syn-arguments*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:syn-arguments}
 @cindex :syn-arguments
 @cindex :syntax の引数
-@section 6. :syntax の引数
+@section 7. :syntax の引数
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -10512,7 +10573,7 @@ IMPLICIT CONCEAL					*:syn-conceal-implicit*
 
 @ifset EN
 ==============================================================================
-7. Syntax patterns				*:syn-pattern* *E401* *E402*
+8. Syntax patterns				*:syn-pattern* *E401* *E402*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:syn-pattern}
@@ -10522,7 +10583,7 @@ IMPLICIT CONCEAL					*:syn-conceal-implicit*
 @erindex E401
 @erindex E402
 @cindex syntax のパターン
-@section 7. syntax のパターン
+@section 8. syntax のパターン
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -11026,7 +11087,7 @@ cannot be referred to.
 
 @ifset EN
 ==============================================================================
-8. Syntax clusters					*:syn-cluster* *E400*
+9. Syntax clusters					*:syn-cluster* *E400*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:syn-cluster}
@@ -11034,7 +11095,7 @@ cannot be referred to.
 @cindex :syn-cluster
 @erindex E400
 @cindex クラスタ
-@section 8. クラスタ
+@section 9. クラスタ
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -11159,7 +11220,7 @@ The maximum number of clusters is 9767.
 
 @ifset EN
 ==============================================================================
-9. Including syntax files				*:syn-include* *E397*
+10. Including syntax files				*:syn-include* *E397*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:syn-include}
@@ -11167,7 +11228,7 @@ The maximum number of clusters is 9767.
 @cindex :syn-include
 @erindex E397
 @cindex 構文ファイルのインクルード
-@section 9. 構文ファイルのインクルード
+@section 10. 構文ファイルのインクルード
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -11269,7 +11330,7 @@ The maximum number of includes is 999.
 
 @ifset EN
 ==============================================================================
-10. Synchronizing				*:syn-sync* *E403* *E404*
+11. Synchronizing				*:syn-sync* *E403* *E404*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:syn-sync}
@@ -11279,7 +11340,7 @@ The maximum number of includes is 999.
 @erindex E403
 @erindex E404
 @cindex 表示のシンクロナイズ
-@section 10. 表示のシンクロナイズ
+@section 11. 表示のシンクロナイズ
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -11771,7 +11832,7 @@ You can clear specific sync patterns with: >
 
 @ifset EN
 ==============================================================================
-11. Listing syntax items		*:syntax* *:sy* *:syn* *:syn-list*
+12. Listing syntax items		*:syntax* *:sy* *:syn* *:syn-list*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:syntax}
@@ -11783,7 +11844,7 @@ You can clear specific sync patterns with: >
 @pindex :syn
 @cindex :syn-list
 @cindex 構文アイテムのリストを表示する
-@section 11. 構文アイテムのリストを表示する
+@section 12. 構文アイテムのリストを表示する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -11844,7 +11905,7 @@ is mostly used, because it looks better.
 
 @ifset EN
 ==============================================================================
-12. Highlight command			*:highlight* *:hi* *E28* *E411* *E415*
+13. Highlight command			*:highlight* *:hi* *E28* *E411* *E415*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:highlight}
@@ -11858,7 +11919,7 @@ is mostly used, because it looks better.
 @erindex E411
 @erindex E415
 @cindex ハイライトコマンド
-@section 12. ハイライトコマンド
+@section 13. ハイライトコマンド
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -11940,9 +12001,9 @@ g:colors_name が定義されていない場合は "default" と表示される�
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-			To customize a colorscheme use another name, e.g.
+			To customize a color scheme use another name, e.g.
 			"~/.vim/colors/mine.vim", and use `:runtime` to load
-			the original colorscheme: >
+			the original color scheme: >
 				runtime colors/evening.vim
 				hi Statement ctermfg=Blue guifg=Blue
 @end ifset
@@ -11959,7 +12020,7 @@ hi Statement ctermfg=Blue guifg=Blue
 			|ColorSchemePre| autocommand event is triggered.
 			After the color scheme has been loaded the
 			|ColorScheme| autocommand event is triggered.
-			For info about writing a colorscheme file: >
+			For info about writing a color scheme file: >
 				:edit $VIMRUNTIME/colors/README.txt
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -12306,8 +12367,9 @@ cterm={attr-list}					*highlight-cterm*
 	The "cterm" argument is likely to be different from "term", when
 	colors are used.  For example, in a normal terminal comments could
 	be underlined, in a color terminal they can be made Blue.
-	Note: Many terminals (e.g., DOS console) can't mix these attributes
-	with coloring.	Use only one of "cterm=" OR "ctermfg=" OR "ctermbg=".
+	Note: Some terminals (e.g., DOS console) can't mix these attributes
+	with coloring.	To be portable, use only one of "cterm=" OR "ctermfg="
+	OR "ctermbg=".
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @table @asis
@@ -12317,7 +12379,7 @@ cterm={attr-list}					*highlight-cterm*
 @{attr-list@} の説明は上を参照 |@ref{attr-list}|。色を使う場合、引数 "cterm" は "term" と異なる結果になる。例えば、通常のターミナルではコメントにアンダーラインを引き、カラーターミナルではコメントを青色で表示することができる。
 @quotation
 @strong{Note:} @*
-DOS コンソールなど多くのターミナルでは色づけの際にこれらの属性を混在させることはできない。"cterm=" か "ctermfg=" が "ctermbg=" のどれか 1 つだけを使うこと。
+DOS コンソールなどいくつかのターミナルでは色づけの際にこれらの属性を混在させることはできない。移植性を重視するには、"cterm=" か	"ctermfg=" が "ctermbg=" のどれか 1 つだけを使うこと。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -12480,7 +12542,7 @@ Normal グループに対して "ctermfg" や "ctermbg" を設定すると、こ
 	explicitly.  This causes the highlight groups that depend on
 	'background' to change!  This means you should set the colors for
 	Normal first, before setting other colors.
-	When a colorscheme is being used, changing 'background' causes it to
+	When a color scheme is being used, changing 'background' causes it to
 	be reloaded, which may reset all colors (including Normal).  First
 	delete the "g:colors_name" variable when you don't want this.
 @end ifset
@@ -12780,6 +12842,14 @@ Cursor		the character under the cursor
 @cindex hl-Cursor
 @item Cursor
 カーソル下の文字
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+lCursor		the character under the cursor when |language-mapping|
+		is used (see 'guicursor')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item lCursor
+|@ref{language-mapping}| が使用されているときのカーソルの下の文字 ('@option{guicursor}' を参照)
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*hl-CursorIM*
@@ -13375,7 +13445,7 @@ Motif と Athena では '@option{guifontset}' が空かどうかにかかわら�
 
 @ifset EN
 ==============================================================================
-13. Linking groups		*:hi-link* *:highlight-link* *E412* *E413*
+14. Linking groups		*:hi-link* *:highlight-link* *E412* *E413*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:hi-link}
@@ -13387,7 +13457,7 @@ Motif と Athena では '@option{guifontset}' が空かどうかにかかわら�
 @erindex E412
 @erindex E413
 @cindex グループのリンク
-@section 13. グループのリンク
+@section 14. グループのリンク
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -13500,7 +13570,7 @@ overruled when the syntax file is loaded.
 
 @ifset EN
 ==============================================================================
-14. Cleaning up						*:syn-clear* *E391*
+15. Cleaning up						*:syn-clear* *E391*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:syn-clear}
@@ -13508,7 +13578,7 @@ overruled when the syntax file is loaded.
 @cindex :syn-clear
 @erindex E391
 @cindex 構文の消去
-@section 14. 構文の消去
+@section 15. 構文の消去
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -13537,32 +13607,6 @@ loaded after this command.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-If you want to disable syntax highlighting for all buffers, you need to remove
-the autocommands that load the syntax files: >
-  :syntax off
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-全てのバッファに対して構文ハイライトを無効にしたいときは、構文ファイルを読み込む自動コマンドを削除する必要がある:
-@example
-:syntax off
-@end example
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
-What this command actually does, is executing the command >
-  :source $VIMRUNTIME/syntax/nosyntax.vim
-See the "nosyntax.vim" file for details.  Note that for this to work
-$VIMRUNTIME must be valid.  See |$VIMRUNTIME|.
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-このコマンドが実際に行うことは次のコマンドを実行するのと同じである:
-@example
-:source $VIMRUNTIME/syntax/nosyntax.vim
-@end example
-詳細は "@file{nosyntax.vim}" を参照。これが正常に機能するためには @env{$VIMRUNTIME} が正しく設定されている必要がある。|@ref{$VIMRUNTIME}| を参照。
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
 To clean up specific syntax groups for the current buffer: >
   :syntax clear {group-name} ..
 This removes all patterns and keywords for {group-name}.
@@ -13586,6 +13630,37 @@ This sets {grouplist-name}'s contents to an empty list.
 :syntax clear @@@{grouplist-name@} ..
 @end example
 これは @{grouplist-name@} の中身を空リストにセットする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:syntax-off* *:syn-off*
+If you want to disable syntax highlighting for all buffers, you need to remove
+the autocommands that load the syntax files: >
+  :syntax off
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:syntax-off}
+@anchor{:syn-off}
+@findex :syntax-off
+@findex :syn-off
+全てのバッファに対して構文ハイライトを無効にしたいときは、構文ファイルを読み込む自動コマンドを削除する必要がある:
+@example
+:syntax off
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+What this command actually does, is executing the command >
+  :source $VIMRUNTIME/syntax/nosyntax.vim
+See the "nosyntax.vim" file for details.  Note that for this to work
+$VIMRUNTIME must be valid.  See |$VIMRUNTIME|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+このコマンドが実際に行うことは次のコマンドを実行するのと同じである:
+@example
+:source $VIMRUNTIME/syntax/nosyntax.vim
+@end example
+詳細は "@file{nosyntax.vim}" を参照。これが正常に機能するためには @env{$VIMRUNTIME} が正しく設定されている必要がある。|@ref{$VIMRUNTIME}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -13756,13 +13831,13 @@ syntax/@file{syncolor.vim} ファイルが読み込まれると、変数 "syntax
 
 @ifset EN
 ==============================================================================
-15. Highlighting tags					*tag-highlight*
+16. Highlighting tags					*tag-highlight*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{tag-highlight}
 @cindex tag-highlight
 @cindex 関数名などのハイライト
-@section 15. 関数名などのハイライト
+@section 16. 関数名などのハイライト
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -13866,13 +13941,13 @@ autocmd BufRead,BufNewFile *.[ch] endif
 
 @ifset EN
 ==============================================================================
-16. Window-local syntax				*:ownsyntax*
+17. Window-local syntax				*:ownsyntax*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:ownsyntax}
 @pindex :ownsyntax
 @cindex ウィンドウローカル構文
-@section 16. ウィンドウローカル構文
+@section 17. ウィンドウローカル構文
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -13942,7 +14017,7 @@ When splitting the window, the new window will use the original syntax.
 
 @ifset EN
 ==============================================================================
-17. Color xterms				*xterm-color* *color-xterm*
+18. Color xterms				*xterm-color* *color-xterm*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{xterm-color}
@@ -13950,7 +14025,7 @@ When splitting the window, the new window will use the original syntax.
 @cindex xterm-color
 @cindex color-xterm
 @cindex カラー対応 xterm
-@section 17. カラー対応 xterm
+@section 18. カラー対応 xterm
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -14352,13 +14427,13 @@ that Setup / Font / Enable Bold is NOT enabled.
 
 @ifset EN
 ==============================================================================
-18. When syntax is slow						*:syntime*
+19. When syntax is slow						*:syntime*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:syntime}
 @pindex :syntime
 @cindex シンタックスが遅い時には
-@section 18. シンタックスが遅い時には
+@section 19. シンタックスが遅い時には
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN

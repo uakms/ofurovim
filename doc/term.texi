@@ -3,14 +3,14 @@
 @unnumbered いろいろな端末やマウスについて
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*term.txt*      For Vim version 8.1.  Last change: 2017 Oct 14
+*term.txt*      For Vim version 8.1.  Last change: 2019 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*term.txt*      For Vim バージョン 8.1.  Last change: 2017 Oct 14
+*term.txt*      For Vim バージョン 8.1.  Last change: 2019 May 07
 
 
                 VIMリファレンスマニュアル    by Bram Moolenaar
@@ -643,14 +643,6 @@ termcap コードに対応するオプションを設定することによって
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-{Vi: no terminal options.  You have to exit Vi, edit the termcap entry and
-try again}
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{Vi: 端末オプションは存在しない。Vi を終了し、termcap エントリを編集して再起動しなければならない@}
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
 The options are listed below.  The associated termcap code is always equal to
 the last two characters of the option name.  Only one termcap code is
 required: Cursor motion, 't_cm'.
@@ -1125,10 +1117,13 @@ Added by Vim (there are no standard codes for these):
 	t_EI	end insert or replace mode (block cursor shape)	*t_EI* *'t_EI'*
 		|termcap-cursor-shape|
 	t_RV	request terminal version string (for xterm)	*t_RV* *'t_RV'*
-		|xterm-8bit| |v:termresponse| |'ttymouse'| |xterm-codes|
+		The response is stored in |v:termresponse|
+		|xterm-8bit| |'ttymouse'| |xterm-codes|
 	t_u7	request cursor position (for xterm)		*t_u7* *'t_u7'*
 		see |'ambiwidth'|
+		The response is stored in |v:termu7resp|
 	t_RF	request terminal foreground color		*t_RF* *'t_RF'*
+		The response is stored in |v:termrfgresp|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{t_EI}
@@ -1140,7 +1135,7 @@ Added by Vim (there are no standard codes for these):
 @anchor{'t_RV'}
 @cindex t_RV
 @vindex 't_RV'
-@item t_RV @tab 端末バージョン文字列を要求 (xterm 用) |@ref{xterm-8bit}| |@ref{v:termresponse}| |@ref{'ttymouse'}| |@ref{xterm-codes}|
+@item t_RV @tab 端末バージョン文字列を要求 (xterm 用) 応答は |@ref{v:termresponse}| に格納される。|@ref{xterm-8bit}| |@ref{'ttymouse'}| |@ref{xterm-codes}|
 @anchor{t_u7}
 @anchor{'t_u7'}
 @cindex t_u7
@@ -1150,10 +1145,11 @@ Added by Vim (there are no standard codes for these):
 @anchor{'t_RF'}
 @cindex t_RF
 @vindex 't_RF'
-@item t_RF @tab 端末の文字色を要求
+@item t_RF @tab 端末の文字色を要求。応答は |@ref{v:termrfgresp}| に格納される
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	t_RB	request terminal background color		*t_RB* *'t_RB'*
+		The response is stored in |v:termrbgresp|
 	t_8f	set foreground color (R, G, B)			*t_8f* *'t_8f'*
 		|xterm-true-color|
 	t_8b	set background color (R, G, B)			*t_8b* *'t_8b'*
@@ -1166,7 +1162,7 @@ Added by Vim (there are no standard codes for these):
 @anchor{'t_RB'}
 @cindex t_RB
 @vindex 't_RB'
-@item t_RB @tab 端末の背景色を要求
+@item t_RB @tab 端末の背景色を要求。応答は |@ref{v:termrbgresp}| に格納される
 @anchor{t_8f}
 @anchor{'t_8f'}
 @cindex t_8f
@@ -1214,19 +1210,21 @@ Added by Vim (there are no standard codes for these):
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	t_RC	request terminal cursor blinking		*t_RC* *'t_RC'*
+		The response is stored in |v:termblinkresp|
 	t_RS	request terminal cursor style			*t_RS* *'t_RS'*
+		The response is stored in |v:termstyleresp|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{t_RC}
 @anchor{'t_RC'}
 @cindex t_RC
 @vindex 't_RC'
-@item t_RC @tab 端末カーソルの点滅を要求する
+@item t_RC @tab 端末カーソルの点滅を要求する。応答は |@ref{v:termblinkresp}| に格納される
 @anchor{t_RS}
 @anchor{'t_RS'}
 @cindex t_RS
 @vindex 't_RS'
-@item t_RS @tab 端末カーソルの形状を要求する
+@item t_RS @tab 端末カーソルの形状を要求する。応答は |@ref{v:termstyleresp}| に格納される
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	t_ST	save window title to stack			*t_ST* *'t_ST'*
@@ -2107,14 +2105,14 @@ there should be a tick at allow-window-ops.
 Note about colors: The 't_Co' option tells Vim the number of colors available.
 When it is non-zero, the 't_AB' and 't_AF' options are used to set the color.
 If one of these is not available, 't_Sb' and 't_Sf' are used.  't_me' is used
-to reset to the default colors.
+to reset to the default colors.  Also see 'termguicolors'.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{termcap-colors}
 @cindex termcap-colors
 @quotation
 @strong{色についての Note:} @*
-'@option{t_Co}' は利用できる色の数を示します。この値が 0 でなければ '@option{t_AB}' と '@option{t_AF}' の値を使って色を設定します。これらのうちどれかが存在しない場合は '@option{t_Sb}' と '@option{t_Sf}' が使われます。色をデフォルトに戻すのには '@option{t_me}' が使われます。
+'@option{t_Co}' は利用できる色の数を示します。この値が 0 でなければ '@option{t_AB}' と '@option{t_AF}' の値を使って色を設定します。これらのうちどれかが存在しない場合は '@option{t_Sb}' と '@option{t_Sf}' が使われます。色をデフォルトに戻すのには '@option{t_me}' が使われます。'@option{termguicolors}' も参照してください。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 

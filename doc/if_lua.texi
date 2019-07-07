@@ -3,14 +3,14 @@
 @unnumbered Lua インターフェイス
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*if_lua.txt*    For Vim version 8.1.  Last change: 2015 Oct 16
+*if_lua.txt*    For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Luis Carvalho
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*if_lua.txt*    For Vim バージョン 8.1.  Last change: 2015 Oct 16
+*if_lua.txt*    For Vim バージョン 8.1.  Last change: 2019 May 05
 
 
                   VIMリファレンスマニュアル    by Luis Carvalho
@@ -34,11 +34,12 @@ Vim の Lua インターフェイス
 2. The vim module		|lua-vim|
 3. List userdata		|lua-list|
 4. Dict userdata		|lua-dict|
-5. Funcref userdata		|lua-funcref|
-6. Buffer userdata		|lua-buffer|
-7. Window userdata		|lua-window|
-8. The luaeval function		|lua-luaeval|
-9. Dynamic loading		|lua-dynamic|
+5. Blob userdata		|lua-blob|
+6. Funcref userdata		|lua-funcref|
+7. Buffer userdata		|lua-buffer|
+8. Window userdata		|lua-window|
+9. luaeval() Vim function	|lua-luaeval|
+10. Dynamic loading		|lua-dynamic|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .5 .5
@@ -46,27 +47,20 @@ Vim の Lua インターフェイス
 @item 2. vim モジュール @tab |@ref{lua-vim}|
 @item 3. List ユーザーデータ @tab |@ref{lua-list}|
 @item 4. Dict ユーザーデータ @tab |@ref{lua-dict}|
-@item 5. Funcref ユーザーデータ @tab |@ref{lua-funcref}|
-@item 6. バッファユーザーデータ @tab |@ref{lua-buffer}|
-@item 7. ウィンドウユーザーデータ @tab |@ref{lua-window}|
-@item 8. luaeval 関数 @tab |@ref{lua-luaeval}|
-@item 9. 動的ローディング @tab |@ref{lua-dynamic}|
+@item 5. Blob ユーザーデータ @tab |@ref{lua-blob}|
+@item 6. Funcref ユーザーデータ @tab |@ref{lua-funcref}|
+@item 7. バッファユーザーデータ @tab |@ref{lua-buffer}|
+@item 8. ウィンドウユーザーデータ @tab |@ref{lua-window}|
+@item 9. luaeval() Vim 関数 @tab |@ref{lua-luaeval}|
+@item 10. 動的ローディング @tab |@ref{lua-dynamic}|
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-{Vi does not have any of these commands}
+{only available when Vim was compiled with the |+lua| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{Vi にはこれらのコマンドはありません@}
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
-The Lua interface is available only when Vim was compiled with the
-|+lua| feature.
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-Lua インターフェイスは Vim が |@ref{+lua}| 機能付きでコンパイルされたときのみ利用できます。
+@{Vim が |@ref{+lua}| 機能付きでコンパイルされたときのみ利用できます@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -82,7 +76,7 @@ Lua インターフェイスは Vim が |@ref{+lua}| 機能付きでコンパイ
 @ifset EN
 							*:lua*
 :[range]lua {chunk}
-			Execute Lua chunk {chunk}.    {not in Vi}
+			Execute Lua chunk {chunk}.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @table @asis
@@ -90,8 +84,6 @@ Lua インターフェイスは Vim が |@ref{+lua}| 機能付きでコンパイ
 @pindex :lua
 @item :[range]lua @{chunk@}
 Lua チャンク @{chunk@} を実行する。
-
-@{Vi にはありません@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -120,15 +112,13 @@ Examples:
 @itemx @{endmarker@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			Execute Lua script {script}.  {not in Vi}
+			Execute Lua script {script}.
 			Note: This command doesn't work when the Lua
 			feature wasn't compiled in.  To avoid errors, see
 			|script-here|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 Lua スクリプト @{script@} を実行する。
-
-@{Vi にはありません@}
 @quotation
 @strong{Note:} @*
 このコマンドは Lua が組み込まれていない場合は機能しません。エラーを避けるには |@ref{script-here}| を参照。
@@ -206,15 +196,12 @@ If you use LuaJIT you can also use this: >
 			If the value returned by the function is a string it
 			becomes the text of the line in the current turn. The
 			default for [range] is the whole file: "1,$".
-							{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:luado}
 @pindex :luado
 @item :[range]luado @{body@}
 Lua 関数 "function (line, linenr) @{body@} end" を [range] で指定された各行に対して実行する。関数の引数には各行のテキスト (末尾の <EOL> 無し) と現在の行番号が渡されます。関数の戻り値が文字列なら行のテキストはその文字列で置換されます。[range] を省略するとすべてのファイル ("1,$") が処理されます。
-
-@{Vi にはありません@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -243,7 +230,7 @@ Examples:
 @ifset EN
 							*:luafile*
 :[range]luafile {file}
-			Execute Lua script in {file}. {not in Vi}
+			Execute Lua script in {file}.
 			The whole argument is used as a single file name.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -251,8 +238,6 @@ Examples:
 @pindex :luafile
 @item :[range]luafile @{file@}
 @{file@} 内の Lua スクリプトを実行する。
-
-@{Vi にはありません@}
 
 引数全体で 1 つのファイル名として認識されます。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -362,6 +347,25 @@ Lua からは "vim" モジュールを使って Vim を操作します。範囲�
 :" @{'say': 'hi'@}, numeric keys ignored
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	vim.blob([arg])		Returns an empty blob or, if "arg" is a Lua
+				string, returns a blob b such that b is
+				equivalent to "arg" as a byte string.
+				Examples: >
+				    :lua s = "12ab\x00\x80\xfe\xff"
+				    :echo luaeval('vim.blob(s)')
+				    :" 0z31326162.0080FEFF
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item vim.blob([arg])
+空の Blob、または "arg" が Lua の文字列ならば、バイト文字列として "arg" と等価な Blob b を返す。例:
+@example
+:lua s = "12ab\x00\x80\xfe\xff"
+:echo luaeval('vim.blob(s)')
+:" 0z31326162.0080FEFF
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+<
 @ifset EN
 	vim.funcref({name})	Returns a Funcref to function {name} (see
 				|Funcref|). It is equivalent to Vim's
@@ -650,12 +654,90 @@ Examples:
 
 @ifset EN
 ==============================================================================
-5. Funcref userdata					*lua-funcref*
+5. Blob userdata					*lua-blob*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{lua-blob}
+@cindex lua-blob
+@section 5. Blob ユーザーデータ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Blob userdata represent vim blobs. A blob "b" has the following properties:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Blob ユーザーデータは vim の Blob を表します。Blob "b" は以下のプロパティを持っています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Properties
+----------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec プロパティ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	o "#b" is the length of blob "b", equivalent to "len(b)" in Vim.
+	o "b[k]" returns the k-th item in "b"; "b" is zero-indexed, as in Vim.
+	    To modify the k-th item, simply do "b[k] = number"; in particular,
+	    "b[#b] = number" can append a byte to tail.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item "#b" は Blob "b" の要素数。Vim の "len(b)" と同じ。
+@item "b[k]" は "b" の k 個目の要素を返す。"b" のインデックスは Vim と同じで、0 を基準とする。k 個目の要素を変更するには、単に "b[k] = number" とする。特に、"b[#b] = number" で末尾にバイトを追加できる。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Methods
+-------
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@unnumberedsubsec メソッド
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	o "b:add(bytes)" appends "bytes" to the end of "b".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item "b:add(bytes)" は "bytes" を "b" の末尾に追加する。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Examples:
+>
+	:let b = 0z001122
+	:lua b = vim.eval('b') -- same 'b'
+	:lua print(b, b[0], #b)
+	:lua b[1] = 32
+	:lua b[#b] = 0x33 -- append a byte to tail
+	:lua b:add("\x80\x81\xfe\xff")
+	:echo b
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+:let b = 0z001122
+:lua b = vim.eval('b') -- 'b' と同じ
+:lua print(b, b[0], #b)
+:lua b[1] = 32
+:lua b[#b] = 0x33 -- 末尾にバイトを追加
+:lua b:add("\x80\x81\xfe\xff")
+:echo b
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+6. Funcref userdata					*lua-funcref*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{lua-funcref}
 @cindex lua-funcref
-@section 5. Funcref ユーザーデータ
+@section 6. Funcref ユーザーデータ
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -731,12 +813,12 @@ Examples:
 
 @ifset EN
 ==============================================================================
-6. Buffer userdata					*lua-buffer*
+7. Buffer userdata					*lua-buffer*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{lua-buffer}
 @cindex lua-buffer
-@section 6. バッファユーザーデータ
+@section 7. バッファユーザーデータ
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -853,12 +935,12 @@ endfunction
 
 @ifset EN
 ==============================================================================
-7. Window userdata					*lua-window*
+8. Window userdata					*lua-window*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{lua-window}
 @cindex lua-window
-@section 7. ウィンドウユーザーデータ
+@section 8. ウィンドウユーザーデータ
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -941,14 +1023,14 @@ Examples:
 
 @ifset EN
 ==============================================================================
-8. The luaeval function					*lua-luaeval* *lua-eval*
+9. luaeval() Vim function				*lua-luaeval* *lua-eval*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{lua-luaeval}
 @anchor{lua-eval}
 @cindex lua-luaeval
 @cindex lua-eval
-@section 8. luaeval 関数
+@section 9. luaeval() Vim 関数
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -979,15 +1061,15 @@ end
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 Note that "_A" receives the argument to "luaeval". Lua numbers, strings, and
-list, dict, and funcref userdata are converted to their Vim respective types,
-while Lua booleans are converted to numbers. An error is thrown if conversion
-of any of the remaining Lua types, including userdata other than lists, dicts,
-and funcrefs, is attempted.
+list, dict, blob, and funcref userdata are converted to their Vim respective
+types, while Lua booleans are converted to numbers. An error is thrown if
+conversion of any of the remaining Lua types, including userdata other than
+lists, dicts, blobs, and funcrefs, is attempted.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @quotation
 @strong{Note:} @*
-"_A" には "luaeval" の引数が渡されます。Lua の数値、文字列、リスト、辞書そして Funcref ユーザーデータはそれぞれの Vim の型に変換されます。ただし、Lua のブール値は数値に変換されます。リスト、辞書および関数参照以外のユーザーデータを含む、それ以外の Lua の型を変換しようとするとエラーが返されます。
+"_A" には "luaeval" の引数が渡されます。Lua の数値、文字列、リスト、Blob、辞書そして Funcref ユーザーデータはそれぞれの Vim の型に変換されます。ただし、Lua のブール値は数値に変換されます。リスト、辞書および関数参照以外のユーザーデータを含む、それ以外の Lua の型を変換しようとするとエラーが返されます。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -1020,12 +1102,12 @@ Examples: >
 
 @ifset EN
 ==============================================================================
-9. Dynamic loading				    *lua-dynamic*
+10. Dynamic loading				    *lua-dynamic*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{lua-dynamic}
 @cindex lua-dynamic
-@section 9. 動的ローディング
+@section 10. 動的ローディング
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN

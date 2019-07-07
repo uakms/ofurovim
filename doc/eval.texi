@@ -58,7 +58,8 @@ Vim script はコンパイル時に無効化できる。もしそうなってい
     1.2 Function references		|Funcref|
     1.3 Lists				|Lists|
     1.4 Dictionaries			|Dictionaries|
-    1.5 More about variables		|more-variables|
+    1.5 Blobs				|Blobs|
+    1.6 More about variables		|more-variables|
 2.  Expression syntax		|expression-syntax|
 3.  Internal variable		|internal-variables|
 4.  Builtin Functions		|functions|
@@ -67,10 +68,11 @@ Vim script はコンパイル時に無効化できる。もしそうなってい
 7.  Commands			|expression-commands|
 8.  Exception handling		|exception-handling|
 9.  Examples			|eval-examples|
-10. No +eval feature		|no-eval-feature|
-11. The sandbox			|eval-sandbox|
-12. Textlock			|textlock|
-13. Testing			|testing|
+10. Vim script version		|vimscript-version|
+11. No +eval feature		|no-eval-feature|
+12. The sandbox			|eval-sandbox|
+13. Textlock			|textlock|
+14. Testing			|testing|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .5 .5
@@ -79,7 +81,8 @@ Vim script はコンパイル時に無効化できる。もしそうなってい
 @item @ @ @ @ 1.2 関数への参照 @tab |@ref{Funcref}|
 @item @ @ @ @ 1.3 リスト @tab |@ref{Lists}|
 @item @ @ @ @ 1.4 辞書 @tab |@ref{Dictionaries}|
-@item @ @ @ @ 1.5 変数について補足 @tab |@ref{more-variables}|
+@item @ @ @ @ 1.5 Blobs @tab |@ref{Blobs}|
+@item @ @ @ @ 1.6 変数について補足 @tab |@ref{more-variables}|
 @item 2. 式の文法 @tab |@ref{expression-syntax}|
 @item 3. 内部変数 @tab |@ref{internal-variables}|
 @item 4. 組み込み関数 @tab |@ref{functions}|
@@ -88,18 +91,12 @@ Vim script はコンパイル時に無効化できる。もしそうなってい
 @item 7. コマンド @tab |@ref{expression-commands}|
 @item 8. 例外処理 @tab |@ref{exception-handling}|
 @item 9. 例 @tab |@ref{eval-examples}|
-@item 10. +eval 機能が無効 @tab |@ref{no-eval-feature}|
-@item 11. サンドボックス @tab |@ref{eval-sandbox}|
-@item 12. テキストロック @tab |@ref{textlock}|
-@item 13. テスト @tab |@ref{testing}|
+@item 10. Vim script バージョン @tab |@ref{vimscript-version}|
+@item 11. +eval 機能が無効 @tab |@ref{no-eval-feature}|
+@item 12. サンドボックス @tab |@ref{eval-sandbox}|
+@item 13. テキストロック @tab |@ref{textlock}|
+@item 14. テスト @tab |@ref{testing}|
 @end multitable
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
-{Vi does not have any of these commands}
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{Vi にはこれらのコマンドはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -121,12 +118,18 @@ Vim script はコンパイル時に無効化できる。もしそうなってい
 @unnumberedsubsec 1.1 変数の型
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-							*E712*
+						*E712* *E896* *E897* *E899*
 There are nine types of variables:
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{E712}
+@anchor{E896}
+@anchor{E897}
+@anchor{E899}
 @erindex E712
+@erindex E896
+@erindex E897
+@erindex E899
 変数には 9 種類の型がある:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -188,12 +191,12 @@ String		A NUL terminated string of 8-bit unsigned characters (bytes).
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-List		An ordered sequence of items |List|.
+List		An ordered sequence of items, see |List| for details.
 		Example: [1, 2, ['a', 'b']]
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item リスト
-要素の順序つきの列 |@ref{List}|。
+要素の順序つきの列。詳細は |@ref{List}| を参照。
 
 例:
 @example
@@ -271,6 +274,20 @@ Channel		Used for a channel, see |ch_open()|. *Channel* *Channels*
 @cindex Channels
 @item チャネル
 チャネルに使われる。|@ref{ch_open()}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Blob		Binary Large Object. Stores any sequence of bytes.  See |Blob|
+		for details
+		Example: 0zFF00ED015DAF
+		0z is an empty Blob.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item Blob
+バイナリラージオブジェクト。任意のバイトシーケンスを格納する。詳細は |@ref{Blob}| を参照。
+
+例: 0zFF00ED015DAF
+0z は空の Blob である。
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -355,7 +372,7 @@ base, use |str2nr()|.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-							*TRUE* *FALSE*
+						*TRUE* *FALSE* *Boolean*
 For boolean operators Numbers are used.  Zero is FALSE, non-zero is TRUE.
 You can also use |v:false| and |v:true|.  When TRUE is returned from a
 function it is the Number one, FALSE is the number zero.
@@ -363,8 +380,10 @@ function it is the Number one, FALSE is the number zero.
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{TRUE}
 @anchor{FALSE}
+@anchor{Boolean}
 @cindex TRUE
 @cindex FALSE
+@cindex Boolean
 ブール (真理値) 演算には数値が使われる。0 は偽を意味し、非 0 は真を表す。また、|@ref{v:false}| と |@ref{v:true}| を使うこともできる。関数から真が返されたときは数値の 1 であり、偽が返されたときは数値の 0 である。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -382,7 +401,7 @@ To test for a non-empty string, use empty(): >
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @quotation
-@strong{Note} @*
+@strong{Note:} @*
 次のコマンドをみると
 @example
 :if "foo"
@@ -418,8 +437,9 @@ A List, Dictionary or Float is not a Number or String, thus evaluate to FALSE.
 
 @ifset EN
 		*E745* *E728* *E703* *E729* *E730* *E731* *E908* *E910* *E913*
-List, Dictionary, Funcref, Job and Channel types are not automatically
-converted.
+		*E974* *E975* *E976*
+|List|, |Dictionary|, |Funcref|, |Job|, |Channel| and |Blob| types are not
+automatically converted.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{E745}
@@ -431,6 +451,9 @@ converted.
 @anchor{E908}
 @anchor{E910}
 @anchor{E913}
+@anchor{E974}
+@anchor{E975}
+@anchor{E976}
 @erindex E745
 @erindex E728
 @erindex E703
@@ -440,7 +463,10 @@ converted.
 @erindex E908
 @erindex E910
 @erindex E913
-リスト、辞書、Funcref、ジョブ、チャネルは自動的に変換されない。
+@erindex E974
+@erindex E975
+@erindex E976
+リスト |@ref{List}|, 辞書 |@ref{Dictionary}|, |@ref{Funcref}|, ジョブ |@ref{Job}|, チャネル |@ref{Channel}| および |@ref{Blob}| は自動的に変換されない。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1374,13 +1400,15 @@ example, to add up all the numbers in a list: >
 
 @ifset EN
 1.4 Dictionaries ~
-					*dict* *Dictionaries* *Dictionary*
+					*dict* *Dict* *Dictionaries* *Dictionary*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{dict}
+@anchor{Dict}
 @anchor{Dictionaries}
 @anchor{Dictionary}
 @cindex dict
+@cindex Dict
 @cindex Dictionaries
 @cindex Dictionary
 @cindex 辞書
@@ -1857,7 +1885,39 @@ Functions that can be used with a Dictionary: >
 
 
 @ifset EN
-1.5 More about variables ~
+1.5 Blobs ~
+						*blob* *Blob* *Blobs* *E978*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{blob}
+@anchor{Blob}
+@anchor{Blobs}
+@anchor{E978}
+@cindex blob
+@cindex Blob
+@cindex Blobs
+@cindex E978
+@unnumberedsubsec 1.5 Blobs
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+A Blob is a binary object.  It can be used to read an image from a file and
+send it over a channel, for example.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Blob は、バイナリオブジェクトである。例えば、ファイルから画像を読んでチャネルを通し送信することなどに使える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+A Blob mostly behaves like a |List| of numbers, where each number has the
+value of an 8-bit byte, from 0 to 255.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Blob は、ほとんどの場合、数値の |@ref{List}| のように振る舞う。数値は、0 から 255 の 8ビットの値を持つ。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+1.6 More about variables ~
 							*more-variables*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -2106,12 +2166,12 @@ Expression syntax summary, from least to most significant:
 
 
 @ifset EN
-".." indicates that the operations in this level can be concatenated.
+"..." indicates that the operations in this level can be concatenated.
 Example: >
 	&nu || &list && &shell == "csh"
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-".." はその演算が、その後に他の演算を続ける事ができることを示している。例:
+"..." はその演算が、その後に他の演算を続ける事ができることを示している。例:
 @example
 &nu || &list && &shell == "csh"
 @end example
@@ -5121,7 +5181,7 @@ v:mouse_col	Column number for a mouse click obtained with |getchar()|.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-					*v:none* *none-variable*
+					*v:none* *none-variable* *None*
 v:none		An empty String. Used to put an empty item in JSON.  See
 		|json_encode()|.
 		When used as a number this evaluates to zero.
@@ -5134,8 +5194,10 @@ v:none		An empty String. Used to put an empty item in JSON.  See
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{v:none}
 @anchor{none-variable}
+@anchor{None}
 @vindex v:none
 @cindex none-variable
+@cindex None
 @item v:none
 空の文字列。JSON では空の要素として使われる。|@ref{json_encode()}| を参照。数値として使われた時、これは 0 として評価される。文字列として使われた時、これは "v:none" として評価される。
 @example
@@ -5217,6 +5279,30 @@ v:option_old    Old value of the option. Valid while executing an |OptionSet|
 オプションの以前の値。自動コマンド |@ref{OptionSet}| を実行している間のみ有効。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+						    *v:option_oldlocal*
+v:option_oldlocal
+		Old local value of the option. Valid while executing an
+		|OptionSet| autocommand.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v:option_oldlocal}
+@vindex v:option_oldlocal
+@item v:option_oldlocal
+オプションの以前のローカル値。|@ref{OptionSet}| 自動コマンドの実行中に有効である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						    *v:option_oldglobal*
+v:option_oldglobal
+		Old global value of the option. Valid while executing an
+		|OptionSet| autocommand.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v:option_oldglobal}
+@vindex v:option_oldglobal
+@item v:option_oldglobal
+オプションの以前のグローバル値。|@ref{OptionSet}| 自動コマンドの実行中に有効である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 						    *v:option_type*
 v:option_type   Scope of the set command. Valid while executing an
 		|OptionSet| autocommand. Can be either "global" or "local"
@@ -5226,6 +5312,30 @@ v:option_type   Scope of the set command. Valid while executing an
 @vindex v:option_type
 @item v:option_type
 set コマンドのスコープ。自動コマンド |@ref{OptionSet}| を実行している間のみ有効。"global" もしくは "local" のどちらかとなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						    *v:option_command*
+v:option_command
+		Command used to set the option. Valid while executing an
+		|OptionSet| autocommand.
+			value		option was set via   ~
+			"setlocal"	|:setlocal| or ":let l:xxx"
+			"setglobal"	|:setglobal| or ":let g:xxx"
+			"set"		|:set| or |:let|
+			"modeline"	|modeline|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{v:option_command}
+@vindex v:option_command
+@item v:option_command
+オプションを設定するために使われたコマンド。|@ref{OptionSet}| 自動コマンドの実行中に有効である。
+@multitable @columnfractions .3 .7
+@headitem 値 @tab オプションは以下によって設定された
+@item "setlocal" @tab |@ref{:setlocal}| または "@command{:let l:xxx}"
+@item "setglobal" @tab |@ref{:setglobal}| または "@command{:let g:xxx}"
+@item "set" @tab |@ref{:set}| または |@ref{:let}|
+@item "modeline" @tab |@ref{modeline}|
+@end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 					*v:operator* *operator-variable*
@@ -5536,7 +5646,7 @@ v:swapcommand	Normal mode command to be executed after a file has been
 
 @ifset EN
 				*v:t_TYPE* *v:t_bool* *t_bool-variable*
-v:t_bool	Value of Boolean type.  Read-only.  See: |type()|
+v:t_bool	Value of |Boolean| type.  Read-only.  See: |type()|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{v:t_TYPE}
@@ -5546,11 +5656,11 @@ v:t_bool	Value of Boolean type.  Read-only.  See: |type()|
 @vindex v:t_bool
 @cindex t_bool-variable
 @item v:t_bool
-真偽値型の値。読出し専用。参照: |@ref{type()}|
+真偽値型 |@ref{Boolean}| の値。読出し専用。参照: |@ref{type()}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 					*v:t_channel* *t_channel-variable*
-v:t_channel	Value of Channel type.  Read-only.  See: |type()|
+v:t_channel	Value of |Channel| type.  Read-only.  See: |type()|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{v:t_channel}
@@ -5558,11 +5668,11 @@ v:t_channel	Value of Channel type.  Read-only.  See: |type()|
 @vindex v:t_channel
 @cindex t_channel-variable
 @item v:t_channel
-チャネル型の値。読出し専用。参照: |@ref{type()}|
+チャネル型 |@ref{Channel}| の値。読出し専用。参照: |@ref{type()}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 					*v:t_dict* *t_dict-variable*
-v:t_dict	Value of Dictionary type.  Read-only.  See: |type()|
+v:t_dict	Value of |Dictionary| type.  Read-only.  See: |type()|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{v:t_dict}
@@ -5570,11 +5680,11 @@ v:t_dict	Value of Dictionary type.  Read-only.  See: |type()|
 @vindex v:t_dict
 @cindex t_dict-variable
 @item v:t_dict
-辞書型の値。読出し専用。参照: |@ref{type()}|
+辞書型 |@ref{Dictionary}| の値。読出し専用。参照: |@ref{type()}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 					*v:t_float* *t_float-variable*
-v:t_float	Value of Float type.  Read-only.  See: |type()|
+v:t_float	Value of |Float| type.  Read-only.  See: |type()|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{v:t_float}
@@ -5582,11 +5692,11 @@ v:t_float	Value of Float type.  Read-only.  See: |type()|
 @vindex v:t_float
 @cindex t_float-variable
 @item v:t_float
-浮動小数点数型の値。読出し専用。参照: |@ref{type()}|
+浮動小数点数型 |@ref{Float}| の値。読出し専用。参照: |@ref{type()}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 					*v:t_func* *t_func-variable*
-v:t_func	Value of Funcref type.  Read-only.  See: |type()|
+v:t_func	Value of |Funcref| type.  Read-only.  See: |type()|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{v:t_func}
@@ -5594,11 +5704,11 @@ v:t_func	Value of Funcref type.  Read-only.  See: |type()|
 @vindex v:t_func
 @cindex t_func-variable
 @item v:t_func
-Funcref 型の値。読出し専用。参照: |@ref{type()}|
+|@ref{Funcref}| 型の値。読出し専用。参照: |@ref{type()}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 					*v:t_job* *t_job-variable*
-v:t_job		Value of Job type.  Read-only.  See: |type()|
+v:t_job		Value of |Job| type.  Read-only.  See: |type()|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{v:t_job}
@@ -5606,11 +5716,11 @@ v:t_job		Value of Job type.  Read-only.  See: |type()|
 @vindex v:t_job
 @cindex t_job-variable
 @item v:t_job
-ジョブ型の値。読出し専用。参照: |@ref{type()}|
+ジョブ型 |@ref{Job}| の値。読出し専用。参照: |@ref{type()}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 					*v:t_list* *t_list-variable*
-v:t_list	Value of List type.  Read-only.  See: |type()|
+v:t_list	Value of |List| type.  Read-only.  See: |type()|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{v:t_list}
@@ -5618,11 +5728,11 @@ v:t_list	Value of List type.  Read-only.  See: |type()|
 @vindex v:t_list
 @cindex t_list-variable
 @item v:t_list
-リスト型の値。読出し専用。参照: |@ref{type()}|
+リスト型 |@ref{List}| の値。読出し専用。参照: |@ref{type()}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 					*v:t_none* *t_none-variable*
-v:t_none	Value of None type.  Read-only.  See: |type()|
+v:t_none	Value of |None| type.  Read-only.  See: |type()|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{v:t_none}
@@ -5630,11 +5740,11 @@ v:t_none	Value of None type.  Read-only.  See: |type()|
 @vindex v:t_none
 @cindex t_none-variable
 @item v:t_none
-特殊値型の値。読出し専用。参照: |@ref{type()}|
+特殊値型 |@ref{None}| の値。読出し専用。参照: |@ref{type()}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 					*v:t_number* *t_number-variable*
-v:t_number	Value of Number type.  Read-only.  See: |type()|
+v:t_number	Value of |Number| type.  Read-only.  See: |type()|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{v:t_number}
@@ -5642,11 +5752,11 @@ v:t_number	Value of Number type.  Read-only.  See: |type()|
 @vindex v:t_number
 @cindex t_number-variable
 @item v:t_number
-数値型の値。読出し専用。参照: |@ref{type()}|
+数値型 |@ref{Number}| の値。読出し専用。参照: |@ref{type()}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 					*v:t_string* *t_string-variable*
-v:t_string	Value of String type.  Read-only.  See: |type()|
+v:t_string	Value of |String| type.  Read-only.  See: |type()|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{v:t_string}
@@ -5654,7 +5764,7 @@ v:t_string	Value of String type.  Read-only.  See: |type()|
 @vindex v:t_string
 @cindex t_string-variable
 @item v:t_string
-文字列型の値。読出し専用。参照: |@ref{type()}|
+文字列型 |@ref{String}| の値。読出し専用。参照: |@ref{type()}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -6061,6 +6171,7 @@ atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
 @item @ref{atan2(), , atan2}(@{expr@}, @{expr@}) @tab 浮動小数点数 @tab @{expr1@} / @{expr2@} のアークタンジェント
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+balloon_gettext()		String	current text in the balloon
 balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
 browse({save}, {title}, {initdir}, {default})
@@ -6068,6 +6179,7 @@ browse({save}, {title}, {initdir}, {default})
 browsedir({title}, {initdir})	String	put up a directory requester
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{balloon_gettext(), , balloon_gettext}() @tab 文字列 @tab バルーン内のカレントテキストを得る
 @item @ref{balloon_show(), , balloon_show}(@{expr@}) @tab なし @tab @{expr@} をバルーン内に表示
 @item @ref{balloon_split(), , balloon_split}(@{msg@}) @tab リスト @tab @{msg@} をバルーンで使われるように分割する
 @item @ref{browse(), , browse}(@{save@}, @{title@}, @{initdir@}, @{default@}) @tab 文字列 @tab ファイル選択ダイアログを表示
@@ -6129,6 +6241,8 @@ ch_logfile({fname} [, {mode}])	none	start logging channel activity
 ch_open({address} [, {options}])
 				Channel	open a channel to {address}
 ch_read({handle} [, {options}]) String	read from {handle}
+ch_readblob({handle} [, {options}])
+				Blob	read Blob from {handle}
 ch_readraw({handle} [, {options}])
 				String	read raw from {handle}
 ch_sendexpr({handle}, {expr} [, {options}])
@@ -6146,6 +6260,7 @@ ch_status({handle} [, {options}])
 @item @ref{ch_logfile(), , ch_logfile}(@{fname@} [, @{mode@}]) @tab なし @tab チャネルの挙動ログ出力を開始する
 @item @ref{ch_open(), , ch_open}(@{address@} [, @{options@}]) @tab チャネル @tab @{address@} へのチャネルを開く
 @item @ref{ch_read(), , ch_read}(@{handle@} [, @{options@}]) @tab 文字列 @tab @{handle@} から読み込む
+@item @ref{ch_readblob(), , ch_readblob}(@{handle@} [, @{options@}]) @tab Blob @tab @{handle@} から Blob を読み込む
 @item @ref{ch_readraw(), , ch_readraw}(@{handle@} [, @{options@}]) @tab 文字列 @tab @{handle@} から生の文字列を読み込む
 @item @ref{ch_sendexpr(), , ch_sendexpr}(@{handle@}, @{expr@} [, @{options@}]) @tab 任意 @tab @{expr@} を JSON チャネル @{handle@} に送る
 @item @ref{ch_sendraw(), , ch_sendraw}(@{handle@}, @{string@} [, @{options@}]) @tab 任意 @tab @{string@} を raw チャネル @{handle@} に送る
@@ -6155,22 +6270,26 @@ ch_status({handle} [, {options}])
 @ifset EN
 changenr()			Number	current change number
 char2nr({expr} [, {utf8}])	Number	ASCII/UTF8 value of first char in {expr}
+chdir({dir})			String	change current working directory
 cindent({lnum})			Number	C indent for line {lnum}
 clearmatches()			none	clear all matches
 col({expr})			Number	column nr of cursor or mark
 complete({startcol}, {matches}) none	set Insert mode completion
 complete_add({expr})		Number	add completion match
 complete_check()		Number	check for key typed during completion
+complete_info([{what}])		Dict	get current completion information
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{changenr(), , changenr}() @tab 数値 @tab 現在の変更番号
 @item @ref{char2nr(), , char2nr}(@{expr@} [, @{utf8@}]) @tab 数値 @tab @{expr@} の先頭文字の ASCII/UTF8 コード
+@item @ref{chdir(), , chdir}(@{dir@}) @tab 文字列 @tab 現在の作業ディレクトリを変更する
 @item @ref{cindent(), , cindent}(@{lnum@}) @tab 数値 @tab @{lnum@} 行目の C インデント量
 @item @ref{clearmatches(), , clearmatches}() @tab なし @tab 全マッチをクリアする
 @item @ref{col(), , col}(@{expr@}) @tab 数値 @tab カーソルかマークのカラム番号
 @item @ref{complete(), , complete}(@{startcol@}, @{matches@}) @tab なし @tab 挿入モード補完を設定する
 @item @ref{complete_add(), , complete_add}(@{expr@}) @tab 数値 @tab 補完候補を追加する
 @item @ref{complete_check(), , complete_check}() @tab 数値 @tab 補完中に押されたキーをチェックする
+@item @ref{complete_info(), , complete_info}([@{what@}]) @tab 辞書 @tab 現在の補完情報を取得
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 confirm({msg} [, {choices} [, {default} [, {type}]]])
@@ -6217,12 +6336,14 @@ diff_hlID({lnum}, {col})	Number	diff highlighting at {lnum}/{col}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 empty({expr})			Number	|TRUE| if {expr} is empty
+environ()			Dict	return environment variables
 escape({string}, {chars})	String	escape {chars} in {string} with '\'
 eval({string})			any	evaluate {string} into its value
 eventhandler()			Number	|TRUE| if inside an event handler
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{empty(), , empty}(@{expr@}) @tab 数値 @tab @{expr@} が空なら |@ref{TRUE}|
+@item @ref{environ(), , environ}() @tab 辞書 @tab すべての環境変数を返す
 @item @ref{escape(), , escape}(@{string@}, @{chars@}) @tab 文字列 @tab @{string@} 内の @{chars@} を '\' でエスケープ
 @item @ref{eval(), , eval}(@{string@}) @tab 任意 @tab @{string@} を評価し、値を得る
 @item @ref{eventhandler(), , eventhandler}() @tab 数値 @tab イベントハンドラの内側なら |@ref{TRUE}|
@@ -6237,6 +6358,7 @@ extend({expr1}, {expr2} [, {expr3}])
 exp({expr})			Float	exponential of {expr}
 expand({expr} [, {nosuf} [, {list}]])
 				any	expand special keywords in {expr}
+expandcmd({expr})		String	expand {expr} like with `:edit`
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{executable(), , executable}(@{expr@}) @tab 数値 @tab 実行可能な @{expr@} が存在するなら 1
@@ -6246,6 +6368,7 @@ expand({expr} [, {nosuf} [, {list}]])
 @item @ref{extend(), , extend}(@{expr1@}, @{expr2@} [, @{expr3@}]) @tab リスト/辞書 @tab @{expr1@} に @{expr2@} の要素を挿入
 @item @ref{exp(), , exp}(@{expr@}) @tab 浮動小数点数 @tab @{expr@} の指数
 @item @ref{expand(), , expand}(@{expr@} [, @{nosuf@} [, @{list@}]]) @tab 任意 @tab @{expr@} 内の特別なキーワードを展開
+@item @ref{expandcmd(), , expandcmd}(@{expr@}) @tab 文字列 @tab	`:edit` のように @{expr@} を展開
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 feedkeys({string} [, {mode}])	Number	add key sequence to typeahead buffer
@@ -6323,27 +6446,37 @@ getchangelist({expr})		List	list of change list items
 getchar([expr])			Number	get one character from the user
 getcharmod()			Number	modifiers for the last typed character
 getcharsearch()			Dict	last character search
-getcmdline()			String	return the current command-line
-getcmdpos()			Number	return cursor position in command-line
-getcmdtype()			String	return current command-line type
-getcmdwintype()			String	return current command-line window type
-getcompletion({pat}, {type} [, {filtered}])
-				List	list of cmdline completion matches
-getcurpos()			List	position of the cursor
-getcwd([{winnr} [, {tabnr}]])	String	get the current working directory
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{getchangelist(), , getchangelist}(@{expr@}) @tab リスト @tab 変更リスト要素のリスト
 @item @ref{getchar(), , getchar}([expr]) @tab 数値 @tab ユーザーから 1 文字を取得する
 @item @ref{getcharmod(), , getcharmod}() @tab 数値 @tab 修飾キーの状態を表す数値を取得
 @item @ref{getcharsearch(), , getcharsearch}() @tab 辞書 @tab 最後の文字検索を取得
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+getcmdline()			String	return the current command-line
+getcmdpos()			Number	return cursor position in command-line
+getcmdtype()			String	return current command-line type
+getcmdwintype()			String	return current command-line window type
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{getcmdline(), , getcmdline}() @tab 文字列 @tab 現在のコマンドラインを取得
 @item @ref{getcmdpos(), , getcmdpos}() @tab 数値 @tab コマンドラインのカーソル位置を取得
 @item @ref{getcmdtype(), , getcmdtype}() @tab 文字列 @tab 現在のコマンドラインの種類を取得
 @item @ref{getcmdwintype(), , getcmdwintype}() @tab 文字列 @tab 現在のコマンドラインウィンドウの種類
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+getcompletion({pat}, {type} [, {filtered}])
+				List	list of cmdline completion matches
+getcurpos()			List	position of the cursor
+getcwd([{winnr} [, {tabnr}]])	String	get the current working directory
+getenv({name})			String	return environment variable
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{getcompletion(), , getcompletion}(@{pat@}, @{type@} [, @{filtered@}]) @tab リスト @tab コマンドライン補完にマッチするリスト
 @item @ref{getcurpos(), , getcurpos}() @tab リスト @tab カーソルの位置
 @item @ref{getcwd(), , getcwd}([@{winnr@} [, @{tabnr@}]]) @tab 文字列 @tab 現在の作業ディレクトリを取得
+@item @ref{getenv(), , getenv}(@{name@}) @tab 文字列 @tab 環境変数を返す
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 getfontname([{name}])		String	name of font being used
@@ -6536,13 +6669,26 @@ line2byte({lnum})		Number	byte count of line {lnum}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 lispindent({lnum})		Number	Lisp indent for line {lnum}
+list2str({list} [, {utf8}])	String	turn numbers in {list} into a String
+listener_add({callback} [, {buf}])
+				Number	add a callback to listen to changes
+listener_flush([{buf}])		none	invoke listener callbacks
+listener_remove({id})		none	remove a listener callback
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{lispindent(), , lispindent}(@{lnum@}) @tab 数値 @tab @{lnum@} 行目の Lisp インデント量を取得
+@item @ref{list2str(), , list2str}(@{list@} [, @{utf8@}]) @tab 文字列 @tab @{list@} の数値を文字列に変換する
+@item @ref{listener_add(), , listener_add}(@{callback@} [, @{buf@}]) @tab 数値 @tab 変更を監視するためのコールバックを追加
+@item @ref{listener_flush(), , listener_flush}([@{buf@}]) @tab なし @tab リスナーコールバックを呼び出す
+@item @ref{listener_remove(), , listener_remove}(@{id@}) @tab なし @tab リスナーコールバックを削除する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 localtime()			Number	current time
 log({expr})			Float	natural logarithm (base e) of {expr}
 log10({expr})			Float	logarithm of Float {expr} to base 10
 luaeval({expr} [, {expr}])	any	evaluate |Lua| expression
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item @ref{lispindent(), , lispindent}(@{lnum@}) @tab 数値 @tab @{lnum@} 行目の Lisp インデント量を取得
 @item @ref{localtime(), , localtime}() @tab 数値 @tab 現在時刻
 @item @ref{log(), , log}(@{expr@}) @tab 浮動小数点数 @tab @{expr@} の自然対数 (底 e)
 @item @ref{log10(), , log10}(@{expr@}) @tab 浮動小数点数 @tab 浮動小数点数 @{expr@} の 10 を底とする対数
@@ -6644,6 +6790,44 @@ prompt_setprompt({buf}, {text}) none	set prompt text
 @item @ref{prompt_setprompt(), , prompt_setprompt}(@{buf@}, @{text@}) @tab なし @tab プロンプトテキストを設定する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+prop_add({lnum}, {col}, {props})  none	add a text property
+prop_clear({lnum} [, {lnum-end} [, {props}]])
+				none	remove all text properties
+prop_find({props} [, {direction}])
+				Dict	search for a text property
+prop_list({lnum} [, {props})	List	text properties in {lnum}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{prop_add(), , prop_add}(@{lnum@}, @{col@}, @{props@}) @tab なし @tab テキストプロパティを追加
+@item @ref{prop_clear(), , prop_clear}(@{lnum@} [, @{lnum-end@} [, @{props@}]]) @tab なし @tab 全てのテキストプロパティを削除
+@item @ref{prop_find(), , prop_find}(@{props@} [, @{direction@}]) @tab 辞書 @tab テキストプロパティを検索する
+@item @ref{prop_list(), , prop_list}(@{lnum@} [, @{props@}) @tab リスト @tab @{lnum@} 行目のテキストプロパティを取得
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+prop_remove({props} [, {lnum} [, {lnum-end}]])
+				Number	remove a text property
+prop_type_add({name}, {props})	none	define a new property type
+prop_type_change({name}, {props})
+				none	change an existing property type
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{prop_remove(), , prop_remove}(@{props@} [, @{lnum@} [, @{lnum-end@}]]) @tab 数値 @tab テキストプロパティを削除
+@item @ref{prop_type_add(), , prop_type_add}(@{name@}, @{props@}) @tab なし @tab 新しいプロパティタイプを定義
+@item @ref{prop_type_change(), , prop_type_change}(@{name@}, @{props@}) @tab なし @tab 既存のプロパティタイプを変更
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+prop_type_delete({name} [, {props}])
+				none	delete a property type
+prop_type_get([{name} [, {props}])
+				Dict	get property type values
+prop_type_list([{props}])	List	get list of property types
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{prop_type_delete(), , prop_type_delete}(@{name@} [, @{props@}]) @tab なし @tab プロパティタイプを削除
+@item @ref{prop_type_get(), , prop_type_get}([@{name@} [, @{props@}]) @tab 辞書 @tab プロパティタイプの値を取得
+@item @ref{prop_type_list(), , prop_type_list}([@{props@}]) @tab リスト @tab プロパティタイプ一覧を取得
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 pumvisible()			Number	whether popup menu is visible
 pyeval({expr})			any	evaluate |Python| expression
 py3eval({expr})			any	evaluate |python3| expression
@@ -6658,19 +6842,29 @@ pyxeval({expr})			any	evaluate |python_x| expression
 @ifset EN
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
+readdir({dir} [, {expr}])	List	file names in {dir} selected by {expr}
 readfile({fname} [, {binary} [, {max}]])
 				List	get list of lines from file {fname}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{range(), , range}(@{expr@} [, @{max@} [, @{stride@}]]) @tab リスト @tab @{expr@} から @{max@} までの要素のリスト
+@item @ref{readdir(), , readdir}(@{dir@} [, @{expr@}]) @tab リスト @tab @{expr@} によって選択された @{dir@} 内のファイル名を取得
+@item @ref{readfile(), , readfile}(@{fname@} [, @{binary@} [, @{max@}]]) @tab リスト @tab ファイル @{fname@} から行のリストを取得
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 reg_executing()			String	get the executing register name
 reg_recording()			String	get the recording register name
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{reg_executing()} @tab 文字列 @tab 実行中のレジスタ名を取得する
+@item @ref{reg_recording()} @tab 文字列 @tab 記録中のレジスタ名を取得する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 reltime([{start} [, {end}]])	List	get time value
 reltimefloat({time})		Float	turn the time value into a Float
 reltimestr({time})		String	turn time value into a String
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item @ref{range(), , range}(@{expr@} [, @{max@} [, @{stride@}]]) @tab リスト @tab @{expr@} から @{max@} までの要素のリスト
-@item @ref{readfile(), , readfile}(@{fname@} [, @{binary@} [, @{max@}]]) @tab リスト @tab ファイル @{fname@} から行のリストを取得
-@item @ref{reg_executing()} @tab 文字列 @tab 実行中のレジスタ名を取得する
-@item @ref{reg_recording()} @tab 文字列 @tab 記録中のレジスタ名を取得する
 @item @ref{reltime(), , reltime}([@{start@} [, @{end@}]]) @tab リスト @tab 時刻の値を取得
 @item @ref{reltimefloat(), , reltimefloat}(@{time@}) @tab 浮動小数点数 @tab 時刻の値を浮動小数点に変換
 @item @ref{reltimestr(), , reltimestr}(@{time@}) @tab 文字列 @tab 時刻の値を文字列に変換
@@ -6703,6 +6897,7 @@ repeat({expr}, {count})		String	repeat {expr} {count} times
 resolve({filename})		String	get filename a shortcut points to
 reverse({list})			List	reverse {list} in-place
 round({expr})			Float	round off {expr}
+rubyeval({expr})		any	evaluate |Ruby| expression
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{remove(), , remove}(@{list@}, @{idx@} [, @{end@}]) @tab 任意 @tab @{list@} から @{idx@} と @{end@} 間の要素を削除
@@ -6712,12 +6907,25 @@ round({expr})			Float	round off {expr}
 @item @ref{resolve(), , resolve}(@{filename@}) @tab 文字列 @tab ショートカットが指す先のファイル名
 @item @ref{reverse(), , reverse}(@{list@}) @tab 文字列 @tab @{list@} をその場で反転させる
 @item @ref{round(), , round}(@{expr@}) @tab 浮動小数点数 @tab @{expr@} を四捨五入する
+@item @ref{rubyeval(), , rubyeval}(@{expr@}) @tab 任意 @tab |@ref{Ruby}| の式を評価
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 screenattr({row}, {col})	Number	attribute at screen position
 screenchar({row}, {col})	Number	character at screen position
+screenchars({row}, {col})	List	List of characters at screen position
 screencol()			Number	current cursor column
 screenrow()			Number	current cursor row
+screenstring({row}, {col})	String	characters at screen position
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{screenattr(), , screenattr}(@{row@}, @{col@}) @tab 数値 @tab スクリーン位置の属性
+@item @ref{screenchar(), , screenchar}(@{row@}, @{col@}) @tab 数値 @tab スクリーン位置の文字
+@item @ref{screenchars(), , screenchars}(@{row@}, @{col@}) @tab リスト @tab スクリーン位置の文字のリスト
+@item @ref{screencol(), , screencol}() @tab 数値 @tab 現在のカーソル列
+@item @ref{screenrow(), , screenrow}() @tab 数値 @tab 現在のカーソル行
+@item @ref{screenstring(), , screenstring}(@{row@}, @{col@}) @tab 文字列 @tab スクリーン位置の文字列
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 search({pattern} [, {flags} [, {stopline} [, {timeout}]]])
 				Number	search for {pattern}
 searchdecl({name} [, {global} [, {thisblock}]])
@@ -6730,10 +6938,6 @@ searchpos({pattern} [, {flags} [, {stopline} [, {timeout}]]])
 				List	search for {pattern}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item @ref{screenattr(), , screenattr}(@{row@}, @{col@}) @tab 数値 @tab スクリーン位置の属性
-@item @ref{screenchar(), , screenchar}(@{row@}, @{col@}) @tab 数値 @tab スクリーン位置の文字
-@item @ref{screencol(), , screencol}() @tab 数値 @tab 現在のカーソル列
-@item @ref{screenrow(), , screenrow}() @tab 数値 @tab 現在のカーソル行
 @item @ref{search(), , search}(@{pattern@} [, @{flags@} [, @{stopline@} [, @{timeout@}]]]) @tab 数値 @tab @{pattern@} を検索する
 @item @ref{searchdecl(), , searchdecl}(@{name@} [, @{global@} [, @{thisblock@}]]) @tab 数値 @tab 変数の宣言を検索
 @item @ref{searchpair(), , searchpair}(@{start@}, @{middle@}, @{end@} [, @{flags@} [, @{skip@} [...]]]) @tab 数値 @tab 開始/終端のペアの他方を検索
@@ -6751,6 +6955,7 @@ setbufvar({expr}, {varname}, {val})
 				none	set {varname} in buffer {expr} to {val}
 setcharsearch({dict})		Dict	set character search from {dict}
 setcmdpos({pos})		Number	set cursor position in command-line
+setenv({name}, {val})		none	set environment variable
 setfperm({fname}, {mode})	Number	set {fname} file permissions to {mode}
 setline({lnum}, {line})		Number	set line {lnum} to {line}
 @end ifset
@@ -6761,6 +6966,7 @@ setline({lnum}, {line})		Number	set line {lnum} to {line}
 @item @ref{setbufvar(), , setbufvar}(@{expr@}, @{varname@}, @{val@}) @tab なし @tab バッファ @{expr@} 内の変数 @{varname@} に @{val@} をセット
 @item @ref{setcharsearch(), , setcharsearch}(@{dict@}) @tab 辞書 @tab 文字検索を @{dict@} に設定
 @item @ref{setcmdpos(), , setcmdpos}(@{pos@}) @tab 数値 @tab コマンドライン内のカーソル位置を設定
+@item @ref{setenv(), , setenv}(@{name@}, @{val@}) @tab なし @tab 環境変数を設定
 @item @ref{setfperm(), , setfperm}(@{fname@}, @{mode@}) @tab 数値 @tab ファイル @{fname@} のパーミッションを @{mode@} に設定
 @item @ref{setline(), , setline}(@{lnum@}, @{line@}) @tab 数値 @tab 行 @{lnum@} に @{line@} (文字列) をセット
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -6797,21 +7003,65 @@ shellescape({string} [, {special}])
 				String	escape {string} for use as shell
 					command argument
 shiftwidth([{col}])		Number	effective value of 'shiftwidth'
-simplify({filename})		String	simplify filename as much as possible
-sin({expr})			Float	sine of {expr}
-sinh({expr})			Float	hyperbolic sine of {expr}
-sort({list} [, {func} [, {dict}]])
-				List	sort {list}, using {func} to compare
-soundfold({word})		String	sound-fold {word}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{sha256(), , sha256}(@{string@}) @tab 文字列 @tab @{string@} の SHA256 チェックサム
 @item @ref{shellescape(), , shellescape}(@{string@} [, @{special@}]) @tab 文字列 @tab @{string@} をシェルコマンド引数として使うためにエスケープする。
 @item @ref{shiftwidth(), ,shiftwidth}([@{col@}]) @tab 数値 @tab 実際に使用される '@option{shiftwidth}' の値
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+sign_define({name} [, {dict}])	Number	define or update a sign
+sign_getdefined([{name}])	List	get a list of defined signs
+sign_getplaced([{expr} [, {dict}]])
+				List	get a list of placed signs
+sign_jump({id}, {group}, {expr})
+				Number	jump to a sign
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{sign_define(), , sign_define}(@{name@} [, @{dict@}]) @tab 数値 @tab 目印を定義または更新する
+@item @ref{sign_getdefined(), , sign_getdefined}([@{name@}]) @tab リスト @tab 定義されている目印のリストを取得する
+@item @ref{sign_getplaced(), , sign_getplaced}([@{expr@} [, @{dict@}]]) @tab リスト @tab 設置されている目印のリストを取得する
+@item @ref{sign_jump(), , sign_jump}(@{id@}, @{group@}, @{expr@}) @tab 数値 @tab 目印に移動する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+sign_place({id}, {group}, {name}, {expr} [, {dict}])
+				Number	place a sign
+sign_undefine([{name}])		Number	undefine a sign
+sign_unplace({group} [, {dict}])
+				Number	unplace a sign
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{sign_place(), , sign_place}(@{id@}, @{group@}, @{name@}, @{expr@} [, @{dict@}]) @tab 数値 @tab 目印を設置する
+@item @ref{sign_undefine(), , sign_undefine}([@{name@}]) @tab 数値 @tab 目印を削除する
+@item @ref{sign_unplace(), , sign_unplace}(@{group@} [, @{dict@}]) @tab 数値 @tab 目印を解除する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+simplify({filename})		String	simplify filename as much as possible
+sin({expr})			Float	sine of {expr}
+sinh({expr})			Float	hyperbolic sine of {expr}
+sort({list} [, {func} [, {dict}]])
+				List	sort {list}, using {func} to compare
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{simplify(), , simplify}(@{filename@}) @tab 文字列 @tab ファイル名を可能なかぎり簡略化する
 @item @ref{sin(), , sin}(@{expr@}) @tab 浮動小数点数 @tab @{expr@} の正弦(サイン)
 @item @ref{sinh(), , sinh}(@{expr@}) @tab 浮動小数点数 @tab @{expr@} のハイパボリックサイン
 @item @ref{sort(), , sort}(@{list@} [, @{func@} [, @{dict@}]]) @tab リスト @tab 比較に @{func@} を使って @{list@} をソートする
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+sound_clear()			none	stop playing all sounds
+sound_playevent({name} [, {callback}])
+				Number	play an event sound
+sound_playfile({path} [, {callback}])
+				Number	play sound file {path}
+sound_stop({id})		none	stop playing sound {id}
+soundfold({word})		String	sound-fold {word}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{sound_clear(), , sound_clear}() @tab なし @tab すべてのサウンドの再生を停止する
+@item @ref{sound_playevent(), , sound_playevent}(@{name@} [, @{callback@}]) @tab 数値 @tab イベントサウンドを再生する
+@item @ref{sound_playfile(), , sound_playfile}(@{path@} [, @{callback@}]) @tab 数値 @tab サウンドファイル @{path@} を再生する
+@item sound_stop(@{id@}) @tab なし @tab サウンド @{id@} の再生を停止する
 @item @ref{soundfold(), , soundfold}(@{word@}) @tab 文字列 @tab @{word@} の sound-fold
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -6830,6 +7080,8 @@ sqrt({expr})			Float	square root of {expr}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 str2float({expr})		Float	convert String to Float
+str2list({expr} [, {utf8}])	List	convert each character of {expr} to
+					ASCII/UTF8 value
 str2nr({expr} [, {base}])	Number	convert String to Number
 strchars({expr} [, {skipcc}])	Number	character length of the String {expr}
 strcharpart({str}, {start} [, {len}])
@@ -6840,6 +7092,7 @@ strgetchar({str}, {index})	Number	get char {index} from {str}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{str2float(), , str2float}(@{expr@}) @tab 浮動小数点数 @tab 文字列を浮動小数点数に変換する
+@item @ref{str2list(), , str2list}(@{expr@} [, @{utf8@}]) @tab リスト @tab @{expr@} の各文字を ASCII/UTF8 値に変換する
 @item @ref{str2nr(), , str2nr}(@{expr@} [, @{base@}]) @tab 数値 @tab 文字列を数値に変換する
 @item @ref{strchars(), , strchars}(@{expr@} [, @{skipcc@}]) @tab 数値 @tab 文字列 @{expr@} の文字の数
 @item @ref{strcharpart(), , strcharpart}(@{str@}, @{start@} [, @{len@}]) @tab 文字列 @tab @{str@} の @{start@} から長さ @{len@} の文字列を得る
@@ -6998,6 +7251,7 @@ test_alloc_fail({id}, {countdown}, {repeat})
 test_autochdir()		none	enable 'autochdir' during startup
 test_feedinput({string})	none	add key sequence to input buffer
 test_garbagecollect_now()	none	free memory right now for testing
+test_getvalue({string})		any	get value of an internal variable
 test_ignore_error({expr})	none	ignore a specific error
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -7005,9 +7259,11 @@ test_ignore_error({expr})	none	ignore a specific error
 @item @ref{test_autochdir(), , test_autochdir}() @tab なし @tab 起動時に '@option{autochdir}' を有効にする
 @item @ref{test_feedinput(), , test_feedinput}(@{string@}) @tab なし @tab キー入力を入力バッファに追加する
 @item @ref{test_garbagecollect_now(), , test_garbagecollect_now}() @tab なし @tab テスト用に直ちにメモリを解放する
+@item @ref{test_getvalue(), , test_getvalue}(@{string@}) @tab 任意 @tab 内部変数の値を取得する
 @item @ref{test_ignore_error(), , test_ignore_error}(@{expr@}) @tab なし @tab 特定のエラーを無視する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+test_null_blob()		Blob	null value for testing
 test_null_channel()		Channel	null value for testing
 test_null_dict()		Dict	null value for testing
 test_null_job()			Job	null value for testing
@@ -7016,6 +7272,7 @@ test_null_partial()		Funcref	null value for testing
 test_null_string()		String	null value for testing
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{test_null_blob(), , test_null_blob}() @tab Blob @tab テスト用の null 値
 @item @ref{test_null_channel(), , test_null_channel}() @tab チャネル @tab テスト用の null 値
 @item @ref{test_null_dict(), , test_null_dict}() @tab 辞書@ @tab テスト用の null 値
 @item @ref{test_null_job(), , test_null_job}() @tab ジョブ @tab テスト用の null 値
@@ -7028,12 +7285,14 @@ test_option_not_set({name})	none	reset flag indicating option was set
 test_override({expr}, {val})	none	test with Vim internal overrides
 test_scrollbar({which}, {value}, {dragging})
 				none	scroll in the GUI for testing
+test_setmouse({row}, {col})	none	set the mouse position for testing
 test_settime({expr})		none	set current time for testing
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{test_option_not_set(), , test_option_not_set}(@{name@}) @tab なし@tab 指定するフラグをリセットする
 @item @ref{test_override(), , test_override}(@{expr@}, @{val@}) @tab なし @tab Vim の内部処理を置き換えてテストする
 @item @ref{test_scrollbar(), , test_scrollbar}(@{which@}, @{value@}, @{dragging@}) @tab なし @tab GUI のテスト中にスクロールする
+@item @ref{test_setmouse(), , test_setmouse}(@{row@}, @{col@}) @tab なし @tab テスト用にマウス位置を設定する
 @item @ref{test_settime(), , test_settime}(@{expr@}) @tab なし @tab テスト用に現在の時刻を設定する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -7087,6 +7346,8 @@ visualmode([expr])		String	last visual mode used
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 wildmenumode()			Number	whether 'wildmenu' mode is active
+win_execute({id}, {command} [, {silent}])
+				String	execute {command} in window {id}
 win_findbuf({bufnr})		List	find windows containing {bufnr}
 win_getid([{win} [, {tab}]])	Number	get window ID for {win} in {tab}
 win_gotoid({expr})		Number	go to window with ID {expr}
@@ -7099,6 +7360,7 @@ winheight({nr})			Number	height of window {nr}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{wildmenumode(), , wildmenumode}() @tab 数値 @tab '@option{wildmenu}' モードが有効かどうか
+@item @ref{win_execute(), , win_execute}(@{id@}, @{command@} [, @{silent@}]) @tab 文字列 @tab ウィンドウ @{id@} で @{command@} を実行する
 @item @ref{win_findbuf(), , win_findbuf}(@{bufnr@}) @tab リスト @tab @{bufnr@} を含むウィンドウを見つける
 @item @ref{win_getid(), , win_getid}([@{win@} [, @{tab@}]]) @tab 数値 @tab @{tab@} の @{win@} のウィンドウ ID を取得
 @item @ref{win_gotoid(), , win_gotoid}(@{expr@}) @tab 数値 @tab ID @{expr@} のウィンドウに行く
@@ -7556,7 +7818,7 @@ assert_fails({cmd} [, {error} [, {msg}]])			*assert_fails()*
 @ifset EN
 assert_false({actual} [, {msg}])				*assert_false()*
 		When {actual} is not false an error message is added to
-		|v:errors|, like with |assert_equal()|. 
+		|v:errors|, like with |assert_equal()|.
 		Also see |assert-return|.
 		A value is false when it is zero. When {actual} is not a
 		number the assert fails.
@@ -7775,6 +8037,18 @@ atan2({expr1}, {expr2})					*atan2()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+balloon_gettext()					*balloon_gettext()*
+		Return the current text in the balloon.  Only for the string,
+		not used for the List.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{balloon_gettext()}
+@findex balloon_gettext()
+@item balloon_gettext()
+バルーン内の現在のテキストを返す。文字列に対してのみ使用され、リストには使用されない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 balloon_show({expr})					*balloon_show()*
 		Show {expr} inside the balloon.  For the GUI {expr} is used as
 		a string.  For a terminal {expr} can be a list, which contains
@@ -7783,7 +8057,7 @@ balloon_show({expr})					*balloon_show()*
 
 		Example: >
 			func GetBalloonContent()
-			   " initiate getting the content
+			   " ... initiate getting the content
 			   return ''
 			endfunc
 			set balloonexpr=GetBalloonContent()
@@ -7802,7 +8076,7 @@ balloon_show({expr})					*balloon_show()*
 例:
 @verbatim
 func GetBalloonContent()
-   " 内容の取得を開始
+   " ... 内容の取得を開始
    return ''
 endfunc
 set balloonexpr=GetBalloonContent()
@@ -8459,7 +8733,7 @@ ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
 @ifset EN
 		Note that Vim does not know when the text received on a raw
 		channel is complete, it may only return the first part and you
-		need to use ch_readraw() to fetch the rest.
+		need to use |ch_readraw()| to fetch the rest.
 		See |channel-use|.
 
 		{only available when compiled with the |+channel| feature}
@@ -8468,7 +8742,7 @@ ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
 @quotation
 @strong{Note:} @*
 Vim は生チャネルで受け取ったテキストが完全なものなのかわからないことに注意。
-最初の部分だけが返されているのかもしれないし、残りの部分を取り込むために ch_readraw() を使う必要がある。
+最初の部分だけが返されているのかもしれないし、残りの部分を取り込むために |@ref{ch_readraw()}| を使う必要がある。
 @end quotation
 |@ref{channel-use}| を参照。
 
@@ -8679,6 +8953,23 @@ ch_read({handle} [, {options}])					*ch_read()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+ch_readblob({handle} [, {options}])			*ch_readblob()*
+		Like ch_read() but reads binary data and returns a |Blob|.
+		See |channel-more|.
+		{only available when compiled with the |+channel| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_readblob()}
+@cindex ch_readblob()
+@item ch_readblob(@{handle@} [, @{options@}])
+ch_read() と同様に動作するが、バイナリデータを読み込んで |@ref{Blob}| を返す。
+
+|@ref{channel-more}| を参照。
+
+@{|@ref{+channel}| 機能付きでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 ch_readraw({handle} [, {options}])			*ch_readraw()*
 		Like ch_read() but for a JS and JSON channel does not decode
 		the message.  For a NL channel it does not block waiting for
@@ -8876,6 +9167,48 @@ char2nr({expr} [, {utf8}])					*char2nr()*
 @{utf8@} に 1 を指定すると、常に utf-8 文字として扱われる。合成文字は個別の文字として扱われる。|@ref{nr2char()}| はこの逆を行う。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+@ifset EN
+chdir({dir})						*chdir()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item chdir(@{dir@})
+@anchor{chdir()}
+@findex chdir()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Change the current working directory to {dir}.  The scope of
+		the directory change depends on the directory of the current
+		window:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在の作業ディレクトリを @{dir@} に変更する。ディレクトリの変更範囲は、カレントウィンドウのディレクトリによって異なる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			- If the current window has a window-local directory
+			  (|:lcd|), then changes the window local directory.
+			- Otherwise, if the current tabpage has a local
+			  directory (|:tcd|) then changes the tabpage local
+			  directory.
+			- Otherwise, changes the global directory.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item カレントウィンドウにウィンドウローカルディレクトリ (|@ref{:lcd}|) がある場合は、ウィンドウローカルディレクトリを変更する。
+@item それ以外の場合、カレントタブページにローカルディレクトリ (|@ref{:tcd}|) がある場合は、タブページのローカルディレクトリを変更する。
+@item それ以外の場合、グローバルディレクトリを変更する。
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+		If successful, returns the previous working directory.  Pass
+		this to another chdir() to restore the directory.
+		On failure, returns an empty string.
+
+		Example: >
+			let save_dir = chdir(newdir)
+			if save_dir != ""
+			   " ... do some work
+			   call chdir(save_dir)
+			endif
+<
 @ifset EN
 cindent({lnum})						*cindent()*
 		Get the amount of indent for line {lnum} according the C
@@ -9116,6 +9449,142 @@ complete_check()				*complete_check()*
 '@option{completefunc}' で指定された関数の中でのみ使われる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+@ifset EN
+							*complete_info()*
+complete_info([{what}])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item complete_info([@{what@}])
+@anchor{complete_info()}
+@findex complete_info()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Returns a Dictionary with information about Insert mode
+		completion.  See |ins-completion|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+挿入モードの補完に関する情報を辞書で返す。|@ref{ins-completion}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The items are:
+		   mode		Current completion mode name string.
+				See |complete_info_mode| for the values.
+		   pum_visible	|TRUE| if popup menu is visible.
+				See |pumvisible()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+要素は以下の通り:
+@multitable @columnfractions .3 .7
+@item mode @tab 現在の補完モード名の文字列。値は |@ref{complete_info_mode}| を参照。
+@item pum_visible @tab ポップアップメニューが表示されているなら |@ref{TRUE}|。
+
+|@ref{pumvisible()}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   items	List of completion matches.  Each item is a
+				dictionary containing the entries "word",
+				"abbr", "menu", "kind", "info" and "user_data".
+				See |complete-items|.
+		   selected	Selected item index.  First index is zero.
+				Index is -1 if no item is selected (showing
+				typed text only)
+		   inserted	Inserted string. [NOT IMPLEMENT YET]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item items @tab 補完マッチのリスト。各要素は "word", "abbr", "menu", "kind", "info", "user_data" を含む辞書。
+
+|@ref{complete-items}| を参照。
+@item selected @tab 選択された補完候補のインデックス。最初のインデックスが 0。どの補完候補も選択されていなければ -1 (入力したテキストのみを表示)。
+@item inserted @tab 入力された文字列。[現時点では未実装]
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*complete_info_mode*
+		mode values are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{complete_info_mode}
+@cindex complete_info_mode
+mode の値は:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   ""		     Not in completion mode
+		   "keyword"	     Keyword completion |i_CTRL-X_CTRL-N|
+		   "ctrl_x"	     Just pressed CTRL-X |i_CTRL-X|
+		   "whole_line"	     Whole lines |i_CTRL-X_CTRL-L|
+		   "files"	     File names |i_CTRL-X_CTRL-F|
+		   "tags"	     Tags |i_CTRL-X_CTRL-]|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item "" @tab 補完モードでない
+@item "keyword" @tab キーワード補完 |@ref{i_CTRL-X_CTRL-N}|
+@item "ctrl_x" @tab CTRL-X のみが入力された |@ref{i_CTRL-X}|
+@item "whole_line" @tab 行全体補完 |@ref{i_CTRL-X_CTRL-L}|
+@item "files" @tab ファイル名補完 |@ref{i_CTRL-X_CTRL-F}|
+@item "tags" @tab タグ補完 |@ref{i_CTRL-X_CTRL-]}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   "path_defines"    Definition completion |i_CTRL-X_CTRL-D|
+		   "path_patterns"   Include completion |i_CTRL-X_CTRL-I|
+		   "dictionary"	     Dictionary |i_CTRL-X_CTRL-K|
+		   "thesaurus"	     Thesaurus |i_CTRL-X_CTRL-T|
+		   "cmdline"	     Vim Command line |i_CTRL-X_CTRL-V|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "path_defines" @tab 定義補完 |@ref{i_CTRL-X_CTRL-D}|
+@item "path_patterns" @tab インクルード補完 |@ref{i_CTRL-X_CTRL-I}|
+@item "dictionary" @tab 辞書補完 |@ref{i_CTRL-X_CTRL-K}|
+@item "thesaurus" @tab 同義語補完 |@ref{i_CTRL-X_CTRL-T}|
+@item "cmdline" @tab Vim コマンドライン補完 |@ref{i_CTRL-X_CTRL-V}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   "function"	     User defined completion |i_CTRL-X_CTRL-U|
+		   "omni"	     Omni completion |i_CTRL-X_CTRL-O|
+		   "spell"	     Spelling suggestions |i_CTRL-X_s|
+		   "eval"            |complete()| completion
+		   "unknown"	     Other internal modes
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "function" @tab ユーザー定義補完 |@ref{i_CTRL-X_CTRL-U}|
+@item "omni" @tab オムニ補完 |@ref{i_CTRL-X_CTRL-O}|
+@item "spell" @tab スペル補完 |@ref{i_CTRL-X_s}|
+@item "eval" @tab |@ref{complete()}| 補完
+@item "unknown" @tab その他の内部モード
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If the optional {what} list argument is supplied, then only
+		the items listed in {what} are returned.  Unsupported items in
+		{what} are silently ignored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプショナル引数としてリスト @{what@} が与えられると、@{what@} にある項目のみが返る。@{what@} 内のサポートされていない項目は無視される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Examples: >
+			" Get all items
+			call complete_info()
+			" Get only 'mode'
+			call complete_info(['mode'])
+			" Get only 'mode' and 'pum_visible'
+			call complete_info(['mode', 'pum_visible'])
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+" 全ての項目を取得
+call complete_info()
+" 'mode' のみを取得
+call complete_info(['mode'])
+" 'mode' と 'pum_visible' のみを取得
+call complete_info(['mode', 'pum_visible'])
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 						*confirm()*
 confirm({msg} [, {choices} [, {default} [, {type}]]])
@@ -9751,6 +10220,32 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 先頭の桁の @{col@} は 1 となり、最初の行の @{lnum@} は 1 となる。
 
 ハイライト ID は |@ref{synIDattr()}| を使って構文情報を得るために使える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+environ()						*environ()*
+		Return all of environment variables as dictionary. You can
+		check if an environment variable exists like this: >
+			:echo has_key(environ(), 'HOME')
+<		Note that the variable name may be CamelCase; to ignore case
+		use this: >
+			:echo index(keys(environ()), 'HOME', 0, 1) != -1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{environ()}
+@findex environ()
+@item environ()
+すべての環境変数を辞書として返す。このように環境変数が存在するかどうかを確認できる:
+@example
+:echo has_key(environ(), 'HOME')
+@end example
+@quotation
+@strong{Note:} @*
+変数名はキャメルケース (CamelCase) でも構わない。大文字と小文字を区別しないためにこれを使用すること:
+@example
+:echo index(keys(environ()), 'HOME', 0, 1) != -1
+@end example
+@end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -10497,6 +10992,27 @@ expand() はシェルの持っている変数や環境変数を展開できる�
 存在するファイルを探すには |@ref{glob()}| を参照。外部コマンドの「生の」実行結果を扱うには |@ref{system()}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+@ifset EN
+expandcmd({expr})					*expandcmd()*
+		Expand special items in {expr} like what is done for an Ex
+		command such as `:edit`.  This expands special keywords, like
+		with |expand()|, and environment variables, anywhere in
+		{expr}.  Returns the expanded string.
+		Example: >
+			:echo expandcmd('make %<.o')
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{expandcmd()}
+@findex expandcmd()
+@item expandcmd(@{expr@})
+`@command{:edit}` などの Ex コマンドに対しておこなわれているように、@{expr@} の特殊な項目を展開する。これは @{expr@} の中のどこでも、|@ref{expand()}| のような特殊なキーワードと環境変数を展開する。展開された文字列を返す。
+
+例:
+@example
+:echo expandcmd('make %<.o')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		{expr1} and {expr2} must be both |Lists| or both
@@ -12407,6 +12923,24 @@ getfsize({fname})					*getfsize()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+getenv({name})						*getenv()*
+		Return the value of environment variable {name}.
+		When the variable does not exist |v:null| is returned.  That
+		is different from a variable set to an empty string.
+		See also |expr-env|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{getenv()}
+@findex getenv()
+@item getenv(@{name@})
+環境変数 @{name@} の値を返す。
+
+変数が存在しない場合は |@ref{v:null}| が返される。これは、空の文字列に設定された変数とは異なる。
+
+|@ref{expr-env}| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 getfontname([{name}])					*getfontname()*
 		Without an argument returns the name of the normal font being
 		used.  Like what is used for the Normal highlight group
@@ -13143,7 +13677,7 @@ gettabinfo([{arg}])					*gettabinfo()*
 			tabnr		tab page number.
 			variables	a reference to the dictionary with
 					tabpage-local variables
-			windows		List of |window-ID|s in the tag page.
+			windows		List of |window-ID|s in the tab page.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 各リストアイテムは、次のエントリを持つ辞書である:
@@ -13416,7 +13950,7 @@ getwininfo([{winid}])					*getwininfo()*
 @ifset EN
 getwinpos([{timeout}])					*getwinpos()*
 		The result is a list with two numbers, the result of
-		getwinposx() and getwinposy() combined: 
+		getwinposx() and getwinposy() combined:
 			[x-pos, y-pos]
 		{timeout} can be used to specify how long to wait in msec for
 		a response from the terminal.  When omitted 100 msec is used.
@@ -13425,11 +13959,11 @@ getwinpos([{timeout}])					*getwinpos()*
 @anchor{getwinpos()}
 @findex getwinpos()
 @item getwinpos([@{timeout@}])
-結果は getwinposx() と getwinposy() の結果を合わせた 2 数のリスト:
+結果は、getwinposx() と getwinposy() の結果が組み合わされた 2 つの数字のリスト:
 @example
 [x-pos, y-pos]
 @end example
-@{timeout@} はターミナルからの応答を何ミリ秒待つのかを指定するのに使える。省略されば場合は 100 ミリ秒が使われる。
+@{timeout@} は端末からの応答をどれくらい待つかを、ミリ秒単位で指定するのに使われる。省略された場合は 100 ミリ秒が使用される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 		Use a longer time for a remote terminal.
@@ -13440,9 +13974,9 @@ getwinpos([{timeout}])					*getwinpos()*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 
-リモートターミナルを長時間使用する。
+リモート端末にはより長い時間を指定すること。
 
-値が 10 よりも小さく、またその時間内に応答が無い場合、可能ならば以前に伝えられた位置が返される。これは位置を把握し、その間に何かをするのに使うことができる。
+10 より小さい値が使用され、かつその時間内に応答を受け取らなかった場合、利用可能であれば前に報告された位置が返される。これは位置をポーリングし、同時に何かを行う場合に使用することができる:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 			while 1
@@ -14206,7 +14740,7 @@ index({list}, {expr} [, {start} [, {ic}]])			*index()*
 		{start} (may be negative for an item relative to the end).
 		When {ic} is given and it is |TRUE|, ignore case.  Otherwise
 		case must match.
-		-1 is returned when {expr} is not found in {list}.
+		-1 is returned when {expr} is not found in {object}.
 		Example: >
 			:let idx = index(words, "the")
 			:if index(numbers, 123) >= 0
@@ -14214,7 +14748,7 @@ index({list}, {expr} [, {start} [, {ic}]])			*index()*
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @{start@} が指定された場合はインデックス @{start@} から要素の検索を始める (負数を指定すると末尾からの相対位置となる)。@{ic@} に |@ref{TRUE}| が指定された場合、大文字・小文字は区別されない。そうでない場合は区別される。
 
-@{list@} の中に @{expr@} が見つからない場合は -1 を返す。
+@{object@} の中に @{expr@} が見つからない場合は -1 を返す。
 
 例:
 @example
@@ -15482,6 +16016,7 @@ line({expr})	The result is a Number, which is the line number of the file
 			line(".")		line number of the cursor
 			line("'t")		line number of mark t
 			line("'" . marker)	line number of mark marker
+<
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @quotation
@@ -15497,24 +16032,11 @@ line({expr})	The result is a Number, which is the line number of the file
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-<							*last-position-jump*
-		This autocommand jumps to the last known position in a file
-		just after opening it, if the '" mark is set: >
-     :au BufReadPost *
-	 \ if line("'\"") > 1 && line("'\"") <= line("$") && &ft !~# 'commit'
-	 \ |   exe "normal! g`\""
-	 \ | endif
+		To jump to the last known position when opening a file see
+		|last-position-jump|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@anchor{last-position-jump}
-@cindex last-position-jump
-このオートコマンドはファイルを開いた時に、最後に開かれていた時の行へ自動的にジャンプするものである。これは '" マークがセットされている時にのみ有効である:
-@example
-:au BufReadPost *
-    \ if line("'\"") > 1 && line("'\"") <= line("$") && &ft !~# 'commit'
-    \ |   exe "normal! g`\""
-    \ | endif
-@end example
+ファイルを開くときに最後の既知の位置にジャンプするには、|@ref{last-position-jump}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -15567,6 +16089,267 @@ lispindent({lnum})					*lispindent()*
 '@option{lisp}' をオンにしたときと同じ lisp 用のインデント規則に従った場合の @{lnum@} 行目のインデント量を返す。
 
 インデント量はスペースで数えられ、'@option{tabstop}' の値は関係ない。@{lnum@} は |@ref{getline()}| の場合と同様に扱われる。@{lnum@} が無効な値のときや |@ref{+lispindent}| 機能なしでコンパイルされているときは -1 を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+list2str({list} [, {utf8}])				*list2str()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{list2str()}
+@findex list2str()
+@item list2str(@{list@} [, @{utf8@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Convert each number in {list} to a character string can
+		concatenate them all.  Examples: >
+			list2str([32])		returns " "
+			list2str([65, 66, 67])	returns "ABC"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{list@} の各数値を文字列に変換し、それらすべてを連結する。例:
+@example
+list2str([32])          returns " "
+list2str([65, 66, 67])  returns "ABC"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		The same can be done (slowly) with: >
+			join(map(list, {nr, val -> nr2char(val)}), '')
+<		|str2list()| does the opposite.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下で同様のことが(遅く)おこなえる:
+@verbatim
+join(map(list, {nr, val -> nr2char(val)}), '')
+@end verbatim
+|@ref{str2list()}| は反対のことをする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When {utf8} is omitted or zero, the current 'encoding' is used.
+		With {utf8} is 1, always return utf-8 characters.
+		With utf-8 composing characters work as expected: >
+			list2str([97, 769])	returns "á"
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{utf8@} が省略されているかゼロの場合、現在の '@option{encoding}'が使用される。@{utf8@} が 1 の場合は、常に UTF-8 文字列を返す。utf-8 の合成文字は期待通りに動作する:
+@example
+list2str([97, 769])     returns "á"
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+listener_add({callback} [, {buf}])			*listener_add()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{listener_add()}
+@findex listener_add()
+@item listener_add(@{callback@} [, @{buf@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Add a callback function that will be invoked when changes have
+		been made to buffer {buf}.
+		{buf} refers to a buffer name or number. For the accepted
+		values, see |bufname()|.  When {buf} is omitted the current
+		buffer is used.
+		Returns a unique ID that can be passed to |listener_remove()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファ @{buf@} に変更が加えられたときに呼び出されるコールバック関数を追加する。
+
+@{buf@} はバッファ名またはバッファ番号を参照する。許容値については、|@ref{bufname()}| を参照。@{buf@} を省略すると、現在のバッファが使用される。
+
+|@ref{listener_remove()}| に渡すことができる一意の ID を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The {callback} is invoked with four arguments:
+		    a:bufnr	the buffer that was changed
+		    a:start	first changed line number
+		    a:end	first line number below the change
+		    a:added	total number of lines added, negative if lines
+				were deleted
+		    a:changes	a List of items with details about the changes
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{callback@} は 4 つの引数で呼び出される:
+@multitable @columnfractions .3 .7
+@item a:bufnr @tab 変更されたバッファ
+@item a:start @tab 最初に変更された行番号
+@item a:end @tab 変更された下の最初の行番号
+@item a:added @tab 追加された行の合計数。行が削除された場合は負値
+@item a:changes @tab 変更についての詳細を含む項目のリスト
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Example: >
+	    func Listener(bufnr, start, end, added, changes)
+	      echo 'lines ' .. a:start .. ' until ' .. a:end .. ' changed'
+	    endfunc
+	    call listener_add('Listener', bufnr)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@example
+func Listener(bufnr, start, end, added, changes)
+  echo 'lines ' .. a:start .. ' until ' .. a:end .. ' changed'
+endfunc
+call listener_add('Listener', bufnr)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<		The List cannot be changed.  Each item in a:changes is a
+		dictionary with these entries:
+		    lnum	the first line number of the change
+		    end		the first line below the change
+		    added	number of lines added; negative if lines were
+				deleted
+		    col		first column in "lnum" that was affected by
+				the change; one if unknown or the whole line
+				was affected; this is a byte index, first
+				character has a value of one.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+リストは変更できない。各リスト項目は、次のエントリを持つ辞書である:
+@multitable @columnfractions .3 .7
+@item lnum @tab 変更の最初の行番号
+@item end @tab 変更された行の下の行
+@item added @tab 追加された行数。行が削除された場合は負値
+@item col @tab 変更の影響を受けた "lnum" の最初の桁。不明な場合、または行全体が影響を受けた場合は 1。これはバイトインデックスである。最初の文字の値は 1 である。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When lines are inserted the values are:
+		    lnum	line above which the new line is added
+		    end		equal to "lnum"
+		    added	number of lines inserted
+		    col		1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+行が挿入されたときの値は次のとおり:
+@multitable @columnfractions .3 .7
+@item lnum @tab 上に新しい行が追加される行番号
+@item end @tab "lnum" と同じ
+@item added @tab 挿入された行数
+@item col @tab 1
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When lines are deleted the values are:
+		    lnum	the first deleted line
+		    end		the line below the first deleted line, before
+				the deletion was done
+		    added	negative, number of lines deleted
+		    col		1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+行が削除されたときの値は次のとおり:
+@multitable @columnfractions .3 .7
+@item lnum @tab 最初に削除された行番号
+@item end @tab 削除が行われる前の、最初に削除された行の下の行
+@item added @tab 負値。削除された行数
+@item col @tab 1
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When lines are changed:
+		    lnum	the first changed line
+		    end		the line below the last changed line
+		    added	0
+		    col		first column with a change or 1
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+行が変更されたときの値は次のとおり:
+@multitable @columnfractions .3 .7
+@item lnum @tab 最初の変更行
+@item end @tab 最後に変更された行の下の行
+@item added @tab 0
+@item col @tab 変更した最初の桁または 1
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The entries are in the order the changes were made, thus the
+		most recent change is at the end.  The line numbers are valid
+		when the callback is invoked, but later changes may make them
+		invalid, thus keeping a copy for later might not work.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+エントリは変更が行われた順になっているため、最新の変更は最後になる。行番号はコールバックが呼び出されたときに有効だが、後の変更はそれらを無効にするかもしれない。したがって、後のためにコピーを保持しても機能しないかもしれない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The {callback} is invoked just before the screen is updated,
+		when |listener_flush()| is called or when a change is being
+		made that changes the line count in a way it causes a line
+		number in the list of changes to become invalid.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{callback@} は、|@ref{listener_flush()}| が呼び出されたとき、または、行数を変更するような変更が行われ、変更リストの行番号が無効になったときに、画面が更新される直前に呼び出される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The {callback} is invoked with the text locked, see
+		|textlock|.  If you do need to make changes to the buffer, use
+		a timer to do this later |timer_start()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{callback@} はテキストをロックした状態で呼び出される。|@ref{textlock}| を参照。バッファを変更する必要がある場合は、後でこれを実行するためのタイマー |@ref{timer_start()}| を使用すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The {callback} is not invoked when the buffer is first loaded.
+		Use the |BufReadPost| autocmd event to handle the initial text
+		of a buffer.
+		The {callback} is also not invoked when the buffer is
+		unloaded, use the |BufUnload| autocmd event for that.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファが最初にロードされた時には @{callback@} は呼び出されない。|@ref{BufReadPost}| オートコマンドイベントを使用して、バッファの初期テキストを処理する。
+
+@{callback@} はバッファがアンロードされたときにも呼び出されない。そのためには |@ref{BufUnload}| オートコマンドイベントを使用すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+listener_flush([{buf}])					*listener_flush()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{listener_flush()}
+@findex listener_flush()
+@item listener_flush([@{buf@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Invoke listener callbacks for buffer {buf}.  If there are no
+		pending changes then no callbacks are invoked.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+バッファ @{buf@} のリスナーコールバックを呼び出す。保留中の変更がない場合は、コールバックは呼び出されない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{buf} refers to a buffer name or number. For the accepted
+		values, see |bufname()|.  When {buf} is omitted the current
+		buffer is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{buf@} はバッファ名またはバッファ番号を表す。許容値については、|@ref{bufname()}| を参照。@{buf@} を省略すると、カレントバッファが使用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+listener_remove({id})					*listener_remove()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{listener_remove()}
+@findex listener_remove()
+@item listener_remove(@{id@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Remove a listener previously added with listener_add().
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以前に listener_add() で追加されたリスナーを削除する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -17637,6 +18420,578 @@ call prompt_setprompt(bufnr(''), 'command: ')
 
 
 @ifset EN
+						*prop_add()* *E965*
+prop_add({lnum}, {col}, {props})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_add()}
+@anchor{E965}
+@findex prop_add()
+@erindex E965
+@item prop_add(@{lnum@}, @{col@}, @{props@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Attach a text property at position {lnum}, {col}.  {col} is
+		counted in bytes, use one for the first column.
+		If {lnum} is invalid an error is given. *E966*
+		If {col} is invalid an error is given. *E964*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{lnum@} 行 @{col@} 桁の位置にテキストプロパティを付加する。@{col@} はバイト数でカウントされる。最初の桁は 1 を使用する。
+
+@anchor{E966}
+@erindex E966
+@{lnum@} が無効な場合、エラーが発生する。
+
+@anchor{E964}
+@erindex E964
+@{col@} が無効な場合、エラーが発生する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{props} is a dictionary with these fields:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} は次のフィールドを持つ辞書である:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   length	length of text in bytes, can only be used
+				for a property that does not continue in
+				another line; can be zero
+		   end_lnum	line number for the end of text
+		   end_col	column just after the text; not used when
+				"length" is present; when {col} and "end_col"
+				are equal, and "end_lnum" is omitted or equal
+				to {lnum}, this is a zero-width text property
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item length @tab テキストの長さ(バイト)。別の行に続かないプロパティに対してのみ使用できる。0 指定可能。
+@item end_lnum @tab テキスト終端の行番号
+@item end_col @tab テキストの直後の桁。"length" が与えられた場合は使用されない。@{col@} と "end_col" が等しい場合、および "end_lnum" が省略されるか @{lnum@} と等しい場合、これは幅ゼロのテキストプロパティである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   bufnr	buffer to add the property to; when omitted
+				the current buffer is used
+		   id		user defined ID for the property; when omitted
+				zero is used
+		   type		name of the text property type
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item bufnr @tab プロパティを追加するバッファ。省略された場合、カレントバッファが使用される
+@item id @tab プロパティのユーザー定義 ID。省略時は 0 が使われる
+@item type @tab テキストプロパティ名
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		All fields except "type" are optional.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"type" を除くすべてのフィールドは任意である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		It is an error when both "length" and "end_lnum" or "end_col"
+		are given.  Either use "length" or "end_col" for a property
+		within one line, or use "end_lnum" and "end_col" for a
+		property that spans more than one line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"length" と "end_lnum" または "end_col" の両方が与えられるとエラーになる。1 行内のプロパティに "length" または "end_col" を使用するか、複数の行にまたがるプロパティに対して "end_lnum" と"end_col" を使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When neither "length" nor "end_col" are given the property
+		will be zero-width.  That means it will not be highlighted but
+		will move with the text, as a kind of mark.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+"length" または "end_col" のどちらも与えられない場合、プロパティは幅ゼロになる。これは、強調表示されないが、テキストと共にマークのように移動することを意味する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The property can end exactly at the last character of the
+		text, or just after it.  In the last case, if text is appended
+		to the line, the text property size will increase, also when
+		the property type does not have "end_incl" set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロパティは、テキストの最後の文字、またはその直後で終わらせることができる。最後のケースでは、テキストが行に追加されると、プロパティタイプに "end_incl" が設定されていない場合にも、テキストプロパティのサイズが増える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		"type" will first be looked up in the buffer the property is
+		added to. When not found, the global property types are used.
+		If not found an error is given.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロパティが追加されたバッファで、"type" が最初に検索される。見つからない場合は、グローバルプロパティタイプが使用される。見つからなければエラーになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_clear()}
+@pindex prop_clear()
+@item prop_clear(@{lnum@} [, @{lnum-end@} [, @{props@}]])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Remove all text properties from line {lnum}.
+		When {lnum-end} is given, remove all text properties from line
+		{lnum} to {lnum-end} (inclusive).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{lnum@} 行からすべてのテキストプロパティを削除する。@{lnum-end@} が指定された場合、@{lnum@} 行から @{lnum-end@} (その行を含む) 行までのすべてのテキストプロパティを削除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When {props} contains a "bufnr" item use this buffer,
+		otherwise use the current buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} に "bufnr" 項目が含まれている場合はこのバッファを使用し、そうでない場合はカレントバッファを使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*prop_find()*
+prop_find({props} [, {direction}])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_find()}
+@pindex prop_find()
+@item prop_find(@{props@} [, @{direction@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		NOT IMPLEMENTED YET
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@display
+まだ実装されていない。
+@end display
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Search for a text property as specified with {props}:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} で指定されたテキストプロパティを検索する:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   id		property with this ID
+		   type		property with this type name
+		   bufnr	buffer to search in; when present a
+				start position with "lnum" and "col"
+				must be given; when omitted the
+				current buffer is used
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item id @tab プロパティ ID
+@item type @tab プロパティタイプ名
+@item bufnr @tab 検索するバッファ。指定時は "lnum" と"col" を指定して開始位置を指定する必要がある。省略された場合、カレントバッファが使用される
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   lnum		start in this line (when omitted start
+				at the cursor)
+		   col		start at this column (when omitted
+				and "lnum" is given: use column 1,
+				otherwise start at the cursor)
+		   skipstart	do not look for a match at the start
+				position
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item lnum @tab この行から開始する (省略時はカーソル位置で開始)
+@item col @tab この桁から開始する (省略され "lnum" が指定された場合: 列 1 を使用する。そうでない場合はカーソル位置で開始する)
+@item skipstart @tab 開始位置の一致を見ない
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{direction} can be "f" for forward and "b" for backward.  When
+		omitted forward search is performed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{direction@} は、前方の場合は "f"、後方の場合は "b" となる。省略すると前方検索が行われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If a match is found then a Dict is returned with the entries
+		as with prop_list(), and additionally an "lnum" entry.
+		If no match is found then an empty Dict is returned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一致するものが見つかった場合は、prop_list() と同様のエントリと "lnum" エントリを併せた辞書が返される。一致するものが見つからなければ、空の辞書が返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+prop_list({lnum} [, {props}])				*prop_list()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_list()}
+@pindex prop_list()
+@item prop_list(@{lnum@} [, @{props@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Return a List with all text properties in line {lnum}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{lnum@} 行のすべてのテキストプロパティを持つリストを返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When {props} contains a "bufnr" item, use this buffer instead
+		of the current buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} に "bufnr" 項目が含まれている場合は、カレントバッファの代わりにこのバッファを使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The properties are ordered by starting column and priority.
+		Each property is a Dict with these entries:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロパティは、開始桁と優先順位によって順序付けられる。各プロパティは、次のエントリを持つ辞書である:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   col		starting column
+		   length	length in bytes, one more if line break is
+				included
+		   id		property ID
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item col @tab 開始桁
+@item length @tab バイト長。改行が含まれる場合は 1 以上。
+@item id @tab プロパティ ID
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   type		name of the property type, omitted if
+				the type was deleted
+		   start	when TRUE property starts in this line
+		   end		when TRUE property ends in this line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item type @tab プロパティタイプ名。タイプが削除された場合は省略される
+@item start @tab TRUE の時はプロパティはこの行から始まる
+@item end @tab TRUE の時はプロパティはこの行で終わる
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When "start" is zero the property started in a previous line,
+		the current one is a continuation.
+		When "end" is zero the property continues in the next line.
+		The line break after this line is included.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"start" が 0 の場合、プロパティは以前の行で開始され、現在行は続きである。
+
+"end" が 0 の場合、プロパティは次の行に続く。この行の後に改行が含まれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+						*prop_remove()* *E968*
+prop_remove({props} [, {lnum} [, {lnum-end}]])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_remove()}
+@anchor{E968}
+@pindex prop_remove()
+@erindex E968
+@item prop_remove(@{props@} [, @{lnum@} [, @{lnum-end@}]])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Remove a matching text property from line {lnum}.  When
+		{lnum-end} is given, remove matching text properties from line
+		{lnum} to {lnum-end} (inclusive).
+		When {lnum} is omitted remove matching text properties from
+		all lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{lnum@} 行から一致するテキストプロパティを削除する。@{lnum-end@} が指定された場合、@{lnum@} 行から @{lnum-end@} (その行を含む) までの一致するテキストプロパティを削除する。@{lnum@} を省略した倍、一致するテキストプロパティをすべての行から削除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{props} is a dictionary with these fields:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} は次のフィールドを持つ辞書である:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   id		remove text properties with this ID
+		   type		remove text properties with this type name
+		   bufnr	use this buffer instead of the current one
+		   all		when TRUE remove all matching text properties,
+				not just the first one
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item id @tab この ID を持つテキストプロパティを削除する
+@item type @tab このタイプ名を持つテキストプロパティを削除する
+@item bufnr @tab カレントバッファの代わりにこのバッファを使う
+@item all @tab TRUE の場合、最初のテキストプロパティだけでなく、一致するテキストプロパティをすべて削除する。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		A property matches when either "id" or "type" matches.
+		If buffer "bufnr" does not exist you get an error message.
+		If buffer "bufnr" is not loaded then nothing happens.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"id" または "type" のどちらかが一致するとプロパティが一致する。バッファ "bufnr" が存在しない場合はエラーメッセージが表示される。バッファ "bufnr" がロードされていなければ、何も起こらない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns the number of properties that were removed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+削除されたプロパティの数を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item prop_type_add(@{name@}, @{props@})
+@anchor{prop_type_add()}
+@anchor{E969}
+@anchor{E970}
+@pindex prop_type_add()
+@erindex E969
+@erindex E970
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Add a text property type {name}.  If a property type with this
+		name already exists an error is given.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティタイプ @{name@} を追加する。この名前のプロパティタイプがすでに存在する場合、エラーが発生する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		{props} is a dictionary with these optional fields:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} は、次のオプションフィールドを持つ辞書である:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   bufnr	define the property only for this buffer; this
+				avoids name collisions and automatically
+				clears the property types when the buffer is
+				deleted.
+		   highlight	name of highlight group to use
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item bufnr @tab このバッファに対してのみプロパティを定義する。バッファが削除されたときに、名前の衝突を防ぎ、かつ、自動的にプロパティタイプをクリアする
+@item highlight @tab 使用するハイライトグループ名
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   priority	when a character has multiple text
+				properties the one with the highest priority
+				will be used; negative values can be used, the
+				default priority is zero
+		   combine	when TRUE combine the highlight with any
+				syntax highlight; when omitted or FALSE syntax
+				highlight will not be used
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item priority @tab 文字に複数のテキストプロパティがある場合は、優先度が最も高いものが使用される。負の値を使用できる。デフォルトの優先順位は 0 である
+@item combine @tab TRUE の場合、ハイライトを任意の構文ハイライトと結び付ける。省略するか FALSE の場合は構文ハイライトは使用されない
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   start_incl	when TRUE inserts at the start position will
+				be included in the text property
+		   end_incl	when TRUE inserts at the end position will be
+				included in the text property
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item start_incl @tab TRUE の場合、開始位置の挿入はテキストプロパティに含まれる
+@item end_incl @tab TRUE の場合、終了位置の挿入はテキストプロパティに含まれる
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+prop_type_change({name}, {props})			*prop_type_change()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_type_change()}
+@pindex prop_type_change()
+@item prop_type_change(@{name@}, @{props@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Change properties of an existing text property type.  If a
+		property with this name does not exist an error is given.
+		The {props} argument is just like |prop_type_add()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+既存のテキストプロパティタイプのプロパティを変更する。この名前のプロパティが存在しない場合、エラーが発生する。@{props@} 引数は |@ref{prop_type_add()}| と似ている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+prop_type_delete({name} [, {props}])			*prop_type_delete()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_type_delete()}
+@pindex prop_type_delete()
+@item prop_type_delete(@{name@} [, @{props@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Remove the text property type {name}.  When text properties
+		using the type {name} are still in place, they will not have
+		an effect and can no longer be removed by name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティタイプ @{name@} を削除する。@{name@} 型を使用するテキストプロパティがまだ存在する場合、それらは効果を持たず、もはや名前で削除できなくなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{props} can contain a "bufnr" item.  When it is given, delete
+		a property type from this buffer instead of from the global
+		property types.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} には "bufnr" 項目を含めることができる。指定すると、グローバルプロパティタイプではなく、このバッファからプロパティタイプを削除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When text property type {name} is not found there is no error.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティタイプ @{name@} が見つからなくてもエラーにならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+prop_type_get([{name} [, {props}])			*prop_type_get()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_type_get()}
+@pindex prop_type_get()
+@item prop_type_get([@{name@} [, @{props@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Returns the properties of property type {name}.  This is a
+		dictionary with the same fields as was given to
+		prop_type_add().
+		When the property type {name} does not exist, an empty
+		dictionary is returned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロパティタイプ @{name@} のプロパティを返す。これは、prop_type_add() に与えられたものと同じフィールドを持つ辞書である。
+
+プロパティタイプ @{name@} が存在しない場合、空の辞書が返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{props} can contain a "bufnr" item.  When it is given, use
+		this buffer instead of the global property types.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} には "bufnr" 項目を含めることができる。指定すると、グローバルプロパティタイプの代わりにこのバッファを使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+prop_type_list([{props}])				*prop_type_list()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_type_list()}
+@pindex prop_type_list()
+@item prop_type_list([@{props@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Returns a list with all property type names.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべてのプロパティタイプ名のリストを返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{props} can contain a "bufnr" item.  When it is given, use
+		this buffer instead of the global property types.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} には "bufnr" 項目を含めることができる。指定すると、グローバルプロパティタイプの代わりにこのバッファを使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
 pumvisible()						*pumvisible()*
 		Returns non-zero when the popup menu is visible, zero
 		otherwise.  See |ins-completion-menu|.
@@ -17791,6 +19146,88 @@ range(2, 9, 3)          " [2, 5, 8]
 range(2, -2, -1)        " [2, 1, 0, -1, -2]
 range(0)                " []
 range(2, 0)             " エラー！
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*readdir()*
+readdir({directory} [, {expr}])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{readdir()}
+@findex readdir()
+@item readdir(@{directory@} [, @{expr@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Return a list with file and directory names in {directory}.
+		You can also use |glob()| if you don't need to do complicated
+		things, such as limiting the number of matches.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{directory@} 内のファイル名とディレクトリ名のリストを返す。一致数を制限するなど、複雑なことをする必要がない場合は、|@ref{glob()}| を使用することもできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When {expr} is omitted all entries are included.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{expr@} が省略されるとすべてのエントリが含まれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When {expr} is given, it is evaluated to check what to do:
+			If {expr} results in -1 then no further entries will
+			be handled.
+			If {expr} results in 0 then this entry will not be
+			added to the list.
+			If {expr} results in 1 then this entry will be added
+			to the list.
+		Each time {expr} is evaluated |v:val| is set to the entry name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{expr@} が与えられると、それは何をすべきかをチェックするために評価される:
+@itemize
+@item @{expr@} の結果が -1 の場合、それ以上のエントリは処理されない。
+@item @{expr@} の結果が 0 の場合、このエントリはリストに追加されない。
+@item @{expr@} の結果が 1 の場合、このエントリはリストに追加される。
+@end itemize
+@{expr@} が評価されるたびに "v:val" がエントリ名に設定される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When {expr} is a function the name is passed as the argument.
+		For example, to get a list of files ending in ".txt": >
+		  readdir(dirname, {n -> n =~ '.txt$'})
+<		To skip hidden and backup files: >
+		  readdir(dirname, {n -> n !~ '^\.\|\~$'})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{expr@} が関数の場合、名前は引数として渡される。例えば、".txt" で終わるファイルのリストを取得するには、次のようにする:
+@verbatim
+readdir(dirname, {n -> n =~ '.txt$'})
+@end verbatim
+隠しファイルとバックアップファイルをスキップするには:
+@verbatim
+readdir(dirname, {n -> n !~ '^\.\|\~$'})
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<		If you want to get a directory tree: >
+                  function! s:tree(dir)
+                      return {a:dir : map(readdir(a:dir),
+		      \ {_, x -> isdirectory(x) ?
+		      \          {x : s:tree(a:dir . '/' . x)} : x})}
+                  endfunction
+                  echo s:tree(".")
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ディレクトリツリーを取得したい場合は:
+@verbatim
+function! s:tree(dir)
+    return {a:dir : map(readdir(a:dir),
+    \ {_, x -> isdirectory(x) ?
+    \          {x : s:tree(a:dir . '/' . x)} : x})}
+endfunction
+echo s:tree(".")
 @end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -18447,6 +19884,42 @@ echo round(-4.5)
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+rubyeval({expr})					*rubyeval()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{rubyeval()}
+@findex rubyeval()
+@item rubyeval(@{expr@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Evaluate Ruby expression {expr} and return its result
+		converted to Vim data structures.
+		Numbers, floats and strings are returned as they are (strings
+		are copied though).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Ruby の式 @{expr@} を評価し、その結果を Vim のデータ構造に変換したものを返す。
+
+数値、浮動小数点数、文字列はそのまま返される (文字列はコピーされる)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Arrays are represented as Vim |List| type.
+		Hashes are represented as Vim |Dictionary| type.
+		Other objects are represented as strings resulted from their
+		"Object#to_s" method.
+		{only available when compiled with the |+ruby| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+配列は Vim の |@ref{List}| 型に変換される。
+
+ハッシュは Vim の |@ref{Dictionary}| 型に変換される。
+
+それ以外のオブジェクトは "Object#to_s" メソッドの結果の文字列として表現される。
+
+@{|@ref{+ruby}| 機能つきでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 screenattr({row}, {col})					*screenattr()*
 		Like |screenchar()|, but return the attribute.  This is a rather
 		arbitrary number that can only be used to compare to the
@@ -18477,6 +19950,29 @@ screenchar({row}, {col})					*screenchar()*
 スクリーン上の位置 [row, col] の文字を数値で返す。これは全てのスクリーン位置、ステータスライン、ウィンドウセパレータ、コマンドラインで機能する。左上の位置は行番号が 1、列番号が 1 である。文字は合成文字を除く。2 バイトのエンコーディングでは最初のバイトだけであるかもしれない。
 
 この関数は主にテスト用に使われる。row か col が範囲外である場合は -1 を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+screenchars({row}, {col})					*screenchars()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{screenchars()}
+@findex screenchars()
+@item screenchars(@{row@}, @{col@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The result is a List of Numbers.  The first number is the same
+		as what |screenchar()| returns.  Further numbers are
+		composing characters on top of the base character.
+		This is mainly to be used for testing.
+		Returns an empty List when row or col is out of range.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+結果は数値のリスト。最初の数値は |@ref{screenchar()}| が返す数値と同一。それ以降の数値は基底文字に続く合成文字の数値。
+
+この関数は主にテスト用。
+
+row や col が範囲外である場合は空のリストを返す。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -18530,6 +20026,26 @@ screenrow()							*screenrow()*
 @strong{Note:} @*
 |@ref{screencol()}| と同様の制約あり。
 @end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+screenstring({row}, {col})					*screenstring()*
+		The result is a String that contains the base character and
+		any composing characters at position [row, col] on the screen.
+		This is like |screenchars()| but returning a String with the
+		characters.
+		This is mainly to be used for testing.
+		Returns an empty String when row or col is out of range.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{screenstring()}
+@findex screenstring()
+@item screenstring(@{row@}, @{col@})
+結果は文字列で、スクリーンの位置 [row, col] の基底文字と合成文字全てを含む。|@ref{screenchars()}| と似ているが文字を文字列として返す。
+
+この関数は主にテスト用。
+
+row や col が範囲外である場合は空文字列を返す。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -19272,6 +20788,23 @@ setcmdpos({pos})					*setcmdpos()*
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 
 @{pos@} が大きすぎるときは行末にカーソルを移動する。@{pos@} が 1 より小さいときの結果は未定義である。成功なら 0、コマンドラインを編集しているとき以外には 1 を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+setenv({name}, {val})						*setenv()*
+		Set environment variable {name} to {val}.
+		When {val} is |v:null| the environment variable is deleted.
+		See also |expr-env|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{setenv()}
+@findex setenv()
+@item setenv(@{name@}, @{val@})
+環境変数 @{name@} に @{val@} を設定する。
+
+@{val@} が |@ref{v:null}| の場合は、環境変数は削除される。
+
+|@ref{expr-env}| も参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -20204,7 +21737,617 @@ shiftwidth([{col}])						*shiftwidth()*
 引数に 1 つの @{col@} がある場合、これは '@option{shiftwidth}' の値を返すための桁番号として使われる。これは '@option{vartabstop}' 機能のためのものである。@{list@} 引数のためには |@ref{cursor()}| 関数を参照のこと。もしも '@option{vartabstop}' 設定が有効になっていて、引数 @{col@} が与えられていない場合は、1 桁目と仮定する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+@ifset EN
+sign_define({name} [, {dict}])				*sign_define()*
+		Define a new sign named {name} or modify the attributes of an
+		existing sign.  This is similar to the |:sign-define| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign_define()}
+@findex sign_define()
+@item sign_define(@{name@} [, @{dict@}])
+@{name@} という名前の新しい目印を定義するか、既存の目印の属性を変更する。これは |@ref{:sign-define}| コマンドに似ている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+@ifset EN
+		Prefix {name} with a unique text to avoid name collisions.
+		There is no {group} like with placing signs.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+名前の衝突を避けるために、@{name@} に一意のテキストを付けること。目印を設置するような @{group@} はない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The {name} can be a String or a Number.  The optional {dict}
+		argument specifies the sign attributes.  The following values
+		are supported:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{name@} は文字列または数値である。任意の @{dict@} 引数は目印属性を指定する。以下の値がサポートされている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   icon		full path to the bitmap file for the sign.
+		   linehl	highlight group used for the whole line the
+				sign is placed in.
+		   text		text that is displayed when there is no icon
+				or the GUI is not being used.
+		   texthl	highlight group used for the text item
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item icon @tab 目印用のビットマップファイルへのフルパス。
+@item linehl @tab 目印が設置されている行全体に使用されるハイライトグループ。
+@item text @tab アイコンがない場合、または GUI が使用されていない場合に表示されるテキスト。
+@item texthl @tab text 項目に使用されるハイライトグループ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If the sign named {name} already exists, then the attributes
+		of the sign are updated.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{name@} という名前の目印がすでに存在する場合は、その目印の属性が更新される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns 0 on success and -1 on failure.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+成功すると 0 を返し、失敗すると -1 を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Examples: >
+			call sign_define("mySign", {"text" : "=>", "texthl" :
+					\ "Error", "linehl" : "Search"})
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+call sign_define("mySign", {"text" : "=>", "texthl" :
+                \ "Error", "linehl" : "Search"})
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+sign_getdefined([{name}])				*sign_getdefined()*
+		Get a list of defined signs and their attributes.
+		This is similar to the |:sign-list| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign_getdefined()}
+@findex sign_getdefined()
+@item sign_getdefined([@{name@}])
+定義済みの目印とその属性のリストを取得する。これは |@ref{:sign-list}| コマンドに似ている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If the {name} is not supplied, then a list of all the defined
+		signs is returned. Otherwise the attribute of the specified
+		sign is returned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{name@} が指定されていない場合は、定義されているすべての目印のリストが返される。そうでなければ、指定された目印の属性が返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Each list item in the returned value is a dictionary with the
+		following entries:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+戻り値の各リスト項目は、次のエントリを持つ辞書である:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   icon		full path to the bitmap file of the sign
+		   linehl	highlight group used for the whole line the
+				sign is placed in.
+		   name		name of the sign
+		   text		text that is displayed when there is no icon
+				or the GUI is not being used.
+		   texthl	highlight group used for the text item
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item icon @tab 目印用のビットマップファイルへのフルパス。
+@item linehl @tab 目印が設置されている行全体に使用されるハイライトグループ。
+@item name @tab 目印の名前
+@item text @tab アイコンがない場合、または GUI が使用されていない場合に表示されるテキスト。
+@item texthl @tab text 項目に使用されるハイライトグループ
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns an empty List if there are no signs and when {name} is
+		not found.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+目印がなく、@{name@} が見つからない場合は、空の List を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Examples: >
+			" Get a list of all the defined signs
+			echo sign_getdefined()
+
+			" Get the attribute of the sign named mySign
+			echo sign_getdefined("mySign")
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+" すべての定義済み目印のリストを取得する
+echo sign_getdefined()
+
+" mySignという名前の目印の属性を取得する
+echo sign_getdefined("mySign")
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
+		Return a list of signs placed in a buffer or all the buffers.
+		This is similar to the |:sign-place-list| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign_getplaced()}
+@pindex sign_getplaced()
+@item sign_getplaced([@{expr@} [, @{dict@}]])
+バッファまたはすべてのバッファに設置されている目印のリストを返す。これは |@ref{:sign-place-list}| コマンドに似ている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If the optional buffer name {expr} is specified, then only the
+		list of signs placed in that buffer is returned.  For the use
+		of {expr}, see |bufname()|. The optional {dict} can contain
+		the following entries:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+任意のバッファ名 @{expr@} が指定されている場合、そのバッファに設置されている目印のリストだけが返される。@{expr@} の使い方については |@ref{bufname()}| を参照。任意の @{dict@} には、以下のエントリを含めることができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   group	select only signs in this group
+		   id		select sign with this identifier
+		   lnum		select signs placed in this line. For the use
+				of {lnum}, see |line()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item group @tab このグループの目印のみを選択する
+@item id @tab この識別子を持つ目印を選択する
+@item lnum @tab この行に設置されている目印を選択する。@{lnum@} の使い方については |@ref{line()}| を参照。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		If {group} is '*', then signs in all the groups including the
+		global group are returned. If {group} is not supplied or is an
+		empty string, then only signs in the global group are
+		returned.  If no arguments are supplied, then signs in the
+		global group placed in all the buffers are returned.
+		See |sign-group|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{group@} が '*' の場合、グローバルグループを含むすべてのグループの目印が返される。@{group@} が指定されていないか、空の文字列の場合は、グローバルグループ内の目印のみが返される。引数が指定されていない場合は、すべてのバッファに設置されているグローバルグループ内の目印が返される。
+
+|@ref{sign-group}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Each list item in the returned value is a dictionary with the
+		following entries:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+戻り値の各リスト項目は、次のエントリを持つ辞書である:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			bufnr	number of the buffer with the sign
+			signs	list of signs placed in {bufnr}. Each list
+				item is a dictionary with the below listed
+				entries
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item bufnr @tab 目印付きバッファの番号
+@item signs @tab @{bufnr@} に設置されている目印のリスト。各リスト項目は、以下の項目を含む辞書である。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The dictionary for each sign contains the following entries:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+各目印の辞書には、次のエントリが含まれている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			group	sign group. Set to '' for the global group.
+			id	identifier of the sign
+			lnum	line number where the sign is placed
+			name	name of the defined sign
+			priority	sign priority
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item group @tab 目印グループ。グローバルグループの場合は '' に設定する。
+@item id @tab 目印 ID
+@item lnum @tab 目印が設置されている行番号
+@item name @tab 定義されている目印の名前
+@item priority @tab 目印の優先度
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The returned signs in a buffer are ordered by their line
+		number and priority.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+返されるバッファ内の目印は、行番号および優先度で並べられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns an empty list on failure or if there are no placed
+		signs.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+失敗した場合、または設置された目印がない場合は、空のリストを返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Examples: >
+			" Get a List of signs placed in eval.c in the
+			" global group
+			echo sign_getplaced("eval.c")
+
+			" Get a List of signs in group 'g1' placed in eval.c
+			echo sign_getplaced("eval.c", {'group' : 'g1'})
+
+			" Get a List of signs placed at line 10 in eval.c
+			echo sign_getplaced("eval.c", {'lnum' : 10})
+
+			" Get sign with identifier 10 placed in a.py
+			echo sign_getplaced("a.py", {'id' : 10})
+
+			" Get sign with id 20 in group 'g1' placed in a.py
+			echo sign_getplaced("a.py", {'group' : 'g1',
+							\  'id' : 20})
+
+			" Get a List of all the placed signs
+			echo sign_getplaced()
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+" eval.c に設置されているグローバルグループの目印のリ
+" ストを取得する
+echo sign_getplaced("eval.c")
+
+" eval.c の 'g1' グループに設置されている目印のリスト
+" を取得する
+echo sign_getplaced("eval.c", {'group' : 'g1'})
+
+" eval.c の 10行目に設置されている目印のリストを取得す
+" る
+echo sign_getplaced("eval.c", {'lnum' : 10})
+
+" a.py に設置されている識別子 10 の目印を取得する
+echo sign_getplaced("a.py", {'id' : 10'})
+
+" a.py の 'g1' グループ 'g1' に設置されている識別子 20
+" の目印を取得する
+echo sign_getplaced("a.py", {'group' : 'g1',
+                                \  'id' : 20'})
+
+" 設置されているすべての目印のリストを取得する
+echo sign_getplaced()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*sign_jump()*
+sign_jump({id}, {group}, {expr})
+		Open the buffer {expr} or jump to the window that contains
+		{expr} and position the cursor at sign {id} in group {group}.
+		This is similar to the |:sign-jump| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign_jump()}
+@pindex sign_jump()
+@item sign_jump(@{id@}, @{group@}, @{expr@})
+バッファ @{expr@} を開くか、@{expr@} を含むウィンドウに移動して、グループ @{group@} の目印 @{id@} にカーソルを置く。これは |@ref{:sign-jump}| コマンドに似ている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		For the use of {expr}, see |bufname()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{expr@} の使い方については |@ref{bufname()}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns the line number of the sign. Returns -1 if the
+		arguments are invalid.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+目印の行番号を返す。引数が無効な場合は -1 を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Example: >
+			" Jump to sign 10 in the current buffer
+			call sign_jump(10, '', '')
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+" 現在のバッファの目印 ID 10 へ移動する
+call sign_jump(10, '', '')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*sign_place()*
+sign_place({id}, {group}, {name}, {expr} [, {dict}])
+		Place the sign defined as {name} at line {lnum} in file {expr}
+		and assign {id} and {group} to sign.  This is similar to the
+		|:sign-place| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign_place()}
+@pindex sign_place()
+@item sign_place(@{id@}, @{group@}, @{name@}, @{expr@} [, @{dict@}])
+@{name@} として定義された目印をファイル @{expr@} の行 @{lnum@} に設置し、目印に @{id@} と @{group@} を割り当てる。これは |@ref{:sign-place}| コマンドに似ている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If the sign identifier {id} is zero, then a new identifier is
+		allocated.  Otherwise the specified number is used. {group} is
+		the sign group name. To use the global sign group, use an
+		empty string.  {group} functions as a namespace for {id}, thus
+		two groups can use the same IDs. Refer to |sign-identifier|
+		and |sign-group| for more information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+目印 ID @{id@} がゼロの場合は、新しい識別子が割り当てられる。それ以外の場合は、指定された番号が使用される。@{group@} は目印グループ名である。グローバルサイングループを使用するには、空の文字列を使用する。@{group@} は @{id@} の名前空間として機能するため、2 つのグループが同じ ID を使用できる。詳細については |@ref{sign-identifier}|と |@ref{sign-group}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{name} refers to a defined sign.
+		{expr} refers to a buffer name or number. For the accepted
+		values, see |bufname()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{name@} は定義済みの目印を参照する。@{expr@} はバッファの名前か番号を参照する。許容値については、|@ref{bufname()}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The optional {dict} argument supports the following entries:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+任意の @{dict@} 引数は、以下のエントリをサポートする:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			lnum		line number in the buffer {expr} where
+					the sign is to be placed. For the
+					accepted values, see |line()|.
+			priority	priority of the sign. See
+					|sign-priority| for more information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item lnum @tab 目印が設置されるバッファ @{expr@} の行番号。許容値については、|@ref{line()}| を参照。
+@item priority @tab 目印の優先順位。詳細については |@ref{sign-priority}| を参照。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If the optional {dict} is not specified, then it modifies the
+		placed sign {id} in group {group} to use the defined sign
+		{name}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+任意の @{dict@} が指定されていない場合は、定義されている目印 @{name@} を使用するようにグループ @{group@} 内の設置された目印 ID @{id@} を変更します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns the sign identifier on success and -1 on failure.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+成功した場合は目印 ID、失敗した場合は -1 を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Examples: >
+			" Place a sign named sign1 with id 5 at line 20 in
+			" buffer json.c
+			call sign_place(5, '', 'sign1', 'json.c',
+							\ {'lnum' : 20})
+
+			" Updates sign 5 in buffer json.c to use sign2
+			call sign_place(5, '', 'sign2', 'json.c')
+
+			" Place a sign named sign3 at line 30 in
+			" buffer json.c with a new identifier
+			let id = sign_place(0, '', 'sign3', 'json.c',
+							\ {'lnum' : 30})
+
+			" Place a sign named sign4 with id 10 in group 'g3'
+			" at line 40 in buffer json.c with priority 90
+			call sign_place(10, 'g3', 'sign4', 'json.c',
+					\ {'lnum' : 40, 'priority' : 90})
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+" バッファ json.c の20行目に識別子5で sign1 という名前
+" の目印を設置する
+call sign_place(5, '', 'sign1', 'json.c',
+                                \ {'lnum' : 20})
+
+" バッファ json.c の識別子5が目印 sign2 を使用するよう
+" に更新する
+call sign_place(5, '', 'sign2', 'json.c')
+
+" バッファ json.c の30行目に sign3 という名前の目印を
+" 新しい識別子で設置する
+let id = sign_place(0, '', 'sign3', 'json.c',
+                                \ {'lnum' : 30})
+
+" バッファ json.c の40行目に 'g3' グループで識別子10の
+" sign4 という名前の目印を優先順位90で設置する
+call sign_place(10, 'g3', 'sign4', 'json.c',
+                \ {'lnum' : 40, 'priority' : 90})
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+sign_undefine([{name}])					*sign_undefine()*
+		Deletes a previously defined sign {name}. This is similar to
+		the |:sign-undefine| command. If {name} is not supplied, then
+		deletes all the defined signs.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign_undefine()}
+@pindex sign_undefine()
+@item sign_undefine([@{name@}])
+定義済みの目印 @{name@} を削除する。これは |@ref{:sign-undefine}| コマンドに似ている。@{name@} が指定されていない場合は、定義されているすべての目印を削除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns 0 on success and -1 on failure.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+成功すると 0 を返し、失敗すると -1 を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Examples: >
+			" Delete a sign named mySign
+			call sign_undefine("mySign")
+
+			" Delete all the signs
+			call sign_undefine()
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+" mySign という名前の目印を削除する
+call sign_undefine("mySign")
+
+" すべての目印を削除する
+call sign_undefine()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+sign_unplace({group} [, {dict}])			*sign_unplace()*
+		Remove a previously placed sign in one or more buffers.  This
+		is similar to the |:sign-unplace| command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign_unplace()}
+@pindex sign_unplace()
+@item sign_unplace(@{group@} [, @{dict@}])
+設置済みの 1 つ以上のバッファ内の目印を解除する。これは |@ref{:sign-unplace}| コマンドに似ている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{group} is the sign group name. To use the global sign group,
+		use an empty string.  If {group} is set to '*', then all the
+		groups including the global group are used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{group@} は目印グループ名である。グローバルサイングループを使用するには、空の文字列を使用する。@{group@} が '*' に設定されている場合、グローバルグループを含むすべてのグループが使用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The signs in {group} are selected based on the entries in
+		{dict}.  The following optional entries in {dict} are
+		supported:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{group@} 内の目印は、@{dict@} 内のエントリに基づいて選択される。@{dict@} の以下の任意のエントリがサポートされている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			buffer	buffer name or number. See |bufname()|.
+			id	sign identifier
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item buffer @tab バッファの名前または番号。|@ref{bufname()}| を参照。
+@item id @tab 目印 ID
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		If {dict} is not supplied, then all the signs in {group} are
+		removed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{dict@} が指定されていない場合は、@{group@} 内のすべての目印が解除される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns 0 on success and -1 on failure.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+成功すると 0 を返し、失敗すると -1 を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Examples: >
+			" Remove sign 10 from buffer a.vim
+			call sign_unplace('', {'buffer' : "a.vim", 'id' : 10})
+
+			" Remove sign 20 in group 'g1' from buffer 3
+			call sign_unplace('g1', {'buffer' : 3, 'id' : 20})
+
+			" Remove all the signs in group 'g2' from buffer 10
+			call sign_unplace('g2', {'buffer' : 10})
+
+			" Remove sign 30 in group 'g3' from all the buffers
+			call sign_unplace('g3', {'id' : 30})
+
+			" Remove all the signs placed in buffer 5
+			call sign_unplace('*', {'buffer' : 5})
+
+			" Remove the signs in group 'g4' from all the buffers
+			call sign_unplace('g4')
+
+			" Remove sign 40 from all the buffers
+			call sign_unplace('*', {'id' : 40})
+
+			" Remove all the placed signs from all the buffers
+			call sign_unplace('*')
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+" バッファ a.vim から識別子10の目印を解除する
+call sign_unplace('', {'buffer' : "a.vim", 'id' : 10})
+
+" バッファ番号3から 'g1' グループの識別子20の目印を解
+" 除する
+call sign_unplace('g1', {'buffer' : 3, 'id' : 20})
+
+" バッファ番号10から 'g2' グループのすべての目印を解除
+" する
+call sign_unplace('g2', {'buffer' : 10})
+
+" すべてのバッファから 'g3' グループの識別子30の目印を
+" 解除する
+call sign_unplace('g3', {'id' : 30})
+
+" バッファ番号5 のすべての目印を解除する
+call sign_unplace('*', {'buffer' : 5})
+
+" すべてのバッファから 'g4' グループの目印を解除する
+call sign_unplace('g4')
+
+" すべてのバッファから識別子40の目印を解除する
+call sign_unplace('*', {'id' : 40})
+
+" すべてのバッファからすべての目印を解除する
+call sign_unplace('*')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 simplify({filename})					*simplify()*
 		Simplify the file name as much as possible without changing
@@ -20442,6 +22585,117 @@ func MyCompare(i1, i2)
 endfunc
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+sound_clear()						*sound_clear()*
+		Stop playing all sounds.
+		{only available when compiled with the +sound feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item sound_clear()
+@anchor{sound_clear()}
+@findex sound_clear()
+すべてのサウンドの再生を停止する。
+
+@{|@ref{+sound}| 機能つきでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*sound_playevent()*
+sound_playevent({name} [, {callback}])
+		Play a sound identified by {name}.  Which event names are
+		supported depends on the system.  Often the XDG sound names
+		are used.  On Ubuntu they may be found in
+		/usr/share/sounds/freedesktop/stereo.  Example: >
+			call sound_playevent('bell')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sound_playevent()}
+@findex sound_playevent()
+@item sound_playevent(@{name@} [, @{callback@}])
+@{name@} で識別されるサウンドを再生する。サポートされているイベント名はシステムによって異なる。XDG のサウンド名がよく使われる。Ubuntu では、それらは /usr/share/sounds/freedesktop/stereo に見つかるだろう。例:
+@example
+call sound_playevent('bell')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<		When {callback} is specified it is invoked when the sound is
+		finished.  The first argument is the sound ID, the second
+		argument is the status:
+			0	sound was played to the end
+			1	sound was interrupted
+			2	error occured after sound started
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{callback@} が指定されている場合は、サウンドが終了したときに呼び出される。最初の引数はサウンド ID、2 番目の引数はステータスである:
+@multitable @columnfractions .1 .9
+@item 0 @tab 最後までサウンドが再生された
+@item 1 @tab サウンドは中断された
+@item 2 @tab サウンド開始後にエラーが発生した
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Example: >
+		   func Callback(id, status)
+		     echomsg "sound " .. a:id .. " finished with " .. a:status
+		   endfunc
+		   call sound_playevent('bell', 'Callback')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+func Callback(id, status)
+  echomsg "sound " .. a:id .. " finished with " .. a:status
+endfunc
+call sound_playevent('bell', 'Callback')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<		Returns the sound ID, which can be passed to `sound_stop()`.
+		Returns zero if the sound could not be played.
+		{only available when compiled with the |+sound| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+`@command{sound_stop()}` に渡すことができるサウンド ID を返す。サウンドを再生できなかった場合はゼロを返す。
+
+@{|@ref{+sound}| 機能つきでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*sound_playfile()*
+sound_playfile({path} [, {callback}])
+		Like `sound_playevent()` but play sound file {path}.  {path}
+		must be a full path.  On Ubuntu you may find files to play
+		with this command: >
+		    :!find /usr/share/sounds -type f | grep -v index.theme
+<		{only available when compiled with the |+sound| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sound_playfile()}
+@findex sound_playfile()
+@item sound_playfile(@{path@} [, @{callback@}])
+`@command{sound_playevent()}` と似ているが、サウンドファイル @{name@} を再生する。@{name@} はフルパスでなければならない。Ubuntu では、このコマンドで再生するファイルが見つかるかもしれない:
+@verbatim
+:!find /usr/share/sounds -type f | grep -v index.theme
+@end verbatim
+@{|@ref{+sound}| 機能つきでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+sound_stop({id})					*sound_stop()*
+		Stop playing sound {id}.  {id} must be previously returned by
+		`sound_playevent()` or `sound_playfile()`.
+		{only available when compiled with the |+sound| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sound_stop()}
+@findex sound_stop()
+@item sound_stop(@{id@})
+サウンド @{id@} の再生を停止する。@{id@} は、事前に `@command{sound_playevent()}` または `@command{sound_playfile()}` によって返されたものでなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
 							*soundfold()*
 soundfold({word})
@@ -20739,6 +22993,43 @@ let f = str2float(substitute(text, ',', '', 'g'))
 @{|@ref{+float}| 機能つきでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+@ifset EN
+str2list({expr} [, {utf8}])				*str2list()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{str2list()}
+@findex str2list()
+@item str2list(@{expr@} [, @{utf8@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Return a list containing the number values which represent
+		each character in String {expr}.  Examples: >
+			str2list(" ")		returns [32]
+			str2list("ABC")		returns [65, 66, 67]
+<		|list2str()| does the opposite.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+文字列 @{expr@} の各文字を表す数値を含むリストを返す。例:
+@example
+str2list(" ")           returns [32]
+str2list("ABC")         returns [65, 66, 67]
+@end example
+|@ref{list2str()}| は反対のことをする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When {utf8} is omitted or zero, the current 'encoding' is used.
+		With {utf8} set to 1, always treat the String as utf-8
+		characters.  With utf-8 composing characters are handled
+		properly: >
+			str2list("á")		returns [97, 769]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{utf8@} が省略されているかゼロの場合、現在の '@option{encoding}' が使用される。@{utf8@} が 1 の場合は、常に utf-8 文字列を返す。utf-8 の合成文字は正しく処理される:
+@example
+str2list("á")           returns [97, 769]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 str2nr({expr} [, {base}])				*str2nr()*
@@ -23177,6 +25468,22 @@ garbagecollect() とほぼ同じであるが、この関数はガーベッジコ
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+test_getvalue({name})					*test_getvalue()*
+		Get the value of an internal variable.  These values for
+		{name} are supported:
+			need_fileinfo
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_getvalue()}
+@findex test_getvalue()
+@item test_getvalue(@{name@})
+内部変数の値を取得する。@{name@} のこれらの値がサポートされている:
+@itemize
+@item need_fileinfo
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 test_ignore_error({expr})			 *test_ignore_error()*
 		Ignore any error containing {expr}.  A normal message is given
 		instead.
@@ -23184,7 +25491,8 @@ test_ignore_error({expr})			 *test_ignore_error()*
 		error with try/catch cannot be used (because it skips over
 		following code).
 		{expr} is used literally, not as a pattern.
-		There is currently no way to revert this.
+		When the {expr} is the string "RESET" then the list of ignored
+		errors is made empty.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{test_ignore_error()}
@@ -23196,79 +25504,90 @@ test_ignore_error({expr})			 *test_ignore_error()*
 
 @{expr@} は文字通り用いられ、パターンとしてではない。
 
-現在、これを元に戻す方法はない。
+@{expr@} が文字列 "RESET" の場合、無視されるエラーのリストは空になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+test_null_blob()					*test_null_blob()*
+		Return a |Blob| that is null. Only useful for testing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_null_blob()}
+@findex test_null_blob()
+@item test_null_blob()
+null の |@ref{Blob}| を返す。これはテストのみに使われる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 test_null_channel()					*test_null_channel()*
-		Return a Channel that is null. Only useful for testing.
+		Return a |Channel| that is null. Only useful for testing.
 		{only available when compiled with the +channel feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{test_null_channel()}
 @findex test_null_channel()
 @item test_null_channel()
-null の Channel を返す。これはテストのみに使われる。
+null の |@ref{Channel}| を返す。これはテストのみに使われる。
 
 @{|@ref{+channel}| 機能つきでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 test_null_dict()					*test_null_dict()*
-		Return a Dict that is null. Only useful for testing.
+		Return a |Dict| that is null. Only useful for testing.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{test_null_dict()}
 @findex test_null_dict()
 @item test_null_dict()
-null の Dict を返す。これはテストのみに使われる。
+null の |@ref{Dict}| を返す。これはテストのみに使われる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 test_null_job()						*test_null_job()*
-		Return a Job that is null. Only useful for testing.
+		Return a |Job| that is null. Only useful for testing.
 		{only available when compiled with the +job feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{test_null_job()}
 @findex test_null_job()
 @item test_null_job()
-null の Job を返す。これはテストのみに使われる。
+null の |@ref{Job}| を返す。これはテストのみに使われる。
 
 @{|@ref{+job}| 機能つきでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 test_null_list()					*test_null_list()*
-		Return a List that is null. Only useful for testing.
+		Return a |List| that is null. Only useful for testing.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{test_null_list()}
 @findex test_null_list()
 @item test_null_list()
-null の List を返す。これはテストのみに使われる。
+null の |@ref{List}| を返す。これはテストのみに使われる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 test_null_partial()					*test_null_partial()*
-		Return a Partial that is null. Only useful for testing.
+		Return a |Partial| that is null. Only useful for testing.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{test_null_partial()}
 @findex test_null_partial()
 @item test_null_partial()
-null の Partial を返す。これはテストのみに使われる。
+null の |@ref{Partial}| を返す。これはテストのみに使われる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 test_null_string()					*test_null_string()*
-		Return a String that is null. Only useful for testing.
+		Return a |String| that is null. Only useful for testing.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{test_null_string()}
 @findex test_null_string()
 @item test_null_string()
-null の String を返す。これはテストのみに使われる。
+null の |@ref{String}| を返す。これはテストのみに使われる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -23295,11 +25614,10 @@ call test_option_not_set('ambiwidth')
 
 @ifset EN
 test_override({name}, {val})				*test_override()*
-		Overrides certain parts of Vims internal processing to be able
+		Overrides certain parts of Vim's internal processing to be able
 		to run tests. Only to be used for testing Vim!
 		The override is enabled when {val} is non-zero and removed
 		when {val} is zero.
-		Current supported values for name are:
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{test_override()}
@@ -23308,11 +25626,10 @@ test_override({name}, {val})				*test_override()*
 テストを実行できるようにするため、Vim の内部処理の特定の部分を置き換える。Vim をテストするためだけに使用すること！
 
 置き換えは、@{val@} が非 0 のときに有効化され、@{val@} が 0 のときに取り除かれる。
-
-現在、name に使える値は:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+		Current supported values for name are:
 		name	     effect when {val} is non-zero ~
 		redraw       disable the redrawing() function
 		redraw_flag  ignore the RedrawingDisabled flag
@@ -23323,6 +25640,7 @@ test_override({name}, {val})				*test_override()*
 		ALL	     clear all overrides ({val} is not used)
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在、name に使える値は:
 @multitable @columnfractions .2 .8
 @headitem name @tab @{val@} が非 0 のときの効果
 @item redraw @tab redrawing() 関数を無効化する
@@ -23400,6 +25718,25 @@ test_scrollbar({which}, {value}, {dragging})		*test_scrollbar()*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @{dragging@} が非ゼロの場合、スクロールバーをドラッグしているかのようになり、そうでなければ、スクロールバーをクリックしているかのようになる。@{which@} スクロールバーが確かに存在している時にのみ動作する。明らかに GUI を使用している時のみである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+test_setmouse({row}, {col})				*test_setmouse()*
+		Set the mouse position to be used for the next mouse action.
+		{row} and {col} are one based.
+		For example: >
+			call test_setmouse(4, 20)
+			call feedkeys("\<LeftMouse>", "xt")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_setmouse()}
+@findex test_setmouse()
+@item test_setmouse(@{row@}, @{col@})
+次のマウス操作に使用するマウス位置を設定する。@{row@} と @{col@} は 1 ベースである。例:
+@example
+call test_setmouse(4, 20)
+call feedkeys("\<LeftMouse>", "xt")
+@end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -23853,7 +26190,7 @@ undofile({name})					*undofile()*
 		If {name} is empty undofile() returns an empty string, since a
 		buffer without a file name will not write an undo file.
 		Useful in combination with |:wundo| and |:rundo|.
-		When compiled without the +persistent_undo option this always
+		When compiled without the |+persistent_undo| option this always
 		returns an empty string.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -23866,7 +26203,7 @@ undofile({name})					*undofile()*
 
 @{name@} が空の場合 undofile() は空文字列を返す。ファイル名のないバッファはアンドゥファイルを書かないからである。|@ref{:wundo}| や |@ref{:rundo}| と組み合わせて使うと便利だろう。
 
-+persistent_undo オプションを無効にしてコンパイルされた場合はこの関数は常に空文字列を返す。
+|@ref{+persistent_undo}| オプションを無効にしてコンパイルされた場合はこの関数は常に空文字列を返す。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -24160,6 +26497,47 @@ wildmenu が有効な場合は |@ref{TRUE}| を返し、そうでなければ |@
 )
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+@ifset EN
+win_execute({id}, {command} [, {silent}])		*win_execute()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{win_execute()}
+@findex win_execute()
+@item win_execute(@{id@}, @{command@} [, @{silent@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Like `execute()` but in the context of window {id}.
+		The window will temporarily be made the current window,
+		without triggering autocommands.  When executing {command}
+		autocommands will be triggered, this may have unexpected side
+		effects.  Use |:noautocmd| if needed.
+		Example: >
+			call win_execute(winid, 'set syntax=python')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+`@command{execute()}` と似ているが、ウィンドウ @{id@} のコンテキスト内で実行する。オートコマンドを発生させずに、ウィンドウを一時的にカレントウィンドウにする。@{command@} を実行すると、オートコマンドがトリガーされる。これは予期しない副作用を引き起こす可能性がある。必要であれば |@ref{:noautocmd}| を使用すること。
+
+例:
+@example
+call win_execute(winid, 'set syntax=python')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		Doing the same with `setwinvar()` would not trigger
+		autocommands and not actually show syntax highlighting.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+`@command{setwinvar()}` で同じことをしてもオートコマンドはトリガーされず、実際には構文ハイライトは表示されない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*E994*
+		Not all commands are allowed in popup windows.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E994}
+@erindex E994
+すべてのコマンドがポップアップウィンドウで許可されているわけではない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 win_findbuf({bufnr})					*win_findbuf()*
@@ -25256,14 +27634,11 @@ tag_binary		Compiled with binary searching in tags files
 			|tag-binary-search|.
 tag_old_static		Compiled with support for old static tags
 			|tag-old-static|.
-tag_any_white		Compiled with support for any white characters in tags
-			files |tag-any-white|.
 tcl			Compiled with Tcl interface.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item tag_binary @tab タグファイル内の二分探索 |@ref{tag-binary-search}|
 @item tag_old_static @tab 旧式の静的 tags をサポート |@ref{tag-old-static}|
-@item tag_any_white @tab タグファイル内の空白文字をサポート |@ref{tag-any-white}|
 @item tcl @tab TCL インターフェイスをサポート
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -25271,21 +27646,27 @@ termguicolors		Compiled with true color in terminal support.
 terminal		Compiled with |terminal| support.
 terminfo		Compiled with terminfo instead of termcap.
 termresponse		Compiled with support for |t_RV| and |v:termresponse|.
-textobjects		Compiled with support for |text-objects|.
-tgetent			Compiled with tgetent support, able to use a termcap
-			or terminfo file.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item termguicolors @tab 端末での true カラーをサポート
 @item terminal @tab |@ref{terminal}| をサポート
 @item terminfo @tab termcap の代わりに terminfo をサポート
 @item termresponse @tab |@ref{t_RV}| と |@ref{v:termresponse}| をサポート
-@item textobjects @tab |@ref{text-objects}| をサポート
-@item tgetent @tab tgetent をサポート。termcap か terminfo ファイルが使用可能
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+textobjects		Compiled with support for |text-objects|.
+tgetent			Compiled with tgetent support, able to use a termcap
+			or terminfo file.
 timers			Compiled with |timer_start()| support.
 title			Compiled with window title support |'title'|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item textobjects @tab |@ref{text-objects}| をサポート
+@item tgetent @tab tgetent をサポート。termcap か terminfo ファイルが使用可能
+@item timers @tab |@ref{timer_start()}| をサポート
+@item title @tab ウィンドウタイトルをサポート |@ref{'title'}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 toolbar			Compiled with support for |gui-toolbar|.
 touchbar		Compiled with support for Touch Bar in MacVim.
 transparency            Compiled with 'transparency' support.
@@ -25293,8 +27674,6 @@ ttyin			input is a terminal (tty)
 ttyout			output is a terminal (tty)
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item timers @tab |@ref{timer_start()}| をサポート
-@item title @tab ウィンドウタイトルをサポート |@ref{'title'}|
 @item toolbar @tab |@ref{gui-toolbar}| をサポート
 @item touchbar @tab MacVim でのタッチバーをサポート
 @item transparency @tab '@option{transparency}' をサポート
@@ -26099,7 +28478,7 @@ This function can then be called with: >
 						*:cal* *:call* *E107* *E117*
 :[range]cal[l] {name}([arguments])
 		Call a function.  The name of the function and its arguments
-		are as specified with |:function|.  Up to 20 arguments can be
+		are as specified with `:function`.  Up to 20 arguments can be
 		used.  The returned value is discarded.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -26113,7 +28492,7 @@ This function can then be called with: >
 @erindex E107
 @erindex E117
 @item :[range]cal[l] @{name@}([arguments])
-関数を呼び出す。関数の名前と引数は |@ref{:function}| によって指定されるものである。引数は最大 20 まで使用可能。戻り値は破棄される。
+関数を呼び出す。関数の名前と引数は `@command{:function}` によって指定されるものである。引数は最大 20 まで使用可能。戻り値は破棄される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 		Without a range and for functions that accept a range, the
@@ -26254,12 +28633,12 @@ This is introduced in the user manual, section |41.14|.
 
 @ifset EN
 The autocommand is useful if you have a plugin that is a long Vim script file.
-You can define the autocommand and quickly quit the script with |:finish|.
+You can define the autocommand and quickly quit the script with `:finish`.
 That makes Vim startup faster.  The autocommand should then load the same file
-again, setting a variable to skip the |:finish| command.
+again, setting a variable to skip the `:finish` command.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-オートコマンドは、長い Vim script ファイルのプラグインに対して有用である。自動コマンドを定義し、すぐに |@ref{:finish}| でそのスクリプトを抜ける。こうすると Vim の起動が速くなる。その後オートコマンドにより |@ref{:finish}| コマンドをスキップする変数を定義し、そのファイルが再び読み込まれる。
+オートコマンドは、長い Vim script ファイルのプラグインに対して有用である。自動コマンドを定義し、すぐに `@command{:finish}` でそのスクリプトを抜ける。こうすると Vim の起動が速くなる。その後オートコマンドにより `@command{:finish}` コマンドをスキップする変数を定義し、そのファイルが再び読み込まれる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -26614,7 +28993,6 @@ This does NOT work: >
 			This cannot be used to set a byte in a String.  You
 			can do that like this: >
 				:let var = var[0:2] . 'X' . var[4:]
-<
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 このコマンドはリスト |@ref{List}| に要素を追加するためには使えない。文字列の i バイト目をセットするためにも使えない。それには次のようにする:
@@ -26622,6 +29000,15 @@ This does NOT work: >
 :let var = var[0:2] . 'X' . var[4:]
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<			When {var-name} is a |Blob| then {idx} can be the
+			length of the blob, in which case one byte is
+			appended.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{var-name@} が |@ref{Blob}| の場合、@{idx@} は blob の長さになる。この場合、1 バイトが追加される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
 							*E711* *E719*
 :let {var-name}[{idx1}:{idx2}] = {expr1}		*E708* *E709* *E710*
@@ -26654,26 +29041,55 @@ This does NOT work: >
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-					*:let+=* *:let-=* *:let.=* *E734*
-:let {var} += {expr1}	Like ":let {var} = {var} + {expr1}".
-:let {var} -= {expr1}	Like ":let {var} = {var} - {expr1}".
-:let {var} .= {expr1}	Like ":let {var} = {var} . {expr1}".
-			These fail if {var} was not set yet and when the type
-			of {var} and {expr1} don't fit the operator.
+			*:let+=* *:let-=* *:letstar=*
+			*:let/=* *:let%=* *:let.=* *:let..=* *E734* *E985*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:let+=}
 @anchor{:let-=}
+@anchor{:letstar=}
+@anchor{:let/=}
+@anchor{:let%=}
 @anchor{:let.=}
 @anchor{E734}
+@anchor{E985}
 @pindex :let+=
 @pindex :let-=
+@pindex :letstar=
+@pindex :let/=
+@pindex :let%=
 @pindex :let.=
 @erindex E734
-@item :let @{var@} += @{expr1@} ":let @{var@} = @{var@} + @{expr1@}" と同様
+@erindex E985
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:let {var} += {expr1}	Like ":let {var} = {var} + {expr1}".
+:let {var} -= {expr1}	Like ":let {var} = {var} - {expr1}".
+:let {var} *= {expr1}	Like ":let {var} = {var} * {expr1}".
+:let {var} /= {expr1}	Like ":let {var} = {var} / {expr1}".
+:let {var} %= {expr1}	Like ":let {var} = {var} % {expr1}".
+:let {var} .= {expr1}	Like ":let {var} = {var} . {expr1}".
+:let {var} ..= {expr1}	Like ":let {var} = {var} .. {expr1}".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :let @{var@} += @{expr1@}	":let @{var@} = @{var@} + @{expr1@}" と同様
 @itemx :let @{var@} -= @{expr1@} ":let @{var@} = @{var@} - @{expr1@}" と同様
+@itemx :let @{var@} *= @{expr1@} ":let @{var@} = @{var@} * @{expr1@}" と同様
+@itemx :let @{var@} /= @{expr1@} ":let @{var@} = @{var@} / @{expr1@}" と同様
+@itemx :let @{var@} %= @{expr1@} ":let @{var@} = @{var@} % @{expr1@}" と同様
 @itemx :let @{var@} .= @{expr1@} ":let @{var@} = @{var@} . @{expr1@}" と同様
+@itemx :let @{var@} ..= @{expr1@} ":let @{var@} = @{var@} .. @{expr1@}" と同様
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			These fail if {var} was not set yet and when the type
+			of {var} and {expr1} don't fit the operator.
+			`.=` is not supported with Vim script version 2 and
+			later, see |vimscript-version|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @{var@} がセットされていないときや、@{var@} と @{expr1@} の型が演算子に合わないときは失敗する。
+
+`@command{.=}` は Vim script バージョン2以降ではサポートされていない。|@ref{vimscript-version}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 
@@ -26944,6 +29360,148 @@ name の個数がリスト |@ref{List}| の要素の個数に一致しなけれ�
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+					*:let=<<* *:let-heredoc* *E990* *E991*
+:let {var-name} =<< [trim] {marker}
+text...
+text...
+{marker}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:let=<<}
+@anchor{:let-heredoc}
+@anchor{E990}
+@anchor{E991}
+@pindex :let=<<
+@pindex :let-heredoc
+@erindex E990
+@erindex E991
+@item :let @{var-name@} =<< [trim] @{marker@}
+@itemx text...
+@itemx text...
+@itemx @{marker@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Set internal variable {var-name} to a List containing
+			the lines of text bounded by the string {marker}.
+			{marker} must not contain white space.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+内部変数 @{var-name@} を文字列 @{marker@} で囲まれたテキスト行を含む List に設定する。@{marker@} は空白を含んではならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			The last line should end only with the {marker} string
+			without any other character.  Watch out for white
+			space after {marker}!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+最後の行は @{marker@} 文字列だけで終わり、他の文字は含まれない。@{marker@} の後の空白に気をつけること！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			If {marker} is not supplied, then "." is used as the
+			default marker.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+@{marker@} が指定されていない場合は、"." がデフォルトのマーカーとして使用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Without "trim" any white space characters in the lines
+			of text are preserved.  If "trim" is specified before
+			{marker}, then indentation is stripped so you can do: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"trim" がない場合は、テキスト行内の全ての空白文字は保持される。もし @{marker@} の前に "trim" が指定されている場合、インデントが取り除かれるため以下を実行できる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				let text =<< trim END
+				   if ok
+				     echo 'done'
+				   endif
+				END
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+let text =<< trim END
+   if ok
+     echo 'done'
+   endif
+END
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<			Results in: ["if ok", "  echo 'done'", "endif"]
+			The marker must line up with "let" and the indentation
+			of the first line is removed from all the text lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+結果: ["if ok", "  echo 'done'", "endif"]
+マーカーは "let" のインデントと並ばなければならず、最初の行のインデントは全てのテキスト行から取り除かれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Specifically: all the leading indentation exactly
+			matching the leading indentation of the first
+			non-empty text line is stripped from the input lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+具体例: 最初の空でないテキスト行の先頭のインデントと完全に一致する全ての先頭のインデントは入力行から削除される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			All leading indentation exactly matching the leading
+			indentation before `let` is stripped from the line
+			containing {marker}.  Note that the difference between
+			space and tab matters here.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+`@command{let}` の前の先頭のインデントと完全に一致する先頭のインデントはすべて @{marker@} を含む行から削除される。
+@quotation
+@strong{Note:} @*
+スペースとタブの違いが重要であることに注意すること。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			If {var-name} didn't exist yet, it is created.
+			Cannot be followed by another command, but can be
+			followed by a comment.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{var-name@} がまだ存在しない場合は作成される。他のコマンドを続けることはできないが、コメントを続けることはできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			Examples: >
+				let var1 =<< END
+			Sample text 1
+			    Sample text 2
+			Sample text 3
+			END
+
+				let data =<< trim DATA
+				1 2 3 4
+				5 6 7 8
+				DATA
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+        let var1 =<< END
+Sample text 1
+    Sample text 2
+Sample text 3
+END
+
+        let data =<< trim DATA
+        1 2 3 4
+        5 6 7 8
+        DATA
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 								*E121*
 :let {var-name}	..	List the value of variable {var-name}.  Multiple
 			variable names may be given.  Special names recognized
@@ -27060,7 +29618,7 @@ name の個数がリスト |@ref{List}| の要素の個数に一致しなけれ�
 			No error message is given for a non-existing
 			variable, also without !.
 			If the system does not support deleting an environment
-			variable, it is made emtpy.
+			variable, it is made empty.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:unlet-environment}
@@ -27069,6 +29627,82 @@ name の個数がリスト |@ref{List}| の要素の個数に一致しなけれ�
 @pindex :unlet-$
 @item :unl[et] $@{env-name@} ...
 環境変数 @{env-name@} を削除する。1 つの @command{:unlet} コマンドで @{name@} と $@{env-name@} を合わせることができる。変数が存在しない場合は ! がなくてもエラーメッセージを生じない。システムがもしも環境変数の削除をサポートしていないのなら、空にします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*:cons* *:const*
+:cons[t] {var-name} = {expr1}
+:cons[t] [{name1}, {name2}, ...] = {expr1}
+:cons[t] [{name}, ..., ; {lastname}] = {expr1}
+:cons[t] {var-name} =<< [trim] {marker}
+text...
+text...
+{marker}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{:cons}
+@anchor{:const}
+@pindex :cons
+@pindex :const
+@item :cons[t] @{var-name@} = @{expr1@}
+@itemx :cons[t] [@{name1@}, @{name2@}, ...] = @{expr1@}
+@itemx :cons[t] [@{name@}, ..., ; @{lastname@}] = @{expr1@}
+@itemx :cons[t] @{var-name@} =<< [trim] @{marker@}
+@itemx text...
+@itemx text...
+@itemx @{marker@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			Similar to |:let|, but additionally lock the variable
+			after setting the value.  This is the same as locking
+			the variable with |:lockvar| just after |:let|, thus: >
+				:const x = 1
+<			is equivalent to: >
+				:let x = 1
+				:lockvar 1 x
+<			This is useful if you want to make sure the variable
+			is not modified.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{:let}| に似ているが、加えて、値がセットされたあとに変数がロックされる。これは、ロックされた変数と同じで、|@ref{:let}| のすぐ後に |@ref{:lockvar}| を使うことで変数をロックすることと同義である。したがって:
+@example
+:const x = 1
+@end example
+は、以下と同義である:
+@example
+:let x = 1
+:lockvar 1 x
+@end example
+これは、変数が変更されないことを確実にしたいときに便利である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*E995*
+			|:const| does not allow to for changing a variable: >
+				:let x = 1
+				:const x = 2  " Error!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E995}
+@erindex E995
+|@ref{:const}| は変数の変更をすることができない:
+@example
+:let x = 1
+:const x = 2  " エラー!
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<							*E996*
+			Note that environment variables, option values and
+			register values cannot be used here, since they cannot
+			be locked.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E996}
+@erindex E996
+@quotation
+@strong{Note:} @*
+環境変数、オプション値およびレジスタ値はロックできないため、ここでは使用できないことに注意。
+@end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -27231,18 +29865,20 @@ name の個数がリスト |@ref{List}| の要素の個数に一致しなけれ�
 
 
 @ifset EN
-:if {expr1}			*:if* *:endif* *:en* *E171* *E579* *E580*
+:if {expr1}			*:if* *:end* *:endif* *:en* *E171* *E579* *E580*
 :en[dif]		Execute the commands until the next matching ":else"
 			or ":endif" if {expr1} evaluates to non-zero.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:if}
+@anchor{:end}
 @anchor{:endif}
 @anchor{:en}
 @anchor{E171}
 @anchor{E579}
 @anchor{E580}
 @pindex :if
+@pindex :end
 @pindex :endif
 @pindex :en
 @erindex E171
@@ -27413,11 +30049,8 @@ name の個数がリスト |@ref{List}| の要素の個数に一致しなけれ�
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-:for {var} in {list}					*:for* *E690* *E732*
+:for {var} in {object}					*:for* *E690* *E732*
 :endfo[r]						*:endfo* *:endfor*
-			Repeat the commands between ":for" and ":endfor" for
-			each item in {list}.  Variable {var} is set to the
-			value of each item.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:for}
@@ -27430,38 +30063,40 @@ name の個数がリスト |@ref{List}| の要素の個数に一致しなけれ�
 @erindex E732
 @pindex :endfo
 @pindex :endfor
-@item :for @{var@} in @{list@}
+@item :for @{var@} in @{object@}
 @itemx :endfo[r]
-@{list@} の各要素に対し、":for" と ":endfor" の間のコマンドを繰り返す。変数 @{var@} に各要素の値がセットされる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			When an error is detected for a command inside the
-			loop, execution continues after the "endfor".
-			Changing {list} inside the loop affects what items are
-			used.  Make a copy if this is unwanted: >
+			Repeat the commands between ":for" and ":endfor" for
+			each item in {object}.  {object} can be a |List| or
+			a |Blob|.  Variable {var} is set to the value of each
+			item.  When an error is detected for a command inside
+			the loop, execution continues after the "endfor".
+			Changing {object} inside the loop affects what items
+			are used.  Make a copy if this is unwanted: >
 				:for item in copy(mylist)
+<
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-ループの内側のコマンドでエラーが検出されたときは "endfor" の後から実行が継続される。
-
-ループの内側で @{list@} を変更するとどの要素が使われるかに影響を与える。それを望まない場合はコピーを作ること:
+@{object@} の各要素に対し、":for" と ":endfor" の間のコマンドを繰り返す。@{object@} はリスト |@ref{List}| または |@ref{Blob}| である。変数 @{var@} に各要素の値がセットされる。ループの内側のコマンドでエラーが検出されたときは "endfor" の後から実行が継続される。ループの内側で @{object@} を変更するとどの要素が使われるかに影響を与える。それを望まない場合はコピーを作ること:
 @example
 :for item in copy(mylist)
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-<			When not making a copy, Vim stores a reference to the
-			next item in the list, before executing the commands
-			with the current item.  Thus the current item can be
-			removed without effect.  Removing any later item means
-			it will not be found.  Thus the following example
-			works (an inefficient way to make a list empty): >
+			When {object} is a |List| and not making a copy, Vim
+			stores a reference to the next item in the |List|
+			before executing the commands with the current item.
+			Thus the current item can be removed without effect.
+			Removing any later item means it will not be found.
+			Thus the following example works (an inefficient way
+			to make a |List| empty): >
 				for item in mylist
 				   call remove(mylist, 0)
 				endfor
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-コピーを作らないと、Vim は現在の要素に対してコマンドを実行する前に、リストの次の要素への参照を保存する。そのため副作用なしに現在の要素を削除することができる。それ以降の要素を変更すると、それが見つからなくなる。つまり以下の例は動作する (リストを空にする非効率な方法):
+@{object@} が |@ref{List}| でコピーを作らない場合、Vim は現在の要素に対してコマンドを実行する前に、|@ref{List}| の次の要素への参照を保存する。そのため副作用なしに現在の要素を削除することができる。それ以降の要素を変更すると、それが見つからなくなる。つまり以下の例は動作する (|@ref{List}| を空にする非効率な方法):
 @example
 for item in mylist
    call remove(mylist, 0)
@@ -27469,14 +30104,23 @@ endfor
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-<			Note that reordering the list (e.g., with sort() or
+<			Note that reordering the |List| (e.g., with sort() or
 			reverse()) may have unexpected effects.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @quotation
 @strong{Note:} @*
-リストを並べ替える (例えば sort() や reverse() で) と予期しない結果になることがある。
+リスト |@ref{List}| を並べ替える (例えば sort() や reverse() で) と予期しない結果になることがある。
 @end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+			When {object} is a |Blob|, Vim always makes a copy to
+			iterate over.  Unlike with |List|, modifying the
+			|Blob| does not affect the iteration.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{object@} が |@ref{Blob}| の場合、Vim は常にコピーを作成して繰り返す。|@ref{List}| とは異なり、|@ref{Blob}| を変更しても繰り返しには影響しない。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -27676,27 +30320,27 @@ endfor
 
 @ifset EN
 			Examples: >
-		:catch /^Vim:Interrupt$/	" catch interrupts (CTRL-C)
-		:catch /^Vim\%((\a\+)\)\=:E/	" catch all Vim errors
-		:catch /^Vim\%((\a\+)\)\=:/	" catch errors and interrupts
-		:catch /^Vim(write):/		" catch all errors in :write
-		:catch /^Vim\%((\a\+)\)\=:E123/	" catch error E123
-		:catch /my-exception/		" catch user exception
-		:catch /.*/			" catch everything
-		:catch				" same as /.*/
+		:catch /^Vim:Interrupt$/	 " catch interrupts (CTRL-C)
+		:catch /^Vim\%((\a\+)\)\=:E/	 " catch all Vim errors
+		:catch /^Vim\%((\a\+)\)\=:/	 " catch errors and interrupts
+		:catch /^Vim(write):/		 " catch all errors in :write
+		:catch /^Vim\%((\a\+)\)\=:E123:/ " catch error E123
+		:catch /my-exception/		 " catch user exception
+		:catch /.*/			 " catch everything
+		:catch				 " same as /.*/
 <
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 例:
 @example
-:catch /^Vim:Interrupt$/        " 割り込み (CTRL-C) を捕捉
-:catch /^Vim\%((\a\+)\)\=:E/    " 全 Vim エラーを捕捉
-:catch /^Vim\%((\a\+)\)\=:/     " 例外と割り込みを捕捉
-:catch /^Vim(write):/           " :write における全エラーを捕捉
-:catch /^Vim\%((\a\+)\)\=:E123/ " エラー E123 を捕捉
-:catch /my-exception/           " ユーザー定義例外を捕捉
-:catch /.*/                     " 全てを捕捉
-:catch                          " /.*/ と同じ
+:catch /^Vim:Interrupt$/         " 割り込み (CTRL-C) を捕捉
+:catch /^Vim\%((\a\+)\)\=:E/     " 全 Vim エラーを捕捉
+:catch /^Vim\%((\a\+)\)\=:/      " 例外と割り込みを捕捉
+:catch /^Vim(write):/            " :write における全エラーを捕捉
+:catch /^Vim\%((\a\+)\)\=:E123:/ " エラー E123 を捕捉
+:catch /my-exception/            " ユーザー定義例外を捕捉
+:catch /.*/                      " 全てを捕捉
+:catch                           " /.*/ と同じ
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -27977,11 +30621,11 @@ Vim コマンドの ":echo" と、外部のシェルコマンドである ":!ech
 			The parsing works slightly different from |:echo|,
 			more like |:execute|.  All the expressions are first
 			evaluated and concatenated before echoing anything.
-			The expressions must evaluate to a Number or String, a
-			Dictionary or List causes an error.
+			If expressions does not evaluate to a Number or
+			String, string() is used to turn it into a string.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-|@ref{:echo}| とはかなり異なり、むしろ |@ref{:execute}| に近い方法で解析がされる。なんらかを表示する前に、まず最初に全ての式が評価し、連結する。式を評価した値は数値か文字列でなければならない。辞書やリストはエラーとなる。
+|@ref{:echo}| とはかなり異なり、むしろ |@ref{:execute}| に近い方法で解析がされる。なんらかを表示する前に、まず最初に全ての式が数値または文字列に評価されない場合は、@command{string()} を使用して文字列に変換する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 			Uses the highlighting set by the |:echohl| command.
@@ -28015,14 +30659,14 @@ Vim コマンドの ":echo" と、外部のシェルコマンドである ":!ech
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 			Spaces are placed between the arguments as with the
-			:echo command.  When used inside a try conditional,
+			|:echomsg| command.  When used inside a try conditional,
 			the message is raised as an error exception instead
 			(see |try-echoerr|).
 			Example: >
 		:echoerr "This script just failed!"
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-|@ref{:echo}| コマンドと同様に引数の間にスペースが挿入される。try 条件文の中で使用されたときは、このメッセージがエラー例外として投げられる。(|@ref{try-echoerr}| を参照)
+|@ref{:echomsg}| コマンドと同様に引数の間にスペースが挿入される。try 条件文の中で使用されたときは、このメッセージがエラー例外として投げられる。(|@ref{try-echoerr}| を参照)
 
 例:
 @example
@@ -30933,13 +33577,103 @@ unlet scriptnames_output
 
 @ifset EN
 ==============================================================================
-10. No +eval feature				*no-eval-feature*
+10. Vim script versions		*vimscript-version* *vimscript-versions*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{vimscript-version}
+@anchor{vimscript-versions}
+@cindex vimscript-version
+@cindex vimscript-versions
+@section 10. Vim script バージョン
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*scriptversion*
+Over time many features have been added to Vim script.  This includes Ex
+commands, functions, variable types, etc.  Each individual feature can be
+checked with the |has()| and |exists()| functions.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{scriptversion}
+@cindex scriptversion
+時間が経つにつれて多くの機能が Vim script に追加された。これには Ex コマンド、関
+数、変数タイプなどが含まれる。それぞれの個々の機能は |@ref{has()}| と |@ref{exists()}| 関数でチェックできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Sometimes old syntax of functionality gets in the way of making Vim better.
+When support is taken away this will break older Vim scripts.  To make this
+explicit the |:scriptversion| command can be used.  When a Vim script is not
+compatible with older versions of Vim this will give an explicit error,
+instead of failing in mysterious ways.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+時々、機能の古い構文が Vim をより良くすることを妨げることがある。サポートが奪われると、これは古い Vim script を壊すだろう。これを明確にするために |@ref{:scriptversion}| コマンドを使うことができる。Vim script が古いバージョンの Vim と互換性がない場合、不可解な方法で失敗するのではなく、明示的なエラーを与える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*scriptversion-1*  >
+ :scriptversion 1
+<	This is the original Vim script, same as not using a |:scriptversion|
+	command.  Can be used to go back to old syntax for a range of lines.
+	Test for support with: >
+		has('vimscript-1')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{scriptversion-1}
+@cindex scriptversion-1
+@item :scriptversion 1
+これはオリジナルの Vim script であり、|@ref{:scriptversion}| コマンドを使用していないのと同じである。行の範囲について古い構文に戻るために使用することができる。以下でサポートを検査する:
+@example
+has('vimscript-1')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<							*scriptversion-2*  >
+ :scriptversion 2
+<	String concatenation with "." is not supported, use ".." instead.
+	This avoids the ambiguity using "." for Dict member access and
+	floating point numbers.  Now ".5" means the number 0.5.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{scriptversion-2}
+@cindex scriptversion-2
+@item :scriptversion 2
+"." による文字列連結はサポートされていない、代わりに ".." を使用すること。これにより、Dict メンバーアクセスと浮動小数点数に "." を使用することによる曖昧さが回避される。".5" は数値 0.5 を意味する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*scriptversion-3*  >
+ :scriptversion 3
+<	All |vim-variable|s must be prefixed by "v:".  E.g. "version" doesn't
+	work as |v:version| anymore, it can be used as a normal variable.
+	Same for some obvious names as "count" and others.
+
+	Test for support with: >
+		has('vimscript-3')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{scriptversion-3}
+@item :scriptversion 3
+すべての Vim の定義済変数 |@ref{vim-variable}| には "v:" という接頭辞を付けなければならない。例えば "version" は |@ref{v:version}| とは違うので、普通の変数として使うことができる。"count" やその他のいくつかの分かり切った名前でも同様である。
+
+以下でサポートを検査する:
+@example
+has('vimscript-3')
+@end example
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+11. No +eval feature				*no-eval-feature*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{no-eval-feature}
 @cindex no-eval-feature
 @cindex +eval 機能が無効
-@section 10. +eval 機能が無効
+@section 11. +eval 機能が無効
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -30977,15 +33711,35 @@ missing: >
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-To execute a command only when the |+eval| feature is disabled requires a trick,
-as this example shows: >
+To execute a command only when the |+eval| feature is disabled can be done in
+two ways.  The simplest is to exit the script (or Vim) prematurely: >
+	if 1
+	   echo "commands executed with +eval"
+	   finish
+	endif
+	args  " command executed without +eval
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{+eval}| 機能が無効になっている場合にのみコマンドを実行するには、2 つの方法がある。最も簡単なのは、スクリプト (または Vim) を途中で終了することである:
+@example
+if 1
+   echo "commands executed with +eval"
+   finish
+endif
+args  " command executed without +eval
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you do not want to abort loading the script you can use a trick, as this
+example shows: >
 
 	silent! while 0
 	  set history=111
 	silent! endwhile
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-|@ref{+eval}| 機能が無効の場合のみにコマンドを実行するためには、次の例のようなトリックが必要になる:
+スクリプトのロードを中止したくない場合は、次の例に示すようなトリックを使用することができる:
 @example
 silent! while 0
   set history=111
@@ -31004,7 +33758,7 @@ silently ignored, and the command is executed.
 
 @ifset EN
 ==============================================================================
-11. The sandbox					*eval-sandbox* *sandbox* *E48*
+12. The sandbox					*eval-sandbox* *sandbox* *E48*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{eval-sandbox}
@@ -31014,7 +33768,7 @@ silently ignored, and the command is executed.
 @cindex sandbox
 @erindex E48
 @cindex サンドボックス
-@section 11. サンドボックス
+@section 12. サンドボックス
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -31119,13 +33873,13 @@ option will still be marked as it was set in the sandbox.
 
 @ifset EN
 ==============================================================================
-12. Textlock							*textlock*
+13. Textlock							*textlock*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{textlock}
 @cindex textlock
 @cindex テキストロック
-@section 12. テキストロック
+@section 13. テキストロック
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -31160,13 +33914,13 @@ This is not allowed when the textlock is active:
 
 @ifset EN
 ==============================================================================
-13. Testing							*testing*
+14. Testing							*testing*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{testing}
 @cindex testing
 @cindex テスト
-@section 13. テスト
+@section 14. テスト
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN

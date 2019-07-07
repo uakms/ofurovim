@@ -3,14 +3,14 @@
 @unnumbered (エラー)メッセージの説明
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*message.txt*   For Vim version 8.1.  Last change: 2018 Feb 04
+*message.txt*   For Vim version 8.1.  Last change: 2019 May 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*message.txt*   For Vim バージョン 8.1.  Last change: 2018 Feb 04
+*message.txt*   For Vim バージョン 8.1.  Last change: 2019 May 18
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -783,9 +783,12 @@ format of the file.  The file will not be marked unmodified.  If you care
 about the loss of information, set the 'fileencoding' option to another value
 that can handle the characters in the buffer and write again.  If you don't
 care, you can abandon the buffer or reset the 'modified' option.
+If there is a backup file, when 'writebackup' or 'backup' is set, it will not
+be deleted, so you can move it back into place if you want to discard the
+changes.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-ファイル書き込み時に "CONVERSION ERROR" という文字が現れたら、これは内部で使われている UTF-8 からファイルのフォーマットに変換するときにいくつかのビットが失われたことを意味する。このファイルには unmodified のマークがされない。情報の欠落が気になるなら、バッファ中の文字を扱えるように '@option{fileencoding}' オプションを他の値にし、再度書き込みを行うこと。気にしないならバッファを破棄したり '@option{modified}' オプションをリセットしてもよい。
+ファイル書き込み時に "CONVERSION ERROR" という文字が現れたら、これは内部で使われている UTF-8 からファイルのフォーマットに変換するときにいくつかのビットが失われたことを意味する。このファイルには unmodified のマークがされない。情報の欠落が気になるなら、バッファ中の文字を扱えるように '@option{fileencoding}' オプションを他の値にし、再度書き込みを行うこと。気にしないならバッファを破棄したり '@option{modified}' オプションをリセットしてもよい。バックアップファイルがある場合、'@option{writebackup}' または '@option{backup}' が設定されていると削除されないので、変更を破棄したい場合は元に戻すことができる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1762,28 +1765,6 @@ Vim (および Vi) は @file{tags} ファイルが ASCII 順でソートされ�
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-							*E460*  >
-  The resource fork would be lost (add ! to override)
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@anchor{E460}
-@erindex E460
-@display
-The resource fork would be lost (add ! to override)
-@end display
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
-On the Macintosh (classic), when writing a file, Vim attempts to preserve all
-info about a file, including its resource fork.  If this is not possible you
-get this error message.  Append "!" to the command name to write anyway (and
-lose the info).
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-Macintosh(classic) においてファイルを書き込むとき、Vim はファイルについての情報すべて (resource forkを含む) を保存しようとする。それができない場合、このエラーメッセージが表示される。それでも書き込むときはコマンド名の後に "!" をつけること (すると情報は失われる)。
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
 							*E424*  >
   Too many different highlighting attributes in use
 @end ifset
@@ -2198,26 +2179,31 @@ no argument has been specified.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-							*E474* *E475*  >
+							*E474* *E475* *E983*  >
   Invalid argument
   Invalid argument: {arg}
+  Duplicate argument: {arg}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{E474}
 @anchor{E475}
+@anchor{E983}
 @erindex E474
 @erindex E475
+@erindex E983
 @display
 Invalid argument
 Invalid argument: @{arg@}
+Duplicate argument: @{arg@}
 @end display
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-An Ex command has been executed, but an invalid argument has been specified.
+An Ex command or function has been executed, but an invalid argument has been
+specified.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-Ex コマンドが実行されたが、無効な引数が指定された。
+Ex コマンドまたは関数が実行されたが、無効な引数が指定された。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2494,12 +2480,6 @@ and the screen is about to be redrawn:
 @item -> GUI を使っているときは、最後の行で左クリックすると @key{<Space>} を押すのと同様になる。
 @end itemize
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-@ifset EN
-{Vi: only ":" commands are interpreted}
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{Vi: ":" だけが割り込める@}
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 If you accidentally hit <Enter> or <Space> and you want to see the displayed
@@ -2578,10 +2558,10 @@ Type					effect ~
      G					down all the way, until the hit-enter
 					prompt
 
-     <BS> or k or <Up>			one line back (*)
-     u					up a page (half a screen) (*)
-     b or <PageUp>			back a screen (*)
-     g					back to the start (*)
+     <BS> or k or <Up>			one line back
+     u					up a page (half a screen)
+     b or <PageUp>			back a screen
+     g					back to the start
 
      q, <Esc> or CTRL-C			stop the listing
      :					stop the listing and enter a
@@ -2590,7 +2570,7 @@ Type					effect ~
 					the clipboard ("* and "+ registers)
     {menu-entry}			what the menu is defined to in
 					Cmdline-mode.
-    <LeftMouse> (**)			next page
+    <LeftMouse>				next page (*)
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .4 .6
@@ -2600,16 +2580,16 @@ Type					effect ~
 @item @key{<Space>} or f or @key{<PageDown>} @tab 次のページ (1画面)
 @item G @tab 最後へ (hit-enter プロンプトまで)
 @item
-@item @key{<BS>} or k or @key{<Up>} @tab 1 行戻る (*)
-@item u @tab 前の半ページ (*)
-@item b or @key{<PageUp>} @tab 前のページ (*)
-@item g @tab 最初へ戻る (*)
+@item @key{<BS>} or k or @key{<Up>} @tab 1 行戻る
+@item u @tab 前の半ページ
+@item b or @key{<PageUp>} @tab 前のページ
+@item g @tab 最初へ戻る
 @item
 @item q, @key{<Esc>} or @kbd{CTRL-C} @tab リスト表示を止める
 @item : @tab リスト表示を止めコマンドラインに入る
 @item @kbd{<C-Y>} @tab モードレスセレクションをクリップボード (レジスタ "* と "+) にヤンク (コピー) する。
 @item @{メニューの項目@} @tab コマンドラインでメニューが定義されていること
-@item <LeftMouse> (**) @tab 次のページ
+@item <LeftMouse> @tab 次のページ (*)
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -2621,17 +2601,13 @@ Any other key causes the meaning of the keys to be displayed.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-(*)  backwards scrolling is {not in Vi}.  Only scrolls back to where messages
-     started to scroll.
-(**) Clicking the left mouse button only works:
+(*) Clicking the left mouse button only works:
      - For the GUI: in the last line of the screen.
      - When 'r' is included in 'mouse' (but then selecting text won't work).
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @table @asis
 @item (*)
-逆スクロールコマンドは @{Vi にはない@}。メッセージのスクロールを始めた場所へ戻るだけである。
-@item (**)
 左クリックは次のときだけ機能する:
 @itemize
 @item GUI 使用時:スクリーンの最後の行で

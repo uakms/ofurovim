@@ -54,7 +54,9 @@ USRMANUALS = \
 # 2018.03.19 usr_24.txt, eval.txt は原文が UTF-8 になった。
 # 2018.03.30 spell.txt, quotes.txt は原文が UTF-8 になった。
 # 2018.05.07 map.txt, mlang.txt は原文が UTF-8 になった。
-INCONVENIENTFILES = $(ORIG)/doc/farsi.txt
+# 2019.07.06 farsi のサポートが無くなって Latin-1 (ASCII) 範囲の文字だけが
+#            使われているので、iconv で変換する必要がすべてなくなった！
+#INCONVENIENTFILES = $(ORIG)/doc/farsi.txt
 
 .PHONY: first html onehtml pdf diffja nvcheck tagcheck clean
 
@@ -100,9 +102,9 @@ pdfs/refrman.pdf: $(REFMANUALS) $(USRMANUALS) $(MACVIMREF)
 	PDFTEX=xetex texi2pdf -c -o $@ $<
 
 diffja:
-	@sh utils/prepare_for_diff.sh -a $(INCONVENIENTFILES)
+#	@sh utils/prepare_for_diff.sh -a $(INCONVENIENTFILES)
 	@ruby utils/diff_trans.rb --dir=$(ORIG) $(USRMANUALS) $(REFMANUALS)
-	@sh utils/prepare_for_diff.sh -z $(INCONVENIENTFILES)
+#	@sh utils/prepare_for_diff.sh -z $(INCONVENIENTFILES)
 
 diffen:
 	@diff -q -r $(HOME)/dev/vimdoc-ja/en $(ORIG)/doc | grep differ | \

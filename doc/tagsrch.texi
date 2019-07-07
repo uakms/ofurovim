@@ -3,14 +3,14 @@
 @unnumbered タグと特別な検索
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*tagsrch.txt*   For Vim version 8.1.  Last change: 2018 May 04
+*tagsrch.txt*   For Vim version 8.1.  Last change: 2019 Jun 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*tagsrch.txt*   For Vim バージョン 8.1.  Last change: 2018 May 04
+*tagsrch.txt*   For Vim バージョン 8.1.  Last change: 2019 Jun 10
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -38,6 +38,7 @@ See section |29.1| of the user manual for an introduction.
 4. Tags details			|tag-details|
 5. Tags file format		|tags-file-format|
 6. Include file searches	|include-search|
+7. Using 'tagfunc'		|tag-function|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .5 .5
@@ -47,6 +48,7 @@ See section |29.1| of the user manual for an introduction.
 @item 4. タグの詳細 @tab |@ref{tag-details}|
 @item 5. タグファイルの書式 @tab |@ref{tags-file-format}|
 @item 6. インクルードファイルの検索 @tab |@ref{include-search}|
+@item 7. '@option{tagfunc}' を使う @tab |@ref{tag-function}|
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -137,7 +139,6 @@ CTRL-]			Jump to the definition of the keyword under the
 			to the [count] one.  When no [count] is given the
 			first one is jumped to. See |tag-matchlist| for
 			jumping to other matching tags.
-			{Vi: identifier after the cursor}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{g<LeftMouse>}
@@ -152,22 +153,18 @@ CTRL-]			Jump to the definition of the keyword under the
 カーソルの下のキーワードを定義している場所にジャンプする。":tag @{name@}" と同様であるが、@{name@} はカーソルの下、もしくは次に現われるキーワードである。
 
 @{name@} に対してマッチするタグが複数ある場合、[count] 番目のタグへジャンプする。[count] が指定されないときは最初のタグへジャンプする。他のマッチするタグへジャンプするには |@ref{tag-matchlist}| を参照。
-
-@{Vi: カーソルの後の識別子@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*v_CTRL-]*
 {Visual}CTRL-]		Same as ":tag {name}", where {name} is the text that
-			is highlighted.  {not in Vi}
+			is highlighted.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{v_CTRL-]}
 @kindex v_CTRL-]
 @item @{Visual@}@kbd{CTRL-]}
 ":tag @{name@}" と同様であるが、@{name@} はハイライトされているテキストである。
-
-@{Vi にはない@}
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -228,19 +225,19 @@ changed, to avoid confusion when using ":tnext".  It is changed when using
 
 @ifset EN
 The ignore-case matches are not found for a ":tag" command when:
-- the 'ignorecase' option is off and 'tagcase' is "followic"
+- 'tagcase' is "followic" and the 'ignorecase' option is off
+- 'tagcase' is "followscs" and the 'ignorecase' option is off and the
+  'smartcase' option is off or the pattern contains an upper case character.
 - 'tagcase' is "match"
 - 'tagcase' is "smart" and the pattern contains an upper case character.
-- 'tagcase' is "followscs" and 'smartcase' option is on and the pattern
-  contains an upper case character.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 以下の場合は ":tag " で大文字小文字を無視した検索は行われません:
 @itemize
-@item '@option{ignorecase}' オプションがオフで '@option{tagcase}' が "@var{followic}" の時
+@item '@option{tagcase}' が "@var{followic}" で '@option{ignorecase}' オプションがオフの時
+@item '@option{tagcase}' が "@var{followscs}" で '@option{ignorecase}' オプションがオフで '@option{smartcase}' オプションがオフであるか、パターンに大文字が含まれている時
 @item '@option{tagcase}' が "@var{match}" である
 @item '@option{tagcase}' が "@var{smart}" でパターンに大文字が含まれる時
-@item '@option{tagcase}' が "@var{followscs}" で '@option{smartcase}' オプションがオンで、パターンに大文字が含まれる時
 @end itemize
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -248,18 +245,22 @@ The ignore-case matches are not found for a ":tag" command when:
 The ignore-case matches are found when:
 - a pattern is used (starting with a "/")
 - for ":tselect"
-- when 'tagcase' is "followic" and 'ignorecase' is off
-- when 'tagcase' is "match"
-- when 'tagcase' is "followscs" and the 'smartcase' option is off
+- when 'tagcase' is "followic" and 'ignorecase' is on
+- when 'tagcase' is "followscs" and 'ignorecase' is on or the 'smartcase'
+  option is on and the pattern does not contain an upper case character
+- when 'tagcase' is "ignore"
+- when 'tagcase' is "smart" and the patter does not contain an upper case
+  character
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 以下の場合は大文字小文字を無視した検索が行われます:
 @itemize
 @item パターンが使用される時 ("/" で始まる)
 @item ":tselect" の時
-@item '@option{tagcase}' が "@var{followic}" で '@option{ignorecase}' がオフの時
-@item '@option{tagcase}' が "@var{match}" の時
-@item '@option{tagcase}' が "@var{followscs}" で '@option{smartcase}' オプションがオフの時
+@item '@option{tagcase}' が "@var{followic}" で '@option{ignorecase}' がオンの時
+@item '@option{tagcase}' が "@var{followscs}" で '@option{ignorecase}' がオン、または '@option{smartcase}' オプションがオンでパターンに大文字が含まれていない時
+@item '@option{tagcase}' が "@var{ignore}" の時
+@item '@option{tagcase}' が "@var{smart}" でパターンに大文字が含まれていない時
 @end itemize
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -302,7 +303,7 @@ Tags are only pushed onto the stack when the 'tagstack' option is set.
 g<RightMouse>						*g<RightMouse>*
 <C-RightMouse>					*<C-RightMouse>* *CTRL-T*
 CTRL-T			Jump to [count] older entry in the tag stack
-			(default 1).  {not in Vi}
+			(default 1).
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @table @asis
@@ -315,15 +316,13 @@ CTRL-T			Jump to [count] older entry in the tag stack
 @item g<RightMouse> または
 @itemx <C-RightMouse> または
 @itemx @kbd{CTRL-T}
-タグスタック中の [count] 分だけ古いエントリにジャンプする(デフォルトは 1)。
-
-@{Vi にはない@}
+タグスタック中の [count] 分だけ古いエントリにジャンプする (デフォルトは 1)。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 						*:po* *:pop* *E555* *E556*
 :[count]po[p][!]	Jump to [count] older entry in tag stack (default 1).
-			See |tag-!| for [!].  {not in Vi}
+			See |tag-!| for [!].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:po}
@@ -338,35 +337,29 @@ CTRL-T			Jump to [count] older entry in the tag stack
 タグスタック中の [count] 分だけ古いエントリにジャンプする (デフォルトは 1)。
 
 [!] については |@ref{tag-!}| を参照。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 :[count]ta[g][!]	Jump to [count] newer entry in tag stack (default 1).
-			See |tag-!| for [!].  {not in Vi}
+			See |tag-!| for [!].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item :[count]ta[g][!]
 タグスタック中の [count] 分だけ新しいエントリにジャンプする (デフォルトは 1)。
 
 [!] については |@ref{tag-!}| を参照。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:tags*
 :tags			Show the contents of the tag stack.  The active
-			entry is marked with a '>'.  {not in Vi}
+			entry is marked with a '>'.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:tags}
 @pindex :tags
 @item :tags
 タグスタックの内容を表示する。現在のエントリは '>' でマークされる。
-
-@{Vi にはない@}
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -555,7 +548,7 @@ the same entry.
 			the current position in the list (if there is one).
 			[name] can be a regexp pattern, see |tag-regexp|.
 			See |tag-priority| for the priorities used in the
-			listing.  {not in Vi}
+			listing.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @table @asis
@@ -571,8 +564,6 @@ the same entry.
 [!] については |@ref{tag-!}| を参照。
 
 最初の列に '>' があるものはリスト中の現在の位置を指し示している (それがあるならば)。[name] は正規表現を取り得る。|@ref{tag-regexp}| を参照。リストに使われているプロパティは |@ref{tag-priority}| を参照。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 			Example output:
@@ -627,7 +618,7 @@ Enter nr of choice (<CR> to abort):
 @ifset EN
 							*:sts* *:stselect*
 :sts[elect][!] [name]	Does ":tselect[!] [name]" and splits the window for
-			the selected tag.  {not in Vi}
+			the selected tag.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:sts}
@@ -636,42 +627,35 @@ Enter nr of choice (<CR> to abort):
 @pindex :stselect
 @item :sts[elect][!] [name]
 ":tselect[!] [name]" を実行し、ウィンドウを分割して選択された tag を表示する。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*g]*
 g]			Like CTRL-], but use ":tselect" instead of ":tag".
-			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{g]}
 @kindex g]
 @item g]
 @kbd{CTRL-]} と動作は似ているが、":tag" の代わりに ":tselect" を用いる。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*v_g]*
 {Visual}g]		Same as "g]", but use the highlighted text as the
-			identifier.  {not in Vi}
+			identifier.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{v_g]}
 @kindex v_g]
 @item @{Visual@}g]
 "g]" と同じ。ただし、選択されたテキストが検索に使われる。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:tj* *:tjump*
 :tj[ump][!] [name]	Like ":tselect", but jump to the tag directly when
-			there is only one match.  {not in Vi}
+			there is only one match.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:tj}
@@ -679,15 +663,13 @@ g]			Like CTRL-], but use ":tselect" instead of ":tag".
 @pindex :tj
 @pindex :tjump
 @item :tj[ump][!] [name]
-":tselect" と動作は似ているが、適合する tag が 1 つだけのときには直接移動する。
-
-@{Vi にはない@}
+"@command{:tselect}" と動作は似ているが、適合する tag が 1 つだけのときには直接移動する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:stj* *:stjump*
 :stj[ump][!] [name]	Does ":tjump[!] [name]" and splits the window for the
-			selected tag.  {not in Vi}
+			selected tag.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:stj}
@@ -696,42 +678,35 @@ g]			Like CTRL-], but use ":tselect" instead of ":tag".
 @pindex :stjump
 @item :stj[ump][!] [name]
 ":tjump[!] [name]" を実行し、ウィンドウを分割して選択された tag を表示する。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*g_CTRL-]*
 g CTRL-]		Like CTRL-], but use ":tjump" instead of ":tag".
-			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{g_CTRL-]}
 @kindex g_CTRL-]
 @item g @kbd{CTRL-]}
 CTRL-]と動作は似ているが、":tag" の代わりに ":tjump" を用いる。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*v_g_CTRL-]*
 {Visual}g CTRL-]	Same as "g CTRL-]", but use the highlighted text as
-			the identifier.  {not in Vi}
+			the identifier.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{v_g_CTRL-]}
 @kindex v_g_CTRL-]
 @item @{Visual@}g @kbd{CTRL-]}
 "g CTRL-]" と同じ。ただし、選択されたテキストが検索に使われる。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:tn* *:tnext*
 :[count]tn[ext][!]	Jump to [count] next matching tag (default 1).  See
-			|tag-!| for [!].  {not in Vi}
+			|tag-!| for [!].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:tn}
@@ -742,14 +717,12 @@ CTRL-]と動作は似ているが、":tag" の代わりに ":tjump" を用いる
 適合する tag のうち、[count] 番目の tag に移動する。(省略時は 1)
 
 [!] に関しては |@ref{tag-!}| を参照。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:tp* *:tprevious*
 :[count]tp[revious][!]	Jump to [count] previous matching tag (default 1).
-			See |tag-!| for [!].  {not in Vi}
+			See |tag-!| for [!].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:tp}
@@ -760,13 +733,11 @@ CTRL-]と動作は似ているが、":tag" の代わりに ":tjump" を用いる
 適合する tag のうち、[count] 分だけ前の tag に移動する。(省略時は 1)
 
 [!] に関しては |@ref{tag-!}| を参照。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:tN* *:tNext*
-:[count]tN[ext][!]	Same as ":tprevious".  {not in Vi}
+:[count]tN[ext][!]	Same as ":tprevious".
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:tN}
@@ -774,16 +745,13 @@ CTRL-]と動作は似ているが、":tag" の代わりに ":tjump" を用いる
 @pindex :tN
 @pindex :tNext
 @item :[count]tN[ext][!]
-":tprevious" と同様。
-
-@{Vi にはない@}
+"@command{:tprevious}" と同様。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:tr* *:trewind*
 :[count]tr[ewind][!]	Jump to first matching tag.  If [count] is given, jump
-			to [count]th matching tag.  See |tag-!| for [!].  {not
-			in Vi}
+			to [count]th matching tag.  See |tag-!| for [!].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:tr}
@@ -794,13 +762,11 @@ CTRL-]と動作は似ているが、":tag" の代わりに ":tjump" を用いる
 適合した tag のうち最初の tag に移動する。もし [count] が与えられていたら、[count] 番目の tag に移動する。
 
 [!] については |@ref{tag-!}| を参照。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:tf* *:tfirst*
-:[count]tf[irst][!]	Same as ":trewind".  {not in Vi}
+:[count]tf[irst][!]	Same as ":trewind".
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:tf}
@@ -808,15 +774,12 @@ CTRL-]と動作は似ているが、":tag" の代わりに ":tjump" を用いる
 @pindex :tf
 @pindex :tfirst
 @item :[count]tf[irst][!]
-":trewind" と同じ。
-
-@{Vi にはない@}
+"@command{:trewind}" と同じ。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:tl* *:tlast*
-:tl[ast][!]		Jump to last matching tag.  See |tag-!| for [!].  {not
-			in Vi}
+:tl[ast][!]		Jump to last matching tag.  See |tag-!| for [!].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:tl}
@@ -827,8 +790,6 @@ CTRL-]と動作は似ているが、":tag" の代わりに ":tjump" を用いる
 適合した tag のうち最後の tag に移動する。
 
 [!] に関しては |@ref{tag-!}| を参照。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -842,7 +803,6 @@ CTRL-]と動作は似ているが、":tag" の代わりに ":tjump" を用いる
 			characters (very nomagic). The location list showing
 			the matching tags is independent of the tag stack.
 			See |tag-!| for [!].
-			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:lt}
@@ -853,8 +813,6 @@ CTRL-]と動作は似ているが、":tag" の代わりに ":tjump" を用いる
 タグ [name] にジャンプし、マッチするタグ全てをカレントウィンドウの新しいロケーションリストに追加する。[name] は正規表現でもよい (|@ref{tag-regexp}| を参照)。[name] が指定されないときはタグスタックにある最後のタグ名が使われる。タグにマッチする行を特定するための検索パターンには、特別な文字を全てエスケープするために "\V" がつけられる (very nomagic)。マッチするタグを保持するロケーションリストはタグスタックとは独立している。
 
 [!] については |@ref{tag-!}| を参照。
-
-@{Vi にはない@}
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -917,7 +875,6 @@ the same as above, with a "p" prepended.
 							*:pts* *:ptselect*
 :pts[elect][!] [name]	Does ":tselect[!] [name]" and shows the new tag in a
 			"Preview" window.  See |:ptag| for more info.
-			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @table @asis
@@ -926,16 +883,13 @@ the same as above, with a "p" prepended.
 @pindex :pts
 @pindex :ptselect
 @item :pts[elect][!] [name]
-":tselect[!] [name]" を実行し、"Preview" ウィンドウに新しいタグを表示する。詳細は |@ref{:ptag}| を参照すること。
-
-@{Vi にはない@}
+"@command{:tselect[!] [name]}" を実行し、"Preview" ウィンドウに新しいタグを表示する。詳細は |@ref{:ptag}| を参照すること。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:ptj* *:ptjump*
 :ptj[ump][!] [name]	Does ":tjump[!] [name]" and shows the new tag in a
 			"Preview" window.  See |:ptag| for more info.
-			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:ptj}
@@ -944,14 +898,11 @@ the same as above, with a "p" prepended.
 @pindex :ptjump
 @item :ptj[ump][!] [name]
 ":tjump[!] [name]" を実行し、"Preview" ウィンドウに新しいタグを表示する。詳細は |@ref{:ptag}| を参照すること。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:ptn* *:ptnext*
 :[count]ptn[ext][!]	":tnext" in the preview window.  See |:ptag|.
-			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:ptn}
@@ -959,15 +910,12 @@ the same as above, with a "p" prepended.
 @pindex :ptn
 @pindex :ptnext
 @item :[count]ptn[ext][!]
-プレビューウィンドウで ":tnext" を実行する。|@ref{:ptag}| を参照すること。
-
-@{Vi にはない@}
+プレビューウィンドウで "@command{:tnext}" を実行する。|@ref{:ptag}| を参照すること。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:ptp* *:ptprevious*
 :[count]ptp[revious][!]	":tprevious" in the preview window.  See |:ptag|.
-			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:ptp}
@@ -975,14 +923,12 @@ the same as above, with a "p" prepended.
 @pindex :ptp
 @pindex :ptprevious
 @item :[count]ptp[revious][!]
-プレビューウィンドウで ":tprevious" を実行する。|@ref{:ptag}| を参照すること。
-
-@{Vi にはない@}
+プレビューウィンドウで "@command{:tprevious}" を実行する。|@ref{:ptag}| を参照すること。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:ptN* *:ptNext*
-:[count]ptN[ext][!]	Same as ":ptprevious".  {not in Vi}
+:[count]ptN[ext][!]	Same as ":ptprevious".
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:ptN}
@@ -990,15 +936,12 @@ the same as above, with a "p" prepended.
 @pindex :ptN
 @pindex :ptNext
 @item :[count]ptN[ext][!]
-":ptprevious" と同じ。
-
-@{Vi にはない@}
+"@command{:ptprevious}" と同じ。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:ptr* *:ptrewind*
 :[count]ptr[ewind][!]	":trewind" in the preview window.  See |:ptag|.
-			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:ptr}
@@ -1006,14 +949,12 @@ the same as above, with a "p" prepended.
 @pindex :ptr
 @pindex :ptrewind
 @item :[count]ptr[ewind][!]
-プレビューウィンドウで ":trewind" を実行する。|@ref{:ptag}| を参照すること。
-
-@{Vi にはない@}
+プレビューウィンドウで "@command{:trewind}" を実行する。|@ref{:ptag}| を参照すること。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:ptf* *:ptfirst*
-:[count]ptf[irst][!]	Same as ":ptrewind".  {not in Vi}
+:[count]ptf[irst][!]	Same as ":ptrewind".
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:ptf}
@@ -1021,15 +962,12 @@ the same as above, with a "p" prepended.
 @pindex :ptf
 @pindex :ptfirst
 @item :[count]ptf[irst][!]
-":ptrewind" と同じ。
-
-@{Vi にはない@}
+"@command{:ptrewind}" と同じ。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*:ptl* *:ptlast*
 :ptl[ast][!]		":tlast" in the preview window.  See |:ptag|.
-			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:ptl}
@@ -1037,9 +975,7 @@ the same as above, with a "p" prepended.
 @pindex :ptl
 @pindex :ptlast
 @item :ptl[ast][!]
-プレビューウィンドウで ":tlast" を実行する。|@ref{:ptag}| を参照すること。
-
-@{Vi にはない@}
+プレビューウィンドウで "@command{:tlast}" を実行する。|@ref{:ptag}| を参照すること。
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -1222,7 +1158,6 @@ In a future version changing the buffer will be impossible.  All this for
 security reasons: Somebody might hide a nasty command in the tags file, which
 would otherwise go unnoticed.  Example: >
 	:$d|/tag-function-name/
-{this security prevention is not present in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{tag-security}
@@ -1237,7 +1172,6 @@ Vim はセキュリティの都合上、いくつかのコマンドを禁止し�
 @example
 :$d|/tag-function-name/
 @end example
-@{Vi ではこのセキュリティ予防は提供されない@}
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -1455,7 +1389,7 @@ ctags			As found on most Unix systems.  Only supports C.  Only
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*Exuberant_ctags*
-exuberant ctags		This a very good one.  It works for C, C++, Java,
+exuberant ctags		This is a very good one.  It works for C, C++, Java,
 			Fortran, Eiffel and others.  It can generate tags for
 			many items.  See http://ctags.sourceforge.net.
 @end ifset
@@ -1513,28 +1447,33 @@ gnatxref は gnat パッケージの一部である。
 
 
 @ifset EN
-The lines in the tags file must have one of these three formats:
+The lines in the tags file must have one of these two formats:
 
 1.  {tagname}		{TAB} {tagfile} {TAB} {tagaddress}
-2.  {tagfile}:{tagname} {TAB} {tagfile} {TAB} {tagaddress}
-3.  {tagname}		{TAB} {tagfile} {TAB} {tagaddress} {term} {field} ..
+2.  {tagname}		{TAB} {tagfile} {TAB} {tagaddress} {term} {field} ..
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-tags ファイルは次の 3 つの形式のどれかで構成されなければならない:
+tags ファイルは次の 2 つの形式のどれかで構成されなければならない:
 @enumerate
 @item @{tagname@}             @{TAB@} @{tagfile@} @{TAB@} @{tagaddress@}
-@item @{tagfile@}:@{tagname@} @{TAB@} @{tagfile@} @{TAB@} @{tagaddress@}
 @item @{tagname@}             @{TAB@} @{tagfile@} @{TAB@} @{tagaddress@} @{term@} @{field@} ..
 @end enumerate
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-The first is a normal tag, which is completely compatible with Vi.  It is the
-only format produced by traditional ctags implementations.  This is often used
-for functions that are global, also referenced in other files.
+Previously an old format was supported, see |tag-old-static|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-最初の形式は通常のタグで、Vi で完全に互換性がある。伝統的な ctags によってのみ作られる形式である。これはしばしばグローバルな関数や他のファイルを参照する場合に使用される。
+以前には古い形式がサポートされていた、|@ref{tag-old-static}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The first format is a normal tag, which is completely compatible with Vi.  It
+is the only format produced by traditional ctags implementations.  This is
+often used for functions that are global, also referenced in other files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+最初の形式は通常のタグで、Viで完全に互換性がある。伝統的なctagsによってのみ作られる形式である。これはしばしばグローバルな関数や他のファイルを参照する場合に使用される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1546,27 +1485,12 @@ also works.  The <CR> and <NL> characters can never appear inside a line.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-							*tag-old-static*
-The second format is for a static tag only.  It is obsolete now, replaced by
-the third format.  It is only supported by Elvis 1.x and Vim and a few
-versions of ctags.  A static tag is often used for functions that are local,
-only referenced in the file {tagfile}.  Note that for the static tag, the two
-occurrences of {tagfile} must be exactly the same.  Also see |tags-option|
-below, for how static tags are used.
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@anchor{tag-old-static}
-@cindex tag-old-static
-2 番目の形式は static タグにのみ使用できる。現在では廃れており、3 番目の形式に置き換えられている。これは Elvis 1.x と Vim、それといくつかのバージョンの ctags によってのみサポートされている。static タグはローカル関数によく用いられ、@{tagfile@}内のみ参照する。static タグでは 2 つの @{tagfile@} は正確に一致していなければならないことに注意すること。static タグがどのように使われるかについては |@ref{tags-option}| を参照すること。
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
-The third format is new.  It includes additional information in optional
+The second format is new.  It includes additional information in optional
 fields at the end of each line.  It is backwards compatible with Vi.  It is
 only supported by new versions of ctags (such as Exuberant ctags).
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-3 番目の形式は新しい。各行の末尾にある任意的なフィールドに追加の情報を含む。これは以前の Vi とも互換性がある。新しいバージョンの ctags にのみサポートされている(Exuberant ctags とか)。
+2 番目の形式は新しい。各行の末尾にある任意的なフィールドに追加の情報を含む。これは以前の Vi とも互換性がある。新しいバージョンの ctags にのみサポートされている(Exuberant ctags とか)。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1581,17 +1505,14 @@ only supported by new versions of ctags (such as Exuberant ctags).
 @ifset EN
 {TAB}		One <Tab> character.  Note: previous versions allowed any
 		white space here.  This has been abandoned to allow spaces in
-		{tagfile}.  It can be re-enabled by including the
-		|+tag_any_white| feature at compile time. *tag-any-white*
+		{tagfile}.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @{TAB@}
 1 文字の <Tab>。
 @quotation
 @strong{Note:} @*
-以前のバージョンではここでどんな空白文字も許可していた。これは @{tagfile@} 内にスペースを使うことを断念したためである。コンパイル時に |@ref{+tag_any_white}| 機能を付加すれば再び使えるようになる。
-@anchor{tag-any-white}
-@cindex tag-any-white
+以前のバージョンではここでどんな空白文字も許可していた。これは @{tagfile@} 内にスペースを使うことを断念したためである。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -1618,12 +1539,30 @@ only supported by new versions of ctags (such as Exuberant ctags).
 {term}		;" The two characters semicolon and double quote.  This is
 		interpreted by Vi as the start of a comment, which makes the
 		following be ignored.  This is for backwards compatibility
-		with Vi, it ignores the following fields.
+		with Vi, it ignores the following fields. Example:
+			APP	file	/^static int APP;$/;"	v
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @{term@}
-;" セミコロンとダブルクォートの 2 文字。これは Vi によってコメントとみなされ、続く文字列は無視される。以前の Vi との互換性を保つためにある。これは続くフィールドを無視する。
+;" セミコロンとダブルクォートの 2 文字。これは Vi によってコメントとみなされ、続く文字列は無視される。以前の Vi との互換性を保つためにある。これは続くフィールドを無視する。例
+@example
+APP     file    /^static int APP;$/;"   v
+@end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When {tagaddress} is not a line number or search pattern, then
+		{term} must be |;".  Here the bar ends the command (excluding
+		the bar) and ;" is used to have Vi ignore the rest of the
+		line.  Example:
+			APP	file.c	call cursor(3, 4)|;"	v
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{tagaddress@} が行番号または検索パターンではない場合、@{term@} は |;" でなければならない。ここで、バーはコマンドを終了させる (バーを除く)。そして ;" は Vi に残りの行を無視させるために使われる。例:
+@example
+APP     file.c  call cursor(3, 4)|;"    v
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
 {field} ..	A list of optional fields.  Each field has the form:
 
@@ -1672,6 +1611,7 @@ only supported by new versions of ctags (such as Exuberant ctags).
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+
 @ifset EN
 The first lines in the tags file can contain lines that start with
 	!_TAG_
@@ -1707,8 +1647,7 @@ The value '2' should be used then:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-The other tag that Vim recognizes, but only when compiled with the
-|+multi_byte| feature, is the encoding of the tags file:
+The other tag that Vim recognizes is the encoding of the tags file:
 	!_TAG_FILE_ENCODING<Tab>utf-8<Tab>{anything} ~
 Here "utf-8" is the encoding used for the tags.  Vim will then convert the tag
 being searched for from 'encoding' to the encoding of the tags file.  And when
@@ -1716,11 +1655,11 @@ listing tags the reverse happens.  When the conversion fails the unconverted
 tag is used.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-Vim が認識するもう 1 つのタグはタグファイルのエンコーディングを指定するものである。これは |@ref{+multi_byte}| が有効なときだけ利用できる:
+Vim が認識するもう 1 つのタグはタグファイルのエンコーディングを指定するものである:
 @example
 !_TAG_FILE_ENCODING<Tab>utf-8<Tab>@{anything@}
 @end example
-ここで "utf-8" はタグのエンコーディングである。Vim はタグを検索するときに検索するタグを '@option{encoding}' からタグファイルのエンコーディングに変換する。そして、タグをリストするときに元に戻す。変換が失敗したときは元のままのタグが使われる。
+ここで "@var{utf-8}" はタグのエンコーディングである。Vim はタグを検索するときに検索するタグを '@option{encoding}' からタグファイルのエンコーディングに変換する。そして、タグをリストするときに元に戻す。変換が失敗したときは元のままのタグが使われる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1768,18 +1707,13 @@ If the command is a normal search command (it starts and ends with "/" or
 @ifset EN
 - Searching starts on line 1 of the file.
   The direction of the search is forward for "/", backward for "?".
-  Note that 'wrapscan' does not matter, the whole file is always searched.  (Vi
-  does use 'wrapscan', which caused tags sometimes not be found.)  {Vi starts
-  searching in line 2 of another file.  It does not find a tag in line 1 of
-  another file when 'wrapscan' is not set}
+  Note that 'wrapscan' does not matter, the whole file is always searched.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @itemize
 @item 検索はファイルの 1 行目から開始する。
 
-検索方向は "/" で前方、"?" で後方となる。'@option{wrapscan}' は問題にならず、いつもファイル全体を検索することに注意。(Vi は '@option{wrapscan}' を使用するため、それが原因でタグが見つからないこともある。)
-
-@{Vi は 別のファイルの 2 行目から検索を開始する。'@option{wrapscan}' を設定しないときには、別のファイルの 1 行目にあるタグは見つけられない@}
+検索方向は "/" で前方、"?" で後方となる。'@option{wrapscan}' は問題にならず、いつもファイル全体を検索することに注意。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 - If the search fails, another try is done ignoring case.  If that fails too,
@@ -1792,7 +1726,7 @@ If the command is a normal search command (it starts and ends with "/" or
 	"^[#a-zA-Z_].*\<tagname[ \t]*("
   This means: A line starting with '#' or an identifier and containing the tag
   followed by white space and a '('.  This will find macro names and function
-  names with a type prepended.  {the extra searches are not in Vi}
+  names with a type prepended.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item 検索が失敗した場合は、大文字小文字を無視してもう一度検索する。それも失敗した場合には次の検索が行われる:
@@ -1804,9 +1738,42 @@ If the command is a normal search command (it starts and ends with "/" or
 "^[#a-zA-Z_].*\<tagname[ \t]*("
 @end example
 この意味は: '#' もしくは識別子で始まり、空白文字と '(' が続くタグを含む行である。これは型が先頭にあるマクロ名や関数名を見つけるだろう。
-
-@{Vi には拡張検索はない@}
 @end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+							*tag-old-static*
+Until March 2019 (patch 8.1.1092) an outdated format was supported:
+    {tagfile}:{tagname} {TAB} {tagfile} {TAB} {tagaddress}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tag-old-static}
+@cindex tag-old-static
+旧式のフォーマットは 2019 年 3 月 (patch 8.1.1092) までサポートされていた:
+@verbatim
+{tagfile}:{tagname} {TAB} {tagfile} {TAB} {tagaddress}
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+This format is for a static tag only.  It is obsolete now, replaced by
+the second format.  It is only supported by Elvis 1.x, older Vim versions and
+a few versions of ctags.  A static tag is often used for functions that are
+local, only referenced in the file {tagfile}.  Note that for the static tag,
+the two occurrences of {tagfile} must be exactly the same.  Also see
+|tags-option| below, for how static tags are used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この形式は static タグにのみ使用できる。現在では廃れており、2 番目の形式に置き換えられている。これは Elvis 1.x と古いバージョンの Vim、それといくつかのバージョンの ctags によってのみサポートされている。static タグはローカル関数によく用いられ、@{tagfile@} 内のみ参照する。static タグでは 2 つの @{tagfile@} は正確に一致していなければならないことに注意すること。static タグがどのように使われるかについては |@option{tags-option}| を参照すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The support was removed, since when you can update to the new Vim version you
+should also be able to update ctags to one that supports the second format.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+新しいバージョンの Vim に更新するときに、2 番目の形式をサポートする ctags に更新できるべきでもあるので、このサポートは削除された。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1946,7 +1913,7 @@ mapping to do that for you.  Here is an example: >
 			of the file.  Lines that look like a comment are
 			ignored (see 'comments' option).  If a count is given,
 			the count'th matching line is displayed, and comment
-			lines are not ignored.  {not in Vi}
+			lines are not ignored.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @table @asis
@@ -1954,22 +1921,17 @@ mapping to do that for you.  Here is an example: >
 @kindex [i
 @item [i
 カーソルの下にあるキーワードを含む 1 行を表示する。検索はファイルの先頭から開始する。コメントとみなせる行は無視される('@option{comments}' オプションを参照すること)。数字が与えられた場合は、先頭から指定した個数目にマッチした行を表示する。この場合はコメント行は無視されない。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*]i*
 ]i			like "[i", but start at the current cursor position.
-			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{]i}
 @kindex ]i
 @item ]i
 "[i" と同様だが、検索が現在のカーソル位置から開始される。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1977,7 +1939,7 @@ mapping to do that for you.  Here is an example: >
 :[range]is[earch][!] [count] [/]pattern[/]
 			Like "[i"  and "]i", but search in [range] lines
 			(default: whole file).
-			See |:search-args| for [/] and [!].  {not in Vi}
+			See |:search-args| for [/] and [!].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:is}
@@ -1988,8 +1950,6 @@ mapping to do that for you.  Here is an example: >
 "[i" や "]i" と同様だが、[range] で指定された範囲から検索する (デフォルト: ファイル全体)。
 
 [/] と [!] については |@ref{:search-args}| を参照。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1997,29 +1957,24 @@ mapping to do that for you.  Here is an example: >
 [I			Display all lines that contain the keyword under the
 			cursor.  Filenames and line numbers are displayed
 			for the found lines.  The search starts at the
-			beginning of the file.  {not in Vi}
+			beginning of the file.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{[I}
 @kindex [I
 @item [I
 カーソルの下にあるキーワードを含む行をすべて表示する。結果にはファイル名と行番号が表示される。検索はファイルの先頭から開始される。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*]I*
 ]I			like "[I", but start at the current cursor position.
-			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{]I}
 @kindex ]I
 @item ]I
 "[I" と同様だが、検索が現在のカーソル位置から開始される。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2027,7 +1982,7 @@ mapping to do that for you.  Here is an example: >
 :[range]il[ist][!] [/]pattern[/]
 			Like "[I" and "]I", but search in [range] lines
 			(default: whole file).
-			See |:search-args| for [/] and [!].  {not in Vi}
+			See |:search-args| for [/] and [!].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:il}
@@ -2038,8 +1993,6 @@ mapping to do that for you.  Here is an example: >
 "[I" や "]I" と同様だが、[range] で指定された範囲から検索する (デフォルト: ファイル全体)。
 
 [/] と [!] については |@ref{:search-args}| を参照。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2049,29 +2002,25 @@ mapping to do that for you.  Here is an example: >
 			of the file.  Lines that look like a comment are
 			ignored (see 'comments' option).  If a count is given,
 			the count'th matching line is jumped to, and comment
-			lines are not ignored.  {not in Vi}
+			lines are not ignored.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{[_CTRL-I}
 @kindex [_CTRL-I
 @item [ CTRL-I
 カーソルの下にあるキーワードを含む最初の 1 行にジャンプする。検索はファイルの先頭から開始する。コメントとみなせる行は無視される ('@option{comments}' オプションを参照すること)。数字が与えられた場合は、先頭から指定した個数目にマッチした行にジャンプする。この場合はコメント行は無視されない。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*]_CTRL-I*
 ] CTRL-I		like "[ CTRL-I", but start at the current cursor
-			position.  {not in Vi}
+			position.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{]_CTRL-I}
 @kindex ]_CTRL-I
 @item ] CTRL-I
 "[ CTRL-I" と同様だが、検索が現在のカーソル位置から開始される。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2079,7 +2028,7 @@ mapping to do that for you.  Here is an example: >
 :[range]ij[ump][!] [count] [/]pattern[/]
 			Like "[ CTRL-I"  and "] CTRL-I", but search in
 			[range] lines (default: whole file).
-			See |:search-args| for [/] and [!].  {not in Vi}
+			See |:search-args| for [/] and [!].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:ij}
@@ -2090,8 +2039,6 @@ mapping to do that for you.  Here is an example: >
 "[ CTRL-I" や "] CTRL-I" と同様だが、[range] で指定された範囲から検索する(デフォルト: ファイル全体)。
 
 [/] と [!] については |@ref{:search-args}| を参照。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2102,7 +2049,7 @@ CTRL-W i		Open a new window, with the cursor on the first line
 			that look like a comment line are ignored (see
 			'comments' option).  If a count is given, the count'th
 			matching line is jumped to, and comment lines are not
-			ignored.  {not in Vi}
+			ignored.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{CTRL-W_CTRL-I}
@@ -2112,8 +2059,6 @@ CTRL-W i		Open a new window, with the cursor on the first line
 @item @kbd{CTRL-W} @kbd{CTRL-I} または
 @itemx @kbd{CTRL-W} i
 新しいウィンドウを開き、カーソルの下にあったキーワードを含む最初の 1 行に移動する。検索はファイルの先頭から開始する。コメントとみなせる行は無視される('@option{comments}' オプションを参照すること)。数字が与えられた場合は、先頭から指定した個数目にマッチした行にジャンプする。この場合はコメント行は無視されない。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2121,7 +2066,7 @@ CTRL-W i		Open a new window, with the cursor on the first line
 :[range]isp[lit][!] [count] [/]pattern[/]
 			Like "CTRL-W i"  and "CTRL-W i", but search in
 			[range] lines (default: whole file).
-			See |:search-args| for [/] and [!].  {not in Vi}
+			See |:search-args| for [/] and [!].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:isp}
@@ -2132,8 +2077,6 @@ CTRL-W i		Open a new window, with the cursor on the first line
 "CTRL-W i" や "CTRL-W i" と同様だが、[range] で指定された範囲から検索する(デフォルト: ファイル全体)。
 
 [/] と [!] については |@ref{:search-args}| を参照。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2141,29 +2084,24 @@ CTRL-W i		Open a new window, with the cursor on the first line
 [d			Display the first macro definition that contains the
 			macro under the cursor.  The search starts from the
 			beginning of the file.  If a count is given, the
-			count'th matching line is displayed.  {not in Vi}
+			count'th matching line is displayed.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{[d}
 @kindex [d
 @item [d
 カーソルの下にあるマクロを含む最初のマクロ定義を表示する。検索はファイルの先頭から開始する。数字が与えられた場合は、先頭から指定した個数目にマッチした行を表示する。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*]d*
 ]d			like "[d", but start at the current cursor position.
-			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{]d}
 @kindex ]d
 @item ]d
 "[d" と同様だが、検索が現在のカーソル位置から開始される。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2171,7 +2109,7 @@ CTRL-W i		Open a new window, with the cursor on the first line
 :[range]ds[earch][!] [count] [/]string[/]
 			Like "[d"  and "]d", but search in [range] lines
 			(default: whole file).
-			See |:search-args| for [/] and [!].  {not in Vi}
+			See |:search-args| for [/] and [!].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:ds}
@@ -2182,8 +2120,6 @@ CTRL-W i		Open a new window, with the cursor on the first line
 "[d" や "]d" と同様だが、[range] で指定された範囲から検索する(デフォルト: ファイル全体)。
 
 [/] と [!] については |@ref{:search-args}| を参照。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2191,29 +2127,24 @@ CTRL-W i		Open a new window, with the cursor on the first line
 [D			Display all macro definitions that contain the macro
 			under the cursor.  Filenames and line numbers are
 			displayed for the found lines.  The search starts
-			from the beginning of the file.  {not in Vi}
+			from the beginning of the file.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{[D}
 @kindex [D
 @item [D
 カーソルの下にあるマクロを含むすべてのマクロ定義を表示する。結果にはファイル名と行番号が表示される。検索はファイルの先頭から開始される。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*]D*
 ]D			like "[D", but start at the current cursor position.
-			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{]D}
 @kindex ]D
 @item ]D
 "[D" と同様だが、検索が現在のカーソル位置から開始される。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2221,7 +2152,7 @@ CTRL-W i		Open a new window, with the cursor on the first line
 :[range]dli[st][!] [/]string[/]
 			Like `[D`  and `]D`, but search in [range] lines
 			(default: whole file).
-			See |:search-args| for [/] and [!].  {not in Vi}
+			See |:search-args| for [/] and [!].
 			Note that `:dl` works like `:delete` with the "l"
 			flag, not `:dlist`.
 @end ifset
@@ -2234,11 +2165,9 @@ CTRL-W i		Open a new window, with the cursor on the first line
 `[D` や `]D` と同様だが、[range] で指定された範囲から検索する (デフォルト: ファイル全体)。
 
 [/] と [!] については |@ref{:search-args}| を参照。
-
-@{Vi にはない@}
 @quotation
 @strong{Note:} @*
-`:dl` は `:dlist` ではなく、`:delete` に "l" レジスタを指定したものとして機能する。
+`@command{:dl}` は `@command{:dlist}` ではなく、`@command{:delete}` に "l" レジスタを指定したものとして機能する。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -2247,29 +2176,25 @@ CTRL-W i		Open a new window, with the cursor on the first line
 [ CTRL-D		Jump to the first macro definition that contains the
 			keyword under the cursor.  The search starts from
 			the beginning of the file.  If a count is given, the
-			count'th matching line is jumped to.  {not in Vi}
+			count'th matching line is jumped to.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{[_CTRL-D}
 @kindex [_CTRL-D
 @item [ @kbd{CTRL-D}
 カーソルの下にあるキーワードを含む最初のマクロ定義にジャンプする。検索はファイルの先頭から開始する。数字が与えられた場合は、先頭から指定した個数目にマッチした行にジャンプする。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*]_CTRL-D*
 ] CTRL-D		like "[ CTRL-D", but start at the current cursor
-			position.  {not in Vi}
+			position.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{]_CTRL-D}
 @kindex ]_CTRL-D
 @item ] @kbd{CTRL-D}
 "[ CTRL-D" と同様だが、検索が現在のカーソル位置から開始される。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2277,7 +2202,7 @@ CTRL-W i		Open a new window, with the cursor on the first line
 :[range]dj[ump][!] [count] [/]string[/]
 			Like "[ CTRL-D"  and "] CTRL-D", but search  in
 			[range] lines (default: whole file).
-			See |:search-args| for [/] and [!].  {not in Vi}
+			See |:search-args| for [/] and [!].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:dj}
@@ -2288,8 +2213,6 @@ CTRL-W i		Open a new window, with the cursor on the first line
 "[ CTRL-D" や "] CTRL-D" と同様だが、[range] で指定された範囲から検索する (デフォルト: ファイル全体)。
 
 [/] と [!] については |@ref{:search-args}| を参照。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2298,7 +2221,7 @@ CTRL-W d		Open a new window, with the cursor on the first
 			macro definition line that contains the keyword
 			under the cursor.  The search starts from the
 			beginning of the file.  If a count is given, the
-			count'th matching line is jumped to.  {not in Vi}
+			count'th matching line is jumped to.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{CTRL-W_CTRL-D}
@@ -2308,8 +2231,6 @@ CTRL-W d		Open a new window, with the cursor on the first
 @item @kbd{CTRL-W} @kbd{CTRL-D} または
 @itemx @kbd{CTRL-W} d
 新しいウィンドウを開き、カーソルの下にあったキーワードを含む最初のマクロ定義に移動する。検索はファイルの先頭から開始する。数字が与えられた場合は、先頭から指定した個数目にマッチした行にジャンプする。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2317,7 +2238,7 @@ CTRL-W d		Open a new window, with the cursor on the first
 :[range]dsp[lit][!] [count] [/]string[/]
 			Like "CTRL-W d", but search in [range] lines
 			(default: whole file).
-			See |:search-args| for [/] and [!].  {not in Vi}
+			See |:search-args| for [/] and [!].
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:dsp}
@@ -2328,34 +2249,31 @@ CTRL-W d		Open a new window, with the cursor on the first
 "CTRL-W d" と同様だが、[range] で指定された範囲から検索する (デフォルト: ファイル全体)。
 
 [/] と [!] については |@ref{:search-args}| を参照。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-							*:che* *:checkpath*
+					*:che* *:chec* *:check* *:checkpath*
 :che[ckpath]		List all the included files that could not be found.
-			{not in Vi}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{:che}
+@anchor{:chec}
+@anchor{:check}
 @anchor{:checkpath}
 @pindex :che
+@pindex :chec
+@pindex :check
 @pindex :checkpath
 @item :che[ckpath]
 ファイルが見つからないすべてのインクルードファイル名をリスト表示する。
-
-@{Vi にはない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-:che[ckpath]!		List all the included files.  {not in Vi}
+:che[ckpath]!		List all the included files.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item :che[ckpath]!
 すべてのインクルードファイル名をリスト表示する。
-
-@{Vi にはない@}
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -2396,7 +2314,7 @@ foobar */
 "foobar" に対する検索はマッチする。これは行がコメントとして認識されないためである(たとえ構文強調表示が認識したとしても)。
 @quotation
 @strong{Note:} @*
-マクロ定義はたいていコメントと誤認されることはないので、":dlist" や ":dsearch"、":djump" に [!] を使用することは大差がない。
+マクロ定義はたいていコメントと誤認されることはないので、"@command{:dlist}" や "@command{:dsearch}"、"@command{:djump}" に [!] を使用することは大差がない。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -2413,8 +2331,199 @@ foobar */
 @example
 :isearch /string/ | echo "the last one"
 @end example
-":djump", ":dsplit", ":dlist", ":dsearch" コマンドではパターンは検索パターンとしてではなく文字通りに使われる。
+"@command{:djump}", "@command{:dsplit}", "@command{:dlist}", "@command{:dsearch}" コマンドではパターンは検索パターンとしてではなく文字通りに使われる。
 @end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+7. Using 'tagfunc'						*tag-function*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{tag-function}
+@cindex tag-function
+@section 7. '@option{tagfunc}' を使う
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is possible to provide Vim with a function which will generate a list of
+tags used for commands like |:tag|, |:tselect| and Normal mode tag commands
+like |CTRL-]|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{:tag}|、|@ref{:tselect}| のようなコマンド、および |@ref{CTRL-]}| のようなノーマルモードタグコマンドに使われるタグのリストを生成する関数を Vim に提供することが可能である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The function used for generating the taglist is specified by setting the
+'tagfunc' option.  The function will be called with three arguments:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+タグリストの生成に使用される関数は、'@option{tagfunc}' オプションを設定することによって指定される。関数は 3 つの引数で呼び出される:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   a:pattern	The tag identifier used during the tag search.
+   a:flags	List of flags to control the function behavior.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item a:pattern タグ検索中に使用されたタグ識別子。
+@item a:flags   関数の挙動を制御するためのフラグのリスト。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+   a:info	Dict containing the following entries:
+		    buf_ffname	  Full filename which can be used for priority.
+		    user_data	  Custom data String, if stored in the tag
+				  stack previously by tagfunc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item  a:info   以下のエントリを含む辞書:
+@multitable @columnfractions .3 .7
+@item buf_ffname @tab 優先順位のために使用できる完全ファイル名。
+@item user_data @tab カスタムデータ文字列。以前の tagfunc によってタグスタックに格納されている場合。
+@end multitable
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Currently two flags may be passed to the tag function:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在、タグ関数には 2 つのフラグを渡すことができる:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+  'c'		The function was invoked by a normal command being processed
+	        (mnemonic: the tag function may use the context around the
+		cursor to perform a better job of generating the tag list.)
+  'i'		In Insert mode, the user was completing a tag (with
+		|i_CTRL-X_CTRL-]|).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .9
+@item 'c' @tab この関数は、処理中の通常のコマンドによって呼び出された。(ニーモニック: タグ関数は、カーソルの周りのコンテキストを使用して、タグリストを生成するためのより良い作業を実行できる。)
+@item 'i' @tab 挿入モードで、ユーザーはタグを補完していた (|@ref{i_CTRL-X_CTRL-]}| で)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Note that when 'tagfunc' is set, the priority of the tags described in
+|tag-priority| does not apply.  Instead, the priority is exactly as the
+ordering of the elements in the list returned by the function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+'@option{tagfunc}' が設定されている場合、|@ref{tag-priority}| に記述されているタグの優先順位は適用されない。代わりに、優先順位は、関数によって返されるリスト内の要素の順序とまったく同じである。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*E987*
+The function should return a List of Dict entries.  Each Dict must at least
+include the following entries and each value must be a string:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E987}
+@erindex E987
+関数は辞書エントリのリストを返すべきである。各辞書は少なくとも次のエントリを含み、各値は文字列でなければならない:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	name		Name of the tag.
+	filename	Name of the file where the tag is defined.  It is
+			either relative to the current directory or a full path.
+	cmd		Ex command used to locate the tag in the file.  This
+			can be either an Ex search pattern or a line number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item name @tab タグ名。
+@item filename @tab タグが定義されているファイルの名前。カレントディレクトリからの相対パスか、フルパスのどちらかである。
+@item cmd @tab ファイル内のタグを見つけるために使用される Ex コマンド。これはEx検索パターンまたは行番号のどちらかである。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Note that the format is similar to that of |taglist()|, which makes it possible
+to use its output to generate the result.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+フォーマットは |@ref{taglist()}| のものと似ており、これにより、結果を生成するためにその出力を使用することが可能になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+The following fields are optional:
+	kind		Type of the tag.
+	user_data	String of custom data stored in the tag stack which
+			can be used to disambiguate tags between operations.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下のフィールドはオプションである:
+@multitable @columnfractions .2 .8
+@item kind @tab タグの種類。
+@item user_data @tab オペレーション間でタグの曖昧さを解消するために使用できる、タグスタックに格納されたカスタムデータの文字列。
+@end multitable
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the function returns |v:null| instead of a List, a standard tag lookup will
+be performed instead.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+関数がリストの代わりに、|@ref{v:null}| を返した場合、標準のタグ検索が代わりに実行される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is not allowed to change the tagstack from inside 'tagfunc'.  *E986*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E986}
+@erindex E986
+タグスタックを '@option{tagfunc}' の内部から変更することはできない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The following is a hypothetical example of a function used for 'tagfunc'.  It
+uses the output of |taglist()| to generate the result: a list of tags in the
+inverse order of file names.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下は、'@option{tagfunc}' に使用される関数の仮定の例である。結果 (ファイル名の逆順のタグのリスト) を生成するために |@ref{taglist()}| の出力を使用している。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+>
+	function! TagFunc(pattern, flags, info)
+	  function! CompareFilenames(item1, item2)
+	    let f1 = a:item1['filename']
+	    let f2 = a:item2['filename']
+	    return f1 >=# f2 ?
+			\ -1 : f1 <=# f2 ? 1 : 0
+	  endfunction
+
+	  let result = taglist(a:pattern)
+	  call sort(result, "CompareFilenames")
+
+	  return result
+	endfunc
+	set tagfunc=TagFunc
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+function! TagFunc(pattern, flags, info)
+  function! CompareFilenames(item1, item2)
+    let f1 = a:item1['filename']
+    let f2 = a:item2['filename']
+    return f1 >=# f2 ?
+                \ -1 : f1 <=# f2 ? 1 : 0
+  endfunction
+
+  let result = taglist(a:pattern)
+  call sort(result, "CompareFilenames")
+
+  return result
+endfunc
+set tagfunc=TagFunc
+@end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN

@@ -3,14 +3,14 @@
 @unnumbered テキストに適用されているプロパティを表示する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 15
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*popup.txt*    For Vim バージョン 8.1.  Last change: 2019 Jun 15
+*popup.txt*    For Vim バージョン 8.1.  Last change: 2019 Jun 29
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -54,7 +54,7 @@ THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE
 {not available if the |+textprop| feature was disabled at compile time}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{|+textprop| 機能無効でコンパイルされたときは使用できない@}
+@{|@ref{+textprop}| 機能無効でコンパイルされたときは使用できない@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -245,12 +245,27 @@ TODO:
 @unnumberedsubsec TODO:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+- Currently 'buftype' is set to "popup", but all the specifics are on the
+  window.  Can we use a "normal" buffer and put the type on the window? (#4595)
+  What if it's modified and the window closes?
+- Add test for when popup with mask is off the left and off the right of the
+  screen.
+- check padding/border when popup is off the left and right of the screen.
+- Have a way to scroll to the bottom? (#4577)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@itemize
+@item Currently 'buftype' is set to "popup", but all the specifics are on the window.  Can we use a "normal" buffer and put the type on the window? (#4595) What if it's modified and the window closes?
+@item Add test for when popup with mask is off the left and off the right of the screen.
+@item check padding/border when popup is off the left and right of the screen.
+@item Have a way to scroll to the bottom? (#4577)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 - Why does 'nrformats' leak from the popup window buffer???
 - Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
   Use ERROR_IF_POPUP_WINDOW for more commands.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@itemize
 @item Why does 'nrformats' leak from the popup window buffer???
 @item Disable commands, feedkeys(), CTRL-W, etc. in a popup window.  Use ERROR_IF_POPUP_WINDOW for more commands.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -263,6 +278,15 @@ TODO:
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item Add 'balloonpopup': instead of showing text, let the callback open a popup  window and return the window ID.   The popup will then be closed when the mouse moves, except when it moves inside the popup.
 @item For the "moved" property also include mouse movement?
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- Can the buffer be re-used, to avoid using up lots of buffer numbers?
+- Have an option to attach the popup to a text position, like text properties
+  do. (#4560)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item Can the buffer be re-used, to avoid using up lots of buffer numbers?
+@item Have an option to attach the popup to a text position, like text properties do. (#4560)
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 - Make redrawing more efficient and avoid flicker:
@@ -286,34 +310,25 @@ TODO:
 @ifset EN
 - When drawing on top half a double-wide character, display ">" or "<" in the
   incomplete cell.
-- Can the buffer be re-used, to avoid using up lots of buffer numbers?
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item When drawing on top half a double-wide character, display ">" or "<" in the incomplete cell.
-@item Can the buffer be re-used, to avoid using up lots of buffer numbers?
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 - Use a popup window for the "info" item of completion instead of using a
   preview window.  Ideas in issue #4544.
   How to add highlighting?
-- When the lines do not fit show a scrollbar (like in the popup menu).
-  Use the mouse wheel for scrolling.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item Use a popup window for the "info" item of completion instead of using a preview window.  Ideas in issue #4544.  How to add highlighting?
-@item When the lines do not fit show a scrollbar (like in the popup menu).  Use the mouse wheel for scrolling.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 - Implement:
-	tabpage option with number
 	flip option
-	transparent text property
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item Implement:
-	tabpage option with number
 	flip option
-	transparent text property
 @end itemize
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -352,7 +367,7 @@ Creating a popup window:
 @item |@ref{popup_atcursor()}| @tab カーソル位置のすぐ上に。カーソルが移動すると閉じる
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-	|popup_notifiation()|	show a notification for three seconds
+	|popup_notification()|	show a notification for three seconds
 	|popup_dialog()|	centered with padding and border
 	|popup_menu()|		prompt for selecting an item from a list
 @end ifset
@@ -494,13 +509,13 @@ call popup_create({text}, {
 @ifset EN
 							*popup_clear()*
 popup_clear()	Emergency solution to a misbehaving plugin: close all popup
-		windows.
+		windows for the current tab and global popups.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{popup_clear()}
 @findex popup_clear()
 @item popup_clear()
-不作法にふるまうプラグインに対する緊急の解決策: すべてのポップアップウィンドウを閉じる。
+不作法にふるまうプラグインに対する緊急の解決策: グローバルポップアップとカレントタブポップアップをすべて閉じる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 
@@ -670,7 +685,7 @@ popup_filter_menu({id}, {key})				*popup_filter_menu()*
 ポップアップに使用できるフィルタ。これらのキーが使用できる:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-		    j <Down>	select item below
+		    j <Down>		select item below
 		    k <Up>		select item above
 		    <Space> <Enter>	accept current selection
 		    x Esc CTRL-C	cancel the menu
@@ -708,6 +723,14 @@ popup_filter_menu({id}, {key})				*popup_filter_menu()*
 現在の選択が受け入れられると、選択された行のインデックスを第 2 引数としてポップアップメニューの "callback" が呼び出される。最初のエントリのインデックスは 1 である。メニューをキャンセルすると、-1 でコールバックが呼び出される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+@ifset EN
+		To add shortcut keys, see the example here:
+		|popup_menu-shortcut-example|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ショートカットキーを追加する場合: |@ref{popup_menu-shortcut-example}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
@@ -724,9 +747,12 @@ popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
 		as the second argument.  Pressing Esc and 'x' works like
 		pressing 'n'.  CTRL-C invokes the callback with -1.  Other
 		keys are ignored.
+		See the example here: |popup_dialog-example|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 ポップアップに使用できるフィルタ。キー '@key{y}'、'@key{Y}' および '@key{n}' または '@key{N}' のみを処理する。第 2 引数として '@key{y}' または '@key{Y}' に 1、'@key{n}' または '@key{N}' に 0 を指定して、ポップアップメニューの "callback" を呼び出す。@key{Esc} と '@key{x}' を押すと、'@key{n}' を押すのと同じように機能する。@kbd{CTRL-C} は -1 でコールバックを呼び出す。他のキーは無視される。
+
+|@ref{popup_dialog-example}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 
@@ -765,9 +791,21 @@ popup @{id@} の @{options@} を辞書で返す。ゼロ値はオプションが
 
 @ifset EN
 		"borderhighlight" is not included when all values are empty.
+		"scrollbarhighlight" and "thumbhighlight" are onlu included
+		when set.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 すべての値が空の場合、"borderhighlight" は含まれない。
+"scrollbarhighlight" and "thumbhighlight" are onlu included when set.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		"tabpage" will be -1 for a global popup, zero for a popup on
+		the current tabpage and a positive number for a popup on
+		another tabpage.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+グローバルポップアップの場合 "tabpage" には -1 が設定され、カレントタブページの場合は 0 、別のタブページの場合は正の整数が設定される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -811,13 +849,21 @@ popup_getpos({id})					*popup_getpos()*
 		    core_line	screen line of the text box
 		    core_width	width of the text box in screen cells
 		    core_height	height of the text box in screen cells
-		    visible	one if the popup is displayed, zero if hidden
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item core_col @tab テキストボックスの画面の桁
 @item core_line @tab テキストボックスの画面の行
 @item core_width @tab 画面セル内のテキストボックスの幅
 @item core_height @tab 画面セル内のテキストボックスの高さ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		    firstline	line of the buffer at top (1 unless scrolled)
+		    scrollbar	non-zero if a scrollbar is displayed
+		    visible	one if the popup is displayed, zero if hidden
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item firstline @tab line of the buffer at top (1 unless scrolled)
+@item scrollbar @tab non-zero if a scrollbar is displayed
 @item visible ポップアップが表示されている場合は 1、非表示の場合は 0
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -918,10 +964,10 @@ call popup_create({text}, {
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 <		The current line is highlighted with a match using
-		PopupSelected, or |PmenuSel| if that is not defined.
+		"PopupSelected", or "PmenuSel" if that is not defined.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-現在行は、PopupSelected を使用してマッチでハイライトされる。PopupSelected が未定義の場合は、|PmenuSel| が使われる。
+現在行は、"PopupSelected" を使用してマッチでハイライトされる。"PopupSelected" が未定義の場合は、"PmenuSel" が使われる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1034,6 +1080,14 @@ PopupNotification ハイライトグループが定義されている場合は�
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+		This popup should only be used with the |+timers| feature,
+		otherwise it will not disappear.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+This popup should only be used with the |+timers| feature, otherwise it will not disappear.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 		The position will be adjusted to avoid overlap with other
 		notifications.
 		Use {options} to change the properties.
@@ -1086,7 +1140,11 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 			border
 			borderhighlight
 			borderchars
+			scrollbar
+			scrollbarhighlight
+			thumbhighlight
 			zindex
+			mask
 			time
 			moved
 			filter
@@ -1104,7 +1162,11 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 @item border @tab
 @item borderhighlight @tab
 @item borderchars @tab
+@item scrollbar @tab
+@item scrollbarhighlight @tab
+@item thumbhighlight @tab
 @item zindex @tab
+@item mask @tab
 @item time @tab
 @item moved @tab
 @item filter @tab
@@ -1166,7 +1228,7 @@ manipulation is restricted:
 - 'bufhidden' is "hide"
 - 'buflisted' is off
 - 'undolevels' is -1: no undo at all
-- all other buffer-local and window_local options are set to their Vim default
+- all other buffer-local and window-local options are set to their Vim default
   value.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -1251,7 +1313,7 @@ POPUP_CREATE() ARGUMENTS				*popup_create-usage*
 
 @ifset EN
 The first argument of |popup_create()| (and the second argument to
-|popup_setttext()|) specifies the text to be displayed, and optionally text
+|popup_settext()|) specifies the text to be displayed, and optionally text
 properties.  It is in one of three forms:
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -1386,32 +1448,34 @@ The second argument of |popup_create()| is a dictionary with options:
 	firstline	First buffer line to display.  When larger than one it
 			looks like the text scrolled up.  When out of range
 			the last buffer line will at the top of the window.
+			Also see "scrollbar".
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item firstline @tab 表示する最初のバッファ行。1 より大きい場合は、テキストが上にスクロールしたように見える。範囲外の場合、最後のバッファ行はウィンドウの最上部に表示される。
+@item firstline @tab 表示する最初のバッファ行。1 より大きい場合は、テキストが上にスクロールしたように見える。範囲外の場合、最後のバッファ行はウィンドウの最上部に表示される。"scrollbar" も参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	hidden		When TRUE the popup exists but is not displayed; use
 			`popup_show()` to unhide it.
-			{not implemented yet}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item hidden @tab TRUE の場合、ポップアップは存在するが表示されない。表示するには `@command{popup_show()}` を使う。
-
-@{未実装@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-	tabpage		When -1: display the popup on all tabs.
+	tabpage		When -1: display the popup on all tab pages.
 			When 0 (the default): display the popup on the current
 			tab page.
 			Otherwise the number of the tab page the popup is
-			displayed on; when invalid the current tab page is used.
-			{only -1 and 0 are implemented}
+			displayed on; when invalid the popup is not created
+			and an error is given. *E997*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item tabpage @tab -1 の場合: すべてのタブページにポップアップを表示する。0 (デフォルト)の場合: カレントタブページにポップアップを表示する。
+@item tabpage @tab -1 の場合: すべてのタブページにポップアップを表示する。
 
-それ以外の場合は、ポップアップが表示されるタブページの番号。無効な場合はカレントタブページが使用される。
+0 (デフォルト) の場合: カレントタブページにポップアップを表示する。
+
+@anchor{E997}
+@erindex E997
+それ以外の場合は、ポップアップが表示されるタブページの番号。無効な場合はポップアプは表示されず、エラーになる。
 
 @{-1 と 0 のみ実装@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -1494,8 +1558,8 @@ The second argument of |popup_create()| is a dictionary with options:
 			When the list has two characters the first is used for
 			the border lines, the second for the corners.
 			By default a double line is used all around when
-			'encoding' is "utf-8", otherwise ASCII characters are
-			used.
+			'encoding' is "utf-8" and 'ambiwidth' is "single",
+			otherwise ASCII characters are used.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item borderchars @tab 上/右/下/左のボーダーに使用する文字を定義する、文字のリスト。左上/右上/右下/左下の隅に使用する文字が任意で続く。
@@ -1504,7 +1568,35 @@ The second argument of |popup_create()| is a dictionary with options:
 
 リストに 1 文字が含まれている場合は、それがすべてに使用される。リストに2文字が含まれている場合、最初の文字はボーダーに使用され、2番目の文字はコーナーに使用される。
 
-'@option{encoding}' が "@var{utf-8}" のときはデフォルトで 2 重線が使われる。それ以外の場合は ASCII 文字が使われる。
+'@option{encoding}' が "@var{utf-8}" かつ '@option{ambiwidth}' が "@var{single}" のときはデフォルトで 2 重線が使われる。それ以外の場合は ASCII 文字が使われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	scrollbar	non-zero: show a scrollbar when the text doesn't fit.
+			zero: do not show a scrollbar.  Default is non-zero.
+			Also see |popup-scrollbar|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item scrollbar @tab non-zero: show a scrollbar when the text doesn't fit.
+
+zero: do not show a scrollbar.  Default is non-zero.
+
+Also see |popup-scrollbar|.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	scrollbarhighlight  Highlight group name for the scrollbar. The
+			background color is what matters.  When not given then
+			PmenuSbar is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item scrollbarhighlight @tab Highlight group name for the scrollbar. The background color is what matters.  When not given then PmenuSbar is used.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	thumbhighlight  Highlight group name for the scrollbar thumb. The
+			background color is what matters.  When not given then
+			PmenuThumb is used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item thumbhighlight @tab Highlight group name for the scrollbar thumb. The background color is what matters.  When not given then PmenuThumb is used.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	zindex		Priority for the popup, default 50.  Minimum value is
@@ -1512,6 +1604,13 @@ The second argument of |popup_create()| is a dictionary with options:
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item zindex @tab ポップアップの優先度。デフォルトは 50。最小値は 1、最大値は 32000。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	mask		A list of lists with coordinates, defining parts of
+			the popup that are transparent.  See |popup-mask|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item mask @tab A list of lists with coordinates, defining parts of the popup that are transparent.  See |popup-mask|.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	time		Time in milliseconds after which the popup will close.
@@ -1594,14 +1693,12 @@ These are similar to the third argument of |prop_add()| except:
 - "lnum" is always the current line in the list
 - "bufnr" is always the buffer of the popup
 - "col" is in the Dict instead of a separate argument
-- "transparent" is extra
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @itemize
 @item "lnum" は常にリストの現在の行である
 @item "bufnr" は常にポップアップのバッファである
 @item "col" は別の引数ではなく辞書内にある
-@item "transparent" が追加
 @end itemize
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -1631,17 +1728,10 @@ So we get:
 			used
 	type		name of the text property type, as added with
 			|prop_type_add()|
-	transparent	do not show these characters, show the text under it;
-			if there is a border character to the right or below
-			it will be made transparent as well
-			{not implemented yet}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item id @tab プロパティのユーザー定義 ID。省略時はゼロが使用される
 @item type @tab |prop_type_add()| で追加されたテキストプロパティタイプの名前
-@item transparent これらの文字を表示せず、その下のテキストを表示する。右または下にボーダー文字がある場合は、それも透明になる
-
-@{未実装@}
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -1800,6 +1890,91 @@ pressed, the number -1 is passed to the callback.
 ポップアップが強制終了された場合、例えば、カーソルが移動したか @kbd{CTRL-C} が押された場合、-1 がコールバックに渡される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+
+@ifset EN
+POPUP SCROLLBAR						*popup-scrollbar*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{popup-scrollbar}
+@cindex popup-scrollbar
+@unnumberedsubsec POPUP SCROLLBAR
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If the text does not fit in the popup a scrollbar is displayed on the right of
+the window.  This can be disabled by setting the "scrollbar" option to zero.
+When the scrollbar is displayed mouse scroll events, while the mouse pointer
+is on the popup, will cause the text to scroll up or down as you would expect.
+A click in the upper halve of the scrollbar will scroll the text one line
+down.  A click in the lower halve wil scroll the text one line up.  However,
+this is limited so that the popup does not get smaller.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+If the text does not fit in the popup a scrollbar is displayed on the right of the window.  This can be disabled by setting the "scrollbar" option to zero.  When the scrollbar is displayed mouse scroll events, while the mouse pointer is on the popup, will cause the text to scroll up or down as you would expect.  A click in the upper halve of the scrollbar will scroll the text one line down.  A click in the lower halve wil scroll the text one line up.  However, this is limited so that the popup does not get smaller.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+POPUP MASK						*popup-mask*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{popup-mask}
+@cindex popup-mask
+@unnumberedsubsec POPUP MASK
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To minimize the text that the popup covers, parts of it can be made
+transparent.  This is defined by a "mask" which is a list of lists, where each
+list has four numbers:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+To minimize the text that the popup covers, parts of it can be made transparent.  This is defined by a "mask" which is a list of lists, where each list has four numbers:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    col		start column, positive for counting from the left, 1 for
+		leftmost, negative for counting from the right, -1 for
+		rightmost
+    endcol	last column, like "col"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item col @tab start column, positive for counting from the left, 1 for leftmost, negative for counting from the right, -1 for rightmost
+@item endcol @tab last column, like "col"
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+    line	start line, positive for conting from the top, 1 for top,
+		negative for counting from the bottom, -1 for bottom
+    endline	end line, like "line"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item line @tab start line, positive for conting from the top, 1 for top, negative for counting from the bottom, -1 for bottom
+@item endline @tab end line, like "line"
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+For example, to make the last 10 columns of the last line transparent:
+	[[-10, -1, -1, -1]]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+For example, to make the last 10 columns of the last line transparent:
+@example
+[[-10, -1, -1, -1]]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To make the four corners transparent:
+	[[1, 1, 1, 1], [-1, -1, 1, 1], [1, 1, -1, -1], [-1, -1, -1, -1]]
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+To make the four corners transparent:
+@example
+[[1, 1, 1, 1], [-1, -1, 1, 1], [1, 1, -1, -1], [-1, -1, -1, -1]]
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
 ==============================================================================
 3. Examples						*popup-examples*
@@ -1814,13 +1989,16 @@ pressed, the number -1 is passed to the callback.
 TODO
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-TODO
+やること
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+					*popup_dialog-example*
 Prompt the user to press y/Y or n/N: >
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{popup_dialog-example}
+@cindex popup_dialog-example
 ユーザーに y/Y か n/N を押すように促す:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -1831,7 +2009,7 @@ Prompt the user to press y/Y or n/N: >
 	   endif
 	endfunc
 
-	call popup_create(['Continue? y/n'], {
+	call popup_dialog('Continue? y/n', {
 		\ 'filter': 'popup_filter_yesno',
 		\ 'callback': 'MyDialogHandler',
 		\ })
@@ -1845,10 +2023,73 @@ func MyDialogHandler(id, result)
    endif
 endfunc
 
-call popup_create(['Continue? y/n'], {
+call popup_dialog('Continue? y/n', {
         \ 'filter': 'popup_filter_yesno',
         \ 'callback': 'MyDialogHandler',
         \ })
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+					*popup_menu-shortcut-example*
+Extend popup_filter_menu() with shortcut keys: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{popup_menu-shortcut-example}
+@cindex popup_menu-shortcut-example
+popup_filter_menu() をショートカットで拡張できるようにする:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	call popup_menu(['Save', 'Cancel', 'Discard'], {
+		\ 'filter': 'MyMenuFilter',
+		\ 'callback': 'MyMenuHandler',
+		\ })
+
+	func MyMenuFilter(id, key)
+	  " Handle shortcuts
+	  if a:key == 'S'
+	     call popup_close(a:id, 1)
+	     return 1
+	  endif
+	  if a:key == 'C'
+	     call popup_close(a:id, 2)
+	     return 1
+	  endif
+	  if a:key == 'D'
+	     call popup_close(a:id, 3)
+	     return 1
+	  endif
+
+	  " No shortcut, pass to generic filter
+	  return popup_filter_menu(a:id, a:key)
+	endfunc
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+call popup_menu(['Save', 'Cancel', 'Discard'], {
+        \ 'filter': 'MyMenuFilter',
+        \ 'callback': 'MyMenuHandler',
+        \ })
+
+func MyMenuFilter(id, key)
+  " Handle shortcuts
+  if a:key == 'S'
+     call popup_close(a:id, 1)
+     return 1
+  endif
+  if a:key == 'C'
+     call popup_close(a:id, 2)
+     return 1
+  endif
+  if a:key == 'D'
+     call popup_close(a:id, 3)
+     return 1
+  endif
+
+  " No shortcut, pass to generic filter
+  return popup_filter_menu(a:id, a:key)
+endfunc
 @end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 

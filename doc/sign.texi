@@ -3,7 +3,7 @@
 @unnumbered デバッグ用の目印
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*sign.txt*      For Vim version 8.1.  Last change: 2016 Aug 17
+*sign.txt*      For Vim version 8.1.  Last change: 2019 Jun 04
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -11,7 +11,7 @@
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*sign.txt*      For Vim バージョン 8.1.  Last change: 2016 Aug 17
+*sign.txt*      For Vim バージョン 8.1.  Last change: 2019 Jun 04
 
 
                 VIMリファレンスマニュアル    by Gordon Prieur
@@ -41,12 +41,9 @@ Sign Support Features				*sign-support*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-{Vi does not have any of these features}
 {only available when compiled with the |+signs| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{Vi にはこれらの機能はない@}
-
 @{|@ref{+signs}| 機能付きでコンパイルした場合にのみ利用可能@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -89,10 +86,10 @@ terminal emulator.
 Signs and highlights are not useful just for debuggers.  Sun's Visual
 WorkShop uses signs and highlights to mark build errors and SourceBrowser
 hits.  Additionally, the debugger supports 8 to 10 different signs and
-highlight colors. |workshop|  Same for Netbeans |netbeans|.
+highlight colors, see |NetBeans|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-目印と強調はデバッガにとってだけ便利なわけではない。Sun の Visual WorkShop はビルドエラーと SourceBrowser の検索一致箇所を示すのに目印と強調を使用する。加えて、デバッガは 8 個から 10 個の異なる目印と強調色をサポートする。|@ref{workshop}| 参照。Netbeans は |@ref{netbeans}| を参照。
+目印と強調はデバッガにとってだけ便利なわけではない。Sun の Visual WorkShop はビルドエラーと SourceBrowser の検索一致箇所を示すのに目印と強調を使用する。加えて、デバッガは 8 個から 10 個の異なる目印と強調色をサポートする。|@ref{NetBeans}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -123,11 +120,14 @@ There are two steps in using signs:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+							*sign-column*
 When signs are defined for a file, Vim will automatically add a column of two
 characters to display them in.  When the last sign is unplaced the column
 disappears again.  This behavior can be changed with the 'signcolumn' option.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign-column}
+@cindex sign-column
 ファイルに対して目印が定義されると、Vim は自動的に表示画面に 2 文字分のカラムを付け加える。全てのサインが取り除かれるとそのカラムは再度消滅する。この動作は '@option{signcolumn}' オプションにより変更可能できる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -136,12 +136,66 @@ The color of the column is set with the SignColumn group |hl-SignColumn|.
 Example to set the color: >
 
 	:highlight SignColumn guibg=darkgrey
+<
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 そのカラムは SignColumn の色を使う |@ref{hl-SignColumn}| が設定される。色を設定するには次のようにする:
 @example
 :highlight SignColumn guibg=darkgrey
 @end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*sign-identifier*
+Each placed sign is identified by a number called the sign identifier. This
+identifier is used to jump to the sign or to remove the sign. The identifier
+is assigned when placing the sign using the |:sign-place| command or the
+|sign_place()| function. Each sign identifier should be a unique number. If
+multiple placed signs use the same identifier, then jumping to or removing a
+sign becomes unpredictable. To avoid overlapping identifiers, sign groups can
+be used. The |sign_place()| function can be called with a zero sign identifier
+to allocate the next available identifier.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign-identifier}
+@cindex sign-identifier
+設置された各目印は、目印 ID と呼ばれる番号によって識別される。この識別子は、目印にジャンプするため、または目印を解除するために使用される。この識別子は、|@ref{:sign-place}| コマンドまたは |@ref{sign_place()}| 関数を使用して目印を設置するときに割り当てられる。各目印 ID は固有の番号でなければならない。複数の設置された目印が同じ識別子を使用する場合、目印へのジャンプまたは目印の解除は予測不可能になる。重複する識別子を避けるために、目印グループを使うことができる。|@ref{sign_place()}| 関数は、次に使用可能な識別子を割り当てるために、目印 ID を 0 で呼び出すことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*sign-group*
+Each placed sign can be assigned to either the global group or a named group.
+When placing a sign, if a group name is not supplied, or an empty string is
+used, then the sign is placed in the global group. Otherwise the sign is
+placed in the named group. The sign identifier is unique within a group. The
+sign group allows Vim plugins to use unique signs without interfering with
+other plugins using signs.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign-group}
+@cindex sign-group
+設置された各目印は、グローバルグループまたは名前付きグループのどちらにも割り当てることができる。目印を設置するときに、グループ名が指定されていない場合、または空の文字列が使用されている場合は、目印はグローバルグループに設置される。それ以外の場合は名前付きグループに設置される。目印 ID はグループ内で一意である。グループを使うと、Vim プラグインは他のプラグインを妨害することなく独自の目印を使うことができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*sign-priority*
+Each placed sign is assigned a priority value. When multiple signs are placed
+on the same line, the attributes of the sign with the highest priority is used
+independent of the sign group. The default priority for a sign is 10. The
+priority is assigned at the time of placing a sign.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign-priority}
+@cindex sign-priority
+設置された各目印には、優先順位値が割り当てられる。同じ行に複数の目印が設置されている場合、最も優先順位の高い目印の属性が目印のグループとは独立して使用される。デフォルトの優先順位は 10 である。優先順位は、目印の設置時に割り当てられる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+When the line on which the sign is placed is deleted, the sign is moved to the
+next line (or the last line of the buffer, if there is no next line).  When
+the delete is undone the sign does not move back.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+目印が置かれている行が削除されると、その目印は次の行 (または次の行がない場合はバッファの最後の行) に移動される。削除が元に戻されても、目印は戻らない。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -211,17 +265,24 @@ DEFINING A SIGN.			*:sign-define* *E255* *E160* *E612*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+See |sign_define()| for the equivalent Vim script function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同等の Vim script 関数については |@ref{sign_define()}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 :sign define {name} {argument}...
 		Define a new sign or set attributes for an existing sign.
 		The {name} can either be a number (all digits) or a name
-		starting with a non-digit.  Leading digits are ignored, thus
+		starting with a non-digit.  Leading zeros are ignored, thus
 		"0012", "012" and "12" are considered the same name.
 		About 120 different signs can be defined.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @table @asis
 @item :sign define @{name@} @{argument@}...
-新しい目印を定義するか既にある目印に属性を設定する。@{name@} は番号 (全て数字) か非数字で始まる名前である。先導数字は無視されるので、"0012" と "012" と "12" は同じ名前として解釈される。約 120 の異なる目印を定義することができる。
+新しい目印を定義するか既にある目印に属性を設定する。@{name@} は番号 (全て数字) か非数字で始まる名前である。先行するゼロは無視されるので、"0012" と "012" と "12" は同じ名前として解釈される。約 120 の異なる目印を定義することができる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -313,6 +374,13 @@ DELETING A SIGN						*:sign-undefine* *E155*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+See |sign_undefine()| for the equivalent Vim script function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同等の Vim script 関数については |@ref{sign_undefine()}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 :sign undefine {name}
 		Deletes a previously defined sign.  If signs with this {name}
 		are still placed this will cause trouble.
@@ -325,6 +393,7 @@ DELETING A SIGN						*:sign-undefine* *E155*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 
+
 @ifset EN
 LISTING SIGNS						*:sign-list* *E156*
 @end ifset
@@ -334,6 +403,13 @@ LISTING SIGNS						*:sign-list* *E156*
 @cindex :sign-list
 @erindex E156
 @unnumberedsubsec (定義した) 目印を一覧表示する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See |sign_getdefined()| for the equivalent Vim script function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同等の Vim script 関数については |@ref{sign_getdefined()}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -365,6 +441,13 @@ PLACING SIGNS						*:sign-place* *E158*
 @cindex :sign-place
 @erindex E158
 @unnumberedsubsec 目印を設置する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See |sign_place()| for the equivalent Vim script function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同等の Vim script 関数については |@ref{sign_place()}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -404,12 +487,62 @@ PLACING SIGNS						*:sign-place* *E158*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-:sign place {id} line={lnum} name={name} buffer={nr}
-		Same, but use buffer {nr}.
+		The following optional sign attributes can be specified before
+		"file=":
+			group={group}	Place sign in sign group {group}
+			priority={prio}	Assign priority {prio} to sign
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item :sign place @{id@} line=@{lnum@} name=@{name@} buffer=@{nr@}
-上に同じ。バッファ番号を使用していることが異なる。
+次の任意の目印属性は、"file=" の前に指定できる:
+@multitable @columnfractions .4 .6
+@item group=@{group@} @tab 目印を目印グループ @{group@} に設置する
+@item priority=@{prio@} @tab  目印に優先順位 @{prio@} を割り当てる
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		By default, the sign is placed in the global sign group.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトでは、目印はグローバル目印グループに設置される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		By default, the sign is assigned a default priority of 10. To
+		assign a different priority value, use "priority={prio}" to
+		specify a value.  The priority is used to determine the sign
+		that is displayed when multiple signs are placed on the same
+		line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトでは、目印にデフォルトの優先順位 10 が割り当てられている。別の優先順位値を割り当てるには、"priority=@{prio@}" を使用して値を指定する。優先順位は、複数の目印が同じ行に設置されているときに、表示される目印を決定するために使用される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Examples: >
+			:sign place 5 line=3 name=sign1 file=a.py
+			:sign place 6 group=g2 line=2 name=sign2 file=x.py
+			:sign place 9 group=g2 priority=50 line=5
+							\ name=sign1 file=a.py
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+:sign place 5 line=3 name=sign1 file=a.py
+:sign place 6 group=g2 line=2 name=sign2 file=x.py
+:sign place 9 group=g2 priority=50 line=5
+                                \ name=sign1 file=a.py
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+:sign place {id} line={lnum} name={name} [buffer={nr}]
+		Same, but use buffer {nr}.  If the buffer argument is not
+		given, place the sign in the current buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign place @{id@} line=@{lnum@} name=@{name@} [buffer=@{nr@}]
+上に同じ。バッファ番号を使用していることが異なる。buffer 引数が与えられていない場合は、現在のバッファに目印を設置する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -430,12 +563,23 @@ PLACING SIGNS						*:sign-place* *E158*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-:sign place {id} name={name} buffer={nr}
-		Same, but use buffer {nr}.
+		The optional "group={group}" attribute can be used before
+		"file=" to select a sign in a particular group.  The optional
+		"priority={prio}" attribute can be used to change the priority
+		of an existing sign.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+任意の "group=@{group@}" 属性を "file=" の前に使用して、特定のグループの目印を選択することができる。任意の "priority=@{prio@}" 属性を使用して、既存の目印の優先順位を変更することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign place {id} name={name} [buffer={nr}]
+		Same, but use buffer {nr}.  If the buffer argument is not
+		given, use the current buffer.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item :sign place @{id@} name=@{name@} buffer=@{nr@}
-上に同じ。バッファ番号を使用していることが異なる。
+上に同じ。バッファ番号を使用していることが異なる。buffer 引数が与えられていない場合は、現在のバッファを使用する。
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -452,6 +596,13 @@ REMOVING SIGNS						*:sign-unplace* *E159*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+See |sign_unplace()| for the equivalent Vim script function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同等の Vim script 関数については |@ref{sign_unplace()}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 :sign unplace {id} file={fname}
 		Remove the previously placed sign {id} from file {fname}.
 		See remark above about {fname} |:sign-fname|.
@@ -460,6 +611,24 @@ REMOVING SIGNS						*:sign-unplace* *E159*
 @table @asis
 @item :sign unplace @{id@} file=@{fname@}
 ファイル @{fname@} に @{id@} で設置された目印を解除する。@{fname@} については上述の |@ref{:sign-fname}| を参照すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace {id} group={group} file={fname}
+		Same but remove the sign {id} in sign group {group}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace @{id@} group=@{group@} file=@{fname@}
+上に同じだが、目印グループ @{group@} の目印 ID @{id@} を解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace {id} group=* file={fname}
+		Same but remove the sign {id} from all the sign groups.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace @{id@} group=* file=@{fname@}
+上に同じだが、全ての目印グループから目印 ID @{id@} を解除する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -472,6 +641,24 @@ REMOVING SIGNS						*:sign-unplace* *E159*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+:sign unplace * group={group} file={fname}
+		Remove all placed signs in group {group} from file {fname}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace * group=@{group@} file=@{fname@}
+ファイル @{fname@} からグループ @{group@} に設置されている全ての目印を解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace * group=* file={fname}
+		Remove all placed signs in all the groups from file {fname}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace * group=* file=@{fname@}
+ファイル @{fname@} から全てのグループに設置されている全ての目印を解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 :sign unplace {id} buffer={nr}
 		Remove the previously placed sign {id} from buffer {nr}.
 @end ifset
@@ -481,12 +668,50 @@ REMOVING SIGNS						*:sign-unplace* *E159*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+:sign unplace {id} group={group} buffer={nr}
+		Remove the previously placed sign {id} in group {group} from
+		buffer {nr}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace @{id@} group=@{group@} buffer=@{nr@}
+バッファ @{nr@} からグループ @{group@} の以前に設置された目印 ID @{id@} を解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace {id} group=* buffer={nr}
+		Remove the previously placed sign {id} in all the groups from
+		buffer {nr}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace @{id@} group=* buffer=@{nr@}
+バッファ @{nr@} から、全てのグループで以前に設置された目印 ID @{id@} を解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 :sign unplace * buffer={nr}
 		Remove all placed signs in buffer {nr}.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item :sign unplace * buffer=@{nr@}
 バッファ @{nr@} に設置された目印をすべて解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace * group={group} buffer={nr}
+		Remove all placed signs in group {group} from buffer {nr}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace * group=@{group@} buffer=@{nr@}
+グループ @{group@} に設置されている全ての目印をバッファ @{nr@} から解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace * group=* buffer={nr}
+		Remove all placed signs in all the groups from buffer {nr}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace * group=* buffer=@{nr@}
+全てのグループに設置されている全ての目印をバッファ @{nr@} から解除する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -500,21 +725,79 @@ REMOVING SIGNS						*:sign-unplace* *E159*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+:sign unplace {id} group={group}
+		Remove the previously placed sign {id} in group {group} from
+		all files it appears in.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace @{id@} group=@{group@}
+表示されている全てのファイルから、グループ @{group@} の以前に設置された目印 ID @{id@} を解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace {id} group=*
+		Remove the previously placed sign {id} in all the groups from
+		all the files it appears in.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace @{id@} group=*
+表示されている全てのファイルから、全てのグループの以前に設置された目印 ID @{id@} を解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 :sign unplace *
-		Remove all placed signs.
+		Remove all placed signs in the global group from all the files.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item :sign unplace *
-設置された全ての目印を解除する。
+全てのファイルからグローバルグループの設置された全ての目印を解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace * group={group}
+		Remove all placed signs in group {group} from all the files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace * group=@{group@}
+全てのファイルからグループ @{group@} の設置された全ての目印を解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace * group=*
+		Remove all placed signs in all the groups from all the files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace * group=*
+全てのファイルから全てのグループの設置された全ての目印を解除する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 :sign unplace
-		Remove the placed sign at the cursor position.
+		Remove a placed sign at the cursor position. If multiple signs
+		are placed in the line, then only one is removed.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item :sign unplace
-カーソル位置に設置されている目印を解除する。
+カーソル位置の設置された目印を解除する。複数の目印が行内に設置されている場合は、1 つだけが削除される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace group={group}
+		Remove a placed sign in group {group} at the cursor
+		position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace group=@{group@}
+カーソル位置のグループ @{group@} の設置された目印を解除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign unplace group=*
+		Remove a placed sign in any group at the cursor position.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign unplace group=*
+カーソル位置の全てのグループの設置された目印を解除する。
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -529,6 +812,13 @@ LISTING PLACED SIGNS					*:sign-place-list*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+See |sign_getplaced()| for the equivalent Vim script function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同等の Vim script 関数については |@ref{sign_getplaced()}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 :sign place file={fname}
 		List signs placed in file {fname}.
 		See remark above about {fname} |:sign-fname|.
@@ -537,6 +827,24 @@ LISTING PLACED SIGNS					*:sign-place-list*
 @table @asis
 @item :sign place file=@{fname@}
 ファイル @{fname@} に設置されている目印を一覧表示する。@{fname@} については上述の |@ref{:sign-fname}| を参照すること。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign place group={group} file={fname}
+		List signs in group {group} placed in file {fname}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign place group=@{group@} file=@{fname@}
+ファイル @{fname@} に設置されているグループ @{group@} の目印を一覧表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign place group=* file={fname}
+		List signs in all the groups placed in file {fname}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign place group=* file=@{fname@}
+ファイル @{fname@} に設置されている全てのグループの目印を一覧表示する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -549,11 +857,47 @@ LISTING PLACED SIGNS					*:sign-place-list*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-:sign place	List placed signs in all files.
+:sign place group={group} buffer={nr}
+		List signs in group {group} placed in buffer {nr}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign place group=@{group@} buffer=@{nr@}
+バッファ @{nr@} に設置されているグループ @{group@} の目印を一覧表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign place group=* buffer={nr}
+		List signs in all the groups placed in buffer {nr}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign place group=* buffer=@{nr@}
+バッファ @{nr@} に設置されている全てのグループの目印を一覧表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign place	List placed signs in the global group in all files.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item :sign place
-全てのファイルに設置されている全ての目印を一覧表示する。
+全てのファイルに設置されているグローバルグループの目印を一覧表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign place group={group}
+		List placed signs with sign group {group} in all files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign place group=@{group@}
+全てのファイルの目印グループ @{group@} に設置されている目印を一覧表示する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign place group=*
+		List placed signs in all sign groups in all files.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign place group=*
+全てのファイルの全ての目印グループに設置されている目印を一覧表示する。
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -567,6 +911,13 @@ JUMPING TO A SIGN					*:sign-jump* *E157*
 @cindex :sign-jump
 @erindex E157
 @unnumberedsubsec (設置した) 目印へ移動する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+See |sign_jump()| for the equivalent Vim script function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+同等の Vim script の関数については |@ref{sign_jump()}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -588,15 +939,34 @@ JUMPING TO A SIGN					*:sign-jump* *E157*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-:sign jump {id} buffer={nr}					*E934*
+:sign jump {id} group={group} file={fname}
+		Same but jump to the sign in group {group}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign jump @{id@} group=@{group@} file=@{fname@}
+上に同じだが、グループ @{group@} の目印に移動する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign jump {id} [buffer={nr}]					*E934*
 		Same, but use buffer {nr}.  This fails if buffer {nr} does not
-		have a name.
+		have a name. If the buffer argument is not given, use the
+		current buffer.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{E934}
 @erindex E934
-@item :sign jump @{id@} buffer=@{nr@}
-上に同じ。バッファ @{nr@} が名前を持っていない場合には失敗する。
+@item :sign jump @{id@} [buffer=@{nr@}]
+上に同じだが、バッファ @{nr@} を使う。バッファ @{nr@} が名前を持っていない場合には失敗する。buffer 引数が与えられていない場合は、現在のバッファを使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+:sign jump {id} group={group} [buffer={nr}]
+		Same but jump to the sign in group {group}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item :sign jump @{id@} group=@{group@} [buffer=@{nr@}]
+上に同じだが、グループ @{group@} の目印に移動する。
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 

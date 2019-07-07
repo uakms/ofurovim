@@ -1,6 +1,6 @@
 # Author: nakinor
 # Created: 2017-01-26
-# Revised: 2017-08-16
+# Revised: 2019-06-25
 
 require "optparse"
 begin
@@ -33,7 +33,7 @@ def diff_docs(ifn)
 end
 
 def usage()
-  puts "Usage: #{File.basename($0)} file"
+  puts "Usage: #{File.basename($0)} --dir=PATH file"
 end
 
 def main()
