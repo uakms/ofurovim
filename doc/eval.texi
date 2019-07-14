@@ -15158,6 +15158,14 @@ glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])		*glob()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+		You can also use |readdir()| if you need to do complicated
+		things, such as limiting the number of matches.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+マッチの数を制限するなど、複雑なことをする必要がある場合にも |@ref{readdir()}| を使用することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 		A name for a non-existing file is not included.  A symbolic
 		link is only included if it points to an existing file.
 		However, when the {alllinks} argument is present and it is
@@ -15342,14 +15350,25 @@ has_key({dict}, {key})					*has_key()*
 
 @ifset EN
 haslocaldir([{winnr} [, {tabnr}]])			*haslocaldir()*
-		The result is a Number, which is 1 when the window has set a
-		local path via |:lcd|, and 0 otherwise.
+		The result is a Number:
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{haslocaldir()}
 @findex haslocaldir()
 @item haslocaldir([@{winnr@} [, @{tabnr@}]])
-結果は数値でウィンドウが |@ref{:lcd}| によってローカルなカレントディレクトリを持つようセットされているなら 1、そうでないなら 0 となる。
+結果は数値である:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		    1   when the window has set a local directory via |:lcd|
+		    2   when the tab-page has set a local directory via |:tcd|
+		    0   otherwise.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .9
+@item 1 @tab ウィンドウが |@ref{:lcd}| によってローカルディレクトリを設定している時
+@item 2 @tab タブページが |@ref{:tcd}| によってローカルディレクトリを設定している時
+@item 0 @tab その他
+@end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -15357,20 +15376,73 @@ haslocaldir([{winnr} [, {tabnr}]])			*haslocaldir()*
 		With {winnr} use this window in the current tab page.
 		With {winnr} and {tabnr} use the window in the specified tab
 		page.
-		{winnr} can be the window number or the |window-ID|.
-		Return 0 if the arguments are invalid.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 引数が指定されない場合、現在のウィンドウを対象とする。
 
 @{winnr@} が指定された場合、現在のタブページ内の @{winnr@} のウィンドウを対象とする。
 @{winnr@} と @{tabnr@} が指定された場合、@{tabnr@} のタブページ内の @{winnr@} のウィンドウを対象とする。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		{winnr} can be the window number or the |window-ID|.
+		If {winnr} is -1 it is ignored and only the tabpage is used.
+		Return 0 if the arguments are invalid.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 
 @{winnr@} にはウィンドウ番号または |@ref{window-ID}| が使える。
 
+@{winnr@} が -1 の場合は無視され、タブページのみが使用される。
+
 もし引数が不正の場合、0  を返す。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Examples: >
+			if haslocaldir() == 1
+			  " window local directory case
+			elseif haslocaldir() == 2
+			  " tab-local directory case
+			else
+			  " global directory case
+			endif
 
+			" current window
+			:echo haslocaldir()
+			:echo haslocaldir(0)
+			:echo haslocaldir(0, 0)
+			" window n in current tab page
+			:echo haslocaldir(n)
+			:echo haslocaldir(n, 0)
+			" window n in tab page m
+			:echo haslocaldir(n, m)
+			" tab page m
+			:echo haslocaldir(-1, m)
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+if haslocaldir() == 1
+  " window local directory case
+elseif haslocaldir() == 2
+  " tab-local directory case
+else
+  " global directory case
+endif
+
+" current window
+:echo haslocaldir()
+:echo haslocaldir(0)
+:echo haslocaldir(0, 0)
+" window n in current tab page
+:echo haslocaldir(n)
+:echo haslocaldir(n, 0)
+" window n in tab page m
+:echo haslocaldir(n, m)
+" tab page m
+:echo haslocaldir(-1, m)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
 		The result is a Number, which is 1 if there is a mapping that
@@ -15758,14 +15830,12 @@ echo iconv(utf8_str, "utf-8", &enc)
 <		Note that Vim uses UTF-8 for all Unicode encodings, conversion
 		from/to UCS-2 is automatically changed to use UTF-8.  You
 		cannot use UCS-2 in a string anyway, because of the NUL bytes.
-		{only available when compiled with the |+multi_byte| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @quotation
 @strong{Note:} @*
 Vim は全ての Unicode エンコーディングに対して UTF-8 を使う。UCS-2 との変換を行おうとしても、自動的に UTF-8 との変換に変更される。いずれにせよ、UCS-2 は NUL バイトを含むため、文字列に UCS-2 を使うことはできない。
 @end quotation
-@{|@ref{+multi_byte}| 機能付きでコンパイルされたときのみ利用可能@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -15787,22 +15857,36 @@ indent({lnum})	The result is a Number, which is indent of line {lnum} in the
 
 
 @ifset EN
-index({list}, {expr} [, {start} [, {ic}]])			*index()*
-		Return the lowest index in |List| {list} where the item has a
-		value equal to {expr}.  There is no automatic conversion, so
-		the String "4" is different from the Number 4.  And the number
-		4 is different from the Float 4.0.  The value of 'ignorecase'
-		is not used here, case always matters.
+index({object}, {expr} [, {start} [, {ic}]])			*index()*
+		If {object} is a |List| return the lowest index where the item
+		has a value equal to {expr}.  There is no automatic
+		conversion, so the String "4" is different from the Number 4.
+		And the number 4 is different from the Float 4.0.  The value
+		of 'ignorecase' is not used here, case always matters.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{index()}
 @findex index()
 @item index(@{list@}, @{expr@} [, @{start@} [, @{ic@}]])
-リスト |@ref{List}| @{list@} の中で、@{expr@} に等しい要素の最小のインデックスを返す。自動的な変換は行われないので、文字列の "4" は数値の 4 とは異なると判定される。そして数値の 4 は浮動小数点数の 4.0 とも異なる。'@option{ignorecase}' はここでは適用されず、常に大文字・小文字は区別される。
+@{object@} が |@ref{List}| の場合は、@{expr@} に等しい要素の最小のインデックスを返す。自動的な変換は行われないので、文字列の "4" は数値の 4 とは異なると判定される。そして数値の 4 は浮動小数点数の 4.0 とも異なる。'@option{ignorecase}' はここでは適用されず、常に大文字・小文字は区別される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If {object} is |Blob| return the lowest index where the byte
+		value is equal to {expr}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{object@} が |@ref{Blob}| の場合は、@{expr@} に等しいバイト値の最小のインデックスを返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
 		If {start} is given then start looking at the item with index
 		{start} (may be negative for an item relative to the end).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{start@} が指定された場合はインデックス @{start@} から要素の検索を始める (負数を指定すると末尾からの相対位置となる)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 		When {ic} is given and it is |TRUE|, ignore case.  Otherwise
 		case must match.
 		-1 is returned when {expr} is not found in {object}.
@@ -15811,7 +15895,7 @@ index({list}, {expr} [, {start} [, {ic}]])			*index()*
 			:if index(numbers, 123) >= 0
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{start@} が指定された場合はインデックス @{start@} から要素の検索を始める (負数を指定すると末尾からの相対位置となる)。@{ic@} に |@ref{TRUE}| が指定された場合、大文字・小文字は区別されない。そうでない場合は区別される。
+@{ic@} に |@ref{TRUE}| が指定された場合、大文字・小文字は区別されない。そうでない場合は区別される。
 
 @{object@} の中に @{expr@} が見つからない場合は -1 を返す。
 
@@ -16088,30 +16172,35 @@ inputsecret({prompt} [, {text}])			*inputsecret()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-insert({list}, {item} [, {idx}])			*insert()*
-		Insert {item} at the start of |List| {list}.
-		If {idx} is specified insert {item} before the item with index
-		{idx}.  If {idx} is zero it goes before the first item, just
-		like omitting {idx}.  A negative {idx} is also possible, see
-		|list-index|.  -1 inserts just before the last item.
-		Returns the resulting |List|.  Examples: >
+insert({object}, {item} [, {idx}])			*insert()*
+		When {object} is a |List| or a |Blob| insert {item} at the start
+		of it.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item insert(@{list@}, @{item@} [, @{idx@}])
 @anchor{insert()}
 @findex insert()
-リスト |@ref{List}| @{list@} の初めに @{item@} を挿入する。
-
-@{idx@} が指定されたときはインデックス @{idx@} の要素の前に @{item@} を挿入する。@{idx@} が 0 のときは @{idx@} を省略した場合と同じ様に最初の要素の前に挿入する。@{idx@} は負数でもよい (|@ref{list-index}| 参照)。-1 を指定すると最後の要素の前に挿入する。
-
-挿入した結果のリストを返す。例:
+@{object@} が |@ref{List}| か |@ref{Blob}| の場合、それの先頭に @{item@} を挿入する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
+		If {idx} is specified insert {item} before the item with index
+		{idx}.  If {idx} is zero it goes before the first item, just
+		like omitting {idx}.  A negative {idx} is also possible, see
+		|list-index|.  -1 inserts just before the last item.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{idx@} が指定されたときはインデックス @{idx@} の要素の前に @{item@} を挿入する。@{idx@} が 0 のときは @{idx@} を省略した場合と同じ様に最初の要素の前に挿入する。@{idx@} は負数でもよい (|@ref{list-index}| 参照)。-1 を指定すると最後の要素の前に挿入する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns the resulting |List| or |Blob|.  Examples: >
 			:let mylist = insert([2, 3, 5], 1)
 			:call insert(mylist, 4, -1)
 			:call insert(mylist, 6, len(mylist))
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+挿入した結果のリスト |List| や |Blob| を返す。例:
 @example
 :let mylist = insert([2, 3, 5], 1)
 :call insert(mylist, 4, -1)
@@ -16238,7 +16327,7 @@ islocked({expr})					*islocked()* *E786*
 isnan({expr})						*isnan()*
 		Return |TRUE| if {expr} is a float with value NaN. >
 			echo isnan(0.0 / 0.0)
-<			1 ~
+<			1
 
 		{only available when compiled with the |+float| feature}
 @end ifset
@@ -16260,13 +16349,28 @@ items({dict})						*items()*
 		Return a |List| with all the key-value pairs of {dict}.  Each
 		|List| item is a list with two items: the key of a {dict}
 		entry and the value of this entry.  The |List| is in arbitrary
-		order.
+		order.  Also see |keys()| and |values()|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{items()}
 @findex items()
 @item items(@{dict@})
-@{dict@} の全要素のキー・値のペアからなるリスト |@ref{List}| を返す。戻り値の各要素はリスト |@ref{List}| であり、キーと値の 2 個の要素を持つ。戻り値のリスト |@ref{List}| の要素の順序は不定である。
+@{dict@} の全要素のキー・値のペアからなるリスト |@ref{List}| を返す。戻り値の各要素はリスト |@ref{List}| であり、キーと値の 2 個の要素を持つ。戻り値のリスト |@ref{List}| の要素の順序は不定である。|@ref{keys()}| と |@ref{values()}| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Example: >
+			for [key, value] in items(mydict)
+			   echo key . ': ' . value
+			endfor
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@verbatim
+for [key, value] in items(mydict)
+   echo key . ': ' . value
+endfor
+@end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -16325,6 +16429,32 @@ job_info([{job}])					*job_info()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+		   Only in Unix:
+		   "termsig"	the signal which terminated the process
+				(See |job_stop()| for the values)
+				only valid when "status" is "dead"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unix のみ:
+@multitable @columnfractions .3 .7
+@item "termsig" @tab プロセスを終了させたシグナル (値については |@ref{job_stop()}| を参照)。"status" が "dead" の場合にのみ有効である
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		   Only in MS-Windows:
+		   "tty_type"	Type of virtual console in use.
+				Values are "winpty" or "conpty".
+				See 'termwintype'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows のみ:
+@multitable @columnfractions .3 .7
+@item "tty_type" @tab 使用している仮想コンソールのタイプ。値は "winpty" または "conpty"。'@option{termwintype}' を参照。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 		Without any arguments, returns a List with all Job objects.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -16361,6 +16491,15 @@ job_start({command} [, {options}])			*job_start()*
 ジョブを開始し、ジョブオブジェクトを返す。|@ref{system()}| と |@ref{:!cmd}| とは異なり、これはジョブが終了するのを待つことはない。
 
 ターミナルウィンドウでジョブを開始するには |@ref{term_start()}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If the job fails to start then |job_status()| on the returned
+		Job object results in "fail" and none of the callbacks will be
+		invoked.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブが起動に失敗した場合、返されたジョブオブジェクトの |@ref{job_status()}| は "fail" となり、どのコールバックも呼び出されない。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -16776,15 +16915,19 @@ json_decode({string})					*json_decode()*
 		The decoding is permissive:
 		- A trailing comma in an array and object is ignored, e.g.
 		  "[1, 2, ]" is the same as "[1, 2]".
+		- Integer keys are accepted in objects, e.g. {1:2} is the
+		  same as {"1":2}.
 		- More floating point numbers are recognized, e.g. "1." for
 		  "1.0", or "001.2" for "1.2". Special floating point values
-		  "Infinity" and "NaN" (capitalization ignored) are accepted.
+		  "Infinity", "-Infinity" and "NaN" (capitalization ignored)
+		  are accepted.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 デコードは寛容である:
 @itemize
 @item 配列やオブジェクトの末尾コンマは無視される。例えば "[1, 2, ]" は "[1, 2]" と同じ。
-@item 多くの浮動小数点数を認識する。例えば "1." は "1.0" として、"001.2" は "1.2" として認識される。特別な浮動小数点の値 "Infinity" と "NaN" (大文字は無視 @{訳注: "nan" や "NAN" も OK@}) を受付ける。
+@item 整数のキーはオブジェクト内で受け入れられる。例えば、@{1:2@} は @{"1":2@} と同じである。
+@item 多くの浮動小数点数を認識する。例えば "1." は "1.0" となり、"001.2" は "1.2" となる。特別な浮動小数点の値、"Infinity", "-Infinity" および "NaN" (大文字は無視 @{訳注: "nan" や "NAN" も OK@} される) は受け付けられる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 		- Leading zeroes in integer numbers are ignored, e.g. "012"
@@ -20335,7 +20478,7 @@ echo s:tree(".")
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*readfile()*
-readfile({fname} [, {binary} [, {max}]])
+readfile({fname} [, {type} [, {max}]])
 		Read file {fname} and return a |List|, each line of the file
 		as an item.  Lines are broken at NL characters.  Macintosh
 		files separated with CR will result in a single long line
@@ -20344,18 +20487,18 @@ readfile({fname} [, {binary} [, {max}]])
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{readfile()}
 @findex readfile()
-@item readfile(@{fname@} [, @{binary@} [, @{max@}]])
+@item readfile(@{fname@} [, @{type@} [, @{max@}]])
 ファイル @{fname@} を読み込み、各行を要素とするリスト |@ref{List}| を返す。行は NL 文字で終わるものとする。改行文字が CR である Macintosh のファイルは単一の長い行となる (どこかに NL が現れない限り)。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 		All NUL characters are replaced with a NL character.
-		When {binary} contains "b" binary mode is used:
+		When {type} contains "b" binary mode is used:
 		- When the last line ends in a NL an extra empty list item is
 		  added.
 		- No CR characters are removed.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-すべての NUL 文字は NL 文字に置換される。@{binary@} が "b" を含む場合、次のようにバイナリモードになる:
+すべての NUL 文字は NL 文字に置換される。@{type@} が "b" を含む場合、次のようにバイナリモードになる:
 @itemize
 @item 最後の行が NLで終わるときは、リストの末尾に余分な空文字列が追加される。
 @item CR 文字を除去しない。
@@ -20436,7 +20579,7 @@ reg_executing()						*reg_executing()*
 
 reg_recording()						*reg_recording()*
 		Returns the single letter name of the register being recorded.
-		Returns an empty string string when not recording.  See |q|.
+		Returns an empty string when not recording.  See |q|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{reg_recording()}
@@ -22355,8 +22498,8 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 				{nr} or {id}.  Only a |List| value is supported.
 		    nr		list number in the quickfix stack; zero
 				means the current quickfix list and "$" means
-				the last quickfix list
-		    title	quickfix list title text
+				the last quickfix list.
+		    title	quickfix list title text. See |quickfix-title|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .2 .8
@@ -22366,7 +22509,7 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 @item items @tab quickfix エントリのリスト。@{list@} 引数と同じ
 @item lines @tab 行のリストをパースするために '@option{errorformat}' を使う。その結果は quickfix リスト @{nr@} もしくは @{id@} に追加する。リスト |@ref{List}| の値だけがサポートされる
 @item nr @tab quickfix スタックでのリスト番号。ゼロは現在の quickfix リストを意味し、"$" は直前の quickfix リストを意味する
-@item title @tab quickfix リストのタイトルテキスト
+@item title @tab quickfix リストのタイトルテキスト。|@ref{quickfix-title}| を参照
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -23691,7 +23834,7 @@ endfunc
 @ifset EN
 sound_clear()						*sound_clear()*
 		Stop playing all sounds.
-		{only available when compiled with the +sound feature}
+		{only available when compiled with the |+sound| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item sound_clear()

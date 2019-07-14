@@ -3,14 +3,14 @@
 @unnumbered テキストに適用されているプロパティを表示する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jun 29
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jul 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*popup.txt*    For Vim バージョン 8.1.  Last change: 2019 Jun 29
+*popup.txt*    For Vim バージョン 8.1.  Last change: 2019 Jul 04
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -19,7 +19,7 @@
 
 
 @ifset EN
-Displaying text in floating window.			*popup* *popup-window*
+Displaying text in a floating window.			*popup* *popup-window*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{popup}
@@ -29,23 +29,39 @@ Displaying text in floating window.			*popup* *popup-window*
 フローティングウィンドウにテキストを表示する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
-@ifset EN
-THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{これは設計中だ - まだ変更が行われる可能性がある@}
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 1. Introduction			|popup-intro|
+   Window position and size	|popup-position|
+   Closing the popup window	|popup-close|
+   Popup buffer and window	|popup-buffer|
 2. Functions			|popup-functions|
-3. Examples			|popup-examples|
+   Details			|popup-function-details|
+3. Usage			|popup-usage|
+   popup_create() arguments	|popup_create-arguments|
+   Popup text properties	|popup-props|
+   Popup filter			|popup-filter|
+   Popup callback		|popup-callback|
+   Popup scrollbar		|popup-scrollbar|
+   Popup mask			|popup-mask|
+4. Examples			|popup-examples|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .5 .5
 @item 1. 前書き @tab |@ref{popup-intro}|
+@item Window position and size @tab |@ref{popup-position}|
+@item Closing the popup window @tab |@ref{popup-close}|
+@item Popup buffer and window @tab |@ref{popup-buffer}|
 @item 2. 関数 @tab |@ref{popup-functions}|
-@item 3. 例 @tab |@ref{popup-examples}|
+@item Details @tab |@ref{popup-function-details}|
+@item 3. Usage @tab |@ref{popup-usage}|
+@item popup_create() arguments @tab |@ref{popup_create-arguments}|
+@item Popup text properties @tab |@ref{popup-props}|
+@item Popup filter @tab |@ref{popup-filter}|
+@item Popup callback @tab |@ref{popup-callback}|
+@item Popup scrollbar @tab |@ref{popup-scrollbar}|
+@item Popup mask @tab |@ref{popup-mask}|
+@item 4. 例 @tab |@ref{popup-examples}|
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -171,12 +187,12 @@ If this is not what you are looking for, check out other popup functionality:
 
 
 @ifset EN
-WINDOW POSITION AND SIZE			*popup-position*
+WINDOW POSITION AND SIZE				*popup-position*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{popup-position}
 @cindex popup-position
-@unnumberedsubsec ウィンドウ位置とサイズ
+@unnumberedsubsec ウィンドウの位置とサイズ
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -201,22 +217,22 @@ increase the width or use the "minwidth" property.
 @ifset EN
 By default the 'wrap' option is set, so that no text disappears.  Otherwise,
 if there is not enough space then the window is shifted left in order to
-display more text. This can be disabled with the "fixed" property. Also
-disabled when right-aligned.
+display more text.  When right-aligned the window is shifted right to display
+more text.  The shifting can be disabled with the "fixed" property.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-デフォルトでは '@option{wrap}' オプションが設定されているのでテキストは消えない。または、十分なスペースがない場合、ウィンドウは左に移動してテキストをさらに表示する。これは "fixed" プロパティで無効にすることができる。右寄せの場合も無効になる。
+デフォルトでは '@option{wrap}' オプションが設定されているのでテキストは消えない。または、十分なスペースがない場合、ウィンドウは左に移動してテキストをさらに表示する。右寄せの場合、ウィンドウは右に移動してテキストをさらに表示します。この移動については "fixed" プロパティで無効にすることができます。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 Vim tries to show the popup in the location you specify.  In some cases, e.g.
 when the popup would go outside of the Vim window, it will show it somewhere
-else.  E.g. if you use `popup_atcursor()` the popup normally shows just above
+nearby.  E.g. if you use `popup_atcursor()` the popup normally shows just above
 the current cursor position, but if the cursor is close to the top of the Vim
 window it will be placed below the cursor position.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-Vim は指定した場所にポップアップを表示しようとする。場合によっては、ポップアップがVimのウィンドウの外側に出ると、他の場所に表示される。例えば、`popup_atcursor()` を使用すると、ポップアップは現在のカーソル位置のすぐ上に表示されるが、カーソルがVimのウィンドウの最上部に近い場合は、カーソル位置の下に配置される。
+Vim は指定した場所にポップアップを表示しようとする。場合によっては、ポップアップがVimのウィンドウの外側に出ると、他の近い場所に表示される。例えば、`popup_atcursor()` を使用すると、ポップアップは現在のカーソル位置のすぐ上に表示されるが、カーソルがVimのウィンドウの最上部に近い場合は、カーソル位置の下に配置される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -237,100 +253,138 @@ that it is in.
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 
-
 @ifset EN
-TODO:
+CLOSING THE POPUP WINDOW				*popup-close*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@unnumberedsubsec TODO:
+@anchor{popup-close}
+@cindex popup-close
+@unnumberedsubsec ポップアップウィンドウを閉じる
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Normally the plugin that created the popup window is also in charge of closing
+it.  If somehow a popup hangs around, you can close all of them with: >
+	call popup_clear()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+通常、ポップアップウィンドウを生成したプラグインは、これを閉じることもまた担当します。もしもプラグインがどういうわけかハングアップしてしまったなら、次のようにしてポップアップウィンドウのすべてを閉じることができます:
+@verbatim
+call popup_clear()
+@end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-- Currently 'buftype' is set to "popup", but all the specifics are on the
-  window.  Can we use a "normal" buffer and put the type on the window? (#4595)
-  What if it's modified and the window closes?
-- Add test for when popup with mask is off the left and off the right of the
-  screen.
-- check padding/border when popup is off the left and right of the screen.
-- Have a way to scroll to the bottom? (#4577)
+Some popups, such as notifications, close after a specified time.  This can be
+set with the "time" property on `popup_create()`.
+Otherwise, a popup can be closed by clicking on the X in the top-right corner
+or by clicking anywhere inside the popup.  This must be enabled with the
+"close" property.  It is set by default for notifications.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+通知のようなポップアップは一定時間後に閉じます。これは `@command{popup_create()}` の "@var{time}" プロパティで設定することができます。
+
+一方で、ポップアップは右上角の X をクリックしたり、ポップアップの内側のどこかをクリックすることによって閉じることもできます。このためには "@var{close}" プロパティを有効にする必要があります。既定では通知に設定されています。@{訳注: "close" の値が "none" になっている@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+POPUP BUFFER AND WINDOW					*popup-buffer*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{popup-buffer}
+@cindex popup-buffer
+@unnumberedsubsec ポップアップバッファとウィンドウ
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If a popup function is called to create a popup from text, a new buffer is
+created to hold the text and text properties of the popup window.  The buffer
+is always associated with the popup window and manipulation is restricted:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしもポップアップ関数がテキストからポップアップを作成するために呼ばれた場合は、ポップアップウィンドウのテキストとテキストプロパティを保持するための新しいバッファが作成される。バッファは常にポップアップウィンドウに関連付けられており、操作は制限されている:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+- the buffer has no name
+- 'buftype' is "popup"
+- 'swapfile' is off
+- 'bufhidden' is "hide"
+- 'buflisted' is off
+- 'undolevels' is -1: no undo at all
+- all other buffer-local and window-local options are set to their Vim default
+  value.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @itemize
-@item Currently 'buftype' is set to "popup", but all the specifics are on the window.  Can we use a "normal" buffer and put the type on the window? (#4595) What if it's modified and the window closes?
-@item Add test for when popup with mask is off the left and off the right of the screen.
-@item check padding/border when popup is off the left and right of the screen.
-@item Have a way to scroll to the bottom? (#4577)
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-@ifset EN
-- Why does 'nrformats' leak from the popup window buffer???
-- Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
-  Use ERROR_IF_POPUP_WINDOW for more commands.
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item Why does 'nrformats' leak from the popup window buffer???
-@item Disable commands, feedkeys(), CTRL-W, etc. in a popup window.  Use ERROR_IF_POPUP_WINDOW for more commands.
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-@ifset EN
-- Add 'balloonpopup': instead of showing text, let the callback open a popup
-  window and return the window ID.   The popup will then be closed when the
-  mouse moves, except when it moves inside the popup.
-- For the "moved" property also include mouse movement?
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item Add 'balloonpopup': instead of showing text, let the callback open a popup  window and return the window ID.   The popup will then be closed when the mouse moves, except when it moves inside the popup.
-@item For the "moved" property also include mouse movement?
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-@ifset EN
-- Can the buffer be re-used, to avoid using up lots of buffer numbers?
-- Have an option to attach the popup to a text position, like text properties
-  do. (#4560)
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item Can the buffer be re-used, to avoid using up lots of buffer numbers?
-@item Have an option to attach the popup to a text position, like text properties do. (#4560)
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-@ifset EN
-- Make redrawing more efficient and avoid flicker:
-    - put popup menu also put in popup_mask?
-- Invoke filter with character before mapping?
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item Make redrawing more efficient and avoid flicker: put popup menu also put in popup_mask?
-@item Invoke filter with character before mapping?
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-@ifset EN
-- Figure out the size and position better.
-    if wrapping splits a double-wide character
-    if wrapping inserts indent
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item Figure out the size and position better.
-    if wrapping splits a double-wide character
-    if wrapping inserts indent
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-@ifset EN
-- When drawing on top half a double-wide character, display ">" or "<" in the
-  incomplete cell.
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item When drawing on top half a double-wide character, display ">" or "<" in the incomplete cell.
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-@ifset EN
-- Use a popup window for the "info" item of completion instead of using a
-  preview window.  Ideas in issue #4544.
-  How to add highlighting?
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item Use a popup window for the "info" item of completion instead of using a preview window.  Ideas in issue #4544.  How to add highlighting?
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-@ifset EN
-- Implement:
-	flip option
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item Implement:
-	flip option
+@item 無名バッファ
+@item '@option{buftype}' は "@var{popup}"
+@item '@option{swapfile}' は off
+@item '@option{bufhidden}' は "@var{hide}"
+@item '@option{buflisted}' は off
+@item '@option{undolevels}' は -1: アンドゥはできない
+@item 他のすべてのバッファローカルおよびウィンドウローカルオプションは Vim のデフォルト値に設定されている。
 @end itemize
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+It is possible to change the specifically mentioned options, but anything
+might break then, so better leave them alone.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+具体的に言及されたオプションを変更することは可能だが、何かが壊れてしまう可能性があるので、そのままにしておくのが望ましい。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+The window does have a cursor position, but the cursor is not displayed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ウィンドウにはカーソル位置があるが、カーソルは表示されない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+To execute a command in the context of the popup window and buffer use
+`win_execute()`.  Example: >
+	call win_execute(winid, 'syntax enable')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ポップアップウィンドウとバッファのコンテキストでコマンドを実行するには `@command{win_execute()}` を使用すること。例:
+@example
+call win_execute(winid, 'syntax enable')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Options can be set on the window with `setwinvar()`, e.g.: >
+	call setwinvar(winid, '&wrap', 0)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプションは `@command{setwinvar()}` を使ってウィンドウ上で設定できる。例:
+@example
+call setwinvar(winid, '&wrap', 0)
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+And options can be set on the buffer with `setbufvar()`, e.g.: >
+	call setbufvar(winbufnr(winid), '&filetype', 'java')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+そしてオプションは `@command{setbufvar()}` を使ってバッファに設定することができる。例:
+@example
+call setbufvar(winbufnr(winid), '&filetype', 'java')
+@end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Note that this does not trigger autocommands.  Use `win_execute()` if you do
+need them.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+これは自動コマンドをトリガーしない。必要ならば `@command{win_execute()}` を使用すること。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 
 @ifset EN
@@ -341,13 +395,6 @@ TODO:
 @anchor{popup-functions}
 @cindex popup-functions
 @section 2. 関数
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
-THIS IS UNDER DESIGN - ANYTHING MAY STILL CHANGE
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{これは設計中だ - まだ変更が行われる可能性がある@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -458,30 +505,32 @@ Other:
 
 
 @ifset EN
-[functions help to be moved to eval.txt later]
+DETAILS						*popup-function-details*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-[後で eval.txt に移動する関数のヘルプ]
+@anchor{popup-function-details}
+@cindex popup-function-details
+@unnumberedsubsec 詳細
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-popup_atcursor({text}, {options})			 *popup_atcursor()*
+popup_atcursor({what}, {options})			*popup_atcursor()*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @table @asis
 @anchor{popup_atcursor()}
 @findex popup_atcursor()
-@item popup_atcursor(@{text@}, @{options@})
+@item popup_atcursor(@{what@}, @{options@})
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-		Show the {text} above the cursor, and close it when the cursor
+		Show the {what} above the cursor, and close it when the cursor
 		moves.  This works like: >
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-カーソルの上に @{text@} を表示し、カーソルが移動したら閉じる。これは次のように動作する:
+カーソルの上に @{what@} を表示し、カーソルが移動したら閉じる。これは次のように動作する:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			call popup_create({text}, {
+			call popup_create({what}, {
 				\ 'pos': 'botleft',
 				\ 'line': 'cursor-1',
 				\ 'col': 'cursor',
@@ -490,7 +539,7 @@ popup_atcursor({text}, {options})			 *popup_atcursor()*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-call popup_create({text}, {
+call popup_create({what}, {
         \ 'pos': 'botleft',
         \ 'line': 'cursor-1',
         \ 'col': 'cursor',
@@ -547,34 +596,44 @@ popup_close({id} [, {result}])				*popup_close()*
 
 
 @ifset EN
-popup_create({text}, {options})				*popup_create()*
+popup_create({what}, {options})				*popup_create()*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{popup_create()}
 @findex popup_create()
-@item popup_create(@{text@}, @{options@})
+@item popup_create(@{what@}, @{options@})
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-		Open a popup window showing {text}, which is either:
+		Open a popup window showing {what}, which is either:
+		- a buffer number
 		- a string
 		- a list of strings
 		- a list of text lines with text properties
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-次のどれかである @{text@} を見せるポップアップウィンドウを開く:
+次のどれかである @{what@} を見せるポップアップウィンドウを開く:
 @itemize
+@item バッファ番号
 @item 文字列
 @item 文字列のリスト
 @item テキストプロパティを持つテキスト行のリスト
 @end itemize
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When {what} is not a buffer number, a buffer is created with
+		'buftype' set to "popup".  That buffer will be wiped out once
+		the popup closes.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{what@} がバッファ番号ではない場合、バッファは '@option{buftype}' オプションに "@var{popup}" を設定した状態で作成されます。ひと度ポップアップが閉じられると、このバッファは消去されるでしょう。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 		{options} is a dictionary with many possible entries.
-		See |popup_create-usage| for details.
+		See |popup_create-arguments| for details.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{options@} は多くのエントリがある辞書である。詳細は |@ref{popup_create-usage}| を参照。
+@{options@} は多くのエントリがある辞書である。詳細は |@ref{popup_create-arguments}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -606,12 +665,12 @@ call setbufline(bufnr, 2, 'second line')
 
 
 @ifset EN
-popup_dialog({text}, {options})				*popup_dialog()*
+popup_dialog({what}, {options})				*popup_dialog()*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{popup_dialog()}
 @findex popup_dialog()
-@item popup_dialog(@{text@}, @{options@})
+@item popup_dialog(@{what@}, @{options@})
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 		Just like |popup_create()| but with these default options: >
@@ -620,7 +679,7 @@ popup_dialog({text}, {options})				*popup_dialog()*
 |@ref{popup_create()}| と同じだが、これらのデフォルトのオプションになる:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			call popup_create({text}, {
+			call popup_create({what}, {
 				\ 'pos': 'center',
 				\ 'zindex': 200,
 				\ 'drag': 1,
@@ -630,7 +689,7 @@ popup_dialog({text}, {options})				*popup_dialog()*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-call popup_create({text}, {
+call popup_create({what}, {
         \ 'pos': 'center',
         \ 'zindex': 200,
         \ 'drag': 1,
@@ -922,24 +981,24 @@ popup_hide({id})						*popup_hide()*
 
 
 @ifset EN
-popup_menu({text}, {options})				 *popup_menu()*
+popup_menu({what}, {options})				 *popup_menu()*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{popup_menu()}
 @findex popup_menu()
-@item popup_menu(@{text@}, @{options@})
+@item popup_menu(@{what@}, @{options@})
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-		Show the {text} near the cursor, handle selecting one of the
+		Show the {what} near the cursor, handle selecting one of the
 		items with cursorkeys, and close it an item is selected with
-		Space or Enter. {text} should have multiple lines to make this
+		Space or Enter. {what} should have multiple lines to make this
 		useful.  This works like: >
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-カーソルの近くに @{text@} を表示し、カーソルキーで項目の 1 つを選択して処理し、それを閉じるには、@key{Space} または @key{Enter} で項目を選択する。これを有効にするには、@{text@} に複数の行が必要である。これは次のように機能する:
+カーソルの近くに @{what@} を表示し、カーソルキーで項目の 1 つを選択して処理し、それを閉じるには、@key{Space} または @key{Enter} で項目を選択する。これを有効にするには、@{what@} に複数の行が必要である。これは次のように機能する:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			call popup_create({text}, {
+			call popup_create({what}, {
 				\ 'pos': 'center',
 				\ 'zindex': 200,
 				\ 'drag': 1,
@@ -951,7 +1010,7 @@ popup_menu({text}, {options})				 *popup_menu()*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-call popup_create({text}, {
+call popup_create({what}, {
         \ 'pos': 'center',
         \ 'zindex': 200,
         \ 'drag': 1,
@@ -1027,22 +1086,22 @@ popup_move({id}, {options})					*popup_move()*
 
 
 @ifset EN
-popup_notification({text}, {options})			 *popup_notification()*
+popup_notification({what}, {options})			 *popup_notification()*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{popup_notification()}
 @findex popup_notification()
-@item popup_notification(@{text@}, @{options@})
+@item popup_notification(@{what@}, @{options@})
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-		Show the {text} for 3 seconds at the top of the Vim window.
+		Show the {what} for 3 seconds at the top of the Vim window.
 		This works like: >
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-Vim のウィンドウの上部に @{text@} を 3 秒間表示する。これは次のように動作する:
+Vim のウィンドウの上部に @{what@} を 3 秒間表示する。これは次のように動作する:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			call popup_create({text}, {
+			call popup_create({what}, {
 				\ 'line': 1,
 				\ 'col': 10,
 				\ 'minwidth': 20,
@@ -1052,12 +1111,13 @@ Vim のウィンドウの上部に @{text@} を 3 秒間表示する。これは
 				\ 'drag': 1,
 				\ 'highlight': 'WarningMsg',
 				\ 'border': [],
+				\ 'close': 'click',
 				\ 'padding': [0,1,0,1],
 				\ })
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-call popup_create({text}, {
+call popup_create({what}, {
         \ 'line': 1,
         \ 'col': 10,
         \ 'minwidth': 20,
@@ -1067,6 +1127,7 @@ call popup_create({text}, {
         \ 'drag': 1,
         \ 'highlight': 'WarningMsg',
         \ 'border': [],
+        \ 'close': 'click',
         \ 'padding': [0,1,0,1],
         \ })
 @end verbatim
@@ -1080,11 +1141,11 @@ PopupNotification ハイライトグループが定義されている場合は�
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-		This popup should only be used with the |+timers| feature,
-		otherwise it will not disappear.
+		Without the |+timers| feature the poup will not disappear
+		automatically, the user has to click in it.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-This popup should only be used with the |+timers| feature, otherwise it will not disappear.
+|@ref{+timers}| 機能がないと、ポップアップは自動的に消えないでしょう。ユーザーはこれをクリックしなければなりません。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1130,47 +1191,49 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 ポップアップ @{id@} のオプションを @{options@} のエントリで上書きする。これらのオプションが設定できる:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			flip
-			firstline
-			title
-			wrap
-			drag
-			highlight
-			padding
 			border
-			borderhighlight
 			borderchars
+			borderhighlight
+			callback
+			close
+			drag
+			filter
+			firstline
+			flip
+			highlight
+			mask
+			moved
+			padding
 			scrollbar
 			scrollbarhighlight
 			thumbhighlight
-			zindex
-			mask
 			time
-			moved
-			filter
-			callback
+			title
+			wrap
+			zindex
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .9 .1
-@item flip @tab
-@item firstline @tab
-@item title @tab
-@item wrap @tab
-@item drag @tab
-@item highlight @tab
-@item padding @tab
 @item border @tab
-@item borderhighlight @tab
 @item borderchars @tab
+@item borderhighlight @tab
+@item callback @tab
+@item close @tab
+@item drag @tab
+@item filter @tab
+@item firstline @tab
+@item flip @tab
+@item highlight @tab
+@item mask @tab
+@item moved @tab
+@item padding @tab
 @item scrollbar @tab
 @item scrollbarhighlight @tab
 @item thumbhighlight @tab
-@item zindex @tab
-@item mask @tab
 @item time @tab
-@item moved @tab
-@item filter @tab
-@item callback @tab
+@item title @tab
+@item wrap @tab
+@item zindex @tab
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -1192,12 +1255,13 @@ popup_settext({id}, {text})				*popup_settext()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 		Set the text of the buffer in poup win {id}. {text} is the
-		same as supplied to |popup_create()|.
+		same as supplied to |popup_create()|, except that a buffer
+		number is not allowed.
 		Does not change the window size or position, other than caused
 		by the different text.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-ポップアップウィンドウ @{id@} でバッファのテキストを設定する。@{text@} は |@ref{popup_create()}| に提供されるものと同じである。
+ポップアップウィンドウ @{id@} でバッファのテキストを設定する。@{text@} は |@ref{popup_create()}| に提供されるものと同じである。ただしバッファ番号は認められていない。
 
 テキストの違いが生じる以外の、ウィンドウのサイズや位置は変わらない。
 @end table
@@ -1205,127 +1269,41 @@ popup_settext({id}, {text})				*popup_settext()*
 
 
 @ifset EN
-POPUP BUFFER AND WINDOW					*popup-buffer*
+==============================================================================
+3. Usage						*popup-usage*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@anchor{popup-buffer}
-@cindex popup-buffer
-@unnumberedsubsec ポップアップバッファとウィンドウ
+@anchor{popup-usage}
+@cindex popup-usage
+@section 3. Usage
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-A new buffer is created to hold the text and text properties of the popup
-window.  The buffer is always associated with the popup window and
-manipulation is restricted:
+POPUP_CREATE() ARGUMENTS			 *popup_create-arguments*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-ポップアップウィンドウのテキストとテキストプロパティを保持するための新しいバッファが作成される。バッファは常にポップアップウィンドウに関連付けられており、操作は制限されている:
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-@ifset EN
-- the buffer has no name
-- 'buftype' is "popup"
-- 'swapfile' is off
-- 'bufhidden' is "hide"
-- 'buflisted' is off
-- 'undolevels' is -1: no undo at all
-- all other buffer-local and window-local options are set to their Vim default
-  value.
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@itemize
-@item 無名バッファ
-@item '@option{buftype}' は "@var{popup}"
-@item '@option{swapfile}' は off
-@item '@option{bufhidden}' は "@var{hide}"
-@item '@option{buflisted}' は off
-@item '@option{undolevels}' は -1: アンドゥはできない
-@item 他のすべてのバッファローカルおよびウィンドウローカルオプションは Vim のデフォルト値に設定されている。
-@end itemize
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
-It is possible to change the specifically mentioned options, but anything
-might break then, so better leave them alone.
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-具体的に言及されたオプションを変更することは可能だが、何かが壊れてしまう可能性があるので、そのままにしておくのが望ましい。
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
-The window does have a cursor position, but the cursor is not displayed.
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-ウィンドウにはカーソル位置があるが、カーソルは表示されない。
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
-To execute a command in the context of the popup window and buffer use
-`win_execute()`.  Example: >
-	call win_execute(winid, 'syntax enable')
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-ポップアップウィンドウとバッファのコンテキストでコマンドを実行するには `@command{win_execute()}` を使用すること。例:
-@example
-call win_execute(winid, 'syntax enable')
-@end example
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
-Options can be set on the window with `setwinvar()`, e.g.: >
-	call setwinvar(winid, '&wrap', 0)
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-オプションは `@command{setwinvar()}` を使ってウィンドウ上で設定できる。例:
-@example
-call setwinvar(winid, '&wrap', 0)
-@end example
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-@ifset EN
-And options can be set on the buffer with `setbufvar()`, e.g.: >
-	call setbufvar(winbufnr(winid), '&filetype', 'java')
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-そしてオプションは `@command{setbufvar()}` を使ってバッファに設定することができる。例:
-@example
-call setbufvar(winbufnr(winid), '&filetype', 'java')
-@end example
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-@ifset EN
-Note that this does not trigger autocommands.  Use `win_execute()` if you do
-need them.
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@quotation
-@strong{Note:} @*
-これは自動コマンドをトリガーしない。必要ならば `@command{win_execute()}` を使用すること。
-@end quotation
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-
-@ifset EN
-POPUP_CREATE() ARGUMENTS				*popup_create-usage*
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@anchor{popup_create-usage}
-@cindex popup_create-usage
+@anchor{popup_create-arguments}
+@cindex popup_create-arguments
 @unnumberedsubsec POPUP_CREATE() の引数
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 The first argument of |popup_create()| (and the second argument to
 |popup_settext()|) specifies the text to be displayed, and optionally text
-properties.  It is in one of three forms:
+properties.  It is in one of four forms:
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-|@ref{popup_create()}| の最初の引数 (と |@ref{popup_settext()}| の第 2 引数) は表示されるテキストと、オプションでテキストプロパティを指定する。それは 3 つの形式のうちの 1 つである:
+|@ref{popup_create()}| の最初の引数 (と |@ref{popup_settext()}| の第 2 引数) は表示されるテキストと、オプションでテキストプロパティを指定する。それは 4 つの形式のうちの 1 つである:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+- a buffer number
 - a string
 - a list of strings
 - a list of dictionaries, where each dictionary has these entries:
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @itemize
+@item バッファ番号
 @item 文字列
 @item 文字列のリスト
 @item 辞書のリスト。各辞書は次のエントリを持つ:
@@ -1504,6 +1482,23 @@ The second argument of |popup_create()| is a dictionary with options:
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item drag @tab ボーダーを掴んでマウスでポップアップをドラッグできるようにする場合は TRUE。ポップアップにボーダーがない場合は効果がない。"pos" が "center" の場合は、ドラッグが始まるとすぐに "topleft" に変更される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	close		When "button" an X is displayed in the top-right, on
+			top of any border, padding or text.  When clicked on
+			the X the popup will close.  Any callback is invoked
+			with the value -2.
+			When "click" any mouse click in the popup will close
+			it.
+			When "none" (the default) mouse clicks do not close
+			the popup window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item close @tab "@var{button}" の時は、どのようなボーダ、パディング、テキスト上であっても X が右上に表示されます。X をクリックするとポップアップは閉じられます。どのようなコールバックも -2 の値で呼び出されます。
+
+"@var{click}" の時は、ポップアップ内ならどのようなマウスクリックでも閉じられます。
+
+"@var{none}" (これが既定) の時は、マウスクリックでポップアップウィンドウは閉じられません。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	highlight	Highlight group name to use for the text, stored in
@@ -1977,7 +1972,7 @@ To make the four corners transparent:
 
 @ifset EN
 ==============================================================================
-3. Examples						*popup-examples*
+4. Examples						*popup-examples*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{popup-examples}
@@ -1986,10 +1981,10 @@ To make the four corners transparent:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-TODO
+TODO: more interesting examples
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-やること
+やること: 興味深い例をもっと
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
