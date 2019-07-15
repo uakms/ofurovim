@@ -3,14 +3,14 @@
 @unnumbered 式の評価、条件式 (Vim script リファレンス)
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*eval.txt*	For Vim version 8.1.  Last change: 2018 May 17
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jul 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*eval.txt*	For Vim バージョン 8.1.  Last change: 2018 May 17
+*eval.txt*	For Vim バージョン 8.1.  Last change: 2019 Jul 04
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -16944,6 +16944,8 @@ json_decode({string})					*json_decode()*
 @item 文字列中のエスケープされていない U+0000 から U+001F までのコントロールキャラクターは受け取られる。例えば "	" (文字列中のタブ文字) は "\t" となる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+		- An empty JSON expression or made of only spaces is accepted
+		  and results in v:none.
 		- Backslash in an invalid 2-character sequence escape is
 		  ignored, e.g. "\a" is decoded as "a".
 		- A correct surrogate pair in JSON strings should normally be
@@ -16952,6 +16954,7 @@ json_decode({string})					*json_decode()*
 		  such as "\uD834" or "\uD834\u"
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 空の JSON 式、またはスペースのみで構成されているものは受け入れられ、v:none になる。
 @item 不正な 2 文字のエスケープ文字中のバックスラッシュは無視される。例えば "\a" は  "a" にデコードされる。
 @item JSON 文字列中の正しいサロゲートペアは、通常は "\uD834\uDD1E" のように 12 文字の列であるべきだが、json_decode() は "\uD834" や "\uD834\u" のように分断されたサロゲートペアを黙って受け取る。
 @end itemize
@@ -16991,10 +16994,7 @@ json_encode({expr})					*json_encode()*
 		   |Float|		floating point number
 		   Float nan		"NaN"
 		   Float inf		"Infinity"
-		   |String|		in double quotes (possibly null)
-		   |Funcref|		not possible, error
-		   |List|		as an array (possibly null); when
-					used recursively: []
+		   Float -inf		"-Infinity"
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 
@@ -17004,20 +17004,35 @@ Vim の値は以下の通りに変換される:
 @item 浮動小数点数 |@ref{Float}| @tab 浮動小数点数
 @item 浮動小数点数 nan @tab "NaN"
 @item 浮動小数点数 inf @tab "Infinity"
-@item 文字列 |@ref{String}| @tab ダブルクォートで括られた文字列 (null 可)
-@item |@ref{Funcref}| @tab 不可、エラー
-@item リスト |@ref{List}| @tab 配列 (null可) 再帰的に使用された場合: []
+@item 浮動小数点数 -inf @tab "-Infinity"
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+		   |String|		in double quotes (possibly null)
+		   |Funcref|		not possible, error
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item 文字列 |@ref{String}| @tab ダブルクォートで括られた文字列 (null 可)
+@item |@ref{Funcref}| @tab 不可、エラー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   |List|		as an array (possibly null); when
+					used recursively: []
 		   |Dict|		as an object (possibly null); when
 					used recursively: {}
+		   |Blob|		as an array of the individual bytes
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item リスト |@ref{List}| @tab 配列 (null可) 再帰的に使用された場合: []
+@item 辞書 |@ref{Dict}| @tab オブジェクト (null可) 再帰的に使用された場合: @{@}
+@item |@ref{Blob}| @tab 個々のバイト配列
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 		   v:false		"false"
 		   v:true		"true"
 		   v:none		"null"
 		   v:null		"null"
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item 辞書 |Dict| @tab オブジェクト (null可) 再帰的に使用された場合: @{@}
 @item v:false @tab "false"
 @item v:true @tab "true"
 @item v:none @tab "null"
@@ -17039,13 +17054,13 @@ NaN と Infinity は値として渡されることに注意すること。これ
 @ifset EN
 keys({dict})						*keys()*
 		Return a |List| with all the keys of {dict}.  The |List| is in
-		arbitrary order.
+		arbitrary order.  Also see |items()| and |values()|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{keys()}
 @findex keys()
 @item keys(@{dict@})
-@{dict@} の全キーからなるリスト |@ref{List}| を返す。リスト |@ref{List}| の順序は不定である。
+@{dict@} の全キーからなるリスト |@ref{List}| を返す。リスト |@ref{List}| の順序は不定である。|@ref{items()}| と |@ref{values()}| も参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -17055,6 +17070,7 @@ len({expr})	The result is a Number, which is the length of the argument.
 		used, as with |strlen()|.
 		When {expr} is a |List| the number of items in the |List| is
 		returned.
+		When {expr} is a |Blob| the number of bytes is returned.
 		When {expr} is a |Dictionary| the number of entries in the
 		|Dictionary| is returned.
 		Otherwise an error is given.
@@ -17068,6 +17084,8 @@ len({expr})	The result is a Number, which is the length of the argument.
 結果は数値で、引数 @{expr@} の長さ。@{expr@} が文字列または数値のときは |@ref{strlen()}| と同じようにバイト単位での長さを返す。
 
 @{expr@} がリスト |@ref{List}| のときは要素数を返す。
+
+@{expr@} が |@ref{Blob}| の場合、バイト数を返す。
 
 @{expr@} が辞書 |@ref{Dictionary}| のときは要素数を返す。
 
@@ -18208,10 +18226,6 @@ echo match("testing", "..", 0, 2)
 @ifset EN
 				*matchadd()* *E798* *E799* *E801* *E957*
 matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
-		Defines a pattern to be highlighted in the current window (a
-		"match").  It will be highlighted with {group}.  Returns an
-		identification number (ID), which can be used to delete the
-		match using |matchdelete()|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{matchadd()}
@@ -18225,7 +18239,15 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 @erindex E801
 @erindex E957
 @item matchadd(@{group@}, @{pattern@} [, @{priority@} [, @{id@} [, @{dict@}]]])
-カレントウィンドウで強調表示するパターンを定義する。このパターンのことを「マッチ」と呼ぶ。構文グループ @{group@} で強調する。戻り値は、マッチを識別する ID である。|@ref{matchdelete()}| でこの ID を指定してマッチを削除することができる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Defines a pattern to be highlighted in the current window (a
+		"match").  It will be highlighted with {group}.  Returns an
+		identification number (ID), which can be used to delete the
+		match using |matchdelete()|.  The ID is bound to the window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+カレントウィンドウで強調表示するパターンを定義する。このパターンのことを「マッチ」と呼ぶ。構文グループ @{group@} で強調する。戻り値は、マッチを識別する ID である。|@ref{matchdelete()}| でこの ID を指定してマッチを削除することができる。この ID はウィンドウに紐付けられている。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 		Matching is case sensitive and magic, unless case sensitivity
@@ -18444,7 +18466,7 @@ matcharg({nr})							*matcharg()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-matchdelete({id})			       *matchdelete()* *E802* *E803*
+matchdelete({id} [, {win})		       *matchdelete()* *E802* *E803*
 		Deletes a match with ID {id} previously defined by |matchadd()|
 		or one of the |:match| commands.  Returns 0 if successful,
 		otherwise -1.  See example for |matchadd()|.  All matches can
@@ -18457,8 +18479,15 @@ matchdelete({id})			       *matchdelete()* *E802* *E803*
 @findex matchdelete()
 @erindex E802
 @erindex E803
-@item matchdelete(@{id@})
+@item matchdelete(@{id@} [, @{win@})
 |@ref{matchadd()}| または |@ref{:match}| で定義したマッチの中で ID が @{id@} であるものを削除する。成功したときは 0、失敗したときは -1 を返す。|@ref{matchadd()}| の例を参照。すべてのマッチを削除するのは |@ref{clearmatches()}| 一発でできる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		If {win} is specified, use the window with this number or
+		window ID instead of the current window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{win@} が指定されれば、カレントウィンドウではなく指定されたウィンドウあるいはウィンドウ ID を対象にする。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -18713,12 +18742,6 @@ mkdir({name} [, {path} [, {prot}]])
 @ifset EN
 		Example: >
 			:call mkdir($HOME . "/tmp/foo/bar", "p", 0700)
-<		This function is not available in the |sandbox|.
-		There is no error if the directory already exists and the "p"
-		flag is passed (since patch 8.0.1708).
-		Not available on all systems.  To check use: >
-			:if exists("*mkdir")
-<
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 
@@ -18726,15 +18749,45 @@ mkdir({name} [, {path} [, {prot}]])
 @example
 :call mkdir($HOME . "/tmp/foo/bar", "p", 0700)
 @end example
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<		This function is not available in the |sandbox|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 |@ref{sandbox}| の中ではこの関数は使用できない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
-もしもディレクトリがすでに存在し、"p" フラグが渡されているなら、エラーは生じない (patch 8.0.1708 以降)。
+@ifset EN
+		There is no error if the directory already exists and the "p"
+		flag is passed (since patch 8.0.1708).  However, without the
+		"p" option the call will fail.  
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしもディレクトリがすでに存在し、"p" フラグが渡されているなら、エラーは生じない (patch 8.0.1708 以降)。ただし、"p" オプション未指定だと、呼び出しは失敗する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+@ifset EN
+		The function result is a Number, which is 1 if the call was 
+		successful or 0 if the directory creation failed or partly
+		failed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+関数の結果は数値である。呼び出しが成功した場合は1、ディレクトリの作成に失敗したか部分的に失敗した場合は 0 である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Not available on all systems.  To check use: >
+			:if exists("*mkdir")
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 システムによっては利用できない場合がある。これを確認するには次のようにする:
 @example
 :if exists("*mkdir")
 @end example                
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
 							*mode()*
 mode([expr])	Return a string that indicates the current mode.
@@ -18754,26 +18807,45 @@ mode([expr])	Return a string that indicates the current mode.
 @ifset EN
 		   n	    Normal, Terminal-Normal
 		   no	    Operator-pending
-		   niI	    Normal using |i_CTRL-O| in |Insert-mode|
-		   niR	    Normal using |i_CTRL-O| in |Replace-mode|
-		   niV	    Normal using |i_CTRL-O| in |Virtual-Replace-mode|
-		   v	    Visual by character
-		   V	    Visual by line
-		   CTRL-V   Visual blockwise
-		   s	    Select by character
-		   S	    Select by line
-		   CTRL-S   Select blockwise
+		   nov	    Operator-pending (forced characterwise |o_v|)
+		   noV	    Operator-pending (forced linewise |o_V|)
+		   noCTRL-V Operator-pending (forced blockwise |o_CTRL-V|);
+				CTRL-V is one character
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .3 .7
 @item n @tab ノーマル、Terminal-Normal
 @item no @tab オペレータ待機
+@item nov @tab オペレータ待機 (強制文字単位 |@ref{o_v}|)
+@item noV @tab オペレータ待機 (強制行単位 |@ref{o_V}|)
+@item no@kbd{CTRL-V} @tab オペレータ待機 (強制ブロック単位 |@ref{o_CTRL-V}|); CTRL-V は 1 文字である
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   niI	    Normal using |i_CTRL-O| in |Insert-mode|
+		   niR	    Normal using |i_CTRL-O| in |Replace-mode|
+		   niV	    Normal using |i_CTRL-O| in |Virtual-Replace-mode|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item niI @tab |@ref{Insert-mode}| で |@ref{i_CTRL-O}| を使用しているノーマル
 @item niR @tab |@ref{Replace-mode}| で |@ref{i_CTRL-O}| を使用しているノーマル
 @item niV @tab |@ref{Virtual-Replace-mode}| で |@ref{i_CTRL-O}| を使用しているノーマル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   v	    Visual by character
+		   V	    Visual by line
+		   CTRL-V   Visual blockwise
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item v @tab 文字単位ビジュアル
 @item V @tab 行単位ビジュアル
 @item @kbd{CTRL-V} @tab 矩形ビジュアル
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   s	    Select by character
+		   S	    Select by line
+		   CTRL-S   Select blockwise
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item s @tab 文字単位選択
 @item S @tab 行単位選択
 @item @kbd{CTRL-S} @tab 矩形選択
@@ -18782,15 +18854,19 @@ mode([expr])	Return a string that indicates the current mode.
 		   i	    Insert
 		   ic	    Insert mode completion |compl-generic|
 		   ix	    Insert mode |i_CTRL-X| completion
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item i @tab 挿入
+@item ic @tab 挿入モード補完 |@ref{compl-generic}|
+@item ix @tab 挿入モード |@ref{i_CTRL-X}| 補完
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 		   R	    Replace |R|
 		   Rc	    Replace mode completion |compl-generic|
 		   Rv	    Virtual Replace |gR|
 		   Rx	    Replace mode |i_CTRL-X| completion
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item i @tab 挿入
-@item ic @tab 挿入モード補完 |@ref{compl-generic}|
-@item ix @tab 挿入モード |@ref{i_CTRL-X}| 補完
 @item R @tab 置換 |@ref{R}|
 @item Rc @tab 置換モード補完 |@ref{compl-generic}|
 @item Rv @tab 仮想置換 |@ref{gR}|
@@ -18800,6 +18876,13 @@ mode([expr])	Return a string that indicates the current mode.
 		   c	    Command-line editing
 		   cv	    Vim Ex mode |gQ|
 		   ce	    Normal Ex mode |Q|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item c @tab コマンドライン編集
+@item cv @tab Vim Ex モード |@ref{gQ}|
+@item ce @tab ノーマル Ex モード |@ref{Q}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 		   r	    Hit-enter prompt
 		   rm	    The -- more -- prompt
 		   r?	    A |:confirm| query of some sort
@@ -18807,9 +18890,6 @@ mode([expr])	Return a string that indicates the current mode.
 		   t	    Terminal-Job mode: keys go to the job
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item c @tab コマンドライン編集
-@item cv @tab Vim Ex モード |@ref{gQ}|
-@item ce @tab ノーマル Ex モード |@ref{Q}|
 @item r @tab Hit-enter プロンプト
 @item rm @tab @samp{-- more --} プロンプト
 @item r? @tab ある種の |@ref{:confirm}| 問い合わせ
@@ -18946,6 +19026,20 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 Vim 内部では、ファイル中の NUL 文字を改行文字 (0x0A) に変換して保持している。そのため、nr2char(10) とすれば NUL 文字を指定できる。nr2char(0) は真の NUL 文字 (文字列の終端) となるので、空文字列を返す。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		To turn a list of character numbers into a string: >
+		    let list = [65, 66, 67]
+		    let str = join(map(list, {_, val -> nr2char(val)}), '')
+<		Result: "ABC"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+文字の数値のリストを文字列に変換するには:
+@verbatim
+let list = [65, 66, 67]
+let str = join(map(list, {_, val -> nr2char(val)}), '')
+@end verbatim
+結果: "ABC"
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 or({expr}, {expr})					*or()*
@@ -19019,6 +19113,15 @@ Perl の式 @{expr@} をスカラーコンテキストで評価して、結果�
 
 @{|@ref{+perl}| 機能付きでコンパイルされたときのみ利用可能@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+popup_ functions are documented here: |popup-functions|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+popup_ 関数については次に説明されています: |@ref{popup-functions}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 pow({x}, {y})						*pow()*
@@ -19428,13 +19531,12 @@ printf("%4d: E%d %.30s", lnum, errno, msg)
 							*printf-S*
 		S	The text of the String argument is used.  If a
 			precision is specified, no more display cells than the
-			number specified are used.  Without the |+multi_byte|
-			feature works just like 's'.
+			number specified are used.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{printf-S}
 @cindex printf-S
-@item S @tab 引数の文字列を出力する。精度を指定した場合、その数値以下の表示幅のみを書き出す。|@ref{+multi_byte}| 機能がない場合は 's' と同じ動作になる。
+@item S @tab 引数の文字列を出力する。精度を指定した場合、その数値以下の表示幅のみを書き出す。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -19651,6 +19753,7 @@ prompt_setprompt({buf}, {text})				*prompt_setprompt()*
 		The result is only visible if {buf} has 'buftype' set to
 		"prompt".  Example: >
 			call prompt_setprompt(bufnr(''), 'command: ')
+<
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{prompt_setprompt()}
@@ -20505,6 +20608,13 @@ readfile({fname} [, {type} [, {max}]])
 @end itemize
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+		When {type} contains "B" a |Blob| is returned with the binary
+		data of the file unmodified.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{type@} が "B" を含む場合、ファイルのバイナリデータは変更せずに |@ref{Blob}| が返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 		Otherwise:
 		- CR characters that appear before a NL are removed.
 		- Whether the last line ends in a NL or not does not matter.
@@ -20953,24 +21063,34 @@ remote_startserver({name})
 remove({list}, {idx} [, {end}])				*remove()*
 		Without {end}: Remove the item at {idx} from |List| {list} and
 		return the item.
-		With {end}: Remove items from {idx} to {end} (inclusive) and
-		return a List with these items.  When {idx} points to the same
-		item as {end} a list with one item is returned.  When {end}
-		points to an item before {idx} this is an error.
-		See |list-index| for possible values of {idx} and {end}.
-		Example: >
-			:echo "last item: " . remove(mylist, -1)
-			:call remove(mylist, 0, 9)
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{remove()}
 @findex remove()
 @item remove(@{list@}, @{idx@} [, @{end@}])
 @{end@} を指定しなかった場合: リスト |@ref{List}| @{list@} から @{idx@} 位置の要素を削除し、その要素を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		With {end}: Remove items from {idx} to {end} (inclusive) and
+		return a List with these items.  When {idx} points to the same
+		item as {end} a list with one item is returned.  When {end}
+		points to an item before {idx} this is an error.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 
 @{end@} を指定した場合: @{idx@} から @{end@} まで (両端を含む) の要素を削除し、それらの要素からなるリストを返す。
 
 @{idx@} と @{end@} が同じ要素を指す場合、1 個の要素からなるリストが返る。@{end@} が @{idx@} より前になる場合、エラーとなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		See |list-index| for possible values of {idx} and {end}.
+		Example: >
+			:echo "last item: " . remove(mylist, -1)
+			:call remove(mylist, 0, 9)
+<
+		Use |delete()| to remove a file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 
 @{idx@} と @{end@} として指定できる値については |@ref{list-index}| を参照。
 
@@ -20979,14 +21099,47 @@ remove({list}, {idx} [, {end}])				*remove()*
 :echo "last item: " . remove(mylist, -1)
 :call remove(mylist, 0, 9)
 @end example
+ファイルを削除するには |@ref{delete()}| を使う。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+remove({blob}, {idx} [, {end}])
+		Without {end}: Remove the byte at {idx} from |Blob| {blob} and
+		return the byte.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item remove(@{blob@}, @{idx@} [, @{end@}])
+@{end@} を指定しなかった場合: |@ref{Blob}| @{blob@} から @{idx@} 位置のバイトを削除し、そのバイトを返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		With {end}: Remove bytes from {idx} to {end} (inclusive) and
+		return a |Blob| with these bytes.  When {idx} points to the same
+		byte as {end} a |Blob| with one byte is returned.  When {end}
+		points to a byte before {idx} this is an error.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+@{end@} を指定した場合: @{idx@} から @{end@} まで (両端を含む) のバイトを削除し、それらのバイトを |@ref{Blob}| で返す。@{idx@} と @{end@} が同じバイトを指す場合、1個のバイトからなる |@ref{Blob}| が返る。@{end@} が @{idx@} より前になる場合、エラーとなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Example: >
+			:echo "last byte: " . remove(myblob, -1)
+			:call remove(mylist, 0, 9)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+例:
+@verbatim
+:echo "last byte: " . remove(myblob, -1)
+:call remove(mylist, 0, 9)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
 remove({dict}, {key})
 		Remove the entry from {dict} with key {key}.  Example: >
 			:echo "removed " . remove(dict, "one")
 <		If there is no {key} in {dict} this is an error.
-
-		Use |delete()| to remove a file.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item remove(@{dict@}, @{key@})
@@ -20994,7 +21147,7 @@ remove({dict}, {key})
 @example
 :echo "removed " . remove(dict, "one")
 @end example
-@{dict@} に @{key@} がない場合はエラーになる。ファイルを削除するには |@ref{delete()}| を使う。
+@{dict@} に @{key@} がない場合はエラーになる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -21048,10 +21201,9 @@ repeat({expr}, {count})					*repeat()*
 resolve({filename})					*resolve()* *E655*
 		On MS-Windows, when {filename} is a shortcut (a .lnk file),
 		returns the path the shortcut points to in a simplified form.
-		On Unix, repeat resolving symbolic links in all path
-		components of {filename} and return the simplified result.
-		To cope with link cycles, resolving of symbolic links is
-		stopped after 100 iterations.
+		When {filename} is a symbolic link or junction point, return
+		the full path to the target. If the target of junction is
+		removed, return {filename}.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{resolve()}
@@ -21059,7 +21211,19 @@ resolve({filename})					*resolve()* *E655*
 @findex resolve()
 @erindex E655
 @item resolve(@{filename@})
-MS-Windows では @{filename@} がショートカット (.lnkファイル) ならばその指す先を単純化した形式で返す。Unix ではパス @{filename@} の中の全てのシンボリックリンクを解決し、単純化して返す。循環リンクがある場合に備えて、シンボリックリンクの解決は 100 回までに制限されている。
+MS-Windows では @{filename@} がショートカット (.lnkファイル) ならばその指す先を単純化した形式で返す。
+
+@{filename@} がシンボリックリンクまたはジャンクションポイントの場合は、ターゲットへのフルパスを返す。ジャンクションのターゲットが削除されたら、@{filename@} を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		On Unix, repeat resolving symbolic links in all path
+		components of {filename} and return the simplified result.
+		To cope with link cycles, resolving of symbolic links is
+		stopped after 100 iterations.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+Unix ではパス @{filename@} の中の全てのシンボリックリンクを解決し、単純化して返す。循環リンクがある場合に備えて、シンボリックリンクの解決は 100 回までに制限されている。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 		On other systems, return the simplified {filename}.
@@ -21075,16 +21239,20 @@ MS-Windows では @{filename@} がショートカット (.lnkファイル) な�
 
 @ifset EN
 							*reverse()*
-reverse({list})	Reverse the order of items in {list} in-place.  Returns
-		{list}.
-		If you want a list to remain unmodified make a copy first: >
+reverse({object})
+		Reverse the order of items in {object} in-place.
+		{object} can be a |List| or a |Blob|.
+		Returns {object}.
+		If you want an object to remain unmodified make a copy first: >
 			:let revlist = reverse(copy(mylist))
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{reverse()}
 @findex reverse()
-@item reverse(@{list@})
-@{list@} の要素の順序をその場で (in-place) 反転させる。@{list@} そのものを返す。リストを変更させないでおくには、最初にコピーを作る:
+@item reverse(@{object@})
+@{object@} の要素の順序をその場で (in-place) 反転させる。@{object@} は |@ref{List}| または |@ref{Blob}| である。@{object@} そのものを返す。
+
+オブジェクトを変更させないでおくには、最初にコピーを作る:
 @example
 :let revlist = reverse(copy(mylist))
 @end example
@@ -21878,7 +22046,8 @@ serverlist()					*serverlist()*
 @ifset EN
 setbufline({expr}, {lnum}, {text})			*setbufline()*
 		Set line {lnum} to {text} in buffer {expr}.  To insert
-		lines use |append()|.
+		lines use |append()|.  Any text properties in {lnum} are
+		cleared.
 
 		For the use of {expr}, see |bufname()| above.
 @end ifset
@@ -21886,7 +22055,7 @@ setbufline({expr}, {lnum}, {text})			*setbufline()*
 @anchor{setbufline()}
 @findex setbufline()
 @item setbufline(@{expr@}, @{lnum@}, @{text@})
-バッファ @{expr@} の @{text@} に行 @{lnum@} を設定する。行を挿入するには |@ref{append()}| を使う。
+バッファ @{expr@} の @{text@} に行 @{lnum@} を設定する。行を挿入するには |@ref{append()}| を使う。@{lnum@} 内のテキストプロパティはすべて消去される。
 
 @{expr@} の使い方については、上記の |@ref{bufname()}| を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -21894,18 +22063,18 @@ setbufline({expr}, {lnum}, {text})			*setbufline()*
 @ifset EN
 		{lnum} is used like with |setline()|.
 		This works like |setline()| for the specified buffer.
-		On success 0 is returned, on failure 1 is returned.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{lnum@} は |@ref{setline()}| と同じように使われる。明示されたバッファへの |@ref{setline()}| と同じように働く。成功ならば 0 を、失敗なら 1 を返す。
+@{lnum@} は |@ref{setline()}| と同じように使われる。明示されたバッファへの |@ref{setline()}| と同じように働く。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-		If {expr} is not a valid buffer or {lnum} is not valid, an
-		error message is given.
+		When {expr} is not a valid buffer, the buffer is not loaded or
+		{lnum} is not valid then 1 is returned.  On success 0 is
+		returned.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-もしも @{expr@} が妥当なバッファでないか @{lnum@} が妥当でなければ、エラーメッセージを受け取る。
+@{expr@} が有効なバッファでないか、@{lnum@} が無効な場合は 1 が返される。成功すると 0 が返される。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -22105,7 +22274,7 @@ setfperm({fname}, {mode})				*setfperm()* *chmod*
 setline({lnum}, {text})					*setline()*
 		Set line {lnum} of the current buffer to {text}.  To insert
 		lines use |append()|. To set lines in another buffer use
-		|setbufline()|.
+		|setbufline()|.  Any text properties in {lnum} are cleared.
 
 		{lnum} is used like with |getline()|.
 		When {lnum} is just below the last line the {text} will be
@@ -22115,7 +22284,7 @@ setline({lnum}, {text})					*setline()*
 @anchor{setline()}
 @findex setline()
 @item setline(@{lnum@}, @{text@})
-カレントバッファの @{lnum@} 行目を @{text@} にする。行を挿入したい場合は |@ref{append()}| を使う。他のバッファの行を設定するには |@ref{setbufline()}| を使う。
+カレントバッファの @{lnum@} 行目を @{text@} にする。行を挿入したい場合は |@ref{append()}| を使う。他のバッファの行を設定するには |@ref{setbufline()}| を使う。@{lnum@} 内のテキストプロパティはすべて消去される。
 
 @{lnum@} は |@ref{getline()}| のときと同じように解釈される。
 
@@ -22209,16 +22378,21 @@ setloclist({nr}, {list} [, {action} [, {what}]])		*setloclist()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-setmatches({list})					*setmatches()*
-		Restores a list of matches saved by |getmatches()|.  Returns 0
-		if successful, otherwise -1.  All current matches are cleared
-		before the list is restored.  See example for |getmatches()|.
+setmatches({list} [, {win}])				*setmatches()*
+		Restores a list of matches saved by |getmatches() for the
+		current window|.  Returns 0 if successful, otherwise -1.  All
+		current matches are cleared before the list is restored.  See
+		example for |getmatches()|.
+		If {win} is specified, use the window with this number or
+		window ID instead of the current window.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{setmatches()}
 @findex setmatches()
-@item setmatches(@{list@})
+@item setmatches(@{list@} [, @{win@}])
 |@ref{getmatches()}| で取得したマッチのリストを復元する。成功なら 0、失敗なら -1 を返す。リストを復元するに先立って、現在のマッチはすべて消去される。|@ref{getmatches()}| の例を参照。
+
+@{win@} が指定されれば、カレントウィンドウではなく指定されたウィンドウあるいはウィンドウ ID を対象にする。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -22490,24 +22664,35 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 		    efm		errorformat to use when parsing text from
 				"lines". If this is not present, then the
 				'errorformat' option value is used.
+				See |quickfix-parse|
 		    id		quickfix list identifier |quickfix-ID|
+		    idx		index of the current entry in the quickfix
+				list specified by 'id' or 'nr'. If set to '$',
+				then the last entry in the list is set as the
+				current entry.  See |quickfix-index|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item context @tab quickfix リストのコンテキスト。|@ref{quickfix-context}| を参照
+@item efm @tab "lines" からテキストをパースする時に使われる errorformat。もしも存在しなければ '@option{errorformat}' オプションの値が使われる。|@ref{quickfix-index}| を参照
+@item id @tab quickfix リストの識別子 |@ref{quickfix-ID}|
+@item idx @tab '@option{id}' または '@option{nr}' で指定された quickfix リスト内の現在のエントリのインデックス。'$' に設定すると、リストの最後のエントリが現在のエントリとして設定される。|@ref{quickfix-index}| を参照
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 		    items	list of quickfix entries. Same as the {list}
 				argument.
 		    lines	use 'errorformat' to parse a list of lines and
 				add the resulting entries to the quickfix list
 				{nr} or {id}.  Only a |List| value is supported.
+				See |quickfix-parse|
 		    nr		list number in the quickfix stack; zero
 				means the current quickfix list and "$" means
 				the last quickfix list.
 		    title	quickfix list title text. See |quickfix-title|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@multitable @columnfractions .2 .8
-@item context @tab quickfix リストのコンテキスト。|@ref{quickfix-context}| を参照
-@item efm @tab "lines" からテキストをパースする時に使われる errorformat。もしも存在しなければ '@option{errorformat}' オプションの値が使われる
-@item id @tab quickfix リストの識別子 |@ref{quickfix-ID}|
 @item items @tab quickfix エントリのリスト。@{list@} 引数と同じ
-@item lines @tab 行のリストをパースするために '@option{errorformat}' を使う。その結果は quickfix リスト @{nr@} もしくは @{id@} に追加する。リスト |@ref{List}| の値だけがサポートされる
+@item lines @tab 行のリストをパースするために '@option{errorformat}' を使う。その結果は quickfix リスト @{nr@} もしくは @{id@} に追加する。リスト |@ref{List}| の値だけがサポートされる。|@ref{quickfix-parse}| を参照
 @item nr @tab quickfix スタックでのリスト番号。ゼロは現在の quickfix リストを意味し、"$" は直前の quickfix リストを意味する
 @item title @tab quickfix リストのタイトルテキスト。|@ref{quickfix-title}| を参照
 @end multitable
@@ -22694,6 +22879,8 @@ setreg({regname}, {value} [, {options}])
 settabvar({tabnr}, {varname}, {val})			*settabvar()*
 		Set tab-local variable {varname} to {val} in tab page {tabnr}.
 		|t:var|
+		Note that autocommands are blocked, side effects may not be
+		triggered, e.g. when setting 'filetype'.
 		Note that the variable name without "t:" must be used.
 		Tabs are numbered starting with one.
 		This function is not available in the |sandbox|.
@@ -22703,6 +22890,10 @@ settabvar({tabnr}, {varname}, {val})			*settabvar()*
 @findex settabvar()
 @item settabvar(@{tabnr@}, @{varname@}, @{val@})
 タブページ @{tabnr@} のタブローカル変数 @{varname@} を @{val@} に設定する。|@ref{t:var}|
+@quotation
+@strong{Note:} @*
+オートコマンドがブロックされ、副作用が発生しない可能性があることに注意。例えば、'@option{filetype}' を設定する時。
+@end quotation
 @quotation
 @strong{Note:} @*
 指定する変数名は "t:" を除いた名前。
@@ -22729,16 +22920,25 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 @ifset EN
 		{winnr} can be the window number or the |window-ID|.
 		When {winnr} is zero the current window is used.
+		Note that autocommands are blocked, side effects may not be
+		triggered, e.g. when setting 'filetype' or 'syntax'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{winnr@} にはウィンドウ番号または |@ref{window-ID}| が使える。
+
+@{winnr@} が 0 のときはカレントウィンドウが対象となる。
+@quotation
+@strong{Note:} @*
+オートコマンドがブロックされ、副作用が発生しない可能性があることに注意。例えば、'@option{filetype}' または '@option{syntax}' を設定する時。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 		This also works for a global or local buffer option, but it
 		doesn't work for a global or local buffer variable.
 		For a local buffer option the global value is unchanged.
 		Note that the variable name without "w:" must be used.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{winnr@} にはウィンドウ番号または |@ref{window-ID}| が使える。
-
-@{winnr@} が 0 のときはカレントウィンドウが対象となる。
-
 グローバルオプションやバッファローカルオプションを設定することもできるが、グローバル変数やバッファローカル変数を設定することはできない。
 
 バッファローカルオプションを設定した場合、グローバル値は変更されない。
@@ -23332,15 +23532,16 @@ call sign_jump(10, '', '')
 @ifset EN
 							*sign_place()*
 sign_place({id}, {group}, {name}, {expr} [, {dict}])
-		Place the sign defined as {name} at line {lnum} in file {expr}
-		and assign {id} and {group} to sign.  This is similar to the
-		|:sign-place| command.
+		Place the sign defined as {name} at line {lnum} in file or
+		buffer {expr} and assign {id} and {group} to sign.  This is
+		similar to the |:sign-place| command.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{sign_place()}
 @pindex sign_place()
 @item sign_place(@{id@}, @{group@}, @{name@}, @{expr@} [, @{dict@}])
-@{name@} として定義された目印をファイル @{expr@} の行 @{lnum@} に設置し、目印に @{id@} と @{group@} を割り当てる。これは |@ref{:sign-place}| コマンドに似ている。
+@{name@} として定義された目印をファイル @{expr@} の行 @{lnum@} または @{expr@} バッファに設置し、目印に @{id@} と @{group@} を割り当てる。
+これは |@ref{:sign-place}| コマンドに似ている。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -23371,15 +23572,15 @@ sign_place({id}, {group}, {name}, {expr} [, {dict}])
 任意の @{dict@} 引数は、以下のエントリをサポートする:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			lnum		line number in the buffer {expr} where
-					the sign is to be placed. For the
-					accepted values, see |line()|.
+			lnum		line number in the file or buffer
+					{expr} where the sign is to be placed.
+					For the accepted values, see |line()|.
 			priority	priority of the sign. See
 					|sign-priority| for more information.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .3 .7
-@item lnum @tab 目印が設置されるバッファ @{expr@} の行番号。許容値については、|@ref{line()}| を参照。
+@item lnum @tab 目印が設置されるファイルやバッファ @{expr@} の行番号。許容値については、|@ref{line()}| を参照。
 @item priority @tab 目印の優先順位。詳細については |@ref{sign-priority}| を参照。
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -23863,6 +24064,14 @@ sound_playevent({name} [, {callback}])
 call sound_playevent('bell')
 @end example
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		On MS-Windows, {name} can be SystemAsterisk, SystemDefault,
+		SystemExclamation, SystemExit, SystemHand, SystemQuestion,
+		SystemStart, SystemWelcome, etc.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows では、@{name@} は SystemAsterisk, SystemDefault, SystemExclamation, SystemExit, SystemHand, SystemQuestion, SystemStart, SystemWelcome 等になる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 		When {callback} is specified it is invoked when the sound is
@@ -23898,7 +24107,14 @@ call sound_playevent('bell', 'Callback')
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-<		Returns the sound ID, which can be passed to `sound_stop()`.
+<		MS-Windows: {callback} doesn't work for this function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows: @{callback@} はこの関数では動作しない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns the sound ID, which can be passed to `sound_stop()`.
 		Returns zero if the sound could not be played.
 		{only available when compiled with the |+sound| feature}
 @end ifset
@@ -23933,13 +24149,27 @@ sound_playfile({path} [, {callback}])
 sound_stop({id})					*sound_stop()*
 		Stop playing sound {id}.  {id} must be previously returned by
 		`sound_playevent()` or `sound_playfile()`.
-		{only available when compiled with the |+sound| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{sound_stop()}
 @findex sound_stop()
 @item sound_stop(@{id@})
 サウンド @{id@} の再生を停止する。@{id@} は、事前に `@command{sound_playevent()}` または `@command{sound_playfile()}` によって返されたものでなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		On MS-Windows, this does not work for event sound started by
+		`sound_playevent()`. To stop event sounds, use `sound_clear()`.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows では、これは `@command{sound_playevent()}` によって開始されるイベントサウンドに対しては機能しない。イベントのサウンドを止めるには `@command{sound_clear()}` を使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{only available when compiled with the |+sound| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{|@ref{+sound}| 機能つきでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -24211,13 +24441,14 @@ str2float({expr})					*str2float()*
 		as when using a floating point number in an expression, see
 		|floating-point-format|.  But it's a bit more permissive.
 		E.g., "1e40" is accepted, while in an expression you need to
-		write "1.0e40".
+		write "1.0e40".  The hexadecimal form "0x123" is also
+		accepted, but not others, like binary or octal.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{str2float()}
 @findex str2float()
 @item str2float(@{expr@})
-文字列 @{expr@} を浮動小数点数に変換する。これは式の中で浮動小数点数を使っているときと同じように働く (|@ref{floating-point-format}| を参照)。しかしこちらの方がゆるやかである。例えばこちらでは "1e40" も許されるが、式の中では "1.0e+40" と書かなければならない。
+文字列 @{expr@} を浮動小数点数に変換する。これは式の中で浮動小数点数を使っているときと同じように働く (|@ref{floating-point-format}| を参照)。しかしこちらの方がゆるやかである。例えばこちらでは "1e40" も許されるが、式の中では "1.0e+40" と書かなければならない。16 進形式の "0x123" も許されるが、バイナリや 8 進数のようなものは許されない。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 		Text after the number is silently ignored.
@@ -24393,16 +24624,16 @@ strcharpart('abc', -1, 2)
 @ifset EN
 strdisplaywidth({expr} [, {col}])			*strdisplaywidth()*
 		The result is a Number, which is the number of display cells
-		String {expr} occupies on the screen when it starts at {col}.
-		When {col} is omitted zero is used.  Otherwise it is the
-		screen column where to start.  This matters for Tab
-		characters.
+		String {expr} occupies on the screen when it starts at {col}
+		(first column is zero).  When {col} is omitted zero is used.
+		Otherwise it is the screen column where to start.  This
+		matters for Tab characters.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{strdisplaywidth()}
 @findex strdisplaywidth()
 @item strdisplaywidth(@{expr@} [, @{col@}])
-結果は数値で、文字列 @{expr@} が @{col@} で始まる時のスクリーン上での表示セル幅を返す。
+結果は数値で、文字列 @{expr@} が @{col@} (最初の桁はゼロ) で始まる時のスクリーン上での表示セル幅を返す (first column is zero)。
 
 @{col@} が省略されたときはゼロが使われる。@{col@} には計算を開始するスクリーン上の列の位置を指定する。これはタブ文字の幅の計算に影響する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -24557,14 +24788,14 @@ stridx() は C の関数 strstr() と同じように動作する。@{needle@} �
 @ifset EN
 							*string()*
 string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
-		Float, String or a composition of them, then the result can be
-		parsed back with |eval()|.
+		Float, String, Blob or a composition of them, then the result
+		can be parsed back with |eval()|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{string()}
 @findex string()
 @item string(@{expr@})
-@{expr@} を文字列に変換して返す。@{expr@} が数値、浮動小数点数、文字列、それらの複合の場合は、この戻り値を |@ref{eval()}| でパースして復元できる。
+@{expr@} を文字列に変換して返す。@{expr@} が数値、浮動小数点数、文字列、Blob、それらの複合の場合は、この戻り値を |@ref{eval()}| でパースして復元できる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 			{expr} type	result ~
@@ -24572,6 +24803,7 @@ string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 			Number		123
 			Float		123.123456 or 1.123456e8
 			Funcref		function('name')
+			Blob		0z00112233.44556677.8899
 			List		[item, item]
 			Dictionary	{key: value, key: value}
 @end ifset
@@ -24582,6 +24814,7 @@ string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 @item 数値 @tab 123
 @item 浮動小数点数 @tab 123.123456 or 1.123456e8
 @item Funcref @tab function('name')
+@item Blob @tab 0z00112233.44556677.8899
 @item リスト @tab [item, item]
 @item 辞書 @tab @{key: value, key: value@}
 @end multitable
@@ -25768,6 +26001,15 @@ tempname()					*tempname()* *temp-file-name*
 		For MS-Windows forward slashes are used when the 'shellslash'
 		option is set or when 'shellcmdflag' starts with '-'.
 @end ifset
+
+@ifset EN
+term_ functions are documented here: |terminal-function-details|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item term_ 関数群
+これらの説明は次にあります: |@ref{terminal-function-details}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{tempname()}
 @anchor{temp-file-name}
@@ -26009,27 +26251,41 @@ test_override({name}, {val})				*test_override()*
 
 置き換えは、@{val@} が非 0 のときに有効化され、@{val@} が 0 のときに取り除かれる。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
 @ifset EN
 		Current supported values for name are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在、name に使える値は:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 		name	     effect when {val} is non-zero ~
 		redraw       disable the redrawing() function
 		redraw_flag  ignore the RedrawingDisabled flag
 		char_avail   disable the char_avail() function
 		starting     reset the "starting" variable, see below
-		nfa_fail     makes the NFA regexp engine fail to force a
-			     fallback to the old engine
-		ALL	     clear all overrides ({val} is not used)
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-現在、name に使える値は:
 @multitable @columnfractions .2 .8
 @headitem name @tab @{val@} が非 0 のときの効果
 @item redraw @tab redrawing() 関数を無効化する
 @item redraw_flag @tab RedrawingDisabled フラグを無視する
 @item char_avail @tab char_avail() 関数を無効化する
 @item starting @tab "starting" の値をリセットする。以下を参照
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		nfa_fail     makes the NFA regexp engine fail to force a
+			     fallback to the old engine
+		no_query_mouse  do not query the mouse position for "dec"
+				terminals
+		no_wait_return	set the "no_wait_return" flag.  Not restored
+				with "ALL".
+		ALL	     clear all overrides ({val} is not used)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item nfa_fail @tab NFA 正規表現エンジンが失敗すると強制的に古いエンジンにフォールバックする
+@item no_query_mouse @tab "dec" 端末のマウス位置を問い合わせない
+@item no_wait_return @tab "no_wait_return" フラグを設定する。"ALL" では復元されない
 @item ALL @tab すべての置き換えをクリアする (@{val@} は使われない)
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -26315,10 +26571,13 @@ let timer = timer_start(500, 'MyHandler',
 <		This will invoke MyHandler() three times at 500 msec
 		intervals.
 
+		Not available in the |sandbox|.
 		{only available when compiled with the |+timers| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 これは MyHandler() を 500ms 間隔で 3 回呼び出す。
+
+サンドボックス|@ref{sandbox}|の中では利用できない。
 
 @{|@ref{+timers}| 機能を有効にしてコンパイルしたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -26521,9 +26780,10 @@ type({expr})	The result is a Number representing the type of {expr}.
 			Dictionary: 4  |v:t_dict|
 			Float:	    5  |v:t_float|
 			Boolean:    6  |v:t_bool| (v:false and v:true)
-			None	    7  |v:t_none| (v:null and v:none)
-			Job	    8  |v:t_job|
-			Channel	    9  |v:t_channel|
+			None:	    7  |v:t_none| (v:null and v:none)
+			Job:	    8  |v:t_job|
+			Channel:    9  |v:t_channel|
+			Blob:	   10  |v:t_blob|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .4 .6
@@ -26537,6 +26797,7 @@ type({expr})	The result is a Number representing the type of {expr}.
 @item 特殊値: @tab 7  |@ref{v:t_none}| (v:null と v:none)
 @item ジョブ: @tab 8  |@ref{v:t_job}|
 @item チャネル: @tab 9  |@ref{v:t_channel}|
+@item Blob: @tab 10  |@ref{v:t_blob}|
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -26715,13 +26976,13 @@ uniq({list} [, {func} [, {dict}]])			*uniq()* *E882*
 @ifset EN
 values({dict})						*values()*
 		Return a |List| with all the values of {dict}.  The |List| is
-		in arbitrary order.
+		in arbitrary order.  Also see |items()| and |keys()|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{values()}
 @findex values()
 @item values(@{dict@})
-@{dict@} の全ての値からなるリスト |@ref{List}| を返す。このリストの順序は不定である。
+@{dict@} の全ての値からなるリスト |@ref{List}| を返す。このリストの順序は不定である。|@ref{items()}| と |@ref{keys()}| も参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 
@@ -27187,38 +27448,79 @@ winline()	The result is a Number, which is the screen line of the cursor
 							*winnr()*
 winnr([{arg}])	The result is a Number, which is the number of the current
 		window.  The top window has number 1.
-		When the optional argument is "$", the number of the
-		last window is returned (the window count). >
-			let window_count = winnr('$')
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{winnr()}
 @findex winnr()
 @item winnr([@{arg@}])
 結果は現在のウィンドウを示す数値。最上位のウィンドウは 1 である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
-省略可能な引数 @{arg@} に "$" を設定すると、最後のウィンドウの番号が返る (つまりウィンドウの個数)。
-@example
-let window_count = winnr('$')
-@end example
+@ifset EN
+		The optional argument {arg} supports the following values:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+省略可能な引数 @{arg@} は以下の値をサポートする:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-<		When the optional argument is "#", the number of the last
-		accessed window is returned (where |CTRL-W_p| goes to).
-		If there is no previous window or it is in another tab page 0
-		is returned.
+			$	the number of the last window (the window
+				count).
+			#	the number of the last accessed window (where
+				|CTRL-W_p| goes to).  If there is no previous
+				window or it is in another tab page 0 is
+				returned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .1 .9
+@item $ @tab 最後のウィンドウの番号 (ウィンドウ数)
+@item # @tab 最後にアクセスしたウィンドウの番号 (|@ref{CTRL-W_p}| の行き先)。前のウィンドウがないか、別のタブページにある場合は 0 が返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			{N}j	the number of the Nth window below the
+				current window (where |CTRL-W_j| goes to).
+			{N}k	the number of the Nth window above the current
+				window (where |CTRL-W_k| goes to).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @{N@}j @tab 現在のウィンドウの下 N 番目のウィンドウの番号 (|@ref{CTRL-W_j}| の行き先)。
+@item @{N@}k @tab 現在のウィンドウの上 N 番目のウィンドウの番号 (|@ref{CTRL-W_k}| の行き先)。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			{N}h	the number of the Nth window left of the
+				current window (where |CTRL-W_h| goes to).
+			{N}l	the number of the Nth window right of the
+				current window (where |CTRL-W_l| goes to).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @{N@}h @tab 現在のウィンドウの左 N 番目のウィンドウの番号 (|@ref{CTRL-W_h}| の行き先)。
+@item @{N@}l @tab 現在のウィンドウの右 N 番目のウィンドウの番号 (|@ref{CTRL-W_l}| の行き先)。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 		The number can be used with |CTRL-W_w| and ":wincmd w"
 		|:wincmd|.
 		Also see |tabpagewinnr()| and |win_getid()|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{arg@} に "#" を設定すると、最後にアクセスしたウィンドウの番号を返す (|@ref{CTRL-W_p}| で移動するウィンドウと同じ)。
-
-以前のウィンドウがない場合、またはそれが他のタブページにある場合は 0 を返す。
 
 この番号は |@ref{CTRL-W_w}| と "@command{:wincmd w}" で使える。|@ref{:wincmd}|
 
 |@ref{tabpagewinnr()}| と |@ref{win_getid()}| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Examples: >
+			let window_count = winnr('$')
+			let prev_window = winnr('#')
+			let wnum = winnr('3k')
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+let window_count = winnr('$')
+let prev_window = winnr('#')
+let wnum = winnr('3k')
+@end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -27458,21 +27760,33 @@ wordcount()						*wordcount()*
 
 @ifset EN
 							*writefile()*
-writefile({list}, {fname} [, {flags}])
-		Write |List| {list} to file {fname}.  Each list item is
-		separated with a NL.  Each list item must be a String or
-		Number.
+writefile({object}, {fname} [, {flags}])
+		When {object} is a |List| write it to file {fname}.  Each list
+		item is separated with a NL.  Each list item must be a String
+		or Number.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{writefile()}
+@findex writefile()
+@item writefile(@{object@}, @{fname@} [, @{flags@}])
+@{object@} が |@ref{List}| の場合、それをファイル @{fname@} に書き込む。リストの各要素は改行文字 (NL) で区切られる。各要素は文字列か数値でなければならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 		When {flags} contains "b" then binary mode is used: There will
 		not be a NL after the last list item.  An empty item at the
 		end does cause the last line in the file to end in a NL.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@anchor{writefile()}
-@findex writefile()
-@item writefile(@{list@}, @{fname@} [, @{flags@}])
-|@ref{List}| @{list@} をファイル @{fname@} に書き込む。リストの各要素は改行文字 (NL) で区切られる。各要素は文字列か数値でなければならない。
 
 @{flags@} が "b" を含むときはバイナリモードとなり、最後の要素の後に NL が追加されない。最後の要素が空であると、ファイルの最後の行が NL で終わるようになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When {object} is a |Blob| write the bytes to file {fname}
+		unmodified.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{object@} が |@ref{Blob}| の場合、バイトを変更せずにファイル @{fname@} に書き込む。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
