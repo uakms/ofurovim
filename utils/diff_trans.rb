@@ -1,6 +1,6 @@
 # Author: nakinor
 # Created: 2017-01-26
-# Revised: 2019-06-25
+# Revised: 2019-07-16
 
 require "optparse"
 begin
@@ -16,7 +16,7 @@ TAG_JA_END =
   '< @end ifset @c ----------- \^ -----------  JA  ----------- \^ -----------'
 
 def diff_docs(ifn)
-  origin = "#{PARAMS['dir']}/#{ifn.gsub(".texi", ".txt")}"
+  origin = "#{PARAMS['dir']}/#{File.basename(ifn).gsub(".texi", ".txt")}"
   trans = "#{ifn}"
   diff = `diff #{trans} #{origin}`
   removed_head = diff.gsub(/< \\input .* -\*-\n/, "")

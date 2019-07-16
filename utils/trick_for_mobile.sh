@@ -1,6 +1,6 @@
 # Author: nakinor
 # Created: 2017-02-26
-# Revised: 2018-04-02
+# Revised: 2019-07-16
 
 # HTML 自体を変更しなくても CSS 側でかなりの部分が対応することができたので
 # bullet の変更と viewport の追加をするだけにした
@@ -34,7 +34,7 @@ fi
 if [ "$FLAG_B" = "TRUE" ]; then
     for f in $@
     do
-        echo "  \033[32m->\033[0m "$f
+        echo "  \033[35m->\033[0m "$f
         sed -i -e "s|$STR_B|$TAG_B|" $f
     done
 fi
