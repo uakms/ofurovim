@@ -2,9 +2,9 @@ PRG = /usr/local/bin/texi2any
 HTML_OPT_NS = --no-split --html --css-include=style.css
 HTML_OPT_S = --no-node-files --html --css-ref=style.css
 ORIG = $(HOME)/dev/macvim/runtime/doc
-SRCFILE = texis/help.texi
+SRCFILE = texis/help.texi $(wildcard texis/*.texi)
 NVCHECK_DICT = $(HOME)/dev/vimdoc-ja/dict.yml
-HTMLFILES = $(wildcard htmls/refman/*.html)
+HTMLFILES = `find htmls/refman -name "*.html"`
 MISCFILES = htmls/refman/Mu-Ci-.html \
             htmls/refman/usr_005ftoc_002etxt.html
 
@@ -32,6 +32,7 @@ html: htmls/refman ;
 pdf: pdfs/refrman.pdf ;
 
 htmls/refman.html: $(SRCFILE)
+	@mkdir -p htmls
 	${PRG} ${HTML_OPT_NS} -o $@ $<
 	@echo "trick for mobile..."
 	@sh utils/trick_for_mobile.sh -a $@
@@ -40,15 +41,17 @@ htmls/refman.html: $(SRCFILE)
 	@sh utils/trick_for_html5.sh $@
 
 htmls/refman: $(SRCFILE)
-	cp style.css htmls/refman/
+	@mkdir -p htmls
 	${PRG} ${HTML_OPT_S} -o $@ $<
 	@echo "trick for mobile..."
 	@sh utils/trick_for_mobile.sh -a $(HTMLFILES)
 	@sh utils/trick_for_mobile.sh -b $(MISCFILES)
 	@echo "trick for html5..."
 	@sh utils/trick_for_html5.sh $(HTMLFILES)
+	cp style.css htmls/refman/
 
 pdfs/refrman.pdf: $(SRCFILE)
+	@mkdir -p pdfs
 	PDFTEX=xetex texi2pdf -c -o $@ $<
 
 diffen:
