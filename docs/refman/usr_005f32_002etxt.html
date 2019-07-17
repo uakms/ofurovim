@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>usr_32.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="usr_32.txt (Vim Reference Manual)">
+<meta name="keywords" content="usr_32.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="usr_005f40_002etxt.html#usr_005f40_002etxt" rel="next" title="usr_40.txt">
+<link href="usr_005f31_002etxt.html#usr_005f31_002etxt" rel="prev" title="usr_31.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="usr_005f32_002etxt"></a>
+<div class="header">
+<p>
+Next: <a href="usr_005f40_002etxt.html#usr_005f40_002etxt" accesskey="n" rel="next">usr_40.txt</a>, Previous: <a href="usr_005f31_002etxt.html#usr_005f31_002etxt" accesskey="p" rel="prev">usr_31.txt</a>, Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="undo-turi"></a>
+<h2 class="unnumbered">undo ツリー</h2>
+<pre class="verbatim">*usr_32.txt*	For Vim バージョン 8.1.  Last change: 2010 Jul 20
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			      undo ツリー
+</pre>
+
+<p>Vim にはマルチレベルの undo 機能があります。變更を undo してから新しい變更を加へると、undo ツリーに枝が作成されます。このテキストでは、枝を移動する方法を說明します。
+</p>
+<table>
+<tr><td width="30%">|<a href="#g_t32_002e1">32.1</a>|</td><td width="70%">ファイル保存時への undo</td></tr>
+<tr><td width="30%">|<a href="#g_t32_002e2">32.2</a>|</td><td width="70%">變更の番號付け</td></tr>
+<tr><td width="30%">|<a href="#g_t32_002e3">32.3</a>|</td><td width="70%">ツリーを飛び回る</td></tr>
+<tr><td width="30%">|<a href="#g_t32_002e4">32.4</a>|</td><td width="70%">タイムトラベル</td></tr>
+</table>
+
+<a name="g_t32_002e1"></a><a name="index-huairuBao-Cun-Shi-heno-undo"></a>
+<a name="huairuBao-Cun-Shi-heno-undo"></a>
+<h3 class="section">ファイル保存時への undo</h3>
+
+<p>いくつかの變更を加へた後で、やつぱり最後にファイルを保存したときの狀態に戾りたいなと思ふやうなことがときどきあります。そんなときは次のコマンドを使ひます:
+</p>
+<div class="example">
+<pre class="example">:earlier 1f
+</pre></div>
+
+<p>&quot;f&quot; は &quot;file&quot; を意味します。
+</p>
+<p>このコマンドを繰り返し實行してさらに過去に戾ることができます。あるいは、1 より大きなカウント指定をすればもつと素早く過去に戾れます。
+</p>
+<p>戾り過ぎてしまつたときは次のコマンドで進むことができます:
+</p>
+<div class="example">
+<pre class="example">:later 1f
+</pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+このコマンドは時閒を基準にして移動します。これは undo した後で何か變更を加へてゐた場合に重要になつてきます。それについては次の節で說明します。
+</p></blockquote>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+ここではテキストの保存の話をしてゐます。undo 情報のファイルへの保存については |<a href="undo_002etxt.html#undo_002dpersistence">undo-persistence</a>| を參照してください。
+</p></blockquote>
+
+<a name="g_t32_002e2"></a><a name="index-Bian-Geng-noFan-Hao-Fu-ke"></a>
+<a name="Bian-Geng-noFan-Hao-Fu-ke"></a>
+<h3 class="section">變更の番號付け</h3>
+
+<p>セクション |<a href="usr_005f02_002etxt.html#g_t02_002e5">02.5</a>| では一本道の undo/redo について說明しましたが、實は、undo/redo は分岐することができます。變更を undo してから新しい變更を加へると、新しい變更が undo ツリーの枝になります。
+</p>
+<p>&quot;one&quot; といふテキストから始めませう。最初に &quot; too&quot; を追加します。次に &lsquo;<samp>too</samp>&rsquo; の 1 つ目の &rsquo;o&rsquo; を &rsquo;w&rsquo; に變更します。これで、2 つの變更 (番號 1、2) と、テキストの 3 つの狀態ができました。
+</p>
+<pre class="verbatim">  one
+   |
+change 1
+   |
+one too
+   |
+change 2
+   |
+one two
+</pre>
+
+<p>1 つだけ變更を undo して &quot;one too&quot; の狀態に戾り、&quot;one&quot; を &quot;me&quot; に變更します。すると、undo ツリーに枝が作成されます。
+</p>
+<pre class="verbatim">       one
+        |
+     change 1
+        |
+     one too
+     /     \
+change 2  change 3
+   |         |
+one two    me too
+</pre>
+
+<p>この狀態で |<a href="undo_002etxt.html#u">u</a>| コマンドを使つて undo してみてください。2 回 undo すると &quot;one&quot; に戾ります。|<a href="undo_002etxt.html#CTRL_002dR">CTRL-R</a>| で redo すると &quot;one too&quot; になります。もう 1 度 |<a href="undo_002etxt.html#CTRL_002dR">CTRL-R</a>| を實行すると &quot;me too&quot; になります。このやうに、undo/redo を實行すると、最後に使はれた枝を上下に移動できます。
+</p>
+<p>重要なのは變更が作成される順番です。undo ツリーにおいては、undo と redo は變更とはみなされません。それぞれの變更の後にはテキストの新しい狀態があります。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+變更にだけ番號が付きます。上圖のツリーに示されてゐる &quot;テキスト&quot; の部分には番號が付きません。テキストは、その上の變更番號によつて參照されます。ただし、ツリーを上に移動したときなどは、下の變更番號によつて參照されます (どの變更が undo されたかわかるやうに)。
+</p></blockquote>
+<p>{譯注: 例へば上圖の &quot;one too&quot; から undo/redo したときのメッセージ:
+</p><table>
+<tr><td width="25%">undo したとき:</td><td width="35%">1 change; before #1</td><td width="35%">&lt;- 下の番號が使はれる</td></tr>
+<tr><td width="25%">redo したとき:</td><td width="35%">1 change; after #3</td><td width="35%"></td></tr>
+</table>
+<p>}
+</p>
+<a name="g_t32_002e3"></a><a name="index-turiwoFei-biHui-ru"></a>
+<a name="turiwoFei-biHui-ru"></a>
+<h3 class="section">ツリーを飛び回る</h3>
+
+<p>さて、&quot;one two&quot; の狀態を得るにはどうすればいいでせうか。次のコマンドを使ひます:
+</p>
+<div class="example">
+<pre class="example">:undo 2
+</pre></div>
+
+<p>テキストが &quot;one two&quot; (change 2 の下) になります。|<a href="undo_002etxt.html#g_t_003aundo">:undo</a>| コマンドを使ふと、指定した變更の下にジャンプできます。
+</p>
+<p>新しい變更を加へてみませう。&quot;one&quot; を &quot;not&quot; に變更します:
+</p>
+<pre class="verbatim">       one
+        |
+     change 1
+        |
+     one too
+     /     \
+change 2  change 3
+   |         |
+one two    me too
+   |
+change 4
+   |
+not two
+</pre>
+<p>何か考へが變はつて &quot;me too&quot; に戾りたくなつた場合は、|<a href="undo_002etxt.html#g_002d">g-</a>| コマンドを使ひます。このコマンドは時閒を基準にして戾ります。ツリーを上下に移動するのではなく、直前の變更に移動します。
+</p>
+<p>|<a href="undo_002etxt.html#g_002d">g-</a>| を繰り返し實行すると、テキストは次のやうに變化します:
+</p><pre class="verbatim">me too
+one two
+one too
+one
+</pre>
+<p>|<a href="undo_002etxt.html#g_002b">g+</a>| を使へば時閒を進めることができます:
+</p><pre class="verbatim">one
+one too
+one two
+me too
+not two
+</pre>
+<p>ジャンプしたい變更番號が分かつてゐるときには |<a href="undo_002etxt.html#g_t_003aundo">:undo</a>| が便利です。番號がよく分からないときには |<a href="undo_002etxt.html#g_002d">g-</a>| と |<a href="undo_002etxt.html#g_002b">g+</a>| が便利です。
+</p>
+<p>|<a href="undo_002etxt.html#g_002d">g-</a>| と |<a href="undo_002etxt.html#g_002b">g+</a>| にカウント指定を付けると實行回數を指定できます。
+</p>
+<a name="g_t32_002e4"></a><a name="index-taimutoraberu"></a>
+<a name="taimutoraberu"></a>
+<h3 class="section">タイムトラベル</h3>
+
+<p>しばらくテキストを編輯すると、ツリーは大きく成長します。そのとき、數分前のテキストに戾りたいと思ふことがあるかもしれません。
+</p>
+<p>undo ツリーにどのやうな枝があるかを確認するには次のコマンドを使ひます:
+</p>
+<div class="example">
+<pre class="example">:undolist
+</pre></div>
+<table>
+<tr><td width="20%">number</td><td width="30%">changes</td><td width="50%">time</td></tr>
+<tr><td width="20%">3</td><td width="30%">2</td><td width="50%">16 seconds ago</td></tr>
+<tr><td width="20%">4</td><td width="30%">3</td><td width="50%">5 seconds ago</td></tr>
+</table>
+
+<p>枝に付いてゐる葉の數と、變更された時閒が表示されます。今、change 4 の下 (&quot;not two&quot;) にゐるとして、10 秒前に戾るには次のやうにします:
+</p>
+<div class="example">
+<pre class="example">:earlier 10s
+</pre></div>
+
+<p>指定した時閒だけ戾り、ツリーの特定の位置へ移動できます。|<a href="undo_002etxt.html#g_t_003aearlier">:earlier</a>| コマンドの引數は &quot;m&quot; で分、&quot;h&quot; で時閒、&quot;d&quot; で日を指定することもできます。すべての變更を元に戾したい場合は大きな値を指定してください:
+</p>
+<div class="example">
+<pre class="example">:earlier 100d
+</pre></div>
+
+<p>時閒を進めるには |<a href="undo_002etxt.html#g_t_003alater">:later</a>| コマンドを使ひます:
+</p>
+<div class="example">
+<pre class="example">:later 1m
+</pre></div>
+
+<p>|<a href="undo_002etxt.html#g_t_003aearlier">:earlier</a>| と同樣に、&quot;s&quot;, &quot;m&quot;, &quot;h&quot; で單位を指定します。
+</p>
+<p>undo 情報の詳細を見たい、觸りたい、といふ場合は |<a href="eval_002etxt.html#undotree_0028_0029">undotree()</a>| 函數を使つてください。函數が何を返すかは次のコマンドで確認できます:
+</p>
+<div class="example">
+<pre class="example">:echo undotree()
+</pre></div>
+
+<hr>
+<div class="header">
+<p>
+Next: <a href="usr_005f40_002etxt.html#usr_005f40_002etxt" accesskey="n" rel="next">usr_40.txt</a>, Previous: <a href="usr_005f31_002etxt.html#usr_005f31_002etxt" accesskey="p" rel="prev">usr_31.txt</a>, Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

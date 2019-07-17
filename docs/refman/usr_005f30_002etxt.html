@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>usr_30.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="usr_30.txt (Vim Reference Manual)">
+<meta name="keywords" content="usr_30.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="usr_005f31_002etxt.html#usr_005f31_002etxt" rel="next" title="usr_31.txt">
+<link href="usr_005f29_002etxt.html#usr_005f29_002etxt" rel="prev" title="usr_29.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="usr_005f30_002etxt"></a>
+<div class="header">
+<p>
+Next: <a href="usr_005f31_002etxt.html#usr_005f31_002etxt" accesskey="n" rel="next">usr_31.txt</a>, Previous: <a href="usr_005f29_002etxt.html#usr_005f29_002etxt" accesskey="p" rel="prev">usr_29.txt</a>, Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="puroguramunoBian-Ji-"></a>
+<h2 class="unnumbered">プログラムの編輯</h2>
+<pre class="verbatim">*usr_30.txt*	For Vim バージョン 8.1.  Last change: 2007 Nov 10
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+			       プログラムの編輯
+</pre>
+
+<p>プログラミングに役立つ機能が Vim にはたくさんあります。プログラムをコンパイルしてエラーが出た行にジャンプしたり、言語に合はせて自動的にインデントしたり、コメントを整形したりできます。
+</p>
+<table>
+<tr><td width="30%">|<a href="#g_t30_002e1">30.1</a>|</td><td width="70%">コンパイル</td></tr>
+<tr><td width="30%">|<a href="#g_t30_002e2">30.2</a>|</td><td width="70%">C 言語系インデント</td></tr>
+<tr><td width="30%">|<a href="#g_t30_002e3">30.3</a>|</td><td width="70%">インデント設定の自動化</td></tr>
+<tr><td width="30%">|<a href="#g_t30_002e4">30.4</a>|</td><td width="70%">その他のインデント</td></tr>
+<tr><td width="30%">|<a href="#g_t30_002e5">30.5</a>|</td><td width="70%">タブとスペース</td></tr>
+<tr><td width="30%">|<a href="#g_t30_002e6">30.6</a>|</td><td width="70%">コメントの整形</td></tr>
+</table>
+
+<a name="g_t30_002e1"></a><a name="index-konpairu"></a>
+<a name="konpairu"></a>
+<h3 class="section">コンパイル</h3>
+
+<p>Vim にはクイックフィックス (QuickFix) 機能があります。これは、Vim の中でプログラムをコンパイルして、エラーになつた場所に移動し、エラーを修正するための機能です。さうして、正常にコンパイルできるまでコンパイルとエラー修正を繰り返します。
+</p>
+<p>次のコマンドは &quot;make&quot; を實行し、その出力を讀み込みます (引數はそのまま渡されます):
+</p>
+<div class="example">
+<pre class="example">:make {arguments}
+</pre></div>
+
+<p>エラーが發生するとそれが認識され、最初のエラーにカーソルが移動します。
+</p>
+<p>&quot;<code>:make</code>&quot; の使ひ方を實際に見てみませう。(典型的な <code>:make</code> セッションはもつと多くのエラーあるいは少しのゴミを出力しますが) &quot;<code>:make</code>&quot; を實行すると次のやうな出力が畫面に表示されます:
+</p>
+<pre class="verbatim">:!make | &amp;tee /tmp/vim215953.err
+gcc -g -Wall -o prog main.c sub.c
+main.c: In function 'main':
+main.c:6: too many arguments to function 'do_sub'
+main.c: At top level:
+main.c:10: parse error before '}'
+make: *** [prog] Error 1
+
+2 returned
+&quot;main.c&quot; 11L, 111C
+(3 of 6): too many arguments to function 'do_sub'
+Hit ENTER or type command to continue
+</pre>
+<p>&quot;<samp>main.c</samp>&quot; の中でエラーが發生してゐることが確認できると思ひます。<code class="tt-key">&lt;Enter&gt;</code> を押すと &quot;<samp>main.c</samp>&quot; ファイルが開き、6 行目 (最初のエラー) にカーソルが移動します。自分でファイルを開く必要はありません。Vim はエラーメッセージを認識できます。
+</p>
+<pre class="verbatim">          +---------------------------------------------------+
+          |int main()                                         |
+          |{                                                  |
+          |       int i=3;                                    |
+cursor -&gt; |       do_sub(&quot;foo&quot;);                              |
+          |       ++i;                                        |
+          |       return (0);                                 |
+          |}                                                  |
+          |}                                                  |
+          | ~                                                 |
+          |(3 of 12): too many arguments to function 'do_sub' |
+          +---------------------------------------------------+
+</pre>
+<p>このコマンドで次のエラーに移動できます:
+</p>
+<div class="example">
+<pre class="example">:cnext
+</pre></div>
+
+<p>カーソルが 10 行目に移動します。ファイルの最終行に餘分な &rsquo;&lsquo;<samp>}</samp>&rsquo;&rsquo; がありますね。
+</p>
+<p>長すぎるエラーメッセージは省略して表示されます。全部を表示するには次のコマンドを使ひます:
+</p>
+<div class="example">
+<pre class="example">:cc
+</pre></div>
+
+<p>すべてのエラーメッセージを表示するには &quot;<code>:clist</code>&quot; コマンドを使ひます。次のやうな出力が表示されます:
+</p>
+<div class="example">
+<pre class="example">:clist
+</pre></div>
+<pre class="verbatim">3 main.c: 6:too many arguments to function 'do_sub'
+5 main.c: 10:parse error before '}'
+</pre>
+<p>ファイル名と行番號が認識された行だけが表示されますが、それは、重要なのはそのやうな行だけで、他の行は無駄なメッセージであると判斷されるからです。しかし時には、認識されなかつた行が重要な情報を含んでゐることもあります。例へばリンカが未解決の函數をエラー表示した場合などです。すべてのメッセージを表示するにはコマンドに &quot;&lsquo;<samp>!</samp>&rsquo;&quot; を付けます:
+</p>
+<div class="example">
+<pre class="example">:clist!
+</pre></div>
+<pre class="verbatim">1 gcc -g -Wall -o prog main.c sub.c
+2 main.c: In function 'main':
+3 main.c:6: too many arguments to function 'do_sub'
+4 main.c: At top level:
+5 main.c:10: parse error before '}'
+6 make: *** [prog] Error 1
+</pre>
+<p>現在のエラーは强調表示されます。前のエラーに戾るには次のコマンドを使ひます:
+</p><div class="example">
+<pre class="example">:cprevious
+</pre></div>
+
+<p>エラーリストを移動するコマンドは他にもあります:
+</p>
+<table>
+<tr><td width="50%"><code>:cfirst</code></td><td width="50%">最初のエラー</td></tr>
+<tr><td width="50%"><code>:clast</code></td><td width="50%">最後のエラー</td></tr>
+<tr><td width="50%"><code>:cc</code> 3</td><td width="50%">3 つ目のエラー</td></tr>
+</table>
+
+
+<a name="Ta-nokonpairawoShi-u"></a>
+<h4 class="unnumberedsubsec">他のコンパイラを使ふ</h4>
+
+<p>&quot;<code>:make</code>&quot; コマンドが實際に實行するプログラムは &rsquo;<samp>makeprg</samp>&rsquo; オプションで設定します。通常は &quot;make&quot; に設定されてゐますが、例へば Visual C++ を使ふ場合は &quot;nmake&quot; に設定する必要があります:
+</p>
+<div class="example">
+<pre class="example">:set makeprg=nmake
+</pre></div>
+
+<p>オプションにはプログラムの引數も含めることができます。特殊文字はバックスラッシュでエスケープしてください。例:
+</p>
+<div class="example">
+<pre class="example">:set makeprg=nmake\ -f\ project.mak
+</pre></div>
+
+<p>プログラムの設定には特殊なキーワードが使へます。文字 % はカレントファイルの名前に展開されます。例へば次のやうに設定すると:
+</p><div class="example">
+<pre class="example">:set makeprg=make\ %:S
+</pre></div>
+
+<p><samp>main.c</samp> を編輯してゐるときに &quot;<code>:make</code>&quot; を實行すると次のコマンドが實行されます:
+</p>
+<div class="example">
+<pre class="example">make main.c
+</pre></div>
+
+<p>これ自體はそれほど便利ではありませんが、すこし變更して :r (root) 修飾子を使ふとどうでせう:
+</p>
+<div class="example">
+<pre class="example">:set makeprg=make\ %:r:S.o
+</pre></div>
+
+<p>これで、實行されるコマンドは次のやうになります:
+</p>
+<div class="example">
+<pre class="example">make main.o
+</pre></div>
+
+<p>修飾子については |<a href="cmdline_002etxt.html#filename_002dmodifiers">filename-modifiers</a>| を參照してください。
+</p>
+
+<a name="Gu-ierarisuto"></a>
+<h4 class="unnumberedsubsec">古いエラーリスト</h4>
+
+<p>例へば &quot;<code>:make</code>&quot; を實行したときに、1 つのファイルで警告メッセージが出て、他のファイルではエラーが出たとします。エラーを修正し、本當に直つたかどうかを確認するためにもう一度 &quot;<code>:make</code>&quot; を實行しました。さて、ここで先程の警告メッセージを確認しようとしても、エラーリストには警告メッセージありません。なぜなら、警告メッセージを出したファイルは再コンパイルされなかつたからです。次のコマンドで古いエラーリストに戾ることができます:
+</p>
+<div class="example">
+<pre class="example">:colder
+</pre></div>
+
+<p>&quot;<code>:clist</code>&quot; と &quot;<code>:cc {nr}</code>&quot; を使つて、警告が發生した場所にジャンプしませう。
+次のコマンドで新しいエラーリストに戾れます:
+</p>
+<div class="example">
+<pre class="example">:cnewer
+</pre></div>
+
+<p>全部で 10 個までのエラーリストを保持しておくことができます。
+</p>
+
+<a name="Ta-nokonpairawoShi-u-1"></a>
+<h4 class="unnumberedsubsec">他のコンパイラを使ふ</h4>
+
+<p>コンパイラが出力するエラーメッセージの書式を調べ、&rsquo;<samp>errorformat</samp>&rsquo; オプションを設定する必要があります。このオプションの構文は非常に複雜ですが、どのやうなコンパイラにも對應できます。詳しい說明は |<a href="quickfix_002etxt.html#errorformat">errorformat</a>| を參照してください。
+</p>
+<p>複數のコンパイラを使ふとき、コンパイラを變更するたびに &rsquo;<samp>makeprg</samp>&rsquo; や&rsquo;<samp>errorformat</samp>&rsquo; を設定するのは面倒ですよね。簡單な方法が用意されてゐます。例へば、Microsoft Visual C++ なら次のやうに設定します:
+</p>
+<div class="example">
+<pre class="example">:compiler msvc
+</pre></div>
+
+<p>&quot;msvc&quot; 用のスクリプトが檢索され、適切なオプションが設定されます。
+自分で設定スクリプトを書くこともできます。|<a href="usr_005f41_002etxt.html#write_002dcompiler_002dplugin">write-compiler-plugin</a>| 參照。
+</p>
+
+<a name="Chu-Li-noridairekuto"></a>
+<h4 class="unnumberedsubsec">出力のリダイレクト</h4>
+
+<p>&quot;<code>:make</code>&quot; コマンドは、實行したプログラムの出力をエラーファイルにリダイレクトします。その動作はいろいろな要因に依存してゐます (例へば &rsquo;<samp>shell</samp>&rsquo; オプション)。&quot;<code>:make</code>&quot; コマンドがプログラムの出力を拾へてゐないやうなら、&rsquo;<samp>makeef</samp>&rsquo; オプションと &rsquo;<samp>shellpipe</samp>&rsquo; オプションを確認してみてください。&rsquo;<samp>shellquote</samp>&rsquo; オプションと&rsquo;<samp>shellxquote</samp>&rsquo; オプションも關係あるかもしれません。
+</p>
+<p>どうしても &quot;<code>:make</code>&quot; コマンドのリダイレクトが機能しない場合は、シェルからコンパイルを實行して、その出力をファイルにリダイレクトしてください。そして、次のコマンドでそのファイルを讀み込みます:
+</p>
+<div class="example">
+<pre class="example">:cfile {filename}
+</pre></div>
+
+<p>&quot;<code>:make</code>&quot; コマンドと同樣にエラーにジャンプできます。
+</p>
+<a name="g_t30_002e2"></a><a name="index-C-Yan-Yu-Xi-indento"></a>
+<a name="C-Yan-Yu-Xi-indento"></a>
+<h3 class="section">C 言語系インデント</h3>
+
+<p>プログラムを適切にインデントするとコードが讀みやすくなります。Vim の機能を使へばインデントするのは簡單です。C 言語、あるいは C++ や Java などの C スタイルのプログラムなら &rsquo;<samp>cindent</samp>&rsquo; オプションをオンに設定してください。C 言語のインデントは組み込みで用意されてゐて、複雜な構文でも適切にインデントできます。インデントに使ふスペースの數は &rsquo;<samp>shiftwidth</samp>&rsquo; オプションで設定します。スペース 4 個くらゐが適切でせうか。次のコマンドで設定できます:
+</p>
+<div class="example">
+<pre class="example">:set cindent shiftwidth=4
+</pre></div>
+
+<p>このオプションを設定すると、例へば &quot;if (x)&quot; と入力したときに、次の行が自動的にインデントされます。
+</p>
+<pre class="verbatim">                            if (flag)
+Automatic indent   ---&gt;        do_the_work();
+Automatic unindent &lt;--      if (other_flag) {
+Automatic indent   ---&gt;         do_file();
+keep indent                     do_some_more();
+Automatic unindent &lt;--      }
+</pre>
+<p>波カッコ (&lsquo;<samp>{}</samp>&rsquo;) の中でテキストを入力すると、最初の行でインデントが增え、最後の行でインデントが減ります。インデントが減るのは &rsquo;&lsquo;<samp>}</samp>&rsquo;&rsquo; を押したタイミングです (入力を豫測することはできないので)。
+</p>
+<p>自動インデントには、コーディングのミスを早く發見できるといふ副作用があります。例へば、函數の最後で } を入力したときに、インデントが本來よりも多くなつたとしたら、どこかで } を入力し忘れてゐます。&quot;<code>%</code>&quot; コマンドを使つて、最後に入力した } と對になつてゐる { を探しませう。
+</p>
+<p>同樣に、&lsquo;<samp>)</samp>&rsquo; や &lsquo;<samp>;</samp>&rsquo; を忘れると、次の行のインデントが增えます。もし豫想よりもインデントが多くなつてしまつた場合は直前の行を確認してください。
+</p>
+<p>書式が汚いコードを編輯するとき、あるいは編輯によつてインデントが崩れてしまつた場合、コードを再インデントする必要があります。それには &quot;=&quot; オペレータを使ひます。最も單純なのは次の使ひ方です:
+</p>
+<div class="example">
+<pre class="example">==
+</pre></div>
+
+<p>現在行がインデントされます。他のオペレータと同樣、使ひ方は 3 通りあります。ビジュアルモードで &quot;=&quot; を使ふと、選擇範圍の行がインデントされます。テキストオブジェクトで便利なのは &quot;a{&quot; です。これは現在のブロックを選擇します。つまり、次のコマンドでコードのブロックをインデントできます:
+</p>
+<div class="example">
+<pre class="example">=a{
+</pre></div>
+
+<p>コードが根本的に汚い場合は、次のコマンドでファイル全體を再インデントできます:
+</p><div class="example">
+<pre class="example">gg=G
+</pre></div>
+
+<p>ただし、手作業で叮嚀にインデントされたファイルに對してこれを實行してはいけません。自動インデントは良い仕事をしてくれますが、場合によつてはそのルールを破る必要もあるからです。
+</p>
+
+<a name="indentosutairunoShe-Ding-"></a>
+<h4 class="unnumberedsubsec">インデントスタイルの設定</h4>
+
+<p>インデントスタイルは人によつてさまざまです。初期設定では 90% のプログラマが滿足するやうなスタイルに設定されてゐます。しかし、世の中にはいろいろなスタイルがあるので、必要なら、&rsquo;<samp>cinoptions</samp>&rsquo; を設定することで、インデントスタイルをカスタマイズできます。
+</p>
+<p>&rsquo;<samp>cinoptions</samp>&rsquo; の初期設定は空です。その場合はデフォルトのスタイルが使はれます。このオプションに値を追加していくことでスタイルを變更できます。例へば、波カッコの位置を次のやうにしたい場合は:
+</p>
+<pre class="verbatim">if (flag)
+  {
+    i = 8;
+    j = 0;
+  }
+</pre>
+<p>次のコマンドを使ひます:
+</p>
+<div class="example">
+<pre class="example">:set cinoptions+={2
+</pre></div>
+
+<p>設定できる項目はたくさんあります。|<a href="indent_002etxt.html#cinoptions_002dvalues">cinoptions-values</a>| 參照。
+</p>
+<a name="g_t30_002e3"></a><a name="index-indentoShe-Ding-noZi-Dong-Hua-"></a>
+<a name="indentoShe-Ding-noZi-Dong-Hua-"></a>
+<h3 class="section">インデント設定の自動化</h3>
+
+<p>C ファイルを開くたびに &rsquo;<samp>cindent</samp>&rsquo; オプションを設定するのは面倒ですよね。インデントの設定は自動化できます:
+</p>
+<div class="example">
+<pre class="example">:filetype indent on
+</pre></div>
+
+<p>實際には、C ファイルに對して &rsquo;<samp>cindent</samp>&rsquo; をオンにする以外の機能も有效になります。まづ最初に、ファイルタイプの認識が有效になります。認識機能は構文强調表示で使はれてゐるものと同じです。
+</p>
+<p>ファイルタイプが認識されると、そのファイルタイプ用のインデントファイルが檢索されます。Vim にはさまざまな言語に對應したインデントファイルが附屬してゐます。インデントファイルが讀み込まれ、自動インデントのための設定が行はれます。
+</p>
+<p>インデント設定の自動化は次のコマンドでオフにできます:
+</p>
+<div class="example">
+<pre class="example">:filetype indent off
+</pre></div>
+
+<p>特定のファイルタイプだけインデントを無效にしたい場合は、次のやうな 1 行だけのファイルを作成してください:
+</p>
+<div class="example">
+<pre class="example">:let b:did_indent = 1
+</pre></div>
+
+<p>これを、決められた名前で保存します:
+</p>
+<div class="example">
+<pre class="example">{directory}/indent/{filetype}.vim
+</pre></div>
+
+<p>{filetype} は &quot;cpp&quot; や &quot;java&quot; といつたファイルタイプの名前です。次のコマンドで Vim が使つてゐる名前を確認できます:
+</p>
+<div class="example">
+<pre class="example">:set filetype
+</pre></div>
+
+<p>例へばこのヘルプファイルなら次のやうに表示されます:
+</p>
+<div class="example">
+<pre class="example">filetype=help
+</pre></div>
+
+<p>したがつて、{filetype} には &quot;help&quot; が入ります。
+</p>
+<p>{directory} はランタイムディレクトリです。次のコマンドの出力を調べてください:
+</p>
+<div class="example">
+<pre class="example">set runtimepath
+</pre></div>
+
+<p>ここでは先頭のパスを使ひます。つまり、出力が次のやうなら:
+</p>
+<div class="example">
+<pre class="example">runtimepath=~/.vim,/usr/local/share/vim/vim60/runtime,~/.vim/after
+</pre></div>
+
+<p>{directory} には &quot;~/.vim&quot; が入ります。したがつて、ファイル名は次のやうになります:
+</p>
+<div class="example">
+<pre class="example">~/.vim/indent/help.vim
+</pre></div>
+
+<p>インデントをオフにするのではなく、自分のインデントファイルを作成したい場合は、|<a href="indent_002etxt.html#indent_002dexpression">indent-expression</a>| を參照してください。
+</p>
+<a name="g_t30_002e4"></a><a name="index-sonoTa-noindento"></a>
+<a name="sonoTa-noindento"></a>
+<h3 class="section">その他のインデント</h3>
+
+<p>最もシンプルな自動インデントは &rsquo;<samp>autoindent</samp>&rsquo; オプションを使ふ方法です。これは直前の行と同じインデントを使ひます。&rsquo;<samp>smartindent</samp>&rsquo; はもう少しスマートです。これはインデントファイルが用意されてゐないやうな場合に使ひます。&rsquo;<samp>smartindent</samp>&rsquo; は &rsquo;<samp>cindent</samp>&rsquo; より低機能ですが、&rsquo;<samp>autoindent</samp>&rsquo; よりは高機能です。
+</p>
+<p>&rsquo;<samp>smartindent</samp>&rsquo; をオンにすると、{ でインデントが 1 つ增え、} で減ります。さらに、&rsquo;<samp>cinwords</samp>&rsquo; オプションに設定された單語が現れた場合もインデントが增えます。&lsquo;<samp>#</samp>&rsquo; で始まる行は特別扱ひされ、一切インデントされません。つまり、プリプロセッサーディレクティブの行はインデントされません。その次の行は通常通りインデントされます。
+</p>
+
+<a name="indentonoDing-Zheng-"></a>
+<h4 class="unnumberedsubsec">インデントの訂正</h4>
+
+<p>&rsquo;<samp>autoindent</samp>&rsquo; や &rsquo;<samp>smartindent</samp>&rsquo; を設定すると、直前の行と同じインデントを使ふことができますが、自分でインデントを (&rsquo;<samp>shiftwidth</samp>&rsquo; の幅ずつ) 增やしたり減らしたりする必要も多々あります。それには插入モードで <kbd>CTRL-D</kbd> と <kbd>CTRL-T</kbd> を使ふと簡單です。
+</p>
+<p>例へば、次のやうなシェルスクリプトを入力してみませう:
+</p>
+<pre class="verbatim">if test -n a; then
+   echo a
+   echo &quot;-------&quot;
+fi
+</pre>
+<p>まづ、次のオプションを設定します:
+</p>
+<div class="example">
+<pre class="example">:set autoindent shiftwidth=3
+</pre></div>
+
+<p>一行目を入力し、<code class="tt-key">&lt;Enter&gt;</code> を押して 2 行目を開始します:
+</p>
+<pre class="verbatim">if test -n a; then
+echo
+</pre>
+<p>2 行目にはインデントが必要ですね。<kbd>CTRL-T</kbd> を押します:
+</p>
+<pre class="verbatim">if test -n a; then
+   echo
+</pre>
+<p>插入モードの <kbd>CTRL-T</kbd> コマンドは、&rsquo;<samp>shiftwidth</samp>&rsquo; の幅だけインデントを增やします。カーソルの位置は關係ありません。
+</p>
+<p>2 行目を入力し、<code class="tt-key">&lt;Enter&gt;</code> を押して 3 行目を開始します。3 行目のインデントは問題ありません。<code class="tt-key">&lt;Enter&gt;</code> を押して最後の行を入力します。テキストは次のやうになりました:
+</p>
+<pre class="verbatim">if test -n a; then
+   echo a
+   echo &quot;-------&quot;
+   fi
+</pre>
+<p>最後の行の餘分なインデントを削除するには <kbd>CTRL-D</kbd> 押します。これは &rsquo;<samp>shiftwidth</samp>&rsquo; の幅だけインデントを減らします。カーソルの位置は關係ありません。
+</p>
+<p>ノーマルモードでは &quot;<code>&gt;&gt;</code>&quot; コマンドと &quot;<code>&lt;&lt;</code>&quot; コマンドで同樣の操作ができます。&quot;&gt;&quot; と&quot;&lt;&quot; はオペレータなので、他のオペレータと同樣に、インデントを變更する範圍を 3 通りの方法で指定できます。次の組み合はせが特に便利です:
+</p>
+<div class="example">
+<pre class="example">&gt;i{
+</pre></div>
+
+<p>現在のブロックのインデントが增えます。變更されるのは {} の中だけで、{ と } 自體の行は變更されません。&quot;&gt;a{&quot; なら {} も含まれます。次の例では、カーソルは &quot;&lsquo;<samp>printf</samp>&rsquo;&quot; の上にあります:
+</p>
+<pre class="verbatim">original text          after &quot;&gt;i{&quot;             after &quot;&gt;a{&quot;
+
+if (flag)              if (flag)               if (flag)
+{                      {                           {
+printf(&quot;yes&quot;);             printf(&quot;yes&quot;);          printf(&quot;yes&quot;);
+flag = 0;                  flag = 0;               flag = 0;
+}                       }                          }
+</pre>
+<a name="g_t30_002e5"></a><a name="index-tabutosupesu"></a>
+<a name="tabutosupesu"></a>
+<h3 class="section">タブとスペース</h3>
+
+<p>&rsquo;<samp>tabstop</samp>&rsquo; の初期設定は 8 です。變更することはできますが、それはトラブルの元になります。他のプログラムはあなたが使用してゐるタブ幅を知ることができません。そのやうなプログラムでは、恐らくタブの幅は 8 であると假定されてゐるので、テキストが崩れて表示されてしまひます。また、ほとんどのプリンタはタブ幅を 8 で固定してゐます。したがつて、&rsquo;<samp>tabstop</samp>&rsquo; を變更するのはお勸めしません。(他のタブ幅設定で書かれたテキストを修正したい場合は |<a href="usr_005f25_002etxt.html#g_t25_002e3">25.3</a>| を參照してください。)
+</p>
+<p>プログラムをインデントする場合、8 桁單位でインデントするとすぐに畫面が埋まつてしまひます。しかしスペースが 1 つだけではインデントが目立ちません。多くのプログラマは (折衷して) 4 桁を好んで使ひます。
+</p>
+<p>&lt;Tab&gt; の幅は 8 桁で、インデントを 4 桁にしたいといふことは、&lt;Tab&gt; 文字を使つてインデントすることはできないといふことです。そのやうなインデントには 1 つの方法があります:
+</p>
+<ol>
+<li> &lt;Tab&gt; とスペースを混在させる。&lt;Tab&gt; は 1 つでスペース 8 個分の幅になるのでファイルサイズの節約になります。スペース 8 個より &lt;Tab&gt; の方が入力も削除も簡單です。
+
+</li><li> スペースだけを使ふ。違ふタブ幅を使ふ他のプログラムでもトラブルが起きません。
+</li></ol>
+
+<p>Vim はどちらの方法もサポートしてゐます。
+</p>
+
+<a name="tabutosupesuwoHun-Zai-saseru"></a>
+<h4 class="unnumberedsubsec">タブとスペースを混在させる</h4>
+
+<p>タブとスペースを混在させる場合は特別な設定は必要ありません。初期設定でうまくいきます。
+</p>
+<p>&rsquo;<samp>softtabstop</samp>&rsquo; オプションを設定すると編輯が少し樂になります。このオプションが設定されると、タブ幅が &rsquo;<samp>softtabstop</samp>&rsquo; の値に設定されたかのやうに、<code class="tt-key">&lt;Tab&gt;</code> キーが動作します。しかし實際にはタブとスペースが混在して使はれます。
+</p>
+<p>次のコマンドを實行すると、<code class="tt-key">&lt;Tab&gt;</code> キーでカーソルが 4 桁ごとに進むやうになります:
+</p>
+<div class="example">
+<pre class="example">:set softtabstop=4
+</pre></div>
+
+<p>行頭で <code class="tt-key">&lt;Tab&gt;</code> を押すと、スペースが 4 個插入されます。次に <code class="tt-key">&lt;Tab&gt;</code> を押すと、最初のスペース 4 個が削除されて &lt;Tab&gt; 文字が插入されます (つまりカーソルは 8 列目)。このやうに、スペースは可能な限り &lt;Tab&gt; 文字で置き換へられます。
+</p>
+<p>バックスペースはその反對の動作になります。<code class="tt-key">&lt;BS&gt;</code> を押すと、&rsquo;<samp>softtabstop</samp>&rsquo; の幅だけ削除されます。可能な限り &lt;Tab&gt; が使はれ、餘りはスペースになります。
+</p>
+<p>次の圖は、&lt;Tab&gt; をいくつか入力してから <code class="tt-key">&lt;BS&gt;</code> を使つたときの樣子を示してゐます。&quot;.&quot; はスペースで &quot;&mdash;&mdash;-&gt;&quot; は &lt;Tab&gt; です。
+</p>
+<pre class="verbatim">type                      result
+&lt;Tab&gt;                     ....
+&lt;Tab&gt;&lt;Tab&gt;                -------&gt;
+&lt;Tab&gt;&lt;Tab&gt;&lt;Tab&gt;           -------&gt;....
+&lt;Tab&gt;&lt;Tab&gt;&lt;Tab&gt;&lt;BS&gt;       -------&gt;
+&lt;Tab&gt;&lt;Tab&gt;&lt;Tab&gt;&lt;BS&gt;&lt;BS&gt;   ....
+</pre>
+<p>同樣の動作は &rsquo;<samp>smarttab</samp>&rsquo; オプションを使つても實現できます。このオプションを設定した場合、インデントの入力のために <code class="tt-key">&lt;Tab&gt;</code> を押すと &rsquo;<samp>shiftwidth</samp>&rsquo; の幅が使はれ、何かの文字より後ろでは實際の &lt;Tab&gt; 文字が使はれます。ただし、<code class="tt-key">&lt;BS&gt;</code> の動作は &rsquo;<samp>softtabstop</samp>&rsquo; のときと同樣にはなりません。
+</p>
+
+<a name="supesudakewoShi-u"></a>
+<h4 class="unnumberedsubsec">スペースだけを使ふ</h4>
+
+<p>Tab 文字を一切使ひたくない場合は &rsquo;<samp>expandtab</samp>&rsquo; オプションを設定してください:
+</p>
+<div class="example">
+<pre class="example">:set expandtab
+</pre></div>
+
+<p>このオプションをオンにすると、<code class="tt-key">&lt;Tab&gt;</code> キーでスペースが入力されるやうになります。つまり、&lt;Tab&gt; 文字と同じ量のスペースが插入され、&lt;Tab&gt; 文字は使はれません。
+</p>
+<p>バックスペースキーはスペースを 1 つずつ削除するので、<code class="tt-key">&lt;Tab&gt;</code> を押した後でそれを削除するには <code class="tt-key">&lt;BS&gt;</code> を 8 回押さなければなりません。インデントの削除は <kbd>CTRL-D</kbd> を使ふと簡單です。
+</p>
+
+<a name="tabuwosupesuniBian-Huan-suru-_0028aruihasonoNi-_0029"></a>
+<h4 class="unnumberedsubsec">タブをスペースに變換する (あるいはその逆)</h4>
+
+<p>&rsquo;<samp>expandtab</samp>&rsquo; を設定しても、それ以前に入力されたタブ文字は影響を受けません。つまり、文章中のタブ文字はタブ文字のままです。タブ文字をスペースに變換したい場合は、&quot;<code>:retab</code>&quot; コマンドを使つてください。次のやうに使ひます:
+</p>
+<div class="example">
+<pre class="example">:set expandtab
+:%retab
+</pre></div>
+
+<p>すべてのインデントがスペースに變換されます。ただし、何かの文字より後ろにある(インデント以外の) タブ文字はそのままです。それらのタブ文字も變換したい場合はコマンドに ! を付けます:
+</p>
+<div class="example">
+<pre class="example">:%retab!
+</pre></div>
+
+<p>これは少し注意が必要です。なぜなら、文字列の中のタブ文字も變換されてしまふからです。文字列の中でタブ文字が使はれてゐるかどうかは、次の檢索パターンで確認できます:
+</p>
+<div class="example">
+<pre class="example">/&quot;[^&quot;\t]*\t[^&quot;]*&quot;
+</pre></div>
+
+<p>文字列の中でタブ文字を使ふのはお勸めしません。トラブルを避けるためにも &quot;\t&quot; を使つてください。
+</p>
+<p>同樣に、スペースをタブ文字に變換できます:
+</p>
+<div class="example">
+<pre class="example">:set noexpandtab
+:%retab!
+</pre></div>
+
+<a name="g_t30_002e6"></a><a name="index-komentonoZheng-Xing-"></a>
+<a name="komentonoZheng-Xing-"></a>
+<h3 class="section">コメントの整形</h3>
+
+<p>Vim のすばらしいところはコメントを解釋できるところです。コメントの整形を指示するだけで適切に處理してくれます。
+</p>
+<p>例へば、次のやうなコメントがあるとします:
+</p>
+<pre class="verbatim">/*
+* This is a test
+* of the text formatting.
+*/
+</pre>
+<p>最初の行に移動して次のコマンドを實行すると、コメントを整形できます:
+</p>
+<div class="example">
+<pre class="example">gq]/
+</pre></div>
+
+<p>&quot;gq&quot; はテキスト整形のためのオペレータです。&quot;<code>]/</code>&quot; はコメントの末尾に移動するコマンドです。次のやうな結果になります:
+</p>
+<pre class="verbatim">/*
+ * This is a test of the text formatting.
+ */
+</pre>
+<p>各行の行頭が適切に處理されてゐますね。
+</p>
+<p>ビジュアルモードでテキストを選擇してから &quot;<code>gq</code>&quot; を使ふ方法でも構ひません。
+</p>
+<p>新しい行を追加したい場合は、眞ん中の行に移動して &quot;<code class="tt-key">o</code>&quot; を押します。次のやうな結果になります:
+</p>
+<pre class="verbatim">/*
+ * This is a test of the text formatting.
+ *
+ */
+</pre>
+<p>行頭のスペースと * は自動的に插入されるので、そのままコメントを入力することができます。テキストが &rsquo;<samp>textwidth</samp>&rsquo; より長くなると自動的に改行されます。そのときも、行頭の * は自動的に插入されます:
+</p>
+<pre class="verbatim">/*
+ * This is a test of the text formatting.
+ * Typing a lot of text here will make Vim
+ * break
+ */
+</pre>
+<p>この機能を使ふには &rsquo;<samp>formatoptions</samp>&rsquo; の設定が必要です:
+</p>
+<table>
+<tr><td width="10%">r</td><td width="90%">插入モードで &lt;Enter&gt; を押したときに * を插入する</td></tr>
+<tr><td width="10%">o</td><td width="90%">ノーマルモードで &quot;o&quot; または &quot;O&quot; を使つたときに * を插入する</td></tr>
+<tr><td width="10%">c</td><td width="90%">コメントを &rsquo;<samp>textwidth</samp>&rsquo; の幅で改行する</td></tr>
+</table>
+
+<p>詳しくは |<a href="change_002etxt.html#fo_002dtable">fo-table</a>| 參照。
+</p>
+
+<a name="komentonoDing-Yi-"></a>
+<h4 class="unnumberedsubsec">コメントの定義</h4>
+
+<p>コメントの書式は &rsquo;<samp>comments</samp>&rsquo; オプションで設定します。1 行コメントと三部コメント (開始、中閒、終端からなるコメント) は分けて處理されます。
+</p>
+<p>ほとんどの 1 行コメントは特定の文字で始まります。C++ は //、メイクファイルは #、Vim は &quot; です。例へば、C++ のコメントなら次のやうに設定します:
+</p>
+<div class="example">
+<pre class="example">:set comments=://
+</pre></div>
+
+<p>コロンはフラグとコメント文字の區切りです。&rsquo;<samp>comments</samp>&rsquo; の設定は次のやうな形式で指定します:
+</p>
+<div class="example">
+<pre class="example">{flags}:{text}
+</pre></div>
+
+<p>この例のやうに、{flags} は空でも構ひません。
+</p>
+<p>複數のアイテムを指定するときはコンマで區切ります。アイテムを複數指定できるので、同じファイルの中でいろんな種類のコメントを使ふことができます。例へばメールを返信するときに、相手のメッセージに &quot;&gt;&quot; や &quot;!&quot; を付けて引用する場合は、次のやうに設定します:
+</p>
+<div class="example">
+<pre class="example">:set comments=n:&gt;,n:!
+</pre></div>
+
+<p>2 つのアイテムが設定されました。1 つは &quot;&gt;&quot; で開始するコメント、もう 1 つは &quot;!&quot; で開始するコメントです。&quot;n&quot; フラグが使はれてゐるので、コメントを入れ子にできます。つまり、&quot;&gt;&quot; で開始する行は、&quot;&gt;&quot; の後ろに他のコメントを含んでゐても構ひません。この設定により、次のやうなメッセージを整形することができます:
+</p>
+<pre class="verbatim">&gt; ! Did you see that site?
+&gt; ! It looks really great.
+&gt; I don't like it.  The
+&gt; colors are terrible.
+What is the URL of that
+site?
+</pre>
+<p>&rsquo;<samp>textwidth</samp>&rsquo; の設定を變更して (例へば 80 にして)、テキストを整形してみませう。ビジュアルモードでテキストを選擇してから &quot;gq&quot; を押します:
+</p>
+<pre class="verbatim">&gt; ! Did you see that site?  It looks really great.
+&gt; I don't like it.  The colors are terrible.
+What is the URL of that site?
+</pre>
+<p>違ふ種類のコメントテキストは混ざつてゐませんね。2 行目の &quot;I&quot; は 1 行目の末尾に入れることも可能ですが、しかし、1 行目は &quot;&gt; !&quot; で始まり、2 行目は &quot;&gt;&quot; で始まつてゐるため、それらのコメントは別のものであると判斷されます。
+</p>
+
+<a name="San-Bu-komento-_0028A-THREE-PART-COMMENT_0029"></a>
+<h4 class="unnumberedsubsec">三部コメント (A THREE PART COMMENT)</h4>
+
+<p>C のコメントは &quot;/*&quot; で始まり、中閒には &quot;*&quot; が付き、&quot;*/&quot; で終はります。このやうなコメントは次のやうに設定します:
+</p>
+<div class="example">
+<pre class="example">:set comments=s1:/*,mb:*,ex:*/
+</pre></div>
+
+<p>開始部分は &quot;s1:/*&quot; です。&quot;s&quot; は三部コメントの開始を示します。フラグとコメント文字 &quot;/*&quot; をコロンで區切つてゐます。フラグには &quot;1&quot; が指定されてゐますが、これにより中閒部分がスペース一個分、字下げされます。
+</p>
+<p>中閒部分は &quot;mb:*&quot; です。&quot;m&quot; は三部コメントの中閒を示します。&quot;b&quot; フラグは、コメント文字の後ろに空白が必要であることを示します。これを指定しないと、&quot;*pointer&quot; などもコメントとして認識されてしまひます。
+</p>
+<p>終端部分は &quot;ex:*/&quot; です。&quot;e&quot; は三部コメントの終端を示します。&quot;x&quot; は特殊なフラグです。中閒の * が自動的に插入された直後に &quot;/&quot; を押すと、餘計なスペースが削除されます。
+</p>
+<p>詳細は |<a href="change_002etxt.html#format_002dcomments">format-comments</a>| を參照してください。
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="usr_005f31_002etxt.html#usr_005f31_002etxt" accesskey="n" rel="next">usr_31.txt</a>, Previous: <a href="usr_005f29_002etxt.html#usr_005f29_002etxt" accesskey="p" rel="prev">usr_29.txt</a>, Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

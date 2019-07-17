@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>recover.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="recover.txt (Vim Reference Manual)">
+<meta name="keywords" content="recover.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="cmdline_002etxt.html#cmdline_002etxt" rel="next" title="cmdline.txt">
+<link href="various_002etxt.html#various_002etxt" rel="prev" title="various.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="recover_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="kuratusiyukaranoFu-Gui--1"></a>
+<h2 class="unnumbered">クラッシュからの復歸</h2>
+<pre class="verbatim">*recover.txt*   For Vim バージョン 8.1.  Last change: 2019 May 07
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+</pre>
+
+<a name="crash_002drecovery"></a><a name="index-crash_002drecovery"></a>
+<p>クラッシュ後のリカバリー
+</p>
+<p>あなたが明日の朝までに終はらせなければならない文書のタイピングに數時閒を費やしてゐたとき、悲劇があなたを襲ふ。コンピュータがクラッシュした。
+</p>
+<p><strong>慌てないで！</strong>
+</p>
+<p>あなたは Vim がファイルの內容を蓄へていたファイルから、ほとんどの變更を恢復できる。たいていの場合、あなたの仕事は 1 コマンドで恢復できる。
+</p><div class="example">
+<pre class="example">vim -r filename
+</pre></div>
+
+<table>
+<tr><td width="50%">1. スワップファイル</td><td width="50%">|<a href="#swap_002dfile">swap-file</a>|</td></tr>
+<tr><td width="50%">2. リカバリー</td><td width="50%">|<a href="#recovery">recovery</a>|</td></tr>
+</table>
+
+<a name="swap_002dfile"></a><a name="index-swap_002dfile"></a>
+<a name="index-suwatupuhuairu"></a>
+<a name="g_t1_002e-suwatupuhuairu"></a>
+<h3 class="section">1. スワップファイル</h3>
+
+<p>Vim は變更した箇所をスワップファイルに蓄へる。編輯を開始したオリジナルのファイルとスワップファイルから、あなたのした作業は恢復することができる。
+</p>
+<p>現在使用してゐるスワップファイルの名前は、次のコマンドで確認できる:
+</p>
+<a name="g_t_003asw"></a><a name="g_t_003aswapname"></a><a name="index-_003asw"></a>
+<a name="index-_003aswapname"></a>
+<div class="example">
+<pre class="example">:sw[apname]
+</pre></div>
+
+<p>もしくは、他のバッファのスワップファイル名を見ることもできる |<a href="eval_002etxt.html#swapname_0028_0029">swapname()</a>| 函數を使ふことができる。
+</p>
+<p>スワップファイルの名前は、普通は編輯中のファイルと同じで、擴張子が &quot;.swp&quot; のものになる。
+</p><ul>
+<li> UNIX では、スワップファイルは編輯中のファイルと同じディレクトリ內に作られ、&rsquo;.&rsquo; が名前の前につけられる。これはディレクトリ表示からスワップファイルを隱すためである。
+</li><li> MS-DOS マシンで、&rsquo;<samp>shortname</samp>&rsquo; オプションがオンのときは、オリジナルファイルの &rsquo;.&rsquo; は &rsquo;_&rsquo; に置き換へられる。
+</li><li> このファイルがすでに存在すると (たとへば、クラッシュから復歸した場合)、注意が表示され、違つた擴張子 &quot;.swo&quot;, &quot;.swn&quot; などが用ゐられる。
+</li><li> 存在してゐるファイルは決して上書きされない。
+</li><li> スワップファイルは Vim が編輯を終へるとすぐに削除される。
+</li></ul>
+
+<blockquote>
+<p><strong>技術情報:</strong> <br>
+&rsquo;.&rsquo; から &rsquo;_&rsquo; への置換は MS-DOS 互換のファイルシステム (例、crossdos, multidos) での問題を避けるためである。もし Vim が MS-DOS ライクなファイルシステムを探知すると、&rsquo;<samp>shortname</samp>&rsquo; オプションと同じ效果を持つフラグが設定される。このフラグは違ふファイルの編輯を始めたときにリセットされる。
+</p>
+<a name="E326"></a><a name="index-E326"></a>
+<p>もし &quot;.swp&quot; ファイルがすでに存在すると、同名のファイルが存在しなくなるか、&quot;.saa&quot; となるまで最後の文字をひとつ前の文字に戾す。&quot;.saa&quot; まで存在するときは、スワップファイルは作られない。
+</p></blockquote>
+
+<p>&rsquo;<samp>directory</samp>&rsquo; オプションを設定することによつて、スワップファイルを、編輯してゐるファイルとは別の場所に置くこともできる。
+</p><a name="Li-Dian-_003a"></a>
+<h4 class="unnumberedsubsec">利點:</h4>
+<ul>
+<li> ディレクトリが &quot;.swp&quot; ファイルで汚染されることがない。
+</li><li> &rsquo;<samp>directory</samp>&rsquo; が別パーティションにある場合、ファイルのあるファイルシステムが (クラッシュで) 損傷を受けるリスクが減る。
+</li></ul>
+<a name="Qian-Dian-_003a"></a>
+<h4 class="unnumberedsubsec">缺點:</h4>
+<ul>
+<li> 別ディレクトリの同一名のファイルで名前の衝突を生じうる (Vim はパス名の比較でそれを避けようとするが)。これによつて僞の注意メッセージが表示される。
+</li><li> あなたがホームディレクトリで作業をしてゐて、他の誰かが同じファイルを編輯しようとしたとき、その人はあなたのスワップファイルに氣づかないし、注意のメッセージも表示されない。
+</li></ul>
+<p>Amiga では、恢復可能な ram ディスクを使へるが、それが 100% 働くといふ保證はない。スワップファイルを通常の ram ディスク (Amiga では RAM: など) に置いたり、リブートによつて消されてしまふ場所 (Unix の /tmp など) に置くことは無意味であり、クラッシュによつてスワップファイルは失はれてしまふ。
+</p>
+<p>スワップファイルを固定ディスクに置きたいときは、あなたの .vimrc ファイルに次に示す樣なコマンドを入れる:
+</p><div class="example">
+<pre class="example">:set dir=dh2:tmp    (Amiga の場合)
+:set dir=~/tmp      (Unix の場合)
+:set dir=c:\\tmp    (MS-DOS and Win32 の場合)
+</pre></div>
+<p>これらの設定はフロッピー上で編輯作業をしてゐるときには負擔となる。もちろん、この樣な設定で作業をするならば、&quot;tmp&quot; ディレクトリを作らねばならない。
+</p>
+<p>讀取專用屬性のファイルに對しては、スワップファイルは使用されない。ファイルが大きくなければ、&rsquo;<samp>maxmem</samp>&rsquo; や &rsquo;<samp>maxmemtot</samp>&rsquo; で與へられた量より多くのメモリを使用することはない。讀取專用屬性のファイルについて何らかの變更が加へられたとき、スワップファイルは無條件に作成される。
+</p>
+<p>スワップファイルの作成を避けるために &rsquo;<samp>swapfile</samp>&rsquo; オプションをリセットできる。そして新しいバッファでスワップファイルを作成しないやうにするのに |<a href="#g_t_003anoswapfile">:noswapfile</a>| 修飾子を使ふことができる。
+</p>
+<a name="g_t_003anos"></a><a name="g_t_003anoswapfile"></a><a name="index-_003anos"></a>
+<a name="index-_003anoswapfile"></a>
+<dl compact="compact">
+<dt>:nos[wapfile] {command}</dt>
+<dd><p>{command} を實行する。それが新しいバッファを讀み込むコマンドを含んでゐる場合は、スワップファイルは作成されずに讀み込まれ、&rsquo;<samp>swapfile</samp>&rsquo; オプションはリセットされる。バッファが既にスワップファイルを持つてゐた場合は、スワップファイルは削除されず、&rsquo;<samp>swapfile</samp>&rsquo; はリセットされない。
+</p></dd>
+</dl>
+
+
+<a name="Ji-Cun-nosuwatupuhuairuwoXue-Chu-suru"></a>
+<h4 class="unnumberedsubsec">既存のスワップファイルを削除する</h4>
+
+<p>ユーザーマニュアルの |<a href="usr_005f11_002etxt.html#g_t11_002e3">11.3</a>| を參照すること。
+</p>
+
+<a name="suwatupuhuairunoGeng-Xin-"></a>
+<h4 class="unnumberedsubsec">スワップファイルの更新</h4>
+
+<p>スワップファイルは 200 文字を打ち込むか、4 秒閒何もしなかつたときに更新される。これはバッファが變更されたときのみ行はれ、動き回つてゐるだけでは行はれない。なぜ常に更新が行はれないかといへば、それは通常の作業が大幅に遲くなるからである。
+</p>
+<p>200 文字の設定は &rsquo;<samp>updatecount</samp>&rsquo; で、時閒の設定は &rsquo;<samp>updatetime</samp>&rsquo; で變更できる。時閒はミリ秒單位で與へられる。スワップファイルに書き込んだ後で、Vim はファイルとディスクの同期を取る。これにはしばらく時閒が掛かる (ビジーな Unix システムにおいては特に時閒がかかる)。もしこれを行つて欲しくなければ、&rsquo;<samp>swapsync</samp>&rsquo; オプションに空文字列を設定すればよい。作業の成果を失ふ危險性は增すが。いくつかの非 Unix システム (MS-DOS、Amiga など) においては、スワップファイルはまつたく書き込まれなくなるだらう。
+</p>
+<p>スワップファイルへの書き込みを望まないなら、&rsquo;<samp>updatecount</samp>&rsquo; を 0 に設定することで行はれなくなる。Vim を &quot;-n&quot; オプションで起動することで、同じ結果が得られる。書き込みは &rsquo;<samp>updatecount</samp>&rsquo; を非 0 にすることでまた行はれるやうになる。これを行つたときはスワップファイルが全てのバッファに對して作られる。しかし、&rsquo;<samp>updatecount</samp>&rsquo; を 0 に設定したときは、存在してゐるスワップファイルは消されることはなく、次に開かれたファイルから有效になる。
+</p>
+<p>行つた編輯がスワップファイルに書きこまれたかを確認するには、次のコマンドを使用する:
+</p>
+<a name="g_t_003apre"></a><a name="g_t_003apreserve"></a><a name="E313"></a><a name="E314"></a><a name="index-_003apre"></a>
+<a name="index-_003apreserve"></a>
+<a name="index-E313"></a>
+<a name="index-E314"></a>
+<dl compact="compact">
+<dt>:pre[serve]</dt>
+<dd><p>全てのバッファの全てのテキストをスワップファイルに書き込む。恢復のためにオリジナルが必要とされることはなくなる。
+</p>
+<p>このコマンドはカレントバッファにあるフラグを設定する。また、&rsquo;<samp>cpoptions</samp>&rsquo; にフラグ &rsquo;&amp;&rsquo; が入つてゐるならば、Vim が終了するとき、このバッファのスワップファイルは削除されず、バッファは讀み込まれた狀態のままになる。|<a href="options_002etxt.html#cpo_002d_0026">cpo-&amp;</a>|
+</p></dd>
+</dl>
+
+<p>Vim のスワップファイルは最初の6文字で認識される: &quot;b0VIM &quot;。この後に &quot;3.0&quot; などのバージョン番號が續く。
+</p>
+
+<a name="rinkutosinboritukurinku"></a>
+<h4 class="unnumberedsubsec">リンクとシンボリックリンク</h4>
+
+<p>Unix では同一のファイルに 2 つの名前をつけることができる。それはハードリンクまたはシンボリックリンク (symlink) を使つて行ふ。
+</p>
+<p>ハードリンクの場合、Vim はそのファイルにつけられた他の名前を知ることができない。そのため、スワップファイルの名前は、そのファイルを開くときに使つた名前に基づいてつけられる。
+</p>
+<p>そのファイルが別の名前でも開かれてゐるかどうかのチェックは行はない。他のスワップファイルを檢出することはできないからである (ハードディスク全てを檢索するといふ方法は除く。それはとても遲くなるから)。
+</p>
+<p>シンボリックリンクの場合、Vim はそのリンクが指す實際のファイルを見つけられる。スワップファイルの名前は實際の名前に基づいてつけられる。よつて、ユーザーがどんな名前でそのファイルを開いたかは關係なく、スワップファイル名は同一になる。しかし次のやうな例外がある:
+</p><ul>
+<li> 實際のファイルのディレクトリが書き込み不可ならば、スワップファイルは別の場所に置かれる。
+<a name="E773"></a></li><li> <a name="index-E773"></a>
+シンボリックリンクがなんらかの形でループになつてゐるとき、エラーメッセージ E773 が表示され、變更されてゐないファイル名が使はれる。普通にファイルを保存することはできない。
+</li></ul>
+
+<a name="recovery"></a><a name="E308"></a><a name="E311"></a><a name="index-recovery"></a>
+<a name="index-E308"></a>
+<a name="index-E311"></a>
+<a name="index-rikabari"></a>
+<a name="g_t2_002e-rikabari"></a>
+<h3 class="section">2. リカバリー</h3>
+
+<p>基本的なファイルの恢復方法はユーザーマニュアルの |<a href="usr_005f11_002etxt.html#usr_005f11_002etxt">usr_11.txt</a>| を參照すること。
+</p>
+<p>ファイルを恢復するためのもうひとつの方法は、Vim を起動して &quot;<code>:recover</code>&quot; コマンドを使ふことである。これは Vim を起動したときに &quot;&lsquo;<samp>ATTENTION: Found a swap file ...</samp>&rsquo;&quot; といふメッセージを受け取つたときには便利である。その場合には &quot;<code>:recover</code>&quot; といふコマンドひとつで全てが濟む。
+</p>
+<p>recover コマンドにはファイル名かスワップファイル名を渡すことができる:
+<a name="g_t_003arec"></a><a name="g_t_003arecover"></a><a name="E305"></a><a name="E306"></a><a name="E307"></a><a name="index-_003arec"></a>
+<a name="index-_003arecover"></a>
+<a name="index-E305"></a>
+<a name="index-E306"></a>
+<a name="index-E307"></a>
+</p><dl compact="compact">
+<dt>:rec[over] [file]</dt>
+<dd><p>スワップファイルから [file] を恢復するやう試みる。もし [file] が與へられてゐない場合は、現在のバッファの名前が用ゐられる。現在のバッファの內容は失はれる。このコマンドはバッファが修正を加へられてゐる場合に失敗する。
+</p>
+</dd>
+<dt>:rec[over]! [file]</dt>
+<dd><p>&quot;<code>:recover</code>&quot; と同じだが、現在のバッファに對するどんな變更も失はれる。
+</p></dd>
+</dl>
+
+<a name="E312"></a><a name="E309"></a><a name="E310"></a><a name="index-E312"></a>
+<a name="index-E309"></a>
+<a name="index-E310"></a>
+<p>Vim はスワップファイルが何らかの理由で壞れてゐるときに、いくつかの對處を提供する。Vim が見つかつたものに疑問を持つた場合、エラーメッセージが與へられ、&quot;???&quot; といふテキストが一緖に行に插入される。恢復中にエラーメッセージを受け取つたら、&quot;???&quot; を檢索することによつてどこに問題があつたかを知ることができる。必要なテキストを得るためには、カットやペーストを必要とするかもしれない。
+</p>
+<p>ほとんどは &quot;???LINES MISSING&quot; のやうなものである。これは Vim がそのテキストをオリジナルのファイルから讀み込めないことを示す。これはシステムがクラッシュした時にファイルが正しくディスクに書き込まれなかつたときに起こる。
+</p>
+<p>オリジナルを上書きしたり、スワップファイルを削除する前に、恢復が成功したことを確認すること。恢復されたファイルをどこか別の場所に保存して、&rsquo;diff&rsquo; によつて變更を加へた箇所が、ちやんと恢復されたファイルに入つてゐるか調べてみるとよい。または |<a href="diff_002etxt.html#g_t_003aDiffOrig">:DiffOrig</a>| を使ふ。
+</p>
+<p>恢復が成功したと確信したら、スワップファイルを削除する。さうしないと、&quot;.swp&quot; が存在するといふメッセージが表示されつづけることになる。
+</p>
+
+
+<a name="g_t_003arecover_002dcrypt"></a><a name="index-_003arecover_002dcrypt"></a>
+<a name="index-An-Hao-Hua-tosuwatupuhuairu"></a>
+<a name="An-Hao-Hua-tosuwatupuhuairu"></a>
+<h4 class="unnumberedsubsec">暗號化とスワップファイル</h4>
+
+<p>テキストファイルが暗號化されてゐるときはスワップファイルも暗號化される。これはリカバリーを多少複雜にする。スワップファイルからリカバリーするときにそれが暗號化されてゐた場合、1 つか 2 つの祕密鍵を入力する必要があるだらう。
+</p>
+<p>テキストファイルが存在しない場合は入力する必要のある祕密鍵はスワップファイル用の 1 つだけである。
+</p>
+<p>テキストファイルが存在する場合、そのファイルはスワップファイルとは別の方法で復號する必要があるかもしれない。祕密鍵を 2 つ入力する必要がある:
+</p>
+<pre class="verbatim">Need encryption key for &quot;/tmp/tt&quot;
+Enter encryption key: ******
+&quot;/tmp/tt&quot; [crypted] 23200L, 522129C
+Using swap file &quot;/tmp/.tt.swp&quot;
+Original file &quot;/tmp/tt&quot;
+Swap file is encrypted: &quot;/tmp/.tt.swp&quot;
+If you entered a new crypt key but did not write the text file,
+enter the new crypt key.
+If you wrote the text file after changing the crypt key press enter
+to use the same key for text file and swap file
+Enter encryption key:
+</pre>
+<p>2 つの狀況が考へられる:
+</p>
+<ol>
+<li> 暗號化キーが變更されなかつたか、キーが變更された後でファイルが保存された場合。祕密鍵を 2 回入力する必要がある。2 囘目に入力するときは單にエンターを押すこと。さうするとテキストファイルとスワップファイルの兩方に同じキーが使用される。
+</li><li> 新しい暗號化キーを入力したが、ファイルは保存されなかつた場合。スワップファイルには新しいキーが使用されてゐるが、テキストファイルは古いキーで暗號化されたままになつてゐる。2 囘目にキーを入力するときに新しい方のキーを入力すること。
+</li></ol>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+リカバリー實行後にはスワップファイルのキーがテキストファイルに使用される。したがつて、ファイルを書き込んだ後は新しいキーを使用する必要がある。
+</p></blockquote>
+
+
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

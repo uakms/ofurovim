@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>pi_spec.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="pi_spec.txt (Vim Reference Manual)">
+<meta name="keywords" content="pi_spec.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="pi_005ftar_002etxt.html#pi_005ftar_002etxt" rel="next" title="pi_tar.txt">
+<link href="pi_005fparen_002etxt.html#pi_005fparen_002etxt" rel="prev" title="pi_paren.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="pi_005fspec_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="rpm-spec-huairudeDong-Zuo-suruhuairutaipupuraguin"></a>
+<h2 class="unnumbered">rpm spec ファイルで動作するファイルタイププラグイン</h2>
+<pre class="verbatim">*pi_spec.txt*   For Vim バージョン 8.1.  Last change: 2006 Apr 24
+
+by Gustavo Niemeyer
+</pre>
+<p>ここでは RPM の spec ファイル用のプラグインについて解說する。
+</p>
+<p>このプラグインを使用することで RPM の spec ファイルの %changelog セクションを簡單に更新することができる。まだセクションが存在してゐないならば、プラグインが作成してくれる。既に本日分のエントリがあるのならば、プラグインは本日のエントリに新しい項目を追加する機會を與へてくれる。書式設定文字列 (|<a href="#spec_005fchglog_005fformat">spec_chglog_format</a>|) を準備してゐないならば、プラグインは email アドレスをユーザーに問ひ合はせ、そこから書式文字列を構築する。
+</p>
+<table>
+<tr><td width="50%">1. 使ひ方</td><td width="50%">|<a href="#spec_002dhow_002dto_002duse_002dit">spec-how-to-use-it</a>|</td></tr>
+<tr><td width="50%">2. カスタマイズ</td><td width="50%">|<a href="#spec_002dcustomizing">spec-customizing</a>|</td></tr>
+</table>
+
+<a name="spec_002dhow_002dto_002duse_002dit"></a><a name="index-spec_002dhow_002dto_002duse_002dit"></a>
+<a name="g_t1_002e-Shi-iFang-"></a>
+<h3 class="section">1. 使ひ方</h3>
+
+<p>spec_chglog プラグインは以下のやうなキーマップを提供する:
+</p><div class="example">
+<pre class="example">:map &lt;buffer&gt; &lt;LocalLeader&gt;c &lt;Plug&gt;SpecChangelog
+</pre></div>
+
+<p>これは spec ファイルではマップローカルリーダー (デフォルトは&rsquo;\&rsquo;) に續いて &rsquo;c&rsquo; を押すことでプラグインが起動することを意味してゐる。|<a href="#spec_005fchglog_005fformat">spec_chglog_format</a>| を設定してゐない場合には、プラグインはユーザーに email アドレスを問ひ合はせこの編輯セッションで使用する。
+</p>
+<p>プラグインを起動するたびに、changelog に本日分の項目が既に書かれてゐるかをチェックする。そのやうなエントリが存在すれば、新しい changelog 項目が追加され、存在しない場合には新しい changelog エントリが作成される。
+</p>
+<p>|<a href="#spec_005fchglog_005frelease_005finfo">spec_chglog_release_info</a>| を有效化して實行した場合には、名前とバージョンとリリースも一致するかが確認される。プラグインは充分に賢いので、パッケージリリースがアップデートされるべき時にはその旨を訊ねてくるから、ユーザーはわざわざそれをする必要はない。
+</p>
+<a name="spec_002dsetting_002da_002dmap"></a><a name="index-spec_002dsetting_002da_002dmap"></a>
+<a name="kimatupuDing-Yi-"></a>
+<h4 class="unnumberedsubsec">キーマップ定義</h4>
+
+<p>既に知つてゐるやうに、あらゆる Vim コマンド (その意味ではあらゆる事が可能) を實行するためのキーマップは簡單に定義できる。デフォルトのキーマップ &lt;LocalLeader&gt; c が氣に入らないならば、獨自のキーを設定するのも良いだらう。次はそれをファイル <samp>.vimrc</samp> で行ふ例で、プラグインを <code class="tt-key">&lt;F5&gt;</code> キーに割り當ててゐる:
+</p><div class="example">
+<pre class="example">au FileType spec map &lt;buffer&gt; &lt;F5&gt; &lt;Plug&gt;SpecChangelog
+</pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+プラグインはユーザーのマッピング變更の要望を尊重するので、再設定は行はない。
+</p></blockquote>
+
+<p>このコマンドは spec ファイルのバッファにのみ適用される。
+</p>
+
+<a name="spec_002dcustomizing"></a><a name="index-spec_002dcustomizing"></a>
+<a name="g_t2_002e-kasutamaizu"></a>
+<h3 class="section">2. カスタマイズ</h3>
+
+<a name="spec_005fchglog_005fformat"></a><a name="index-spec_005fchglog_005fformat"></a>
+<a name="Shu-Shi-She-Ding-WenZi-Lie-"></a>
+<h4 class="unnumberedsubsec">書式設定文字列</h4>
+
+<p>spec ファイルがどのやうに表示されるかは簡單にカスタマイズできる。これを行ふにはファイル <samp>.vimrc</samp> で次のやうに變數 &quot;spec_chglog_format&quot; を設定する:
+</p><div class="example">
+<pre class="example">let spec_chglog_format = &quot;%a %b %d %Y My Name &lt;my@email.com&gt;&quot;
+</pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+&quot;%a %b %d %Y&quot; はもつとも頻繁に使用される時刻の書式であることに注意。書式文字列を準備してゐなければ、SpecChangelog コマンドを最初に實行した時に、ユーザーに email アドレスを問ひ合はせアドレスから自動的に |<a href="#spec_005fchglog_005fformat">spec_chglog_format</a>| を構築する。この方法でユーザーは一度 email アドレスを設定するだけで濟む。
+</p></blockquote>
+
+<p>どのやうな書式を使ふことができるのかを知るには、strftime() 函數のマニュアルページを參照する。{譯注: |<a href="eval_002etxt.html#strftime_0028_0029">strftime()</a>| も參照}
+</p>
+<a name="spec_005fchglog_005fprepend"></a><a name="index-spec_005fchglog_005fprepend"></a>
+<a name="Xin-Gui-Xiang-Mu-noCha-Ru-Ge-Suo-"></a>
+<h4 class="unnumberedsubsec">新規項目の插入箇所</h4>
+
+<p>プラグインは通常新しい %changelog エントリの項目 (エントリそのものではないことに注意) を、既に存在するものの後に插入しようとする。變數 spec_chglog_prepend を設定すれば:
+</p><div class="example">
+<pre class="example">let spec_chglog_prepend = 1
+</pre></div>
+
+<p>既に存在するものの前に新規項目を插入するやうになる。
+</p>
+<a name="spec_005fchglog_005frelease_005finfo"></a><a name="index-spec_005fchglog_005frelease_005finfo"></a>
+<a name="ririsuQing-Bao-noCha-Ru-"></a>
+<h4 class="unnumberedsubsec">リリース情報の插入</h4>
+
+<p>望むのならば、プラグインは changelog エントリごとのリリース情報を自動的に插入することができる。この機能を利用することの利點の 1 つは、最後の變更の後にリリースを更新すべきかさうでないかをコントロールできることである。パッケージのバージョンかリリースを更新してゐない時には、パッケージリリースを更新すべきならばその旨をユーザーに問ひ合はせてくれる。この機能を利用するには、<samp>.vimrc</samp> に次のコードを書き加へる:
+</p><div class="example">
+<pre class="example">let spec_chglog_release_info = 1
+</pre></div>
+
+<p>かうすれば、changelog エントリの最初の項目が次のやうなものの場合に問ひ合はせが發生する:
+</p><div class="example">
+<pre class="example">+ name-1.0-1cl
+</pre></div>
+
+<p>リリース更新機能が氣に入らず、古いリリースを檢出するたびに每囘 &quot;No&quot; と答へるのに嫌氣が差したならば、次のやうにして無效化できる:
+</p><div class="example">
+<pre class="example">let spec_chglog_never_increase_release = 1
+</pre></div>
+
+
+<p>幸運を！！
+</p>
+
+
+
+</body>
+</html>

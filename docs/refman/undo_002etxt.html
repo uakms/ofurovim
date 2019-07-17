@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>undo.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="undo.txt (Vim Reference Manual)">
+<meta name="keywords" content="undo.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="repeat_002etxt.html#repeat_002etxt" rel="next" title="repeat.txt">
+<link href="change_002etxt.html#change_002etxt" rel="prev" title="change.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="undo_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="andoutoridou"></a>
+<h2 class="unnumbered">アンドゥとリドゥ</h2>
+<pre class="verbatim">*undo.txt*      For Vim バージョン 8.1.  Last change: 2019 May 07
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+</pre>
+
+<a name="undo_002dredo"></a><a name="index-undo_002dredo"></a>
+<p>undo と redo
+</p>
+<p>基本的なことは |<a href="usr_005f02_002etxt.html#g_t02_002e5">02.5</a>| で說明されてゐます。
+</p>
+<table>
+<tr><td width="50%">1. undo と redo のコマンド</td><td width="50%">|<a href="#undo_002dcommands">undo-commands</a>|</td></tr>
+<tr><td width="50%">2. Undo の 2 つの方式</td><td width="50%">|<a href="#undo_002dtwo_002dways">undo-two-ways</a>|</td></tr>
+<tr><td width="50%">3. Undo ブロック</td><td width="50%">|<a href="#undo_002dblocks">undo-blocks</a>|</td></tr>
+<tr><td width="50%">4. Undo ブランチ</td><td width="50%">|<a href="#undo_002dbranches">undo-branches</a>|</td></tr>
+<tr><td width="50%">5. Undo の永續化</td><td width="50%">|<a href="#undo_002dpersistence">undo-persistence</a>|</td></tr>
+<tr><td width="50%">6. 備考</td><td width="50%">|<a href="#undo_002dremarks">undo-remarks</a>|</td></tr>
+</table>
+
+<a name="undo_002dcommands"></a><a name="index-undo_002dcommands"></a>
+<a name="index-undo-to-redo-nokomando"></a>
+<a name="g_t1_002e-undo-to-redo-nokomando"></a>
+<h3 class="section">1. undo と redo のコマンド</h3>
+
+<a name="undo"></a><a name="g_t_003cUndo_003e"></a><a name="u"></a><a name="index-undo"></a>
+<a name="index-_003cUndo_003e"></a>
+<a name="index-u"></a>
+<dl compact="compact">
+<dt>&lt;Undo&gt; または</dt>
+<dt>u</dt>
+<dd><p>[count] 個の變更を元に戾す。
+</p>
+<a name="g_t_003au"></a><a name="g_t_003aun"></a><a name="g_t_003aundo"></a><a name="index-_003au"></a>
+<a name="index-_003aun"></a>
+<a name="index-_003aundo"></a>
+</dd>
+<dt>:u[ndo]</dt>
+<dd><p>1 つの變更を元に戾す。
+<a name="E830"></a><a name="index-E830"></a>
+</p></dd>
+<dt>:u[ndo] {N}</dt>
+<dd><p>變更番號 {N} の直後にジャンプする。{N} の意味については |<a href="#undo_002dbranches">undo-branches</a>| を參照。
+</p>
+<a name="CTRL_002dR"></a><a name="index-CTRL_002dR"></a>
+</dd>
+<dt>CTRL-R</dt>
+<dd><p>undo された變更を [count] 個やり直す (redo する)。
+</p>
+<a name="g_t_003ared"></a><a name="g_t_003aredo"></a><a name="redo"></a><a name="index-_003ared"></a>
+<a name="index-_003aredo"></a>
+<a name="index-redo"></a>
+</dd>
+<dt>:red[o]</dt>
+<dd><p>undo された變更を 1 つやり直す。
+</p>
+<a name="U"></a><a name="index-U"></a>
+</dd>
+<dt>U</dt>
+<dd><p>最近變更された行の、1 つの行の中でのすべての最近の變更を元に戾す。|<a href="#U">U</a>| 自體も變更としてカウントされます。つまり |<a href="#U">U</a>| によつてその前の |<a href="#U">U</a>| を元に戾すことができます。
+</p></dd>
+</dl>
+
+<p>變更は記錄されます。上記の undo コマンドや redo コマンドを使ふと、それぞれの變更が加へられる前のテキストに戾したり、變更を元に戾した後でその變更を再び加へることができます。
+</p>
+<p>&quot;<code>U</code>&quot; コマンドは他のコマンドと同樣に undo/redo の對象となります。つまり、&quot;<code>u</code>&quot; コマンドで &quot;<code>U</code>&quot; コマンドを undo したり、&rsquo;<kbd>CTRL-R</kbd>&rsquo; コマンドでそれを redo したりできます。&quot;<code>U</code>&quot; と &quot;<code>u</code>&quot; と &rsquo;<kbd>CTRL-R</kbd>&rsquo; を混ぜて使ふと、&quot;<code>U</code>&quot; コマンドが直前の &quot;<code>U</code>&quot; コマンド以前の狀態を復元することに氣づくでせう。この動作はわかりにくいかもしれませんが、練習して慣れてください。
+</p>
+<p>&quot;<code>U</code>&quot; コマンドはバッファを變更有りの狀態にします。つまり、&quot;<code>U</code>&quot; コマンドで變更が加へられる前のテキストに戾しても、それは變更有りの狀態として認識されます。&quot;<code>u</code>&quot; を使つて變更無しの狀態まで undo してください。
+</p>
+<a name="undo_002dtwo_002dways"></a><a name="index-undo_002dtwo_002dways"></a>
+<a name="index-undo-no-2-tunoFang-Shi-"></a>
+<a name="g_t2_002e-undo-no-2-tunoFang-Shi-"></a>
+<h3 class="section">2. undo の 2 つの方式</h3>
+
+<p>undo コマンドと redo コマンドの動作は &rsquo;<samp>cpoptions</samp>&rsquo; の &rsquo;<var>u</var>&rsquo; フラグに依存してゐます。Vim 方式 (&rsquo;u&rsquo; がない場合) と Vi 互換方式 (&rsquo;u&rsquo; がある場合) があります。Vim 方式では &quot;uu&quot; は 2 つの變更を undo します。Vi 互換方式では &quot;uu&quot; は何もしません (undo を undo する)。
+</p>
+<a name="g_t_0027u_0027-ganaiChang-He-_002e-Vim-Fang-Shi-_003a"></a>
+<h4 class="unnumberedsubsec">&rsquo;u&rsquo; がない場合。Vim 方式:</h4>
+<p>undo コマンドで過去に戾れます。そして、redo コマンドで再び先に進むことができます。undo コマンドを實行した後で新しい變更を加へると、redo はできなくなります。
+</p>
+<a name="g_t_0027u_0027-gaaruChang-He-_002e-Vi-Hu-Huan-Fang-Shi-_003a"></a>
+<h4 class="unnumberedsubsec">&rsquo;u&rsquo; がある場合。Vi 互換方式:</h4>
+<p>undo コマンドは直前の變更と undo コマンドを undo します。redo コマンドは直前の undo コマンドを繰り返します。變更コマンドが繰り返されるわけではないので、さうしたい場合は &quot;.&quot; を使つてください。
+</p>
+<table>
+<thead><tr><th width="33%">例</th><th width="33%">Vim 方式</th><th width="33%">Vi 互換方式</th></tr></thead>
+<tr><td width="33%">&quot;uu&quot;</td><td width="33%">2回 undo</td><td width="33%">變更なし</td></tr>
+<tr><td width="33%">&quot;u CTRL-R&quot;</td><td width="33%">變更なし</td><td width="33%">2 回 undo</td></tr>
+</table>
+
+<blockquote>
+<p><strong>理由:</strong> <br>
+Nvi では <kbd>CTRL-R</kbd> の代はりに &quot;.&quot; コマンドを使ひます。あいにくこれは Vi 互換ではありません。例へば、&quot;dwdwu.&quot; は Vi では 2 つの單語が削除されますが、Nvi では何も變更されません。
+</p></blockquote>
+
+<a name="undo_002dblocks"></a><a name="index-undo_002dblocks"></a>
+<a name="index-Undo-burotuku"></a>
+<a name="g_t3_002e-Undo-burotuku"></a>
+<h3 class="section">3. Undo ブロック</h3>
+
+<p>undo コマンドは普通は 1 つのコマンドを undo します。そのコマンドがいくつの變更を加へるかは關係ありません。この undo 可能な變更の組が undo ブロックです。例へば、キーの入力によつて函數が呼ばれた場合、その函數內のすべてのコマンドは一緖に undo されます。
+</p>
+<p>函數やスクリプトを作るとき、undo 可能な變更を新しく追加するのではなく、その變更を直前の變更につなげたい場合は、次のコマンドを使つてください:
+</p>
+<a name="g_t_003aundoj"></a><a name="g_t_003aundojoin"></a><a name="E790"></a><a name="index-_003aundoj"></a>
+<a name="index-_003aundojoin"></a>
+<a name="index-E790"></a>
+<dl compact="compact">
+<dt>:undoj[oin]</dt>
+<dd><p>以降の變更を直前の undo ブロックにつなげる。
+</p><blockquote>
+<p><strong>警告:</strong> <br>
+注意して使つてください。ユーザーが適切に變更を undo するのを妨げてしまふかもしれません。undo や redo の後でこのコマンドを使はないでください。
+</p></blockquote>
+</dd>
+</dl>
+
+<p>これは特に變更の途中でプロンプトを表示するやうな場合に便利です。例へば函數の中で |<a href="eval_002etxt.html#getchar_0028_0029">getchar()</a>| を呼び出すなど。變更をつなげてしかるべき關聯性のある變更がそこにあることがわかつてゐる場合に使つてください。
+</p>
+<p>このコマンドは單獨では機能しません。なぜなら、次のキー入力によつて再び新しい變更が開始されるからです。しかし例へば次のやうに使ふことはできます:
+</p>
+<div class="example">
+<pre class="example">:undojoin | delete
+</pre></div>
+
+<p>この後で &quot;u&quot; コマンドを實行すると delete コマンドとその直前の變更が undo されます。
+</p>
+<p>反對の動作、つまり變更を 2 つの undo ブロックに分けるには、插入モードで <kbd>CTRL-G u</kbd> を使ひます。插入コマンドを部分ごと (例へば文單位) に undo できるやうにしたい場合に便利です。|<a href="insert_002etxt.html#i_005fCTRL_002dG_005fu">i_CTRL-G_u</a>|
+</p>
+<p>&rsquo;<samp>undolevels</samp>&rsquo; の値を設定したときも undo は區切られます。新しい値と古い値が同じでもさうなります。
+</p>
+<a name="undo_002dbranches"></a><a name="undo_002dtree"></a><a name="index-undo_002dbranches"></a>
+<a name="index-undo_002dtree"></a>
+<a name="index-Undo-buranti"></a>
+<a name="g_t4_002e-Undo-buranti"></a>
+<h3 class="section">4. Undo ブランチ</h3>
+
+<p>ここまでは一線上の undo/redo について說明してきました。しかし、それを枝分かれさせることもできます。枝分かれは、變更を undo してから新しい變更を加へることで起こります。undo された變更は枝 (ブランチ) になります。以下のコマンドで枝に移動できます。
+</p>
+<p>ユーザーマニュアルに說明があります: |<a href="usr_005f32_002etxt.html#usr_005f32_002etxt">usr_32.txt</a>|。
+</p>
+<a name="g_t_003aundol"></a><a name="g_t_003aundolist"></a><a name="index-_003aundol"></a>
+<a name="index-_003aundolist"></a>
+<dl compact="compact">
+<dt>:undol[ist]</dt>
+<dd><pre class="verbatim">變更木 (tree) の、葉 (leaf) を一覽表示する。例:
+number changes  when               saved
+    88      88  2010/01/04 14:25:53
+   108     107  08/07 12:47:51
+   136      46  13:33:01             7
+   166     164  3 seconds ago
+</pre>
+<p>&quot;number&quot; 列は變更番號です。この番號は連續的に增えていき、undo 可能な變更の識別番號として使へます。|<a href="#g_t_003aundo">:undo</a>| 參照。
+</p>
+<p>&quot;changes&quot; 列は木のルートから葉までの變更の數です。
+</p>
+<p>&quot;when&quot; 列は變更が加へられた日附と時刻です。日時の表記は 4 種類あります:
+</p><table>
+<tr><td width="50%">N seconds ago</td><td width="50%">秒前</td></tr>
+<tr><td width="50%">HH:MM:SS</td><td width="50%">時:分:秒</td></tr>
+<tr><td width="50%">MM/DD HH:MM:SS</td><td width="50%">月/日 時:分:秒</td></tr>
+<tr><td width="50%">YYYY/MM/DD HH:MM:SS</td><td width="50%">年/月/日 時:分:秒</td></tr>
+</table>
+<p>&quot;saved&quot; 列は變更がディスクに保存されたかどうか、そしてそれがどの書き込みだつたかを示します。この番號は |<a href="#g_t_003alater">:later</a>| コマンドと |<a href="#g_t_003aearlier">:earlier</a>| コマンドで使用できます。詳細を取得するには |<a href="eval_002etxt.html#undotree_0028_0029">undotree()</a>| 函數を使ひます。
+</p>
+<a name="g_002d"></a><a name="index-g_002d"></a>
+</dd>
+<dt>g-</dt>
+<dd><p>古いテキスト狀態に移動する。カウント指定で繰り返し回數を指定できます。
+<a name="g_t_003aea"></a><a name="g_t_003aearlier"></a><a name="index-_003aea"></a>
+<a name="index-_003aearlier"></a>
+</p></dd>
+<dt>:earlier {count}</dt>
+<dd><p>{count} 回前の古いテキスト狀態に移動する。
+</p></dd>
+<dt>:earlier {N}s</dt>
+<dd><p>{N} 秒前の古いテキスト狀態に移動する。
+</p></dd>
+<dt>:earlier {N}m</dt>
+<dd><p>{N} 分前の古いテキスト狀態に移動する。
+</p></dd>
+<dt>:earlier {N}h</dt>
+<dd><p>{N} 時閒前の古いテキスト狀態に移動する。
+</p></dd>
+<dt>:earlier {N}d</dt>
+<dd><p>{N} 日前の古いテキスト狀態に移動する。
+</p>
+</dd>
+<dt>:earlier {N}f</dt>
+<dd><p>{N} 回前のファイルを保存したときのテキスト狀態に移動する。
+</p>
+<p>最後の保存から何か變更が加へられてゐたとき、&quot;<code>:earlier 1f</code>&quot; は保存時の狀態に移動します。變更がない場合は 1 つ前の保存時の狀態に移動します。
+</p>
+<p>最初にファイルを保存した直後か、ファイルをまだ保存してゐないときは、&quot;<code>:earlier 1f</code>&quot; は最初の變更の前に移動します。
+</p>
+<a name="g_002b"></a><a name="index-g_002b"></a>
+</dd>
+<dt>g+</dt>
+<dd><p>新しいテキスト狀態に移動する。カウント指定で繰り返し回數を指定できます。
+<a name="g_t_003alat"></a><a name="g_t_003alater"></a><a name="index-_003alat"></a>
+<a name="index-_003alater"></a>
+</p></dd>
+<dt>:later {count}</dt>
+<dd><p>{count} 回後の新しいテキスト狀態に移動する。
+</p></dd>
+<dt>:later {N}s</dt>
+<dd><p>{N} 秒後の新しいテキスト狀態に移動する。
+</p></dd>
+<dt>:later {N}m</dt>
+<dd><p>{N} 分後の新しいテキスト狀態に移動する。
+</p></dd>
+<dt>:later {N}h</dt>
+<dd><p>{N} 時閒後の新しいテキスト狀態に移動する。
+</p></dd>
+<dt>:later {N}d</dt>
+<dd><p>{N} 日後の新しいテキスト狀態に移動する。
+</p>
+</dd>
+<dt>:later {N}f</dt>
+<dd><p>{N} 回後のファイルを保存したときのテキスト狀態に移動する。最後に保存した狀態にゐるときは、&quot;<code>:later 1f</code>&quot; は一番新しいテキスト狀態に移動します。
+</p></dd>
+</dl>
+
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+テキスト狀態は、&rsquo;<samp>undolevels</samp>&rsquo; により undo 情報がクリアされると、到達不可能になります。
+</p></blockquote>
+
+<p>時閒を移動すると一度に複數の變更が現れることもあります。これは undo ツリーを移動して新しい變更を加へたときに起こります。
+</p>
+<p>例
+</p>
+<p>次のテキストがあります:
+</p><pre class="verbatim">one two three
+</pre>
+<p>&quot;x&quot; を 3 回押して最初の單語を削除します:
+</p><pre class="verbatim">ne two three
+e two three
+ two three
+</pre>
+<p>&quot;u&quot; を 3 回押してそれを undo します:
+</p><pre class="verbatim">e two three
+ne two three
+one two three
+</pre>
+<p>&quot;x&quot; を 3 回押して 2 番目の單語を削除します:
+</p><pre class="verbatim">one wo three
+one o three
+one  three
+</pre>
+<p>&quot;g-&quot; を 3 回押してそれを undo します:
+</p><pre class="verbatim">one o three
+one wo three
+ two three
+</pre>
+<p>最初の undo ブランチ (&quot;one&quot; を削除した後) に戾りました。さらに &quot;g-&quot; を押していくと元のテキストに戾ります:
+</p><pre class="verbatim">e two three
+ne two three
+one two three
+</pre>
+<p>&quot;<code>:later 1h</code>&quot; を實行すると最後の變更にジャンプします:
+</p><pre class="verbatim">one  three
+</pre>
+<p>&quot;<code>:earlier 1h</code>&quot; を實行すると最初に戾ります:
+</p><pre class="verbatim">one two three
+</pre>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+&quot;u&quot; と CTRL-R では &quot;g-&quot; と &quot;g+&quot; のやうにすべてのテキスト狀態に移動することはできません。
+</p></blockquote>
+
+<a name="undo_002dpersistence"></a><a name="persistent_002dundo"></a><a name="index-undo_002dpersistence"></a>
+<a name="index-persistent_002dundo"></a>
+<a name="index-Undo-noYong-Sok-Hua-"></a>
+<a name="g_t5_002e-Undo-noYong-Sok-Hua--_0028Undo-persistence_0029"></a>
+<h3 class="section">5. Undo の永續化 (Undo persistence)</h3>
+
+<p>バッファがアンロードされるとき、通常はバッファの undo ツリーは廢棄されます。&rsquo;<samp>undofile</samp>&rsquo; オプションを設定することで、ファイルを書き込んだときに自動的に undo 履歷が保存され、後でファイルを開いたときに undo 履歷が復元されます。
+</p>
+<p>&rsquo;<samp>undofile</samp>&rsquo; オプションはファイルを書き込んだ後、BufWritePost 自動コマンドの前に參照されます。undo 情報の保存をファイルごとに制禦したい場合は BufWritePre 自動コマンドを使ひます:
+</p><pre class="verbatim">au BufWritePre /tmp/* setlocal noundofile
+</pre>
+<p>undo ツリーは undo ファイルとして分けて保存されます。undo ファイルは編輯ファイルごとに作られます。保存場所の決定にはファイルシステムのパスをそのまま使用した簡單な方法が使はれます。
+</p>
+<p>Vim は編輯ファイルと undo ファイルの同期がとれてゐるかどうかを確認し (ファイルの中身のハッシュ値で判斷)、undo ファイルが書き込まれた後で編輯ファイルが變更されてゐたときは、データの損失を防ぐため、undo ファイルを無視します。
+</p>
+<p>開いてゐるファイルと undo ファイルの所有者が違ふときも undo ファイルは無視されます。ただし、undo ファイルの所有者が現在のユーザーである時を除きます。
+</p>
+<p>ファイルを開いたときにこの事についてのメッセージを表示させるには &rsquo;<samp>verbose</samp>&rsquo; を設定してください。
+</p>
+<p>通常、undo ファイルは編輯ファイルと同じディレクトリに保存されます。この動作は &rsquo;<samp>undodir</samp>&rsquo; オプションで變更できます。
+</p>
+<p>ファイルが暗號化されてゐるときは、undo ファイル內のテキストも暗號化されます。ファイルと同じ暗號化メソッドとキーが使用されます。 |<a href="editing_002etxt.html#encryption">encryption</a>|
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+テキストプロパティは undo ファイルには保存されません。バッファがロードされてゐる限りテキストプロパティを復元できますが、undo ファイルから復元することはできません。 理論的根據: 關聯するテキストプロパティタイプを以前と全く同じ方法で定義する必要がありますが、これは保證できません。
+</p></blockquote>
+
+<p>&quot;<code>:wundo</code>&quot; と &quot;<code>:rundo</code>&quot; を使ふことで undo 履歷の保存と復元を手動で實行することもできます。
+<a name="g_t_003awundo"></a><a name="g_t_003arundo"></a><a name="index-_003awundo"></a>
+<a name="index-_003arundo"></a>
+</p><dl compact="compact">
+<dt>:wundo[!] {file}</dt>
+<dd><p>undo 履歷を {file} に保存する。{file} が存在し、それが undo ファイルでないなら (ファイル先頭のマジックナンバーが違ふなら)、コマンドは失敗します。それでも保存したい場合は ! を付けてください。
+</p>
+<p>{file} が存在し、それが undo ファイルなら上書きされます。undo 履歷がない場合は何も書き込まれません。
+實裝詳細: 上書きは、最初にそのファイルを削除して、同じ名前のファイルを新しく作成することで實行されます。そのため、書き込み制限のかかつたディレクトリ內の undo ファイルは上書きできません。
+</p>
+</dd>
+<dt>:rundo {file}</dt>
+<dd><p>{file} から undo 履歷を讀み込む。
+</p></dd>
+</dl>
+
+<p>自動コマンドを使ふことで undo ファイルの名前を明示的に指定することができます。例:
+</p>
+<pre class="verbatim">au BufReadPost * call ReadUndo()
+au BufWritePost * call WriteUndo()
+func ReadUndo()
+  if filereadable(expand('%:h'). '/UNDO/' . expand('%:t'))
+    rundo %:h/UNDO/%:t
+  endif
+endfunc
+func WriteUndo()
+  let dirname = expand('%:h') . '/UNDO'
+  if !isdirectory(dirname)
+    call mkdir(dirname)
+  endif
+  wundo %:h/UNDO/%:t
+endfunc
+</pre>
+<p>これを使ふときは &rsquo;<samp>undofile</samp>&rsquo; をオフにしておく必要があります。さうしないと 2 つの undo ファイルが作成されてしまひます。
+</p>
+<p>|<a href="eval_002etxt.html#undofile_0028_0029">undofile()</a>| 函數を使ふと、Vim が使用する undo ファイルの名前を取得できます。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+&rsquo;<samp>undofile</samp>&rsquo; が設定された狀態でファイルを讀み書きするとき、ほとんどのエラーは表示されません (&rsquo;<samp>verbose</samp>&rsquo; が設定されてゐなければ)。:wundo と :rundo を使ふときはより多くのエラーメッセージが表示されます。例へばファイルが讀めない、書き込めないとき。
+</p></blockquote>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+Vim は undo ファイルを削除しません。自分で削除する必要があります。
+</p></blockquote>
+
+<a name="undo-huairunoDu-miIp-migaShi-Bai-suruYuan-Yin-haikutukaarimasu_003a"></a>
+<h4 class="unnumberedsubsec">undo ファイルの讀み込みが失敗する原因はいくつかあります:</h4>
+<dl compact="compact">
+<dd><a name="E822"></a><a name="index-E822"></a>
+</dd>
+<dt>E822</dt>
+<dd><p>パーミッションの設定によりファイルを開けない。
+<a name="E823"></a><a name="index-E823"></a>
+</p></dd>
+<dt>E823</dt>
+<dd><p>ファイル先頭のマジックナンバーが違ふ。普通はそのファイルが undo ファイルでないことを意味します。
+<a name="E824"></a><a name="index-E824"></a>
+</p></dd>
+<dt>E824</dt>
+<dd><p>undo ファイルのバージョン番號が、それが Vim の新しいバージョンで書き込まれたことを示してゐる。新しいバージョンで開く必要があります。undo ファイルの情報を維持したいならそのバッファを保存してはいけません。
+</p><div class="display">
+<pre class="display">&quot;ファイルが變更されてゐます。undo 情報を使用できません&quot;
+(&quot;File contents changed, cannot use undo info&quot;)
+</pre></div>
+<p>ファイルのテキストが undo ファイルを保存したときから變はつてゐます。テキストが壞れてしまふため、その undo ファイルは使用できません。これは &rsquo;<samp>encoding</samp>&rsquo; の設定が undo ファイル保存時と違ふ場合にも起こります。
+<a name="E825"></a><a name="index-E825"></a>
+</p></dd>
+<dt>E825</dt>
+<dd><p>undo ファイルの中身が不正なので使用できません。
+<a name="E826"></a><a name="index-E826"></a>
+</p></dd>
+<dt>E826</dt>
+<dd><p>undo ファイルが暗號化されてゐて、復號に失敗しました。
+<a name="E827"></a><a name="index-E827"></a>
+</p></dd>
+<dt>E827</dt>
+<dd><p>undo ファイルが暗號化されてゐて、使用中の Vim が暗號化をサポートしてゐません。他の Vim でファイルを開いてください。
+<a name="E832"></a><a name="index-E832"></a>
+</p></dd>
+<dt>E832</dt>
+<dd><p>undo ファイルが暗號化されてゐて、&rsquo;key&rsquo; が設定されてをらず、テキストファイルは暗號化されてゐません。これはテキストファイルが暗號化を使用して保存された後で、暗號化を使用しないで上書きされた場合に起こります。おそらく undo ファイルを削除する必要があります。
+</p><div class="display">
+<pre class="display">&quot;undo ファイルを讀み込めません。所有者が違ひます&quot;
+(&quot;Not reading undo file, owner differs&quot;)
+</pre></div>
+<p>undo ファイルの所有者とテキストファイルの所有者が違ひます。安全のため undo ファイルは使用されません。
+</p></dd>
+</dl>
+
+<a name="undo-huairunoShu-kiIp-mihaCi-noyounaLi-You-deShi-Bai-surukotogaarimasu_003a"></a>
+<h4 class="unnumberedsubsec">undo ファイルの書き込みは次のやうな理由で失敗することがあります:</h4>
+<dl compact="compact">
+<dd><a name="E828"></a><a name="index-E828"></a>
+</dd>
+<dt>E828</dt>
+<dd><p>書き込みのためのファイルを作成できません。おそらくディレクトリの書き込み權限がありません。
+</p><div class="display">
+<pre class="display">&quot;&rsquo;undodir&rsquo; で指定されたディレクトリに undo ファイルを保存できません&quot;
+(&quot;Cannot write undo file in any directory in &rsquo;undodir&rsquo;&quot;)
+</pre></div>
+<p>&rsquo;undodir&rsquo; で指定されたディレクトリの中に使用可能なものがありません。
+</p><div class="display">
+<pre class="display">&quot;undo ファイルを上書きしません。讀み込み不可です&quot;
+(&quot;Will not overwrite with undo file, cannot read&quot;)
+</pre></div>
+<p>undo ファイルと同じ名前のファイルが存在し、それが讀み込みできない狀態になつてゐます。そのファイルを削除するか名前を變更する必要があります。
+</p><div class="display">
+<pre class="display">&quot;上書きしません。undo ファイルではありません&quot;
+(&quot;Will not overwrite, this is not an undo file&quot;)
+</pre></div>
+<p>undo ファイルと同じ名前のファイルが存在し、そのファイルの先頭に正しいマジックナンバーがありません。そのファイルを削除するか名前を變更する必要があります。
+</p><div class="display">
+<pre class="display">&quot;undo ファイルの書き込みをスキップします。undo がありません&quot;
+(&quot;Skipping undo file write, noting to undo&quot;)
+</pre></div>
+<p>保存する undo 情報がありません。何も變更されてゐないか &rsquo;<samp>undolevels</samp>&rsquo; がマイナス値です。
+<a name="E829"></a><a name="index-E829"></a>
+</p></dd>
+<dt>E829</dt>
+<dd><p>undo ファイルの保存中にエラーが發生しました。もう一度試してみてください。
+</p></dd>
+</dl>
+
+<a name="undo_002dremarks"></a><a name="index-undo_002dremarks"></a>
+<a name="index-Bei-Kao-"></a>
+<a name="g_t6_002e-Bei-Kao-"></a>
+<h3 class="section">6. 備考</h3>
+
+<p>記錄される變更の數は &rsquo;<samp>undolevels</samp>&rsquo; オプションで設定できます。ゼロに設定すると、Vi 互換方式の動作になります。マイナスの値に設定すると undo は使用できなくなります。メモリが足りない場合に設定してください。
+</p>
+<a name="clear_002dundo"></a><a name="index-clear_002dundo"></a>
+<p>&rsquo;<samp>undolevels</samp>&rsquo; を -1 に設定しても、undo 情報はすぐにはクリアされません。次の變更が加へられたときにクリアされます。强制的に undo 情報をクリアしたいときは次のコマンドを使つてください:
+</p><pre class="verbatim">:let old_undolevels = &amp;undolevels
+:set undolevels=-1
+:exe &quot;normal a \&lt;BS&gt;\&lt;Esc&gt;&quot;
+:let &amp;undolevels = old_undolevels
+:unlet old_undolevels
+</pre>
+<p>バッファのマーク (&rsquo;a から &rsquo;z) はテキストと同樣に記錄、復元されます。
+</p>
+<p>すべての變更を undo したとき、バッファは變更ありとはみなされません。その狀態からは &quot;:q&quot; (&quot;:q!&quot; ではなく) で Vim を終了できます。
+</p>
+<p>{Vi にはない}
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+これはいつファイルを保存したかに關係します。&quot;:w&quot; の後で &quot;u&quot; を實行すると、保存したときから見てバッファは變更された狀態なので、バッファは變更ありと認識されます。
+</p></blockquote>
+
+<p>マニュアル設定の折り疊み (|<a href="fold_002etxt.html#folding">folding</a>|) を使つてゐるとき、折り疊みは記錄も復元もされません。變更が折り疊みの中だけで行はれた場合のみ (折り疊みの最初と最後の行が變はらないので) 折り疊みは維持されます。
+</p>
+<p>番號レジスタを使つて削除を元に戾すこともできます。テキストを削除すると、それは &quot;1 レジスタに記錄されます。元々 &quot;1 にあつたものは &quot;2 にシフトされ、他の番號レジスタも同樣にシフトされます。&quot;9 レジスタの內容は失はれます。
+</p>
+<p>そして、プットコマンド &rsquo;&quot;1P&rsquo; を使つて削除されたテキストを元に戾すことができます。(削除やコピーの操作をした後ならテキストは無名レジスタに入つてゐるので &rsquo;P&rsquo; や &rsquo;p&rsquo; でも元に戾せます)。3 回前に削除されたテキストなら &rsquo;&quot;3P&rsquo; で戾せます。
+</p>
+<a name="redo_002dregister"></a><a name="index-redo_002dregister"></a>
+<p>數回に分けて削除されたテキストを戾したい場合は、&quot;.&quot; コマンドの特殊な機能が役に立ちます。&quot;.&quot; コマンドは使用されたレジスタの番號を增加させます。例へば、&quot;&quot;1P&quot; を實行した後で &quot;.&quot; を押すと &rsquo;&quot;2P&rsquo; が實行されます。さらに &quot;.&quot; を押していくとすべての番號レジスタが插入されます。
+</p>
+<p>例:		&rsquo;dd....&rsquo; でテキストを削除したら &rsquo;&quot;1P....&rsquo; で元に戾せる。
+</p>
+<p>削除されたテキストがどのレジスタに記錄されてゐるかわからないときは <code>:display</code> コマンドで確認できます。あるいは、&rsquo;&quot;1P&rsquo; を實行してみて、もしそれが違ふものなら &rsquo;u.&rsquo; を實行します。&rsquo;u.&rsquo; は最初にプットされたテキストを削除し、2 番目のレジスタを使つてプットコマンドを實行します。目的のものが出るまで &rsquo;u.&rsquo; を繰り返してください。
+</p>
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

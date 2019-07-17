@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>debugger.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="debugger.txt (Vim Reference Manual)">
+<meta name="keywords" content="debugger.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="workshop_002etxt.html#workshop_002etxt" rel="next" title="workshop.txt">
+<link href="if_005fruby_002etxt.html#if_005fruby_002etxt" rel="prev" title="if_ruby.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="debugger_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="debatugaYong-nointahueisu"></a>
+<h2 class="unnumbered">デバッガ用のインターフェイス</h2>
+<pre class="verbatim">*debugger.txt*  For Vim バージョン 8.1.  Last change: 2019 May 12
+
+
+                VIMリファレンスマニュアル    by Gordon Prieur
+</pre>
+
+<a name="debugger_002dsupport"></a><a name="index-debugger_002dsupport"></a>
+<p>デバッガ支援機能
+</p>
+<table>
+<tr><td width="50%">1. デバッガ機能</td><td width="50%">|<a href="#debugger_002dfeatures">debugger-features</a>|</td></tr>
+<tr><td width="50%">2. Vim のコンパイルオプション</td><td width="50%">|<a href="#debugger_002dcompilation">debugger-compilation</a>|</td></tr>
+<tr><td width="50%">3. 統合デバッガ</td><td width="50%">|<a href="#debugger_002dintegration">debugger-integration</a>|</td></tr>
+</table>
+
+
+<a name="debugger_002dfeatures"></a><a name="index-debugger_002dfeatures"></a>
+<a name="g_t1_002e-debatugaJi-Neng-"></a>
+<h3 class="section">1. デバッガ機能</h3>
+
+<p>以下の機能はデバッガ、統合プログラミング環境 (IPE)、統合開發環境 (IDE) との統合に利用できる:
+</p>
+<table>
+<tr><td width="50%">もう 1 つのコマンド入力</td><td width="50%">|<a href="#alt_002dinput">alt-input</a>|</td></tr>
+<tr><td width="50%">デバッグ目印</td><td width="50%">|<a href="#debug_002dsigns">debug-signs</a>|</td></tr>
+<tr><td width="50%">デバッグソースコード强調</td><td width="50%">|<a href="#debug_002dhighlight">debug-highlight</a>|</td></tr>
+<tr><td width="50%">メッセージフッター</td><td width="50%">|<a href="#gui_002dfooter">gui-footer</a>|</td></tr>
+<tr><td width="50%">バルーンウィンドウ</td><td width="50%">|<a href="#balloon_002deval">balloon-eval</a>|</td></tr>
+</table>
+
+<p>これらの機能は Motif バージョンの gvim で使ふために特別に追加された。しかしながら、|<a href="#alt_002dinput">alt-input</a>| と |<a href="#debug_002dhighlight">debug-highlight</a>| は vim と gvim でも使用できるやうに書かれてゐる。その他の機能は非 GUI バージョンの Vim でもわづかな變更で使ふことができる。だが、著者はそのやうな變更をしてゐないし、Motif GUI ではないバージョンの Vim ではテストしてゐない。
+</p>
+
+<a name="alt_002dinput"></a><a name="index-alt_002dinput"></a>
+<a name="g_t1_002e1-mou-1-tunokomandoRu-Li-"></a>
+<h4 class="unnumberedsubsec">1.1 もう 1 つのコマンド入力</h4>
+
+<p>Vim がデバッガと協調動作するには、最低限デバッガや外部ツールからの入力のための接續が必要である。多くの場合は出力のための接續も必要であるがこれは絕對に必要といふわけではない。
+</p>
+<p>外部デバッガが Vim にコマンドを送ることが入力接續の目的である。デバッガから送られるコマンドは現在のデバッグ環境や狀態を表示するために充分である必要がある。
+</p>
+<p>現在の實裝は X ツールキット (X Toolkit) の發送ループと XtAddInput() ファンクションコールを基本にしてゐる。
+</p>
+
+<a name="debug_002dsigns"></a><a name="index-debug_002dsigns"></a>
+<a name="g_t1_002e2-debatuguMu-Yin-"></a>
+<h4 class="unnumberedsubsec">1.2 デバッグ目印</h4>
+
+<p>多くのデバッガは小さな目印を表示したりその行を色で强調することで特定の行に印を付ける。デバッガは |<a href="sign_002etxt.html#g_t_003asign">:sign</a>| コマンドを使つて (Vim に) グラフィカルな目印を設定させることができる。この機能の使はれ方の一例は、デバッグしてゐるプログラムの實行位置 (プログラムカウンタ:PC) を表示するのにデバッガが表示する矢印に見る事ができる。別の例ではブレークポイントを示す小さな停止記號がある。これらの視覺的な强調はユーザーがデバッガ狀態の經過を追ふ助けになる。
+</p>
+<p>この機能はデバッガ以外の用途にも使用できる。IPE はビルドエラー、檢索したテキスト、その他を强調するのに何かしらの目印を使用する。この機能は印がより高い視認性を確保するために |<a href="#debug_002dhighlight">debug-highlight</a>| と一緖に利用できる。
+</p>
+<p>デバッグ目印は |<a href="sign_002etxt.html#g_t_003asign">:sign</a>| コマンドを使つて定義、設置する。
+</p>
+
+<a name="debug_002dhighlight"></a><a name="index-debug_002dhighlight"></a>
+<a name="g_t1_002e3-debatugusosukodoQiang-Diao-"></a>
+<h4 class="unnumberedsubsec">1.3 デバッグソースコード强調</h4>
+
+<p>この機能により行に優れた强調を施すことができる。これは特定の行を目立たせることを目的としてゐる。この强調は vim と gvim 兩方で動作させることができ、gvim に限り多くの場合デバッグ目印と一緖に使ふことができる。唯一の例外は Sun Microsystem の dtterm である。dtterm には目印を表示するためのスペースがある。
+</p>
+<p>{譯注: なので、これを利用する際はコンソール vim でも目印を利用可能となる}
+</p>
+
+<a name="gui_002dfooter"></a><a name="index-gui_002dfooter"></a>
+<a name="g_t1_002e4-metusezihututa"></a>
+<h4 class="unnumberedsubsec">1.4 メッセージフッター</h4>
+
+<p>メッセージフッターはデバッガや IPE からのメッセージを表示するのに使用する。またメニューやツールバーの tips (一言ヒント) を表示するのにも使用できる。GUI ウィンドウの下のフッターエリアは、Ex コマンドを表示する行のさらに下に位置する。
+</p>
+<p>フッターエリアの表示・非表示は &rsquo;<samp>guioptions</samp>&rsquo; の &rsquo;<var>F</var>&rsquo; フラグで制禦する。
+</p>
+
+<a name="balloon_002deval"></a><a name="index-balloon_002deval"></a>
+<a name="g_t1_002e5-barunuindou"></a>
+<h4 class="unnumberedsubsec">1.5 バルーンウィンドウ</h4>
+
+<p>この機能はデバッガや外部ツールに、マウスが指す位置に應じた動的な情報を表示する機能を提供する。この機能は「Sun&rsquo;s Visual WorkShop」のデバッガに式の評價結果を表示させることを目的とした。しかしながら、その他の情報を表示するのに利用できるやう、可能な限り一般的な樣式で實現されてゐる。ただし、機能は制限されてゐる。高度なポップアップについては |<a href="popup_002etxt.html#popup_002dwindow">popup-window</a>| を參照。
+</p>
+<p>バルーンウィンドウには幾つかの設定可能なパラメーターがある。Motif ではフォントリストと色は X リソース經由で設定される (XmNballoonEvalFontList, XmNballoonEvalBackground, XmNballoonEvalForeground)。
+</p>
+<p>オプション &rsquo;<samp>balloondelay</samp>&rsquo; はバルーンを表示するまでの遲延時閒を設定する。
+</p>
+<p>この機能を有效にするにはオプション &rsquo;<samp>ballooneval</samp>&rsquo; をオンにする必要がある。
+</p>
+<p>バルーンウィンドウは |<a href="various_002etxt.html#g_t_002bballoon_005feval">+balloon_eval</a>| 機能をコンパイル時にした時のみ GUI で利用できる。端末では |<a href="various_002etxt.html#g_t_002bballoon_005feval_005fterm">+balloon_eval_term</a>| 機能が重要である。
+</p>
+<p>バルーンウィンドウ函數はツールバーのツールチップを表示する際にも利用されてゐる。これにはオプション &rsquo;<samp>ballooneval</samp>&rsquo; を設定する必要はない。しかしその他の設定はこのツールチップにも適用される。
+</p>
+<p>バルーンウィンドウを使ふもう1つの方法は、オプション &rsquo;<samp>balloonexpr</samp>&rsquo; を使ふことである。これは完全にユーザーが定義できる。
+</p>
+<a name="debugger_002dcompilation"></a><a name="index-debugger_002dcompilation"></a>
+<a name="g_t2_002e-Vim-nokonpairuopusiyon"></a>
+<h3 class="section">2. Vim のコンパイルオプション</h3>
+
+<p>デバッガ機能は Sun の「Visual WorkShop Integrated Programming Environment」(ipe) と一緖に使ふために明示的に加へられた。しかし、それらの Sun の ipe と共に使用する機能は他のデバッガも一部もしくは全部を使ふことができるやうに、可能な限り一般的な樣式で實現されてゐる。
+</p>
+<p>以下のコンパイル時のプリプロセッサー變數で機能の有無效を制禦する:
+</p>
+<table>
+<tr><td width="50%">もう 1 つのコマンド入力</td><td width="50%">ALT_X_INPUT</td></tr>
+<tr><td width="50%">デバッグ目印</td><td width="50%">FEAT_SIGNS</td></tr>
+<tr><td width="50%">デバッグソースコード强調</td><td width="50%">FEAT_SIGNS</td></tr>
+<tr><td width="50%">メッセージフッター</td><td width="50%">FEAT_FOOTER</td></tr>
+<tr><td width="50%">バルーンウィンドウ</td><td width="50%">FEAT_BEVAL</td></tr>
+</table>
+
+<p>最初の完全な IPE/IDE との統合は Sun Visual WorkShop である。gvim を VWS とのインターフェイスを有效にしてコンパイルするには次のフラグを設定する。これにより上で述べた全てのフラグを設定される:
+</p>
+<table>
+<tr><td width="50%">Sun Visual WorkShop</td><td width="50%">FEAT_SUN_WORKSHOP</td></tr>
+</table>
+
+<a name="debugger_002dintegration"></a><a name="index-debugger_002dintegration"></a>
+<a name="g_t3_002e-Tong-He-debatuga"></a>
+<h3 class="section">3. 統合デバッガ</h3>
+
+<p>完全に統合されたデバッガ/IPE/IDE は、唯一 Sun の「Visual WorkShop Integrated Programming Environment」だけである。
+</p>
+<p>Sun の NetBeans のサポートについては |<a href="netbeans_002etxt.html#netbeans">netbeans</a>| を參照。
+</p>
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

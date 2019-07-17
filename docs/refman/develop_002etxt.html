@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>develop.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="develop.txt (Vim Reference Manual)">
+<meta name="keywords" content="develop.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="starting_002etxt.html#starting_002etxt" rel="next" title="starting.txt">
+<link href="debug_002etxt.html#debug_002etxt" rel="prev" title="debug.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="develop_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Vim-noKai-Fa-niGuan-site"></a>
+<h2 class="unnumbered">Vim の開發に關して</h2>
+<pre class="verbatim">*develop.txt*   For Vim バージョン 8.1.  Last change: 2019 Feb 17
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+</pre>
+
+<a name="development"></a><a name="index-development"></a>
+<a name="index-Vim-noKai-Fa-"></a>
+<a name="Vim-noKai-Fa-"></a>
+<h3 class="section">Vim の開發</h3>
+
+<p>この文書は、Vim の更なる開發に參加しようといふ人にとつて重要なものです。
+</p>
+<table>
+<tr><td width="50%">1. 設計上の目標</td><td width="50%">|<a href="#design_002dgoals">design-goals</a>|</td></tr>
+<tr><td width="50%">2. コーディングスタイル</td><td width="50%">|<a href="#coding_002dstyle">coding-style</a>|</td></tr>
+<tr><td width="50%">3. 決定事項</td><td width="50%">|<a href="#design_002ddecisions">design-decisions</a>|</td></tr>
+<tr><td width="50%">4. 想定してゐること</td><td width="50%">|<a href="#design_002dassumptions">design-assumptions</a>|</td></tr>
+</table>
+
+<p>ソースコードの槪要については &quot;src&quot; ディレクトリの <samp>README.txt</samp> を見てください。
+</p>
+<p>Vim はオープンソースソフトウェアです。誰でも Vim の開發に協力できます。パッチを送る時はなるべく &quot;unified diff&quot; 形式 (&quot;diff -u&quot; で作る) でお願ひします。GitHub 上でプルリクエストを作ることも可能ですが、必須ではありません。
+</p>
+<p><a href="http://vim.wikia.com/wiki/How_to_make_and_submit_a_patch">http://vim.wikia.com/wiki/How_to_make_and_submit_a_patch</a>
+</p>
+<p>も見てください。
+</p>
+<a name="design_002dgoals"></a><a name="index-design_002dgoals"></a>
+<a name="index-She-Ji-Shang-noMu-Biao-"></a>
+<a name="g_t1_002e-She-Ji-Shang-noMu-Biao-"></a>
+<h3 class="section">1. 設計上の目標</h3>
+
+<p>重要度の順に從つて書かれてゐます(大雜把ですが)。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+かなりの項目が矛盾してゐることに注意してください。これは故意でさうしてゐます。それらの閒で、バランスを取つていかなければなりません。
+</p></blockquote>
+
+
+<a name="design_002dcompatible"></a><a name="index-design_002dcompatible"></a>
+<a name="index-Vim-ha_002e_002e_002e-Vi-Hu-Huan-Xing-haarimaasu_0021"></a>
+<a name="VIM-IS_002e_002e_002e-VI-COMPATIBLE"></a>
+<h4 class="unnumberedsubsec">VIM IS... VI COMPATIBLE</h4>
+
+<p>何よりもまづ、Vim は Vi の氣輕な置き換へとして使ふことができるべきであります。ユーザーが望むなら、オリジナルの Vi との區別がほとんど付かない互換モードで Vim を使ふことができます。
+</p>
+<p>例外:
+</p><ul>
+<li> 明白な Vi のバグを Vim には再現しない。
+</li><li> Vi には異なるバージョンが存在します。私はバージョン 3.7(6/7/85) を參考として使つてゐますが、他のバージョンのサポートも可能な限り取り込まれます。POSIX における Vi のパートは、決定的な資料とは考へません。
+</li><li> Vim は新しいコマンドを持つので、Vi にないコマンドを入力しても機能してしまふ場合があります。
+</li><li> Vim は Vi の持つてゐない多くの特徵を持ちます。Vim から Vi へ戾ることは問題を引き起こしますが、これは避けられないことです。
+</li><li> いくつかの事柄はめつたに使はれた例がありません (オープンモード、クラッシュ時の e-mailの送信、など)。これらは、誰かが何らかの理由でそれを入れるべきだと考へ、さらにその機能が働き過ぎない場合に限つて取り入れられます。
+</li><li> いくつかの項目に關しては、Vi 互換を保つべきかどうか、議論の餘地があります。これらに關しては、オプションフラグが作られるでせう。
+</li></ul>
+
+
+<a name="design_002dimproved"></a><a name="index-design_002dimproved"></a>
+<a name="index-Vim-ha_002e_002e_002e-yoriGao-mihe"></a>
+<a name="VIM-IS_002e_002e_002e-IMPROVED"></a>
+<h4 class="unnumberedsubsec">VIM IS... IMPROVED</h4>
+
+<p>Vim の改良點は、それをよりよい Vi にすべきであつて、まつたく違つたエディタにしてしまつてはなりません。擴張は &quot;Vi の精神&quot; に從つて行はれます。
+</p><ul>
+<li> 可能な限りキーボードを使ひます。マウスは私たちの持たない第 3 の手を必要とします。多くの端末はマウスを備へてゐません。
+</li><li> それでもマウスを使ふやうであれば、キーボードに切り替へる必要をなくします。マウスとキーボードの操作の混在を避けませう。
+</li><li> コマンドとオプションを矛盾なく追加しませう。さうでなければ、それらを見つけ出し、思ひ出すのに人々は苦勞を强ひられることになるでせう。後々、さらにコマンドやオプションが追加されることを忘れてはなりません。
+</li><li> 機能は人々が知らなければ役に立ちません。目立たない機能は追加しない、あるいは、少なくともその機能が存在するといふヒントをドキュメントに追加しませう。
+</li><li> CTRL や他の修飾子の使用は最小限に留めませう。これらはタイプしにくいので。
+</li><li> 多くの初心者、不慣れな Vim ユーザーがゐます。Vim を使ひはじめること、そしてより多くを學んでいくことが、簡單にできるやうにしませう。
+</li><li> 機能は限りなく追加することができます。新しく追加される機能は、
+<table>
+<tr><td width="10%">(1)</td><td width="90%">ユーザーが求めてゐることか</td></tr>
+<tr><td width="10%">(2)</td><td width="90%">實裝にはどれほどの勞力が必要か</td></tr>
+<tr><td width="10%">(3)</td><td width="90%">誰かが實際に實裝してゐるか</td></tr>
+</table>
+<p>といつたことに基づいて選擇されます。
+</p></li></ul>
+
+
+<a name="design_002dmulti_002dplatform"></a><a name="index-design_002dmulti_002dplatform"></a>
+<a name="index-Vim-ha_002e_002e_002e-marutipuratutohuomu"></a>
+<a name="VIM-IS_002e_002e_002e-MULTI-PLATFORM"></a>
+<h4 class="unnumberedsubsec">VIM IS... MULTI PLATFORM</h4>
+
+<p>Vim は可能な限り、多くのプラットフォーム上の多くのユーザーの助けでありたい。
+</p><ul>
+<li> 多くの種類の端末をサポートします。最低限の要求は、カーソルの配置機能と畫面のクリアです。コマンドはたいていのキーボードが持つキーのみを使ひます。マッピングにはキーボード上の全てのキーを使ふことができます。
+</li><li> 多くのプラットフォームをサポートします。必要條件は、誰かがそのプラットフォーム上で Vim の開發をしたいと考へてゐること、それによつてコードに混亂をきたさないこと、です。
+</li><li> 多くのコンパイラとライブラリをサポートします。全ての人が、他のコンパイラや GUI ライブラリをインストールできるわけではないからです。
+</li><li> 人々は、あるプラットフォームから別のプラットフォームへ、そして GUI から端末バージョンへと移行します。機能は全てのバージョン、あるいは少なくとも理に叶つた勞力で、できる限りのバージョンで提供されるべきです。ユーザーが能率的に仕事を仕上げるために、プラットフォームを切り替へなければならないやうな事態は避けたい。
+</li><li> いくつかのプラットフォームでは實現できない、またはただひとつのプラットフォームでしか實現できないやうな機能も、實裝できないといふわけではありません。[これは前項と故意に矛盾するものであり、兩者の閒でバランスが取られます。]
+</li></ul>
+
+
+<a name="design_002ddocumented"></a><a name="index-design_002ddocumented"></a>
+<a name="index-Vim-ha_002e_002e_002e-dokiyumentogasugoi"></a>
+<a name="VIM-IS_002e_002e_002e-WELL-DOCUMENTED"></a>
+<h4 class="unnumberedsubsec">VIM IS... WELL DOCUMENTED</h4>
+
+<ul>
+<li> 文書化されてゐない機能は役に立ちません。新しい機能を含んだパッチには、必ずドキュメントが含まれてゐるべきです。
+</li><li> ドキュメントはわかりやすく、理解できるものであるべきです。例を使ふことが推奬されます。
+</li><li> 文章を不必要に長くしてはなりません。短い文章はその項目を見つけやすくします。
+</li></ul>
+
+
+<a name="design_002dspeed_002dsize"></a><a name="index-design_002dspeed_002dsize"></a>
+<a name="index-Vim-ha_002e_002e_002e-Su-kuteXiao-sai"></a>
+<a name="VIM-IS_002e_002e_002e-HIGH-SPEED-AND-SMALL-IN-SIZE"></a>
+<h4 class="unnumberedsubsec">VIM IS... HIGH SPEED AND SMALL IN SIZE</h4>
+
+<p>Vim を使ふことでシステムリソースに大打擊を與へてはなりません。Vim を小さく、速く保ちませう。
+</p><ul>
+<li> コンピュータは年ごとにより速く、大容量になつてゐます。Vim も成長していくことが可能ですが、コンピュータの成長速度よりも速くなつてはなりません。Vim を古いシステム上でも使へるやう保つ必要があります。
+</li><li> 多くのユーザーは Vim をシェルから頻繁に立ち上げます。起動は短時閒でなくてはなりません。
+</li><li> コマンドは能率的に働く必要があります。コマンドが消費する時閒は、可能な限り短くあるべきです。役に立つコマンドなら、多少時閒がかかつてもよいでせう。
+</li><li> 遲い接續を通して Vim を使ふ人がゐることを忘れてはなりません。通信にかかるオーバーヘッドは最小にしませう。
+</li><li> サイズがかなり大きく、多くの人によつて使はれるわけではない項目は、無效化できる機能とすべきです。
+</li><li> Vim は他のいろいろな構成要素の中にある、ひとつのコンポーネントです。巨大なアプリケーションに變へてはなりませんし、むしろ他のプログラムとよく協調するやうにしませう。
+</li></ul>
+
+
+<a name="design_002dmaintain"></a><a name="index-design_002dmaintain"></a>
+<a name="index-Vim-ha_002e_002e_002e-Bao-Shou-siyasui"></a>
+<a name="VIM-IS_002e_002e_002e-MAINTAINABLE"></a>
+<h4 class="unnumberedsubsec">VIM IS... MAINTAINABLE</h4>
+
+<ul>
+<li> ソースコードは亂雜になつてはなりません。そして信賴できるものでなくてはなりません。
+</li><li> 讀みやすくするために、すべてのファイルで同じレイアウトを取りませう |<a href="#coding_002dstyle">coding-style</a>|。
+</li><li> 役に立つコメントをいれませう！函數名と引數名を引用しても役には立ちません。それが何のためにあるのか說明しませう。
+</li><li> プラットフォーム獨立のコードに多くの變更を加へる必要をなくし、他のプラットフォームへの移植を簡單にできるやうにしませう。
+</li><li> オブジェクト指向の精神を使ふ: データとコードを同じ場所に置きませう。コードの他の部分に關する智識は最小で濟むやうにしませう。
+</li></ul>
+
+
+<a name="design_002dflexible"></a><a name="index-design_002dflexible"></a>
+<a name="index-Vim-ha_002e_002e_002e-Rou-Ruan-"></a>
+<a name="VIM-IS_002e_002e_002e-FLEXIBLE"></a>
+<h4 class="unnumberedsubsec">VIM IS... FLEXIBLE</h4>
+
+<p>Vim は、そのユーザーに特定の作業パターンを强ひるよりは、ユーザーの好むスタイルでの作業を支援すべきです。これは大きな影響をもつ項目 (例へば、&rsquo;<samp>compatible</samp>&rsquo; オプション) や、その他の詳細によつて實現されます。デフォルトは、多くのユーザーがそのままの Vim を樂しんで使へるやうに愼重に選ばれてゐます。コマンドとオプションは、Vim をユーザーの希望と環境に調整するために使はれます。
+</p>
+
+<a name="design_002dnot"></a><a name="index-design_002dnot"></a>
+<a name="index-Vim-ha_002e_002e_002e-Vim"></a>
+<a name="VIM-IS_002e_002e_002e-NOT"></a>
+<h4 class="unnumberedsubsec">VIM IS... NOT</h4>
+
+<ul>
+<li> Vim はシェルでもオペレーティングシステムでもありません。Vim はターミナルウィンドウを提供し、その中でシェルやデバッガを走らせることができます。例へば ssh 接續越しにこれをすることが可能です。しかしテキストエディタにこのやうなものが必要ないのなら守備範圍外です (代はりに screen や tmux のやうなものを使ひませう)。
+
+<p>諷刺を込めて曰く: &quot;Vim は Emacs のやうに流し臺以外ならなんでもかんでも取り込んでしまふやうなことはしないが、Vim で流し臺を洗ふことはできるぞ。 ;-)&quot;
+</p>
+<p>Vim と gdb を連携させる方法については次を參照:
+</p>
+<p><a href="http://www.agide.org">http://www.agide.org</a> と <a href="http://clewn.sf.net">http://clewn.sf.net</a>.
+</p></li><li> Vim は全てのプラットフォームに渡つて調和を缺くといふ代償を拂つて、見榮えをよくしようとする裝飾的な GUI エディタではありません。しかし、機能的な GUI 特性は歡迎されます。
+</li></ul>
+
+<a name="coding_002dstyle"></a><a name="index-coding_002dstyle"></a>
+<a name="index-kodeingusutairu"></a>
+<a name="g_t2_002e-kodeingusutairu"></a>
+<h3 class="section">2. コーディングスタイル</h3>
+
+<p>Vim のソースコードに變更を加へる際に守るべきルールがあります。ソースを讀めるもの、保守できるものとして保つため、これらのルールに從つてください。
+</p>
+<p>このリストは完全ではありません。より多くの例はソースコードを見てください。
+</p>
+
+<a name="style_002dchanges"></a><a name="index-style_002dchanges"></a>
+<a name="index-Bian-Geng-suru"></a>
+<a name="MAKING-CHANGES"></a>
+<h4 class="unnumberedsubsec">MAKING CHANGES</h4>
+
+<p>コードに變更を加へる基本的なステップは:
+</p><ol>
+<li> GitHub からコードを取得します。これによりあなたが變更したコードをメインのコードベースに同期するのがより簡單になります (あなたの變更がメインのコードベースに含まれるやうになるまで少しかかるかもしれません)。いくらか時閒を費やして git について學ぶ必要があります。git はあまりユーザーフレンドリーなツールではありません。
+</li><li> ドキュメントを調整します。最初にこれをすることで、あなたの行ふ變更がユーザーに與へる影響について、おおまかな所見をもつことができます。
+</li><li> ソースコードに變更を加へます。
+</li><li> 變更がリストされた項目に影響を與へてゐないか <samp>../doc/todo.txt</samp> をチェックします。
+</li><li> &quot;<code>git diff</code>&quot; でパッチを作成します。GitHub でプルリクエストを作成しても良いのですが、重要なのはその diff です。
+</li><li> 何が變更されたかのノートを作成します。問題點とその解決策について書かれてゐるのが望ましいでせう。|<a href="intro_002etxt.html#vim_002ddev">vim-dev</a>| のメーリングリストに說明と diff を含めたメールを送るか GitHub でプルリクエストを作成します。
+</li></ol>
+
+
+<a name="style_002dcompiler"></a><a name="ANSI_002dC"></a><a name="C89"></a><a name="C99"></a><a name="index-style_002dcompiler"></a>
+<a name="index-ANSI_002dC"></a>
+<a name="index-C89"></a>
+<a name="index-C99"></a>
+<a name="index-C-konpaira"></a>
+<a name="C-COMPILER"></a>
+<h4 class="unnumberedsubsec">C COMPILER</h4>
+
+<p>サポートされてゐる最小の C コンパイラのバージョンは C89 (ANSI C とも呼ばれてゐる) です。C99 のやうな後繼の標準規格はあまりサポートされてゐません。もしくは少なくとも 100% サポートされてゐるわけではありません。したがつて C99 のいくつかの機能だけを使用し、その他の使用は (少なくとも現時點では) 禁止します。
+</p>
+<p>現存するパッチに對してマージの問題を引き起こすため、C99 の機能を使ふ變更を至る所に入れてはいけません。新しくコードを書く場合、もしくは既存のコードを書き直す場合に限り使用しませう。
+</p>
+<a name="Comments"></a>
+<h4 class="unnumberedsubsubsec">Comments</h4>
+<p>慣習的に Vim では /* コメント */ を使用します。特にファイルと函數のヘッダに關してはこれを維持するつもりです。新しいコードもしくは變更される行については、// コメント を使用してもよいでせう。特にコードの後ろに續くコメントなど:
+</p><pre class="verbatim">int some_var;  // ここで一行コメントは有用
+</pre>
+<a name="Enums"></a>
+<h4 class="unnumberedsubsubsec">Enums</h4>
+<p>列擧型の末尾の要素にコンマ (trailing comma) が付いてゐてもよいでせう。C89 では認められてゐませんでした。
+</p>
+<a name="Types"></a>
+<h4 class="unnumberedsubsubsec">Types</h4>
+<p>&quot;long long&quot; は使用してもよく、64 bit を想定してゐます。printf では %lld を使用してください。同じやうに &quot;long long unsigned&quot; では %llu を使用してください。
+</p>
+<a name="Shi-Yong-sitehaikenaimono"></a>
+<h4 class="unnumberedsubsubsec">使用してはいけないもの</h4>
+<p>これらの C99 の機能は、コンパイラのサポートが不十分なため使用してはいけません:
+</p><ul>
+<li> ステートメントの後の宣言 (MSVC 2012 はこれをサポートしてゐません)。すべての宣言はブロックの先頭になければならりません。
+</li><li> 可變長排列 (C11 でもこれはオプショナルな機能です)。
+</li><li> _Bool 型と _Complex 型。
+</li><li> &quot;inline&quot; (ほとんど必要ありません。コンパイラに最適化させませう)。
+</li><li> flexible array members: HP-UX C コンパイラはサポートしてゐません (John Marriott)。
+</li></ul>
+
+
+<a name="style_002dfunctions"></a><a name="index-style_002dfunctions"></a>
+<a name="index-arihuretaGuan-Shu-noShi-Yong-"></a>
+<a name="USE-OF-COMMON-FUNCTIONS"></a>
+<h4 class="unnumberedsubsec">USE OF COMMON FUNCTIONS</h4>
+
+<p>よく使はれる函數のうち、特別な Vim バージョンを持つものがあります。これらは理由があつて導入されたものなので、常に Vim バージョンを使ふやうに意識しませう。
+</p>
+<table>
+<thead><tr><th width="20%">標準的な名前</th><th width="20%">Vim での名前</th><th width="40%">Vim 版での違ひ</th></tr></thead>
+<tr><td width="20%">free()</td><td width="20%">vim_free()</td><td width="40%">NULL の解放をチェックする</td></tr>
+<tr><td width="20%">malloc()</td><td width="20%">alloc()</td><td width="40%">アウトオブメモリの狀況をチェックする</td></tr>
+<tr><td width="20%">malloc()</td><td width="20%">lalloc()</td><td width="40%">alloc() に似てゐるが、long 型の引數を持つ</td></tr>
+<tr><td width="20%">strcpy()</td><td width="20%">STRCPY()</td><td width="40%">char_u *引數を、(char *) へキャストする</td></tr>
+<tr><td width="20%">strchr()</td><td width="20%">vim_strchr()</td><td width="40%">スペシャルキャラクタを受け入れる</td></tr>
+<tr><td width="20%">strrchr()</td><td width="20%">vim_strrchr()</td><td width="40%">スペシャルキャラクタを受け入れる</td></tr>
+<tr><td width="20%">isspace()</td><td width="20%">vim_isspace()</td><td width="40%">128 以上のキャラクタを扱ふことができる</td></tr>
+<tr><td width="20%">iswhite()</td><td width="20%">vim_iswhite()</td><td width="40%">Tab とスペースに對してのみ TRUE</td></tr>
+<tr><td width="20%">memcpy()</td><td width="20%">mch_memmove()</td><td width="40%">オーバーラップしたコピーを扱ふ</td></tr>
+<tr><td width="20%">bcopy()</td><td width="20%">mch_memmove()</td><td width="40%">オーバーラップしたコピーを扱ふ</td></tr>
+<tr><td width="20%">memset()</td><td width="20%">vim_memset()</td><td width="40%">全てのシステムで一定である</td></tr>
+</table>
+
+
+<a name="style_002dnames"></a><a name="index-style_002dnames"></a>
+<a name="index-Guan-Shu-noMing-Qian-"></a>
+<a name="NAMES"></a>
+<h4 class="unnumberedsubsec">NAMES</h4>
+
+<p>函數の名前に 31 文字より長い名前は使へません (VMSのために)。
+</p>
+<p>&quot;delete&quot; や &quot;this&quot; といふ名前の變數を使はないでください。C++ で問題となります。
+</p>
+<p>Vim をできる限り多くのシステム上で實行できるやうにするといふ必要上、システムによつてすでに定義されてゐる名前を使ふことは避けなければなりません。以下は問題となることが知られてゐる名前のリストです。名前は regexp パターンとして與へられてゐます。
+</p>
+<table>
+<tr><td width="30%">is.*()</td><td width="70%">POSIX, ctype.h</td></tr>
+<tr><td width="30%">to.*()</td><td width="70%">POSIX, ctype.h</td></tr>
+<tr><td width="30%"></td></tr>
+<tr><td width="30%">d_.*</td><td width="70%">POSIX, dirent.h</td></tr>
+<tr><td width="30%">l_.*</td><td width="70%">POSIX, fcntl.h</td></tr>
+<tr><td width="30%">gr_.*</td><td width="70%">POSIX, grp.h</td></tr>
+<tr><td width="30%">pw_.*</td><td width="70%">POSIX, pwd.h</td></tr>
+<tr><td width="30%">sa_.*</td><td width="70%">POSIX, signal.h</td></tr>
+<tr><td width="30%">mem.*</td><td width="70%">POSIX, string.h</td></tr>
+<tr><td width="30%">str.*</td><td width="70%">POSIX, string.h</td></tr>
+<tr><td width="30%">wcs.*</td><td width="70%">POSIX, string.h</td></tr>
+<tr><td width="30%">st_.*</td><td width="70%">POSIX, stat.h</td></tr>
+<tr><td width="30%">tms_.*</td><td width="70%">POSIX, times.h</td></tr>
+<tr><td width="30%">tm_.*</td><td width="70%">POSIX, time.h</td></tr>
+<tr><td width="30%">c_.*</td><td width="70%">POSIX, termios.h</td></tr>
+<tr><td width="30%">MAX.*</td><td width="70%">POSIX, limits.h</td></tr>
+<tr><td width="30%">__.*</td><td width="70%">POSIX, system</td></tr>
+<tr><td width="30%">_[A-Z].*</td><td width="70%">POSIX, system</td></tr>
+<tr><td width="30%">E[A-Z0-9]*</td><td width="70%">POSIX, errno.h</td></tr>
+<tr><td width="30%"></td></tr>
+<tr><td width="30%">.*_t</td><td width="70%">POSIX, for typedefs, *_T を使ふこと</td></tr>
+<tr><td width="30%"></td></tr>
+<tr><td width="30%">wait</td><td width="70%">types.h とコンフリクトするため、函數の引數として使はない</td></tr>
+<tr><td width="30%">index</td><td width="70%">グローバル宣言を覆ひ隱す</td></tr>
+<tr><td width="30%">time</td><td width="70%">グローバル宣言を覆ひ隱す</td></tr>
+<tr><td width="30%">new</td><td width="70%">C++ の豫約語</td></tr>
+<tr><td width="30%"></td></tr>
+<tr><td width="30%">clear</td><td width="70%">Mac curses.h</td></tr>
+<tr><td width="30%">echo</td><td width="70%">Mac curses.h</td></tr>
+<tr><td width="30%">instr</td><td width="70%">Mac curses.h</td></tr>
+<tr><td width="30%">meta</td><td width="70%">Mac curses.h</td></tr>
+<tr><td width="30%">newwin</td><td width="70%">Mac curses.h</td></tr>
+<tr><td width="30%">nl</td><td width="70%">Mac curses.h</td></tr>
+<tr><td width="30%">overwrite</td><td width="70%">Mac curses.h</td></tr>
+<tr><td width="30%">refresh</td><td width="70%">Mac curses.h</td></tr>
+<tr><td width="30%">scroll</td><td width="70%">Mac curses.h</td></tr>
+<tr><td width="30%">typeahead</td><td width="70%">Mac curses.h</td></tr>
+<tr><td width="30%"></td></tr>
+<tr><td width="30%">basename()</td><td width="70%">GNU 文字列函數 (GNU string function)</td></tr>
+<tr><td width="30%">dirname()</td><td width="70%">GNU 文字列函數 (GNU string function)</td></tr>
+<tr><td width="30%">get_env_value()</td><td width="70%">Linux システム函數</td></tr>
+</table>
+
+
+<a name="style_002dvarious"></a><a name="index-style_002dvarious"></a>
+<a name="index-Bian-Shu-noMing-Qian-"></a>
+<a name="VARIOUS"></a>
+<h4 class="unnumberedsubsec">VARIOUS</h4>
+
+<p>型の定義に使ふ名前は最後を &quot;_T&quot; にします:
+</p><pre class="verbatim">typedef int some_T;
+</pre><p>マクロ定義はすべて大文字にします:
+</p><pre class="verbatim">#define SOME_THING
+</pre><p>機能に關する定義は &quot;FEAT_&quot; で始めます:
+</p><pre class="verbatim">#define FEAT_FOO
+</pre>
+<p>&rsquo;\&quot;&rsquo; は使はないでください。これを扱へないコンパイラがあります。&rsquo;&quot;&rsquo; はうまく機能します。
+</p>
+<p>次は使つてはいけません:
+</p><pre class="verbatim">#if HAVE_SOME
+</pre><p>あるコンパイラはこれを扱へず、&quot;HAVE_SOME&quot; が定義されてゐないと訴へます。
+</p>
+<p>次を使ひます:
+</p><pre class="verbatim">#ifdef HAVE_SOME
+</pre><p>または
+</p><pre class="verbatim">#if defined(HAVE_SOME)
+</pre>
+
+<a name="style_002dexamples"></a><a name="index-style_002dexamples"></a>
+<a name="index-kodeingusutairu-1"></a>
+<a name="STYLE"></a>
+<h4 class="unnumberedsubsec">STYLE</h4>
+
+<p>一般的なルール: 1 行に 1 つのステートメント。
+</p>
+<pre class="verbatim">閒違ひ:    if (cond) a = 1;
+
+OK:        if (cond)
+               a = 1;
+</pre>
+<pre class="verbatim">閒違ひ:    while (cond);
+
+OK:        while (cond)
+              ;
+</pre>
+<pre class="verbatim">閒違ひ:    do a = 1; while (cond);
+
+OK:        do
+               a = 1;
+           while (cond);
+</pre>
+<pre class="verbatim">閒違ひ:    if (cond) {
+              cmd;
+              cmd;
+           } else {
+              cmd;
+              cmd;
+           }
+
+OK:        if (cond)
+           {
+              cmd;
+              cmd;
+           }
+           else
+           {
+              cmd;
+              cmd;
+           }
+</pre>
+<p>ブロックが 1 行の場合は、波括弧を省くことができます。if/else の 1 つのブロックに波括弧がある場合、他のブロックにも波括弧があると通常は見榮えが良くなります:
+</p><pre class="verbatim">OK:         if (cond)
+               cmd;
+            else
+               cmd;
+
+OK:         if (cond)
+            {
+               cmd;
+            }
+            else
+            {
+               cmd;
+               cmd;
+            }
+</pre>
+<p>函數宣言には ANSI スタイルを使ひ、戾り値の型は獨立した行にインデントをつけて書いてください。
+</p>
+<pre class="verbatim">閒違ひ: int function_name(int arg1, int arg2)
+
+OK:     /*
+         * Explanation of what this function is used for.
+         * この函數が何に使はれるかの說明。
+         *
+         * Return value explanation.
+         * 戾り値の說明。
+         */
+            int
+        function_name(
+            int     arg1,           // short comment about arg1
+            int     arg2)           // short comment about arg2
+        {
+            int     local;          // comment about local
+
+            local = arg1 * arg2;
+</pre>
+
+
+<a name="style_002dspaces"></a><a name="index-style_002dspaces"></a>
+<a name="index-supesutoQu-Qie-ri"></a>
+<a name="SPACES-AND-PUNCTUATION"></a>
+<h4 class="unnumberedsubsec">SPACES AND PUNCTUATION</h4>
+
+<p>函數名とブラケットの閒にスペースを入れないでください:
+</p>
+<pre class="verbatim">閒違ひ:	func (arg);
+OK:     func(arg);
+</pre>
+<p>if, while, switch などの後にはスペースを入れてください。
+</p>
+<pre class="verbatim">閒違ひ: if(arg)         for(;;)
+OK:     if (arg)        for (;;)
+</pre>
+<p>コンマ、セミコロンの後にはスペースを入れてください:
+</p>
+<pre class="verbatim">閒違ひ: func(arg1,arg2);        for (i = 0;i &lt; 2;++i)
+OK:     func(arg1, arg2);       for (i = 0; i &lt; 2; ++i)
+</pre>
+<p>&rsquo;=&rsquo;, &rsquo;+&rsquo;, &rsquo;/&rsquo; などの前と後には、スペースを入れてください。
+</p>
+<pre class="verbatim">閒違ひ: var=a*5;
+OK:     var = a * 5;
+</pre>
+<p>一般的なこと: コードの行をグループ分けするために空行を使ひます。行グループのすぐ上にコメントを入れます。かうすることによつて、何が行はれるのかをより簡單に知ることができます。
+</p>
+<pre class="verbatim">OK:     /* Prepare for building the table. */
+        /* テーブルの作成の準備 */
+        get_first_item();
+        table_idx = 0;
+
+        /* Build the table */
+        /* テーブルの作成 */
+        while (has_item())
+            table[table_idx++] = next_item();
+
+        /* Finish up. */
+        /* 仕上げ */
+        cleanup_items();
+        generate_hash(table);
+</pre>
+<a name="design_002ddecisions"></a><a name="index-design_002ddecisions"></a>
+<a name="index-Jue-Ding-Shi-Xiang-"></a>
+<a name="g_t3_002e-Jue-Ding-Shi-Xiang-"></a>
+<h3 class="section">3. 決定事項</h3>
+
+<a name="index-Zhe-Die-"></a>
+<a name="Zhe-Die-_0028folding_0029"></a>
+<h4 class="unnumberedsubsec">折疊(folding)</h4>
+
+<p>同じバッファにいくつもの折疊狀態を設定可能にします。例へば、あるウィンドウに函數を折疊んだ狀態で表示し、他のウィンドウで函數の中身を表示するなど。
+</p>
+<p>折疊はテキストを表示する方法です。テキストを變更すべきではありません。したがつてバッファ內のテキストをウィンドウに表示する際のフィルタとして實行されます。
+</p>
+
+<a name="index-uindounoMing-Qian-"></a>
+<a name="uindounoMing-Qian-"></a>
+<h4 class="unnumberedsubsec">ウィンドウの名前</h4>
+
+<p>&quot;ウィンドウ&quot; といふ單語は一般にいくつかの意味で使はれてゐます。スクリーン上のウィンドウ、xterm のウィンドウ、Vim のバッファを表示するウィンドウなど。
+</p>
+<p>混亂を避けるため、時にウィンドウと呼ばれる他の物には別の名前が付けられてゐます。ここに關聯する物の槪觀を示します。
+</p>
+<dl compact="compact">
+<dt>スクリーン (screen)</dt>
+<dd><p>ディスプレイ全體。GUI では例へば 1024x768 ピクセルの畫面。Vim シェルはスクリーン全體を使ふことも一部を使ふこともできます。
+</p>
+</dd>
+<dt>シェル (shell)</dt>
+<dd><p>Vim アプリケーション。スクリーン全體 (例へばコンソールで實行した時)、あるいはその一部 (xterm や GUI)。
+</p>
+</dd>
+<dt>ウィンドウ (window)</dt>
+<dd><p>バッファの表示畫面。Vim は複數のウィンドウを持つことができます。ウィンドウはコマンドラインやメニューバー、ツールバーなどといつしよに表示されます。これらはシェルに納まります。
+</p></dd>
+</dl>
+
+
+<a name="develop_002dspell"></a><a name="index-develop_002dspell"></a>
+<a name="index-superutietuku"></a>
+<a name="superutietuku"></a>
+<h4 class="unnumberedsubsec">スペルチェック</h4>
+
+<p>Vim にスペルチェックを追加することになつたとき、利用可能なスペルチェックのライブラリやプログラムについての調査が行はれました。その結果は殘念なことに、Vim 內でスペルチェックエンジンとして使へるものはないとわかりました。これには樣々な理由があります:
+</p>
+<ul>
+<li> マルチバイトエンコーディングをサポートしてゐません。1 つのファイル內で複數の言語を使へるやうにするために、少なくとも UTF-8 はサポートしてゐなければなりません。
+
+<p>オンザフライな變換は常に可能とは限りません (iconv に對應してゐる必要があります)。
+</p></li><li> プログラムとライブラリに對して: それらをそのまま (as-is) 使ふには、Vim とは別個にインストールしなければなりません。これはたいてい不可能ではありませんが、難點です。
+</li><li> パフォーマンス: いくつかのテストによると、スペルチェックを構文强調のやうにオンザフライで (再描畫中に) 行ふことは可能でした。しかし他のコードで使はれたメカニズムはもつと遲かつた。例へば、Myspell はハッシュテーブルを使用します。ほとんどのスペルチェッカが使用してゐる接辭壓縮を使ふと遲くなりました。
+</li><li> aspell のやうな外部プログラムを使ふには、通信メカニズムを用意しなければなりません。これをポータブルな方法で行ふのは複雜過ぎます (Unix だけなら比較的簡單ですが、それでは十分ではありません)。そしてパフォーマンスが問題になります (何囘ものプロセス切替が行はれる)。
+</li><li> &quot;Etten-Leur&quot; や &quot;et al.&quot; など、單語ではない單語のサポートを缺いてゐます。そのため、これらの部分を OK とマークしなければなりませんが、さうすると信賴性が低下します。
+</li><li> 地域や方言のサポートを缺いてゐます。英語の單語をすべて受け付け、カナダ語ではない單語を別に扱ふことが難しくなります。
+</li><li> 頻度が低い單語のサポートを缺いてゐます。正しいけれどめつたに使はれないたくさんの單語が、よく使はれる單語のスペルミスとみなされてしまふ。
+</li><li> スペル候補を作成するには速度はそれほど重要ではなく、他のプログラムやライブラリをインストールすることは許容できます。しかし、單語リストが異なるとスペル候補が誤單語になつてしまひます。
+</li></ul>
+
+
+<a name="develop_002dspell_002dsuggestions"></a><a name="index-develop_002dspell_002dsuggestions"></a>
+<a name="index-superuHou-Bu-"></a>
+<a name="superuHou-Bu-"></a>
+<h4 class="unnumberedsubsec">スペル候補</h4>
+
+<p>候補の作成には 2 つの基本的なメカニズムがあります:
+</p><ol>
+<li> 誤つた單語を少し變更して、正しい單語とマッチするかチェックする。あるいは、正しい單語全てに對し、それを少し變更して誤つた單語とマッチするかチェックする。變更とは、文字の削除・文字の插入・2 つの文字の交換などです。
+</li><li> 誤つた單語と正しい單語のリストの兩方に soundfolding (撥音が近い單語を同じグループとみなすこと) を行つて、そこでマッチを見つける。1 番目のメカニズムと同樣にいくつか變更をしてもよいでせう。
+</li></ol>
+
+<p>最初のメカニズムはタイプミスを見つけるのには良いです。ハッシュテーブルの實驗と、他のスペルチェッカのソリューションを見ると、これには trie (ツリー構造の一種) が最適であるとの結論になりました。メモリ使用量の削減と、賢い變更を試みるといふことの兩方の面でです。例へば、文字を插入するときは正しい單語につながる文字だけを試せば良いです。他の (ハッシュテーブルを使つた) メカニズムは、單語のすべての位置でありうるすべての文字を試さねばなりません。また、ハッシュテーブルを使ふには、單語の境界が個別に認識されなければならないのに對し、trie はそれを要求しません。そのためメカニズムがより單純になります。
+</p>
+<p>ある單語の撥音は知つてゐるけれどもスペルは知らないといふ場合に soundfolding は有用です。例へば、&quot;dictionary&quot; といふ單語を &quot;daktonerie&quot; と書いてしまふかもしれません。これを最初の方法で訂正しようとすると變更回數が非常に多くなつてしまひ、正しいスペルを見つけるのは困難になります。それに對し、これらの單語に soundfolding を行ふと &quot;tktnr&quot; と &quot;tkxnry&quot; になり、2 文字しか違ひません。
+</p>
+<p>soundfold の同値 (音が似てゐる單語) により單語を見つけるには、全ての soundfolded words のリストが必要です。どれが最良の方法かを探すための實驗が行はれました。案:
+</p><ol>
+<li> 修正候補を探すときに、その場で sound folding を行ふ。つまり正しい單語の trie をたどりながら、各單語を soundfolding し、それがスペルミスしてゐる單語からどれだけ異なるかをチェックします。これはメモリ效率の面でとても優れてゐますが、時閒は長くかかります。英語の場合、高速な PC で 2 秒ほどかかります。これは對話的な利用として受け入れることができます。しかしいくつかの言語 (ドイツ語、カタルニャ語など) に對しては 10 秒以上かかり、受け入れがたいです。バッチ處理 (自動訂正) に使ふには全ての言語で遲すぎます。
+</li><li> soundfold された單語に對して trie を使ひ、soundfolding なしのときとまつたく同じやうに檢索できるやうにします。そのためには、soundfold された各單語に對し、正しい單語のリストを記憶しておく必要があります。さうすると照合がとても高速になりますが、1MB 〜 10MB のオーダーの大量のメモリを必要とします。ある言語の場合は元の單語のリストよりも多くなります。
+</li><li> 2 番目の案と同樣ですが、接辭壓縮を使ひ soundfold した基本單語だけを保存することによりメモリ消費量を減らします。これは Aspell が採用してゐる方法です。不利な點は、誤つた單語を soundfold する前に接辭を取り除いておかねばならないことです。そのため、單語の先頭・末尾における誤りに對しては對應できません。また、誤つた單語が正しい單語から大きく異なるときは遲くなります。
+</li></ol>
+
+<p>我々が採用したのは、2 番目のメカニズムを使ひ、別ファイルを使ふ方法です。かうすることによつて、十分なメモリを持つてゐるユーザーはとてもよい候補を得ることができるし、メモリが不足してゐるユーザーやスペルチェックだけで候補は出さなくてよいといふユーザーはそれほどメモリを使はなくて濟みます。
+</p>
+
+<a name="index-Dan-Yu-noPin-Du-"></a>
+<a name="Dan-Yu-noPin-Du-"></a>
+<h4 class="unnumberedsubsec">單語の頻度</h4>
+
+<p>候補をソートするにはどの單語が共通であるかを知ると役に立ちます。理論的には單語の頻度は單語とともに辭書の中に保持することができます。しかしさうすると、單語につき回數を保持しなければなりません。これは單語ツリー壓縮を大いに劣化させます。また、全ての言語に對して單語の頻度を保守するのは大變な作業です。また、テキストに既に出てきてゐる單語を優先するとよいでせう。このやうにして特定のテキスト內に表れる單語は候補の中で優先度が高くなります。
+</p>
+<p>實裝されたのは、表示中に單語を數へることです。ハッシュテーブルを使つてその單語の回數を高速に檢索します。回數は接辭ファイルで COMMON アイテムにリストされてゐる單語から初期化されます。そのため新規ファイルの編輯を始めたときも機能します。
+</p>
+<p>これは理想的ではありません。Vim が長時閒稼動してゐるほど回數は大きくなるためです。しかし實用的には單語の回數を使はない場合と比べて注目に値するほどの改善です。
+</p>
+<a name="design_002dassumptions"></a><a name="index-design_002dassumptions"></a>
+<a name="index-Xiang-Ding-siteirukoto"></a>
+<a name="g_t4_002e-Xiang-Ding-siteirukoto"></a>
+<h3 class="section">4. 想定してゐること</h3>
+
+<p>變數のサイズ:
+</p><table>
+<tr><td width="20%">char</td><td width="80%">8 bit signed</td></tr>
+<tr><td width="20%">char_u</td><td width="80%">8 bit unsigned</td></tr>
+<tr><td width="20%">int</td><td width="80%">32 or 64 bit signed (限定された機能については 16 ビットもありうる)</td></tr>
+<tr><td width="20%">unsigned</td><td width="80%">32 or 64 bit unsigned (16 ビットについては int と同樣)</td></tr>
+<tr><td width="20%">long</td><td width="80%">32 or 64 bit signed, can hold a pointer</td></tr>
+</table>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+いくつかのコンパイラは長すぎる行は文字列をうまく扱へないことに注意していください。C89 の標準規格では 509 文字までに制限されてゐます。
+</p></blockquote>
+
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>remote.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="remote.txt (Vim Reference Manual)">
+<meta name="keywords" content="remote.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="term_002etxt.html#term_002etxt" rel="next" title="term.txt">
+<link href="print_002etxt.html#print_002etxt" rel="prev" title="print.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="remote_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="kuraianto_002fsabaJi-Neng-"></a>
+<h2 class="unnumbered">クライアント/サーバー機能</h2>
+<pre class="verbatim">*remote.txt*    For Vim バージョン 8.1.  Last change: 2019 May 05
+
+
+                VIMリファレンスマニュアル    by Bram Moolenaar
+</pre>
+
+<a name="client_002dserver"></a><a name="index-client_002dserver"></a>
+<p>Vim クライアントサーバー通信
+</p>
+<table>
+<tr><td width="50%">1. 共通機能</td><td width="50%">|<a href="#clientserver">clientserver</a>|</td></tr>
+<tr><td width="50%">2. X11 特有の項目</td><td width="50%">|<a href="#x11_002dclientserver">x11-clientserver</a>|</td></tr>
+<tr><td width="50%">3. Win32 特有の項目</td><td width="50%">|<a href="#w32_002dclientserver">w32-clientserver</a>|</td></tr>
+<tr><td width="50%">4. MacVim 特有の項目</td><td width="50%">|<a href="#macvim_002dclientserver">macvim-clientserver</a>|</td></tr>
+</table>
+
+<a name="clientserver"></a><a name="index-clientserver"></a>
+<a name="g_t1_002e-Gong-Tong-Ji-Neng-"></a>
+<h3 class="section">1. 共通機能</h3>
+
+<p>オプション |<a href="various_002etxt.html#g_t_002bclientserver">+clientserver</a>| でコンパイルした時には、Vim はコマンドサーバーとして動作することができる。それによりクライアントからメッセージを受け取りそれを實行することができる。同時に、Vim はクライアントの機能も持ち合はせ Vim サーバーへメッセージを送ることもできる。
+</p>
+<p>以下のコマンドライン引數が利用できる:
+</p>
+
+<dl compact="compact">
+<dd><a name="g_t_002d_002dremote"></a><a name="index-_2212_2212remote"></a>
+</dd>
+<dt>--remote [+{cmd}] {file} ...</dt>
+<dd><p>ファイルをリモートの Vim で開く。Vim サーバーが無い時には、ローカルで實行される。オプションで +{cmd} に 1 つだけ Ex コマンドを指定できる。コマンドは &quot;|&quot; でつなげて複數指定できる。
+コマンドラインの殘りの部分はファイルのリストとして扱はれる。だからファイルではない引數はこれよりも前に書かなければならない。
+</p>
+<p>この方法で標準入力を開くことはできない |<a href="starting_002etxt.html#g_t_2212_2212">--</a>|。
+</p>
+<p>次のやうにしなければリモートの Vim が問題を起こすかもしれない。
+</p><pre class="verbatim">vim --remote-send &quot;&lt;C-\&gt;&lt;C-N&gt;:n filename&lt;CR&gt;&quot;
+</pre><a name="g_t_002d_002dremote_002dsilent"></a><a name="index-_2212_2212remote_002dsilent"></a>
+</dd>
+<dt>--remote-silent [+{cmd}] {file} ...</dt>
+<dd><p>上と同樣、しかしサーバーが存在しなくてもエラーを報告しない。指定したファイルがすでにローカルで編輯中であつても同樣。
+<a name="g_t_002d_002dremote_002dwait"></a><a name="index-_2212_2212remote_002dwait"></a>
+</p></dd>
+<dt>--remote-wait [+{cmd}] {file} ...</dt>
+<dd><p>--remote と同樣、しかしリモート Vim でファイルが完了 (解放) されるまで待つ。
+<a name="g_t_002d_002dremote_002dwait_002dsilent"></a><a name="index-_2212_2212remote_002dwait_002dsilent"></a>
+</p></dd>
+<dt>--remote-wait-silent [+{cmd}] {file} ...</dt>
+<dd><p>--remote-wait と同樣、しかしサーバーが存在しなくてもエラーを報告しない。
+<a name="g_t_002d_002dremote_002dtab"></a><a name="index-_2212_2212remote_002dtab"></a>
+</p></dd>
+<dt>--remote-tab</dt>
+<dd><p>--remote と同樣、しかし各ファイルを新しいタブページで開く。
+<a name="g_t_002d_002dremote_002dtab_002dsilent"></a><a name="index-_2212_2212remote_002dtab_002dsilent"></a>
+</p></dd>
+<dt>--remote-tab-silent</dt>
+<dd><p>--remote-silent と同樣、しかし各ファイルを新しいタブページで開く。
+<a name="g_t_002d_002dremote_002dtab_002dwait"></a><a name="index-_2212_2212remote_002dtab_002dwait"></a>
+</p></dd>
+<dt>--remote-tab-wait</dt>
+<dd><p>--remote-wait と同樣、しかし各ファイルを新しいタブページで開く。
+</p>
+<a name="g_t_002d_002dremote_002dtab_002dwait_002dsilent"></a><a name="index-_2212_2212remote_002dtab_002dwait_002dsilent"></a>
+</dd>
+<dt>--remote-tab-wait-silent</dt>
+<dd><p>--remote-wait-silent と同樣、しかし各ファイルを新しいタブページで開く。
+<a name="g_t_002d_002dservername"></a><a name="index-_2212_2212servername"></a>
+</p></dd>
+<dt>--servername {name}</dt>
+<dd><p>サーバー名 {name} になる。--remote コマンドのどれか 1 つと倂用すると、デフォルトのサーバーではなく {name} で指定されるサーバーに接續する (下を參照)。名前は大文字が使はれるだらう。
+<a name="g_t_002d_002dremote_002dsend"></a><a name="index-_2212_2212remote_002dsend"></a>
+</p></dd>
+<dt>--remote-send {keys}</dt>
+<dd><p>サーバーに {keys} を送信して終了する。{keys} にマップは適用されない。特殊キー名が使用できる。例: &quot;&lt;CR&gt;&quot; は CR 文字になる。
+<a name="g_t_002d_002dremote_002dexpr"></a><a name="index-_2212_2212remote_002dexpr"></a>
+</p></dd>
+<dt>--remote-expr {expr}</dt>
+<dd><p>サーバーに {expr} を實行評價させ、その結果を標準出力に印刷する。
+<a name="g_t_002d_002dserverlist"></a><a name="index-_2212_2212serverlist"></a>
+</p></dd>
+<dt>--serverlist</dt>
+<dd><p>サーバー名のリストを表示する。
+</p></dd>
+</dl>
+
+
+<a name="Shi-Yong-Li"></a>
+<h4 class="unnumberedsubsec">使用例</h4>
+
+<p>既に起動してゐる gvim サーバーで &quot;<samp>file.txt</samp>&quot; を編輯する:
+</p><pre class="verbatim">gvim --remote file.txt
+</pre>
+<p>既に起動してゐるFOOBARといふ名のサーバーで &quot;file.txt&quot; を編輯する:
+</p><pre class="verbatim">gvim --servername FOOBAR --remote file.txt
+</pre>
+<p>既に起動してゐるFILESといふ名のサーバーがあれば、FILES で &quot;<samp>file.txt</samp>&quot; を編輯するが、無ければ自分が FILES になる:
+</p><pre class="verbatim">gvim --servername FILES --remote-silent file.txt
+</pre>
+<p>--remote の後の全ての引數がファイル名として解釋されるので動作しない:
+</p><pre class="verbatim">gvim --remote --servername FOOBAR file.txt
+</pre>
+<p>リモートサーバーで &quot;+foo&quot; といふ名のファイルを編輯する (&quot;./&quot; により先頭の &quot;+&quot; の特別な意味が無效化されてゐることに注目):
+</p><pre class="verbatim">vim --remote ./+foo
+</pre>
+<p>&quot;BLA&quot; といふ名のリモートサーバーで編輯中の全てのファイルを保存して終了する:
+</p><pre class="verbatim">vim --servername BLA --remote-send '&lt;C-\&gt;&lt;C-N&gt;:wqa&lt;CR&gt;'
+</pre>
+
+<a name="client_002dserver_002dname"></a><a name="index-client_002dserver_002dname"></a>
+<a name="sabaMing-"></a>
+<h4 class="unnumberedsubsec">サーバー名</h4>
+
+<p>デフォルトでは Vim は自分が起動された時の名前 (gvim, egvim ...) のサーバーにならふとする。これは引數 --servername で變更できる。指定した名前が利用できない場合には、利用できる名前になるやうに後置名が付加される。例へば、1 つの X-Server で 2 つ目の gvim を起動したときには &quot;gvim1&quot; といふやうになる。その時のサーバー名へは組み込み變數 |<a href="eval_002etxt.html#v_003aservername">v:servername</a>| によりアクセスできる。サーバー名の大文字小文字は區別されないので、&quot;gvim&quot; と &quot;GVIM&quot; は同じとみなされる。
+</p>
+<p>Vim が引數 --remote や --remote-wait または --remote-send で起動された時には、上記のやうにその名前で起動されたサーバーを探さうと試みる。正確に一致するサーバーがなかつた時には、數字の後置名を付けて見つかつた最初のサーバーを使用する。引數 --servername に數字の後置を付けた名前を指定した場合には、それは正確に一致するものだけを對象とする。
+</p>
+<p>サーバーが見つからなく、--remote か --remote-wait が使はれた時には、Vim は殘りのコマンドラインに從ひ起動し、そのファイルの編輯セッションを自分自身で取り持つ。この方法なら gvim はコマンドを送信する時に、既に別の gvim が起動してゐるかどうかを知る必要は無い。
+</p>
+<p>引數 --serverlist は Vim に登錄 (實行) されてゐる全てのコマンドサーバーを、標準出力 (stdout) に印刷して終了する。
+</p>
+<blockquote>
+<p><strong>Win32 Note:</strong> <br>
+Vim サーバーをアクティブアプリケーション (トップウィンドウ) にすることは、MS-Windows がそれを許してゐないので必ずしも成功するわけではない。クライアントは引數 --remote や --remote-wait を使用しサーバー名が &quot;g&quot; で始まる時には、サーバーをアクティブアプリケーションにすることを試みる。
+</p></blockquote>
+
+
+<a name="rimotoBian-Ji-"></a>
+<h4 class="unnumberedsubsec">リモート編輯</h4>
+
+<p>引數 --argument は殘りのコマンドラインから |<a href="windows_002etxt.html#g_t_003adrop">:drop</a>| コマンドを構成することを引き起こし、それを上記の方法で送信する。
+</p>
+<p>引數 --remote-wait は同じ事をして、加へて全てのファイルの編輯の完了を待つやうに設定される。これは BufUnload イベントを使用し、だからファイルがアンロードされるとすぐに、Vim はファイルの編輯が完了したと判斷する。
+</p>
+<p>引數 --remote と --remote-wait は殘りのコマンドライン全てを自分のものとして扱ふことに注意。言ひ換へれば殘り全ての引數はファイル名とみなされる。そこにオプションを置くことはできない！
+</p>
+
+<a name="Vim-script-Guan-Shu-"></a>
+<h4 class="unnumberedsubsec">Vim script 函數</h4>
+<a name="E240"></a><a name="E573"></a><a name="index-E240"></a>
+<a name="index-E573"></a>
+<p>Vim script にはコマンドサーバーを操作するために幾つか函數がある。詳細な解說は |<a href="eval_002etxt.html#eval_002etxt">eval.txt</a>| を參照するか、函數名の上で <kbd>CTRL-]</kbd> を使つて完全な解說を參照すること。
+</p>
+<table>
+<thead><tr><th width="50%">槪要</th><th width="50%">說明</th></tr></thead>
+<tr><td width="50%">remote_startserver(name)</td><td width="50%">サーバーを開始する</td></tr>
+<tr><td width="50%">remote_expr(server, string, idvar)</td><td width="50%">式を送信する</td></tr>
+<tr><td width="50%">remote_send(server, string, idvar)</td><td width="50%">キーシーケンスを送信する</td></tr>
+<tr><td width="50%">serverlist()</td><td width="50%">利用可能なサーバーのリストを得る</td></tr>
+<tr><td width="50%">remote_peek(serverid, retvar)</td><td width="50%">結果文字列の有無確認する</td></tr>
+<tr><td width="50%">remote_read(serverid)</td><td width="50%">結果文字列を取得する</td></tr>
+<tr><td width="50%">server2client(serverid, string)</td><td width="50%">結果文字列を送信する</td></tr>
+<tr><td width="50%">remote_foreground(server)</td><td width="50%">サーバーを前面に移動する</td></tr>
+</table>
+
+<p>|<a href="intro_002etxt.html#CTRL_002d_005c_005fCTRL_002dN">CTRL-\_CTRL-N</a>| の說明も參照。キーシーケンスの先頭に使用すると便利。
+</p>
+<p>server2client() で使用するサーバー ID {serverid} は、<code>expand(&quot;&lt;client&gt;&quot;)</code> で取得できる。
+</p>
+<a name="x11_002dclientserver"></a><a name="E247"></a><a name="E248"></a><a name="E251"></a><a name="E258"></a><a name="E277"></a><a name="index-x11_002dclientserver"></a>
+<a name="index-E247"></a>
+<a name="index-E248"></a>
+<a name="index-E251"></a>
+<a name="index-E258"></a>
+<a name="index-E277"></a>
+<a name="g_t2_002e-X11-Te-You-noXiang-Mu-"></a>
+<h3 class="section">2. X11 特有の項目</h3>
+
+<p>クライアントとサーバー閒の通信はXサーバーにより行はれる。Vim サーバーのディスプレイを指定する必要がある。X サーバーの通常の保護機能が使はれてゐるは、通信が成り立つためにはその X サーバーでウィンドウを作成できなければならない。異なるマシン閒での通信も可能である。
+</p>
+<p>デフォルトでは、GUI Vim は X サーバーに名前を登錄して送信された文字列を實行できるやうに備へる。Vim はクライアントとしても振舞ひ、同じ X11 ディスプレイで動作する別の Vim インスタンスに文字列を送ることができる。
+</p>
+<p>X11 の GUI Vim (gvim) が起動すると、ルートウィンドウの &rsquo;VimRegistry&rsquo; プロパティに送信サーバー名を登錄しようと試みる。
+</p>
+<p>X11 ディスプレイにアクセスできる非 GUI の Vim (|<a href="term_002etxt.html#xterm_002dclipboard">xterm-clipboard</a>| が有效になつてゐる) も、サーバー名が引數 --servername で明示的に與へらるか、Vim が |<a href="various_002etxt.html#g_t_002bautoservername">+autoservername</a>| 機能付きでビルドされてゐる場合は、コマンドサーバーとして振舞ふことができる。
+</p>
+<p>引數 --servername に空のサーバー名を與へればコマンドサーバー機能を無效にできる。
+</p>
+<p>異なるアプリケーションから Vim サーバーへコマンドを送るには、使はれてゐるプロトコルの幾つかのヒントを含むソースコード <samp>src/if_xcmdsrv.c</samp> を參照のこと。
+</p>
+<a name="w32_002dclientserver"></a><a name="index-w32_002dclientserver"></a>
+<a name="g_t3_002e-Win32-Te-You-noXiang-Mu-"></a>
+<h3 class="section">3. Win32 特有の項目</h3>
+
+<p>全ての Win32 版 Vim はコンソールもサーバーとして動作できる。OLE を組み込んでコンパイルする必要は無い。どの MS-Windows でも動作する、Windows メッセージが使用されてゐる。しかしネットワークを通じてやり取りすることはできない。
+</p>
+<p>MS-Windows メッセージを使つてゐるから、どのやうなアプリケーションでも Vim サーバーと通信することができる。加へて OLE の機能を使ふこともできる |<a href="if_005fole_002etxt.html#ole_002dinterface">ole-interface</a>|。
+</p>
+<p>gvimを使つてゐる時には、--remote-wait は以下のやうにしないと正しく動作しない:
+</p><pre class="verbatim">start /w gvim --remote-wait file.txt
+</pre><a name="macvim_002dclientserver"></a><a name="index-macvim_002dclientserver"></a>
+<a name="g_t4_002e-MacVim-Te-You-noXiang-Mu-"></a>
+<h3 class="section">4. MacVim 特有の項目</h3>
+
+<p>MacVim はプロセス閒通信のために分散されたオブジェクトを使ふ。サーバーは新しい接續に名付けられたポートをリッスンし、クライアントはこのポートにメッセージを送るために接續する。サーバーのリスニングはフロントエンド  (MacVim) が現在動作してゐるサーバーのすべてのリストを保持し續けることによつて可能になる。それゆゑ、サーバーは直接にお互ひを知らない; MacVim だけがどのサーバーが動作してゐるのかを知つてゐる。
+</p>
+<p>クライアントは MMVimClientProtocol で實裝された任意のオブジェクト {譯注: AnyObject？} です (MacVim.h を參照)。もしもあなたが自身のアプリケーションにこのプロトコルを實裝したいなら、MMBackend を見ること。現在の實裝は NSConnection はプロセス閒通信のために Mach ポートを使用することを想定してゐる。これは、ローカルマシン上 (およびネットワークを超えない) で Vim のクライアント/サーバー機能のみを使用することができることを意味する。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+クライアントモードは常に動作してゐるが、サーバーモードは GUI が起動された時にのみ動作することに注意。
+</p></blockquote>
+
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

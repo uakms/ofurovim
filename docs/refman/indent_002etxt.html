@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>indent.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="indent.txt (Vim Reference Manual)">
+<meta name="keywords" content="indent.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="syntax_002etxt.html#syntax_002etxt" rel="next" title="syntax.txt">
+<link href="popup_002etxt.html#popup_002etxt" rel="prev" title="popup.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="indent_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="C-Yan-Yu-ya_002c-sonoTa-noYan-Yu-noZi-Dong-indento"></a>
+<h2 class="unnumbered">C 言語や、その他の言語の自動インデント</h2>
+<pre class="verbatim">*indent.txt*    For Vim バージョン 8.1.  Last change: 2019 Feb 21
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+</pre>
+
+<p>このファイルには C ソースコードとその他のファイルのインデント (字下げ) について書かれてゐる。
+</p>
+<table>
+<tr><td width="60%">1. C スタイルのソースコードのインデント</td><td width="40%">|<a href="#C_002dindenting">C-indenting</a>|</td></tr>
+<tr><td width="60%">2. スクリプトを用いたインデント</td><td width="40%">|<a href="#indent_002dexpression">indent-expression</a>|</td></tr>
+</table>
+
+<a name="C_002dindenting"></a><a name="index-C_002dindenting"></a>
+<a name="index-C-sosukodonoindento"></a>
+<a name="g_t1_002e-C-sosukodonoindento"></a>
+<h3 class="section">1. C ソースコードのインデント</h3>
+
+<p>C 言語 (以下、單に「C」) スタイルのソースコード用インデントの基本はユーザーマニュアルの |<a href="usr_005f30_002etxt.html#g_t30_002e2">30.2</a>| 節で說明されてゐる。
+</p>
+<p>Vim には C スタイルの言語を自動的にインデントするためのオプションがある。C スタイルの言語とは、Java や C++ など、C によく似た書式の言語のことである。これらのオプションはインデントだけに影響し、その他の整形は行はない。その他の整形については、|<a href="change_002etxt.html#format_002dcomments">format-comments</a>|, |<a href="change_002etxt.html#fo_002dtable">fo-table</a>|, |<a href="change_002etxt.html#gq">gq</a>|, |<a href="change_002etxt.html#formatting">formatting</a>| を參照。
+</p>
+<p>コンパイル時に |<a href="various_002etxt.html#g_t_002bsmartindent">+smartindent</a>| か |<a href="various_002etxt.html#g_t_002bcindent">+cindent</a>| 機能を無效にした時には、これが動作しないことに注意。
+</p>
+<p>實際のところインデントには 4 つの主な方法がある。後のものが有效にされると、前のものより優先される (&rsquo;<samp>indentexpr</samp>&rsquo; は空でない文字列がセットされたとき)。
+</p><table>
+<tr><td width="25%">&rsquo;<samp>autoindent</samp>&rsquo;</td><td width="75%">1 つ前の行に基づくインデント</td></tr>
+<tr><td width="25%">&rsquo;<samp>smartindent</samp>&rsquo;</td><td width="75%">&rsquo;<samp>autoindent</samp>&rsquo; と同樣だが幾つかの C 構文を認識し、適切な箇所のインデントを增減させる。</td></tr>
+<tr><td width="25%">&rsquo;<samp>cindent</samp>&rsquo;</td><td width="75%">他の 2 つの方法よりも賢く動作し、設定することで異なるインデントスタイルにも對應できる。</td></tr>
+<tr><td width="25%">&rsquo;<samp>indentexpr</samp>&rsquo;</td><td width="75%">この中で一番融通が利く: ある行のインデントを計算するのに Vim script を實行する。この方法が有效である (空でない) 時にはその他のインデントは抑制される。|<a href="#indent_002dexpression">indent-expression</a>| 參照。</td></tr>
+</table>
+<p>この節の殘りはオプション &rsquo;<samp>cindent</samp>&rsquo; について述べる。
+</p>
+<p>&rsquo;<samp>cindent</samp>&rsquo; はあらゆる C ソースを正しくインデントできるわけではないことに注意。Vim は C コンパイラではない: だから全ての構文は認識できない。1 つの要求事項は、トップレベル函數が第 1 桁が &rsquo;{&rsquo; で始まつてゐることである。さうなつてゐないと宣言との區別が困難である。
+</p>
+<p>C のインデントはこの 4 つのオプションで制禦されてゐる:
+</p><table>
+<tr><td width="25%">&rsquo;<samp>cindent</samp>&rsquo;</td><td width="75%">C の自動インデントを有效化する。</td></tr>
+<tr><td width="25%">&rsquo;<samp>cinkeys</samp>&rsquo;</td><td width="75%">再インデントの引金となる插入モードでのキーを指定する。</td></tr>
+<tr><td width="25%">&rsquo;<samp>cinoptions</samp>&rsquo;</td><td width="75%">好みのインデントスタイルを設定する。</td></tr>
+<tr><td width="25%">&rsquo;<samp>cinwords</samp>&rsquo;</td><td width="75%">次の行から特別なインデントを開始するキーワードを定義する。</td></tr>
+</table>
+
+<p>オプション &rsquo;<samp>lisp</samp>&rsquo; がオフで &rsquo;<samp>equalprg</samp>&rsquo; が空ならば、オペレータ &quot;=&quot; は外部プログラムではなく Vim の內藏アルゴリズムを使用してインデントを行ふ。
+</p>
+<p>C のファイルに對して自動的に &rsquo;<samp>cindent</samp>&rsquo; をオンにしてそれ以外のファイルに對してはオフにする方法は |<a href="autocmd_002etxt.html#autocommand">autocommand</a>| を參照。
+</p>
+<p>{譯注: バージョン 6.0 以降はファイル形式プラグイン (|<a href="filetype_002etxt.html#filetype">filetype</a>| 參照) とバッファローカルオプション (|<a href="options_002etxt.html#g_t_003asetlocal">:setlocal</a>|) を使ふことが推奬される。Vim にはデフォルトで C 用のファイル形式プラグイン ($VIMRUNTIME/ftplug/c.vim) が附屬してゐるから、これを行ひたい時は單にファイル形式プラグインを有效化するだけで良い。}
+</p>
+<a name="cinkeys_002dformat"></a><a name="indentkeys_002dformat"></a><a name="index-cinkeys_002dformat"></a>
+<a name="index-indentkeys_002dformat"></a>
+<p>オプション &rsquo;<samp>cinkeys</samp>&rsquo; は Vim のインデントを制禦する文字列で、どの文字がタイプされた時に、どのやうな狀況下でコマンドが實行されたかに應じてインデントを行ふかを定義する。これが C インデントの唯一の引金ではないことには注意する。&rsquo;<samp>indentexpr</samp>&rsquo; が空でない時には代はりに &rsquo;<samp>indentkeys</samp>&rsquo; が使はれる。&rsquo;<samp>cinkeys</samp>&rsquo; と &rsquo;<samp>indentkeys</samp>&rsquo; の書式は同じ。
+</p>
+<p>デフォルトは &quot;0{,0},0),0],:,0#,!^F,o,O,e&quot; で、これにより次のやうな時にインデントが行はれる:
+</p>
+<table>
+<tr><td width="10%">&quot;0{&quot;</td><td width="90%">行の先頭で &rsquo;{&rsquo; をタイプした時</td></tr>
+<tr><td width="10%">&quot;0}&quot;</td><td width="90%">行の先頭で &rsquo;}&rsquo; をタイプした時</td></tr>
+<tr><td width="10%">&quot;0)&quot;</td><td width="90%">行の先頭で &rsquo;)&rsquo; をタイプした時</td></tr>
+<tr><td width="10%">&quot;0]&quot;</td><td width="90%">行の先頭で &rsquo;]&rsquo; をタイプした時</td></tr>
+<tr><td width="10%">&quot;:&quot;</td><td width="90%">ラベルや case 文のあとで &rsquo;:&rsquo; をタイプした時</td></tr>
+<tr><td width="10%">&quot;0#&quot;</td><td width="90%">行の先頭で &rsquo;#&rsquo; をタイプした時</td></tr>
+<tr><td width="10%">&quot;!^F&quot;</td><td width="90%"><kbd>CTRL-F</kbd> をタイプした時 (CTRL-F 自體は入力されない)</td></tr>
+<tr><td width="10%">&quot;o&quot;</td><td width="90%">插入モードで &lt;CR&gt; をタイプした後、及びノーマルモードで &quot;o&quot; コマンドを使用した時</td></tr>
+<tr><td width="10%">&quot;O&quot;</td><td width="90%">ノーマルモードで &quot;O&quot; コマンドを使用した時</td></tr>
+<tr><td width="10%">&quot;e&quot;</td><td width="90%">行の先頭で &quot;else&quot; の 2 つ目の &rsquo;e&rsquo; をタイプした時</td></tr>
+</table>
+
+<a name="i_005fCTRL_002dF"></a><a name="index-i_005fCTRL_002dF"></a>
+<p>各キーの前に置くことのできる文字は次の通り:
+</p><dl compact="compact">
+<dt>!</dt>
+<dd><p>&rsquo;!&rsquo; をキーの前に置くと、Vim はそのキーを插入するのではなく替はりに現在の行のインデントを再調整する。これにより現在の行の再調整するためのコマンドキーを定義することができる。<kbd>CTRL-F</kbd> はそのデフォルトキーである。<kbd>CTRL-I</kbd> は &lt;Tab&gt; の ASCII コードだから、<kbd>CTRL-I</kbd> を定義する際に氣をつけること。
+</p></dd>
+<dt>*</dt>
+<dd><p>&rsquo;*&rsquo; をキーの前に置くと、Vim はインデント再調整を行つてからそのキーを插入する。&rsquo;<samp>cinkeys</samp>&rsquo; に &quot;*&lt;Return&gt;&quot; が含まれてゐる時には、Vim は新しい行を作成する前に現在行のインデントを再調整する。
+</p></dd>
+<dt>0</dt>
+<dd><p>&rsquo;0&rsquo; をキーの前 (&rsquo;!&rsquo; や &rsquo;*&rsquo; の後といふことはあるが) に置くと、Vim はそのキーが行の先頭で入力された時だけインデント再調整を行ふ。&quot;=&quot; の前に使はれた時には Vim はその單語の前に空白文字しか無い時にだけ再調整が行はれる。
+</p></dd>
+</dl>
+
+<p>&rsquo;!&rsquo; と &rsquo;*&rsquo; のいづれもキーの前に置かれてゐない時は、Vim はそのキーがタイプされた時にインデント再調整を行ふ。だから &rsquo;;&rsquo; を含めれば &rsquo;;&rsquo; が入力された行のインデントが調整される。
+</p>
+<p>特別なキーの名稱:
+</p><dl compact="compact">
+<dt>&lt;&gt;</dt>
+<dd><p>折カッコは書き下されたキーの名前を意味する。例: &quot;&lt;Up&gt;&quot; や &quot;&lt;Ins&gt;&quot; (|<a href="intro_002etxt.html#key_002dnotation">key-notation</a>| 參照)。
+</p></dd>
+<dt>^</dt>
+<dd><p>キャレット (^) が前に置かれた文字はコントロール文字。例: &quot;^F&quot; は CTRL-F
+</p></dd>
+<dt>o</dt>
+<dd><p>&quot;o&quot; コマンドを使用した時もしくは Vim が現在の行の下に新しい行を作成した時にインデント再調整をする (例へば、插入モードで <code class="tt-key">&lt;Enter&gt;</code> をタイプした時)。
+</p></dd>
+<dt>O</dt>
+<dd><p>&quot;O&quot; コマンドを使用した時にインデント再調整をする。
+</p></dd>
+<dt>e</dt>
+<dd><p>&quot;else&quot; で始まる行の 2 つ目の &rsquo;e&rsquo; をタイプした時にインデント再調整をする。
+</p></dd>
+<dt>:</dt>
+<dd><p>ラベルや case 文の後に &rsquo;:&rsquo; をタイプした時にインデント再調整をする。C++ の &quot;class::method&quot; 內の &quot;:&quot; では再調整しない。どんな &quot;:&quot; でもインデントするには &quot;&lt;:&gt;&quot; を使用する。
+</p></dd>
+<dt>=word</dt>
+<dd><p>&quot;word&quot; の最後の文字をタイプした時にインデント再調整をする。&quot;word&quot; は實際は別の單語の一部かもしれない。&quot;=end&quot; のやうに設定すれば &quot;endif&quot; や &quot;endwhile&quot; の &quot;d&quot; をタイプした時に再調整が起こる。しかし &quot;bend&quot; では起こらない。補完により &quot;word&quot; で始まる單語が提示された時にも再調整は起こる。&quot;0=word&quot; は單語の前に空白文字しかない時に再調整を行ふ。
+</p></dd>
+<dt>=~word</dt>
+<dd><p>=word に似てゐるが、大文字小文字の區別がされない。
+</p></dd>
+</dl>
+
+<p>キー &rsquo;o&rsquo;, &rsquo;O&rsquo;, &rsquo;e&rsquo;, &rsquo;0&rsquo;, &rsquo;&lt;&rsquo;, &rsquo;&gt;&rsquo;, &rsquo;*&rsquo;, &rsquo;:&rsquo; それに &rsquo;!&rsquo; そのものを入力した時にインデント再調整を行ひたいのならば、それぞれ &quot;&lt;o&gt;&quot;, &quot;&lt;O&gt;&quot;, &quot;&lt;e&gt;&quot;, &quot;&lt;0&gt;&quot;, &quot;&lt;&lt;&gt;&quot;, &quot;&lt;&gt;&gt;&quot;, &quot;&lt;*&gt;&quot;, &quot;&lt;:&gt;&quot; そして &quot;&lt;!&gt;&quot; を使用する。
+</p>
+<p><code class="tt-key">Enter</code> を押す度ではなく emacs のやうに <code class="tt-key">Tab</code> キーを押した時にだけインデントを行ふやうにするには、次の設定を提案する:
+</p><div class="example">
+<pre class="example">:set cinkeys=0{,0},:,0#,!&lt;Tab&gt;,!^F
+</pre></div>
+<p>その時には &rsquo;<samp>autoindent</samp>&rsquo; もオフにしたはうが良いかもしれない。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+現在の行のインデントを手動で變更すれば、Vim はその行については <samp>cindent</samp> の設定を無視する。これによりインデントの中で <code class="tt-key">&lt;BS&gt;</code>, <code class="tt-key">&lt;Tab&gt;</code> や <code class="tt-key">&lt;Space&gt;</code> を入力したり、<kbd>CTRL-T</kbd> や <kbd>CTRL-D</kbd> を使用してインデントを變更した後では、Vim はインデントの再調整を行はなくなる。
+</p></blockquote>
+
+<a name="cinoptions_002dvalues"></a><a name="index-cinoptions_002dvalues"></a>
+<p>オプション &rsquo;<samp>cinoptions</samp>&rsquo; では Vim がどのやうなインデントを行ふのかを設定する。オプション文字の後ろは次のやうな形式で指定できる (N は任意の數字):
+</p><table>
+<tr><td width="15%">N</td><td width="85%">N スペースインデント</td></tr>
+<tr><td width="15%">-N</td><td width="85%">N スペースインデント (左方向に)</td></tr>
+<tr><td width="15%">Ns</td><td width="85%">&rsquo;<samp>shiftwidth</samp>&rsquo; の N 倍のスペース</td></tr>
+<tr><td width="15%">-Ns</td><td width="85%">&rsquo;<samp>shiftwidth</samp>&rsquo; の N 倍のスペース (左方向に)</td></tr>
+</table>
+
+<p>以下のリストでは、&quot;N&quot; は指定したい數値を意味する (數値は負でも良い)。數値のあとに &rsquo;s&rsquo; がある時には、數値に &rsquo;<samp>shiftwidth</samp>&rsquo; の數を掛算して使用する: &quot;1s&quot; は &rsquo;<samp>shiftwidth</samp>&rsquo; に等しく、&quot;2s&quot; は &rsquo;<samp>shiftwidth</samp>&rsquo; の 2 倍になり、以下同樣。小數を使ふこともできる: &quot;-0.5s&quot; は &rsquo;<samp>shiftwidth</samp>&rsquo; の半分の負の數である。以下の例では &rsquo;<samp>shiftwidth</samp>&rsquo; は 4 と想定してゐる。
+<a name="cino_002d_003e"></a><a name="index-cino_002d_003e"></a>
+</p><dl compact="compact">
+<dt>&gt;N</dt>
+<dd><p>通常のインデントで追加される量。インデントを增やすべき行 (if で始まる行や、開き波カッコ等)の直後で使用される。(既定値 &rsquo;shiftwidth&rsquo;)
+</p>
+<pre class="verbatim">cino=               cino=&gt;2             cino=&gt;2s
+  if (cond)           if (cond)           if (cond)
+  {                   {                   {
+      foo;              foo;                      foo;
+  }                   }                   }
+</pre><a name="cino_002de"></a><a name="index-cino_002de"></a>
+</dd>
+<dt>eN</dt>
+<dd><p>開き波カッコが行末にある (正確には行頭ではない) 時に、カッコ內のインデントを通常よりも N 追加する。&rsquo;{&rsquo; が行頭ある場合と行末にある場合とでインデント量を變更したい時に便利。(既定値 0)
+</p>
+<pre class="verbatim">cino=               cino=e2             cino=e-2
+  if (cond) {         if (cond) {         if (cond) {
+      foo;                  foo;            foo;
+  }                   }                   }
+  else                else                else
+  {                   {                   {
+      bar;                bar;                bar;
+  }                   }                   }
+</pre><a name="cino_002dn"></a><a name="index-cino_002dn"></a>
+</dd>
+<dt>nN</dt>
+<dd><p>&quot;if&quot;, &quot;while&quot; その他の直後、波カッコのセットに圍まれてゐないならば、その文のインデントを現行よりも N 追加する。文の前に &rsquo;{&rsquo; が無い時と有る時とでインデント量を變更したい時に便利。(既定値 0)
+</p>
+<pre class="verbatim">cino=               cino=n2             cino=n-2
+  if (cond)           if (cond)           if (cond)
+      foo;                  foo;            foo;
+  else                else                else
+  {                   {                   {
+      bar;                  bar;              bar;
+  }                   }                   }
+</pre><a name="cino_002df"></a><a name="index-cino_002df"></a>
+</dd>
+<dt>fN</dt>
+<dd><p>函數やその他のブロックを示す開き波カッコを N 列目に配置する。これは他の波カッコの內側ではなく、かつ行頭である開き波カッコだけに適用される。波カッコの後の續くものはこの波カッコと相對的な位置に配置される。(既定値 0)
+</p>
+<pre class="verbatim">cino=               cino=f.5s           cino=f1s
+  func()              func()              func()
+  {                     {                     {
+      int foo;              int foo;              int foo;
+</pre><a name="cino_002d_007b"></a><a name="index-cino_002d_007b"></a>
+</dd>
+<dt>{N</dt>
+<dd><p>開き波カッコを現行のインデントから N の位置に配置する。これは他の波カッコの內側にある開き波カッコにのみ適用される。(既定値 0)
+</p>
+<pre class="verbatim">cino=               cino={.5s           cino={1s
+  if (cond)           if (cond)           if (cond)
+  {                     {                     {
+      foo;                foo;                foo;
+</pre><a name="cino_002d_007d"></a><a name="index-cino_002d_007d"></a>
+</dd>
+<dt>}N</dt>
+<dd><p>閉ぢ波カッコを對應する開き波カッコから N の位置に配置する。(既定値 0)
+</p>
+<pre class="verbatim">cino=               cino={2,}-0.5s      cino=}2
+  if (cond)           if (cond)           if (cond)
+  {                     {                 {
+      foo;                foo;                foo;
+  }                   }                     }
+</pre><a name="cino_002d_005e"></a><a name="index-cino_002d_005e"></a>
+</dd>
+<dt>^N</dt>
+<dd><p>開き波カッコが 0 列目にある波カッコセットの內側のインデントを現行よりも N 追加する。これにより函數全體には異なるインデント量を指定することができる。(既定値 0)
+</p>
+<pre class="verbatim">cino=               cino=^-2            cino=^-s
+  func()              func()              func()
+  {                   {                   {
+      if (cond)         if (cond)         if (cond)
+      {                 {                 {
+          a = b;            a = b;            a = b;
+      }                 }                 }
+  }                   }                   }
+</pre><a name="cino_002dL"></a><a name="index-cino_002dL"></a>
+</dd>
+<dt>LN</dt>
+<dd><p>ジャンプラベルの位置を制禦する。N が負數ならラベルは 1 列目に置かれる。N が正數ならラベルはインデントから N を引いた位置に置かれる。(既定値 -1)。
+</p>
+<pre class="verbatim">cino=               cino=L2             cino=Ls
+  func()              func()              func()
+  {                   {                   {
+      {                   {                   {
+          stmt;               stmt;               stmt;
+  LABEL:                    LABEL:            LABEL:
+      }                   }                   }
+  }                   }                   }
+</pre><a name="cino_002d_003a"></a><a name="index-cino_002d_003a"></a>
+</dd>
+<dt>:N</dt>
+<dd><p>case ラベルを switch() のインデントから N の位置に配置する。(既定値 &rsquo;shiftwidth&rsquo;)
+</p>
+<pre class="verbatim">cino=               cino=:0
+  switch (x)          switch(x)
+  {                   {
+      case 1:         case 1:
+          a = b;          a = b;
+      default:        default:
+  }                   }
+</pre><a name="cino_002d_003d"></a><a name="index-cino_002d_003d"></a>
+</dd>
+<dt>=N</dt>
+<dd><p>case ラベル後に現れる文をラベルのインデントから N の位置に配置する。(既定値 &rsquo;shiftwidth&rsquo;)
+</p>
+<pre class="verbatim">cino=               cino==10 &gt;
+   case 11:             case 11:  a = a + 1;
+       a = a + 1;                 b = b + 1;
+</pre><a name="cino_002dl"></a><a name="index-cino_002dl"></a>
+</dd>
+<dt>lN</dt>
+<dd><p>N が 0 でなければ Vim は case ラベル後の文の替はりに、case ラベルそのものを基本にして配置を行ふ。(既定値 0)
+</p>
+<pre class="verbatim">cino=                       cino=l1
+    switch (a) {              switch (a) {
+        case 1: {                 case 1: {
+                    break;            break;
+                }                 }
+</pre><a name="cino_002db"></a><a name="index-cino_002db"></a>
+</dd>
+<dt>bN</dt>
+<dd><p>N が 0 でなければ、末尾の &quot;break&quot; を case ラベルに合はせて整列し、case..break がブロックのやうに見えるやうにする。(既定値 0)。1 に設定するときは、&rsquo;<samp>cinkeys</samp>&rsquo; に &quot;<var>0=break</var>&quot; を追加するとよいだらう。
+</p>
+<pre class="verbatim">cino=               cino=b1
+  switch (x)          switch(x)
+  {                   {
+      case 1:             case 1:
+          a = b;              a = b;
+          break;          break;
+
+      default:            default:
+          a = 0;              a = 0;
+          break;          break;
+  }                   }
+</pre><a name="cino_002dg"></a><a name="index-cino_002dg"></a>
+</dd>
+<dt>gN</dt>
+<dd><p>C++ のスコープ宣言をそれが含まれるブロックのインデントから N の位置へ配置する。&quot;public:&quot;, &quot;protected:&quot;, &quot;private:&quot; がスコープ宣言になり得る。(既定値 &rsquo;shiftwidth&rsquo;)
+</p>
+<pre class="verbatim">cino=               cino=g0
+  {                   {
+      public:         public:
+          a = b;          a = b;
+      private:        private:
+  }                   }
+</pre><a name="cino_002dh"></a><a name="index-cino_002dh"></a>
+</dd>
+<dt>hN</dt>
+<dd><p>C++ スコープ宣言後に現れる文をそのラベルのインデントから N の位置に配置する。(既定値 &rsquo;shiftwidth&rsquo;)
+</p>
+<pre class="verbatim">cino=               cino=h10
+   public:              public:   a = a + 1;
+       a = a + 1;                 b = b + 1;
+</pre><a name="cino_002dN"></a><a name="index-cino_002dN"></a>
+</dd>
+<dt>NN</dt>
+<dd><p>C++ ネームスペースの中を通常のブロックに加へて N 文字インデントする。(既定値 0)。
+</p>
+<pre class="verbatim">cino=                      cino=N-s
+  namespace {                namespace {
+      void function();       void function();
+  }                          }
+
+  namespace my               namespace my
+  {                          {
+      void function();       void function();
+  }                          }
+</pre><a name="cino_002dE"></a><a name="index-cino_002dE"></a>
+</dd>
+<dt>EN</dt>
+<dd><p>C++ のリンク規約 (extern &quot;C&quot; または extern &quot;C++&quot;) の中を通常のブロックから N 文字インデントする。(既定値 0)
+</p>
+<pre class="verbatim">cino=                      cino=E-s &gt;
+  extern &quot;C&quot; {               extern &quot;C&quot; {
+      void function();       void function();
+  }                          }
+
+  extern &quot;C&quot;                 extern &quot;C&quot;
+  {                          {
+      void function();       void function();
+  }                          }
+</pre><a name="cino_002dp"></a><a name="index-cino_002dp"></a>
+</dd>
+<dt>pN</dt>
+<dd><p>K&amp;R スタイルの函數宣言の引數宣言を N 文字インデントする。(既定値 &rsquo;shiftwidth&rsquo;)
+</p>
+<pre class="verbatim">cino=               cino=p0             cino=p2s
+  func(a, b)          func(a, b)          func(a, b)
+      int a;          int a;                      int a;
+      char b;         char b;                     char b;
+</pre><a name="cino_002dt"></a><a name="index-cino_002dt"></a>
+</dd>
+<dt>tN</dt>
+<dd><p>函數の戾り型の宣言を N 文字インデントする。(既定値 &rsquo;shiftwidth&rsquo;)
+</p>
+<pre class="verbatim">cino=               cino=t0             cino=t7
+      int             int                        int
+  func()              func()              func()
+</pre><a name="cino_002di"></a><a name="index-cino_002di"></a>
+</dd>
+<dt>iN</dt>
+<dd><p>C++ の基底クラスの宣言やコンストラクタが新しい行で始まる時に N 文字インデントする (さうでない時には右端の &rsquo;:&rsquo; を基準にする)。(既定値 &rsquo;shiftwidth&rsquo;)
+</p>
+<pre class="verbatim">cino=                     cino=i0
+  class MyClass :           class MyClass :
+      public BaseClass      public BaseClass
+  {}                        {}
+  MyClass::MyClass() :      MyClass::MyClass() :
+      BaseClass(3)          BaseClass(3)
+  {}                        {}
+</pre><a name="cino_002d_002b"></a><a name="index-cino_002d_002b"></a>
+</dd>
+<dt>+N</dt>
+<dd><p>函數の內側の繼續行 (次の行へと分割された行) を N 文字分インデントする。(既定値 &rsquo;shiftwidth&rsquo;)
+</p>
+<p>函數の外側では、直前の行の末尾にバックスラッシュがあるときは 2 * N が使はれる。
+</p>
+<pre class="verbatim">cino=                 cino=+10
+  a = b + 9 *           a = b + 9 *
+      c;                          c;
+</pre><a name="cino_002dc"></a><a name="index-cino_002dc"></a>
+</dd>
+<dt>cN</dt>
+<dd><p>コメント開始子の後のコメント本文を、配置すべきその他のテキストが無ければ、コメント開始子から N 文字でインデントする。(既定値 3) |<a href="change_002etxt.html#format_002dcomments">format-comments</a>| も參照。
+</p>
+<pre class="verbatim">cino=                 cino=c5
+  /*                    /*
+     text.                   text.
+   */                    */
+</pre><a name="cino_002dC"></a><a name="index-cino_002dC"></a>
+</dd>
+<dt>CN</dt>
+<dd><p>N が 0 でなければ、コメント開始子の後に他のテキストがある場合でも、コメントの行に c フラグで指定した量でインデントがされる。(既定値 0)
+</p>
+<pre class="verbatim">cino=c0               cino=c0,C1
+  /********             /********
+    text.               text.
+  ********/             ********/
+</pre><p>(&quot;:set comments&amp; comments-=s1:/* comments^=s0:/*&quot; を同時に設定)
+</p>
+<a name="cino_002d_002f"></a><a name="index-cino_002d_002f"></a>
+</dd>
+<dt>/N</dt>
+<dd><p>コメント行を N 文字インデントする。(既定値 0)
+</p><pre class="verbatim">cino=                 cino=/4
+  a = b;                a = b;
+  /* comment */             /* comment */
+  c = d;                c = d;
+</pre><a name="cino_002d_0028"></a><a name="index-cino_002d_0028"></a>
+</dd>
+<dt>(N</dt>
+<dd><p>閉ぢてゐない丸カッコ內では開き丸カッコのあるラインより N 文字インデントする。インデント量は 1 つの丸カッコの追加につき &rsquo;<samp>shiftwidth</samp>&rsquo; ずつ增える。N が 0 であるか、閉ぢてゐない丸カッコが行頭にある時は、インデント位置はそのカッコ後の非空白文字の位置になる。(既定値 &rsquo;shiftwidth&rsquo; * 2)
+</p>
+<pre class="verbatim">cino=                     cino=(0
+  if (c1 &amp;&amp; (c2 ||          if (c1 &amp;&amp; (c2 ||
+              c3))                     c3))
+      foo;                      foo;
+  if (c1 &amp;&amp;                 if (c1 &amp;&amp;
+          (c2 || c3))           (c2 || c3))
+     {                         {
+</pre><a name="cino_002du"></a><a name="index-cino_002du"></a>
+</dd>
+<dt>uN</dt>
+<dd><p>(N と同じだが、一段階內側にネストしてゐる丸カッコについての設定。(既定値 &rsquo;shiftwidth&rsquo;)
+</p>
+<pre class="verbatim">cino=                     cino=u2
+  if (c123456789            if (c123456789
+          &amp;&amp; (c22345                &amp;&amp; (c22345
+              || c3))                 || c3))
+</pre><a name="cino_002dU"></a><a name="index-cino_002dU"></a>
+</dd>
+<dt>UN</dt>
+<dd><p>N が 0 ではない時には、閉ぢてゐない丸カッコが行頭にある場合でも ( や u で指定したインデントを無視しない。(既定値 0)
+</p>
+<pre class="verbatim">cino= or cino=(s          cino=(s,U1
+  c = c1 &amp;&amp;                 c = c1 &amp;&amp;
+      (                         (
+       c2 ||                        c2 ||
+       c3                           c3
+      ) &amp;&amp; c4;                  ) &amp;&amp; c4;
+</pre><a name="cino_002dw"></a><a name="index-cino_002dw"></a>
+</dd>
+<dt>wN</dt>
+<dd><p>N が 0 ではなければ次に示すやうな場合の、閉ぢてゐない丸カッコ後の非空白文字ではなく、カッコ直後の位置がインデントに使用される:
+</p><ul>
+<li> &quot;(0&quot; を使用してゐる時の閉ぢてゐない丸カッコ
+</li><li> &quot;u0&quot; を使用してゐる時の閉ぢてゐない丸カッコ
+</li><li> &quot;U0&quot; を使用してゐる時の行頭の閉ぢてゐない丸カッコ
+</li></ul>
+<p>(既定値 0)
+</p>
+<pre class="verbatim">cino=(0                   cino=(0,w1
+  if (   c1                 if (   c1
+         &amp;&amp; (   c2              &amp;&amp; (   c2
+                || c3))             || c3))
+      foo;                      foo;
+</pre><a name="cino_002dW"></a><a name="index-cino_002dW"></a>
+</dd>
+<dt>WN</dt>
+<dd><p>N が 0 でない時に、丸カッコが閉ぢてゐなくて、&quot;(0&quot; か &quot;u0&quot; のどちらかが使はれてゐて閉ぢてゐない開き丸カッコが行末にある時、續く行を最初の行から相對的にインデントする。(既定値 0)
+</p>
+<pre class="verbatim">cino=(0                    cino=(0,W4
+  a_long_line(              a_long_line(
+              argument,         argument,
+              argument);        argument);
+  a_short_line(argument,    a_short_line(argument,
+               argument);                argument);
+</pre><a name="cino_002dk"></a><a name="index-cino_002dk"></a>
+</dd>
+<dt>kN</dt>
+<dd><p>&quot;if&quot;, &quot;for&quot;, &quot;while&quot; の後の丸カッコが閉ぢてゐなくて、N が 0 でない時、&quot;(N&quot; で指定される擧動を上書きする。これにより、外側の文脈 (例へば、&quot;if&quot;, &quot;for&quot;, &quot;while&quot; がある行) に對して N 文字インデントとされる。より深いレベルのネストに對しては效果はない。&quot;wN&quot; のやうに働くが、&quot;if&quot;, &quot;for&quot;, &quot;while&quot; の條件のみに働く。N が 0 の場合は &quot;(N&quot; フラグで指定された擧動となる。(既定値 0)
+</p>
+<pre class="verbatim">cino=(0                    cino=(0,ks
+  if (condition1            if (condition1
+      &amp;&amp; condition2)                &amp;&amp; condition2)
+      action();                 action();
+  function(argument1        function(argument1
+           &amp;&amp; argument2);            &amp;&amp; argument2);
+</pre><a name="cino_002dm"></a><a name="index-cino_002dm"></a>
+</dd>
+<dt>mN</dt>
+<dd><p>N が 0 でない時には、閉ぢ丸カッコで始まる行を對應する開き丸カッコのある行頭に竝べる。(既定値 0)
+</p>
+<pre class="verbatim">cino=(s               cino=(s,m1
+  c = c1 &amp;&amp; (           c = c1 &amp;&amp; (
+      c2 ||                 c2 ||
+      c3                    c3
+      ) &amp;&amp; c4;          ) &amp;&amp; c4;
+  if (                  if (
+      c1 &amp;&amp; c2              c1 &amp;&amp; c2
+     )                  )
+      foo;                  foo;
+</pre><a name="cino_002dM"></a><a name="index-cino_002dM"></a>
+</dd>
+<dt>MN</dt>
+<dd><p>N が非ゼロのとき、閉ぢ括弧で始まる行のインデントを前の行の最初の文字と同じ位置にする (既定値 0)。
+</p>
+<pre class="verbatim">cino=                 cino=M1
+  if (cond1 &amp;&amp;          if (cond1 &amp;&amp;
+         cond2                 cond2
+     )                         )
+</pre><a name="java_002dcinoptions"></a><a name="java_002dindenting"></a><a name="cino_002dj"></a><a name="index-java_002dcinoptions"></a>
+<a name="index-java_002dindenting"></a>
+<a name="index-cino_002dj"></a>
+</dd>
+<dt>jN</dt>
+<dd><p>Java の無名クラスを正しくインデントする。JavaScript に對しても機能する。値 &rsquo;N&rsquo; は現在のところ使はれてゐないが 0 以外 (例 &rsquo;j1&rsquo;) にしなければならない。&rsquo;j1&rsquo; にすることで例へば次のやうなコードが正しくインデントされる:
+</p>
+<pre class="verbatim">object.add(new ChangeListener() {
+    public void stateChanged(ChangeEvent e) {
+        do_something();
+    }
+});
+</pre><a name="javascript_002dcinoptions"></a><a name="javascript_002dindenting"></a><a name="cino_002dJ"></a><a name="index-javascript_002dcinoptions"></a>
+<a name="index-javascript_002dindenting"></a>
+<a name="index-cino_002dJ"></a>
+</dd>
+<dt>JN</dt>
+<dd><p>JavaScript のオブジェクト定義を (ラベルと混同せずに) 適切にインデントする。&rsquo;N&rsquo; は今のところ使用されてゐないが非ゼロを指定する必要がある (例: &rsquo;J1&rsquo;)。このオプションを有效にした場合、もしかしたら |<a href="#cino_002dj">cino-j</a>| もセットしたはうがいいかもしれない。
+</p>
+<pre class="verbatim">var bar = {
+    foo: {
+        that: this,
+        some: ok,
+    },
+    &quot;bar&quot;:{ 
+        a : 2,
+        b: &quot;123abc&quot;,
+        x: 4,
+        &quot;y&quot;: 5
+    }
+}
+</pre><a name="cino_002d_0029"></a><a name="index-cino_002d_0029"></a>
+</dd>
+<dt>)N</dt>
+<dd><p>Vim は N 行まで遡つて閉ぢてゐないカッコを探す。これはカッコを探すのにかかる時閒を制限する。(既定値 20)
+</p>
+<a name="cino_002dstar"></a><a name="index-cino_002d_002a"></a>
+</dd>
+<dt>*N</dt>
+<dd><p>Vim は N 行まで遡つて閉ぢられてゐないコメントを探す。これはコメントの始まりを探すのにかかる時閒を制限する。N 行以降で /* */ コメントがインデントされない、といふときはこのオプションを設定すること。(既定値 70行)
+</p>
+<a name="cino_002d_0023"></a><a name="index-cino_002d_0023"></a>
+</dd>
+<dt>#N</dt>
+<dd><p>N がゼロでないときは &rsquo;#&rsquo; で始まる shell/Perl のコメントを認識する。プリプロセッサー行は認識されない。&quot;#&quot; で始まる行を右シフトできるやうになる。
+</p>
+<p>N がゼロのとき (初期設定): &rsquo;#&rsquo; コメントを認識しない。プリプロセッサー行は認識される。&quot;#&quot; で始まる行に對する右シフトは機能しない。
+</p></dd>
+</dl>
+
+
+<p>既定値を全て竝べるとかうなる:
+</p><pre class="verbatim">cinoptions=&gt;s,e0,n0,f0,{0,}0,^0,L-1,:s,=s,l0,b0,gs,hs,N0,E0,ps,ts,is,+s,
+                c3,C0,/0,(2s,us,U0,w0,W0,k0,m0,j0,J0,)20,*70,#0
+</pre>
+<p>次のやうな場合には Vim は行頭を 1 列目に持つていく:
+</p><ul>
+<li> &rsquo;<samp>cinkeys</samp>&rsquo; が &rsquo;#0&rsquo; を含み行が &rsquo;#&rsquo; (プリプロセッサー命令) で始まる場合
+</li><li> 行がラベル (&quot;case&quot; と &quot;default&quot; 以外のキーワードの後に &rsquo;:&rsquo; があるもの) で始まり、&rsquo;<samp>cinoptions</samp>&rsquo; に正數を持つた &rsquo;<var>L</var>&rsquo; フラグがない場合。
+</li><li> インデントの組合はせの結果、その行のインデント量が 0 以下になつた場合。
+</li></ul>
+
+<a name="indent_002dexpression"></a><a name="index-indent_002dexpression"></a>
+<a name="index-sukuriputowoYong-itaindento"></a>
+<a name="g_t2_002e-sukuriputowoYong-itaindento"></a>
+<h3 class="section">2. スクリプトを用いたインデント</h3>
+
+<p>融通の利くインデントの基本はユーザーマニュアルの |<a href="usr_005f30_002etxt.html#g_t30_002e3">30.3</a>| 節で說明されてゐる。
+</p>
+<p>獨自にインデントファイルを書きたいならば、オプション &rsquo;<samp>indentexpr</samp>&rsquo; を設定しなければならない。同時にオプション &rsquo;<samp>indentkeys</samp>&rsquo; を設定すると便利だらう。
+</p>
+<p>インデントファイルのヒントは $VIMRUNTIME/indent/README.txt ファイルを參照。インデントファイルの例は $VIMRUNTIME/indent ディレクトリを參照。
+</p>
+
+<a name="index-indentohuairunituitenoJue-Shu-"></a>
+<a name="indentohuairunituitenoJue-Shu-"></a>
+<h4 class="unnumberedsubsec">インデントファイルについての覺書</h4>
+
+
+<a name="ft_002dclojure_002dindent"></a><a name="clojure_002dindent"></a><a name="index-ft_002dclojure_002dindent"></a>
+<a name="index-clojure_002dindent"></a>
+<a name="CLOJURE"></a>
+<h4 class="unnumberedsubsubsec">CLOJURE</h4>
+
+<p>Clojure のインデントは傳統的な Lisp とは若干異なる。それは角カッコや波カッコの扱ひや、コミュニティの習慣などによる。それらの習慣は普遍的ではないので、Clojure のインデントスクリプトは以下に擧げる設定可能オプションを用意してゐる。
+</p>
+<p>使用してゐる vim に |<a href="eval_002etxt.html#searchpairpos_0028_0029">searchpairpos()</a>| がない場合は通常の &rsquo;lisp&rsquo; インデントにフォールバックする。その場合、以下のオプションは無視される。
+</p>
+<a name="g_003aclojure_005fmaxlines"></a><a name="index-g_003aclojure_005fmaxlines"></a>
+<p>|<a href="eval_002etxt.html#searchpairpos_0028_0029">searchpairpos()</a>| による檢索の最大範圍を設定する。大きな値を指定すれば、フォームが長い場合に、パフォーマンスと引き換へに正しい結果を得ることができる。0 を指定すると制限なしになる。
+</p><pre class="verbatim">&quot; Default
+let g:clojure_maxlines = 100
+</pre><a name="g_003aclojure_005ffuzzy_005findent"></a><a name="g_003aclojure_005ffuzzy_005findent_005fpatterns"></a><a name="g_003aclojure_005ffuzzy_005findent_005fblacklist"></a><a name="index-g_003aclojure_005ffuzzy_005findent"></a>
+<a name="index-g_003aclojure_005ffuzzy_005findent_005fpatterns"></a>
+<a name="index-g_003aclojure_005ffuzzy_005findent_005fblacklist"></a>
+<p>&rsquo;<samp>lispwords</samp>&rsquo; オプションはコンマ區切りの單語のリストで、サブフォームをスペース 2 個でインデントする特別なフォームを指定する。
+</p>
+<p>例:
+</p><pre class="verbatim">(defn bad []
+      &quot;Incorrect indentation&quot;)
+
+(defn good []
+  &quot;Correct indentation&quot;)
+</pre><p>&rsquo;<samp>lispwords</samp>&rsquo; をパターン (|<a href="pattern_002etxt.html#pattern">pattern</a>|) で指定したい場合は、ファジーインデント機能が使へる:
+</p><pre class="verbatim">&quot; 初期設定
+let g:clojure_fuzzy_indent = 1
+let g:clojure_fuzzy_indent_patterns = ['^with', '^def', '^let']
+let g:clojure_fuzzy_indent_blacklist =
+    \ ['-fn$', '\v^with-%(meta|out-str|loading-context)$']
+
+&quot; 古い設定方法。文字列をコンマ區切りで指定する。現在は上記のリストによ
+&quot; る設定が推奬される。Note: パターンは暗默的に ^ と $ で固定される。
+let g:clojure_fuzzy_indent_patterns = 'with.*,def.*,let.*'
+</pre><p>|<a href="#g_003aclojure_005ffuzzy_005findent_005fpatterns">g:clojure_fuzzy_indent_patterns</a>| と |<a href="#g_003aclojure_005ffuzzy_005findent_005fblacklist">g:clojure_fuzzy_indent_blacklist</a>| はパターンのリストで、unquoted symbol や unqualified symbol に對してマッチする。つまり、&quot;^foo&quot; といふパターンは、&quot;foobar&quot;, &quot;my.ns/foobar&quot;, &quot;#&rsquo;foobar&quot; などにマッチする。
+</p>
+<p>各單語は次の順番で檢査される:
+</p>
+<ol>
+<li> 單語が &rsquo;<samp>lispwords</samp>&rsquo; に含まれてゐたら眞を返す
+</li><li> 單語が |<a href="#g_003aclojure_005ffuzzy_005findent_005fblacklist">g:clojure_fuzzy_indent_blacklist</a>| にマッチしたら僞を返す
+</li><li> 單語が |<a href="#g_003aclojure_005ffuzzy_005findent_005fpatterns">g:clojure_fuzzy_indent_patterns</a>| にマッチしたら眞を返す
+</li><li> それ以外は、僞を返し、通常どほりにインデントする
+</li></ol>
+
+<a name="g_003aclojure_005fspecial_005findent_005fwords"></a><a name="index-g_003aclojure_005fspecial_005findent_005fwords"></a>
+<p>Clojure のいくつかのフォームは、&rsquo;<samp>lispwords</samp>&rsquo; に依らず、すべてのサブフォームがスペース 2 個でインデントされる。そのやうな特異なインデントで扱ひたい構造が他にもある場合は、そのシンボルを次の初期値に加へること。
+</p><pre class="verbatim">&quot; 初期設定
+let g:clojure_special_indent_words =
+   \ 'deftype,defrecord,reify,proxy,extend-type,extend-protocol,letfn'
+</pre><a name="g_003aclojure_005falign_005fmultiline_005fstrings"></a><a name="index-g_003aclojure_005falign_005fmultiline_005fstrings"></a>
+<p>複數行文字列を、クォート文字と同じ列で揃へるのではなく、クォート文字の 1 つ後ろの列で整列させる。
+</p>
+<p>例:
+</p><pre class="verbatim">(def 初期設定
+  &quot;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+  enim ad minim veniam, quis nostrud exercitation ullamco laboris
+  nisi ut aliquip ex ea commodo consequat.&quot;)
+
+(def 整列する場合
+  &quot;Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+   eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+   enim ad minim veniam, quis nostrud exercitation ullamco laboris
+   nisi ut aliquip ex ea commodo consequat.&quot;)
+</pre><p>このオプションは初期設定でオフになつてゐる。
+</p><pre class="verbatim">&quot; 初期設定
+let g:clojure_align_multiline_strings = 0
+</pre><a name="g_003aclojure_005falign_005fsubforms"></a><a name="index-g_003aclojure_005falign_005fsubforms"></a>
+<p>初期設定では、括弧で圍まれた函數呼び出しのやうな形でその最初の subform が括弧と同じ行にあるとき、そのうしろの subform は最初の括弧からスペース 2 つ分インデントされる:
+</p><pre class="verbatim">(foo
+  bar
+  baz)
+</pre><p>このオプションを設定すると、clojure-mode.el のデフォルトの振る舞ひのやうに、すべての subform を同じカラムに揃へることができる:
+</p><pre class="verbatim">(foo
+ bar
+ baz)
+</pre><p>このオプションは初期設定ではオフになつてゐる。
+</p><pre class="verbatim">&quot; 初期設定
+let g:clojure_align_subforms = 0
+</pre>
+<a name="ft_002dfortran_002dindent"></a><a name="index-ft_002dfortran_002dindent"></a>
+<a name="FORTRAN"></a>
+<h4 class="unnumberedsubsubsec">FORTRAN</h4>
+
+<p>Block if, select case, where, forall 構造がインデントされる。さらに type, interface, associate, block, enum 構造も。サブルーチン、函數、モジュール、プログラムブロックのインデントは任意。
+</p>
+<p>コメント、ラベル付き文、そして 2 行にまたがつた行は、Fortran が自由形式のソースではインデントされるが、一方 Fortran が固定形式ソースの場合には左餘白が言語仕樣により決定されてゐるのでインデントされない。それ故に固定形式ソースを使つてゐる時にはラベル付き文と 2 行にまたがつた行については手動でインデントを修正する必要がある。
+</p>
+<p>ソース形式の判定に使はれてゐる方法についてのさらなる議論は |<a href="syntax_002etxt.html#ft_002dfortran_002dsyntax">ft-fortran-syntax</a>| を參照のこと。
+</p>
+<p>Do ループ
+</p>
+<p>デフォルトでは全ての do ループはインデントされない。Fortran では、ループはラベル付けされたほとんど任意の型の實行可能な文で (場合によつては多重に) 終はるので、do ループは非構造的になる。これを正しくインデントするにはコンパイラ級の構文解析が必要になる。任意の型の實行可能文で終はる do ループを持つてゐたとしても、古いコードであれば Tidy (http://www.unb.ca/chem/ajit/f_tidy.htm) のやうに念入りに作られたプログラムでインデントすることはできる。
+</p>
+<p>構造化 do/continue ループも、continue 文が do ループを終了する以外の目的でも使用されるので、インデントせずに殘される。Tidy のやうなプログラムは構造化 do/continue ループを do/enddo 形式に變換することができる。do/enddo タイプの do ループならばインデントすることができる。do/enddo の形の構造化されたループしか使はないのならば、.vimrc で以下のやうに fortran_do_enddo 變數を設定してそのことを宣言するべきである:
+</p>
+<pre class="verbatim">let fortran_do_enddo=1
+</pre>
+<p>このやうにすれば do ループはインデントされる。例へば擴張子が .f90 であるファイルの中にある全てのループが do/enddo タイプだけならば、このやうな autocommand を使つてのバッファフラグを設定することができる:
+</p>
+<pre class="verbatim">au! BufRead,BufNewFile *.f90 let b:fortran_do_enddo=1
+</pre>
+<p>かうすれば .f90 のファイル內の do ループはインデントし、それ以外、例へば擴張子が .for の Fortran のファイルのループはインデントせずに殘すことができる。
+</p>
+<p>プログラム單位
+</p>
+<p>プログラム單位 (サブルーチン、函數、モジュール、プログラムブロック) のインデントは初期設定では有效になつてゐる。輕くてスクリーン幅指向のインデントスタイルが好みなら無效化することができる。すべての Fortran ファイルでプログラム單位のインデントを無效化するにはグローバル變數の fortran_indent_less を .vimrc で設定する。
+</p>
+<pre class="verbatim">let fortran_indent_less=1
+</pre>
+<p>バッファ單位で無效化したい場合はバッファローカル變數を設定する。
+</p>
+<pre class="verbatim">let b:fortran_indent_less=1
+</pre>
+
+<a name="ft_002dhtml_002dindent"></a><a name="html_002dindent"></a><a name="html_002dindenting"></a><a name="index-ft_002dhtml_002dindent"></a>
+<a name="index-html_002dindent"></a>
+<a name="index-html_002dindenting"></a>
+<a name="HTML"></a>
+<h4 class="unnumberedsubsubsec">HTML</h4>
+
+<p>これらの變數を vimrc で設定することで HTML のインデントをカスタマイズできる。
+</p>
+<p>&lt;script&gt; と &lt;style&gt; の最初の行のインデントを設定できる (初期設定は &quot;zero&quot;):
+</p>
+<pre class="verbatim">:let g:html_indent_script1 = &quot;inc&quot;
+:let g:html_indent_style1 = &quot;inc&quot;
+</pre><table>
+<thead><tr><th width="15%">値</th><th width="85%">意味</th></tr></thead>
+<tr><td width="15%">&quot;zero&quot;</td><td width="85%">ゼロインデント</td></tr>
+<tr><td width="15%">&quot;auto&quot;</td><td width="85%">自動インデント (ブロックタグのインデントと同じ)</td></tr>
+<tr><td width="15%">&quot;inc&quot;</td><td width="85%">自動インデント + 1 インデント增加</td></tr>
+</table>
+
+<p>初期設定では多くのタグで、續くタグのインデントが增加される (このスクリプトの &quot;Add Indent Tags&quot; 參照)。そのやうに扱ふタグを追加するには:
+</p>
+<pre class="verbatim">:let g:html_indent_inctags = &quot;html,body,head,tbody&quot;
+</pre>
+<p>對象から除外するには:
+</p>
+<pre class="verbatim">:let g:html_indent_autotags = &quot;th,td,tr,tfoot,thead&quot;
+</pre>
+<p>これらの變數の初期設定は空である。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+&quot;inctags&quot; は Vim の編輯セッションごとに一度だけ初期化される。
+</p></blockquote>
+
+<p>ユーザー變數はスクリプトが實行されたときだけ讀まれる。編輯中に HTML ファイルを再讀み込みすることなしに設定變更を反映したい場合は、手動で次のやうにする:
+</p>
+<pre class="verbatim">:call HtmlIndent_CheckUserSettings()
+</pre>
+<p>詳細:
+異質な內容を含むブロックタグ內のインデントの計算:
+</p><table>
+<thead><tr><th width="20%">BLOCKTAG</th><th width="5%"></th><th width="30%">インデント式</th><th width="45%">適用できるとき</th></tr></thead>
+<tr><td width="20%">&lt;script&gt;</td><td width="5%">:</td><td width="30%">{カスタマイズ可}</td><td width="45%">ブロックの最初の行</td></tr>
+<tr><td width="20%"></td><td width="5%">:</td><td width="30%">cindent(v:lnum)</td><td width="45%">屬性が空または &quot;java&quot; を含むとき</td></tr>
+<tr><td width="20%"></td><td width="5%">:</td><td width="30%">-1</td><td width="45%">その他 (vbscript, tcl, ...)</td></tr>
+<tr><td width="20%">&lt;style&gt;</td><td width="5%">:</td><td width="30%">{カスタマイズ可}</td><td width="45%">ブロックの最初の號</td></tr>
+<tr><td width="20%"></td><td width="5%">:</td><td width="30%">GetCSSIndent()</td><td width="45%">その他</td></tr>
+<tr><td width="20%">&lt;!-- --&gt;</td><td width="5%">:</td><td width="30%">-1</td></tr>
+</table>
+
+
+<a name="ft_002dphp_002dindent"></a><a name="php_002dindent"></a><a name="php_002dindenting"></a><a name="index-ft_002dphp_002dindent"></a>
+<a name="index-php_002dindent"></a>
+<a name="index-php_002dindenting"></a>
+<a name="PHP-1"></a>
+<h4 class="unnumberedsubsubsec">PHP</h4>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+|<a href="syntax_002etxt.html#syntax">syntax</a>| がオンのときのみ PHP のファイルは正しくインデントされる。
+</p></blockquote>
+
+<p>&rsquo;<samp>fileformat</samp>&rsquo; を &quot;<var>unix</var>&quot; にしてゐる場合、文字 &rsquo;\r&rsquo; が改行の前にあると、インデントは正しく行はれない。これらの不要な文字を削除するには次のコマンドを使ふ:
+</p>
+<div class="example">
+<pre class="example">:%s /\r$//g
+</pre></div>
+
+<p>または |<a href="eval_002etxt.html#g_t_003alet">:let</a>| コマンドを使つて變數 PHP_removeCRwhenUnix に 1 をセットすると、PHP ファイルを讀み込んだとき、|<a href="autocmd_002etxt.html#BufRead">BufRead</a>| のタイミングで自動的にこれらが削除される (そのとき特にメッセージは表示されない)。
+</p>
+<p>オプション:
+</p>
+
+<p>下記のグローバル變數をセットすることで、PHP のインデントをカスタマイズできる。
+</p>
+<a name="php_002dcomment"></a><a name="PHP_005fautoformatcomment"></a><a name="index-php_002dcomment"></a>
+<a name="index-PHP_005fautoformatcomment"></a>
+<p>デフォルトでは有效になつてゐるコメントの自動整形を無效化するには (&rsquo;<samp>formatoptions</samp>&rsquo; に從ふやうにするには)次のやうにする:
+</p><div class="example">
+<pre class="example">:let g:PHP_autoformatcomment = 0
+</pre></div>
+
+<p>これをしない場合、&rsquo;<samp>formatoptions</samp>&rsquo; から &rsquo;<var>t</var>&rsquo; が除かれ、&quot;<var>qrowcb</var>&quot; が加へられる。詳しくは |<a href="change_002etxt.html#fo_002dtable">fo-table</a>| を參照。
+</p>
+<a name="PHP_005foutdentSLComments"></a><a name="index-PHP_005foutdentSLComments"></a>
+<p>一行コメントに追加のインデントを加へる:
+</p><div class="example">
+<pre class="example">:let g:PHP_outdentSLComments = N
+</pre></div>
+
+<p>N は &rsquo;<samp>shiftwidth</samp>&rsquo; に追加される値。
+</p>
+<p>次のやうな一行コメントのみ影響する:
+</p><pre class="verbatim"># Comment
+// Comment
+/* Comment */
+</pre>
+<a name="PHP_005fdefault_005findenting"></a><a name="index-PHP_005fdefault_005findenting"></a>
+<p>すべての PHP の行に對しインデントを增やすには、次のやうにする:
+</p><div class="example">
+<pre class="example">:let g:PHP_default_indenting = N
+</pre></div>
+
+<p>ここで N は整數。N 個の &rsquo;<samp>shiftwidth</samp>&rsquo; 分のインデントが追加される。例として N = 1 の場合、次のやうになる:
+</p><pre class="verbatim">&lt;?php
+if (!isset($History_lst_sel))
+    if (!isset($History_lst_sel))
+    if (!isset($History_lst_sel)) {
+        $History_lst_sel=0;
+    } else
+        $foo=&quot;bar&quot;;
+
+$command_hist = TRUE;
+?&gt;
+</pre><p>(&lt;?php タグよりコードの方が 1 段階多くインデントされてゐる)
+</p>
+<a name="PHP_005foutdentphpescape"></a><a name="index-PHP_005foutdentphpescape"></a>
+<p>PHP エスケープタグを圍まれてゐる PHP ではないコードとしてインデントする (PHP エスケープタグにのみ影響):
+</p><div class="example">
+<pre class="example">:let g:PHP_outdentphpescape = 0
+</pre></div>
+
+<a name="PHP_005fremoveCRwhenUnix"></a><a name="index-PHP_005fremoveCRwhenUnix"></a>
+<p>&rsquo;<samp>fileformat</samp>&rsquo; を &quot;<var>unix</var>&quot; にしてゐるとき、自動的に &rsquo;\r&rsquo; を削除するには次のやうにする:
+</p><div class="example">
+<pre class="example">:let g:PHP_removeCRwhenUnix = 1
+</pre></div>
+
+<a name="PHP_005fBracesAtCodeLevel"></a><a name="index-PHP_005fBracesAtCodeLevel"></a>
+<p>波カッコ {} をその內側と同じインデントレベルにするには:
+</p><div class="example">
+<pre class="example">:let g:PHP_BracesAtCodeLevel = 1
+</pre></div>
+    
+<p>すると、次のやうになる:
+</p><pre class="verbatim">if ($foo)
+    {
+    foo();
+    }
+</pre><p>デフォルトの場合:
+</p><pre class="verbatim">if ($foo)
+{
+    foo();
+}
+</pre>
+<blockquote>
+<p><strong>Note:</strong> <br>
+このオプションをオンにすると、最適化の一部が效かなくなるため、インデントが少し遲くなる。
+</p></blockquote>
+
+<a name="PHP_005fvintage_005fcase_005fdefault_005findent"></a><a name="index-PHP_005fvintage_005fcase_005fdefault_005findent"></a>
+<p>switch() ブロック內の &rsquo;case:&rsquo; と &rsquo;default:&rsquo; をインデントさせるには:
+</p><div class="example">
+<pre class="example">:let g:PHP_vintage_case_default_indent = 1
+</pre></div>
+
+<p>PHP では &rsquo;case/default&rsquo; ブロックの中で波カッコは不要なので、餘計なインデントを避けるため、&rsquo;case:&rsquo; と &rsquo;default:&rsquo; は &rsquo;switch()&rsquo; と同じレベルにインデントされる。上記のオプションを使ふことで古いインデント形式を使ふことができる。
+<a name="PHP_005fnoArrowMatching"></a><a name="index-PHP_005fnoArrowMatching"></a>
+デフォルトでは、インデントスクリプトは複數行にまたがつた函數呼び出しを &rsquo;-&gt;&rsquo; の位置に合はせてインデントする:
+</p><pre class="verbatim">$user_name_very_long-&gt;name()
+                    -&gt;age()
+                    -&gt;info();
+</pre>
+<p>このオプションを 1 に設定することによつて、從來のインデント方法に戾すことができる:
+</p><div class="example">
+<pre class="example">:let g:PHP_noArrowMatching = 1
+</pre></div>
+
+<p>以下の結果を得る:
+</p><pre class="verbatim">$user_name_very_long-&gt;name()
+    -&gt;age()
+    -&gt;info();
+</pre>
+
+
+<a name="ft_002dpython_002dindent"></a><a name="index-ft_002dpython_002dindent"></a>
+<a name="PYTHON"></a>
+<h4 class="unnumberedsubsubsec">PYTHON</h4>
+
+<p>以下の狀況のためにインデントの量を設定することができる。この例は既定である。後で &rsquo;<samp>shiftwidth</samp>&rsquo; の値を變更するために變數に式を設定しておく。
+</p>
+<p>開き括弧の後のインデント:
+</p><div class="example">
+<pre class="example">let g:pyindent_open_paren = 'shiftwidth() * 2'
+</pre></div>
+<p>ネストした括弧の後のインデント:
+</p><div class="example">
+<pre class="example">let g:pyindent_nested_paren = 'shiftwidth()'
+</pre></div>
+<p>繼續行のインデント:
+</p><div class="example">
+<pre class="example">let g:pyindent_continue = 'shiftwidth() * 2'
+</pre></div>
+
+<p>この方法は 閉ぢられてゐない丸括弧を探すために |<a href="eval_002etxt.html#searchpair_0028_0029">searchpair()</a>| を使ふ。これはときどき遲くなるため、150 ミリ秒後にタイムアウトする。もしもあなたがインデントが正しくないと氣づいたなら、タイムアウトの時閒をミリ秒單位で長く設定することができる:
+</p><div class="example">
+<pre class="example">let g:pyindent_searchpair_timeout = 500
+</pre></div>
+
+<p>閉ぢ括弧を遡つて振り返るのがまだ遲すぎる場合、特にコピー&amp;ペースト操作の閒、あるいは複數行の括弧の內側をインデントする必要がない場合は、この機能を完全に無效にすることができる:
+</p><div class="example">
+<pre class="example">let g:pyindent_disable_parentheses_indenting = 1
+</pre></div>
+
+
+<a name="ft_002dr_002dindent"></a><a name="index-ft_002dr_002dindent"></a>
+<a name="R-1"></a>
+<h4 class="unnumberedsubsubsec">R</h4>
+
+<p>函數の引數が複數行にまたがる場合はそれらは整列される。函數の引數を整列させたくない場合は |<a href="starting_002etxt.html#vimrc">vimrc</a>| に次の設定を書くこと:
+</p><div class="example">
+<pre class="example">let r_indent_align_args = 0
+</pre></div>
+<p>コメント文字 (#) で始まるすべての行は R の通常のコードと同じレベルでインデントされる。Emacs/ESS のユーザーは 1 つの # で始まる行を 40 桁でインデントし、## で始まる行を R コードと同じ桁でインデントし、### で始まる行をインデントしないやうにしてゐる。Emacs/ESS と同じやうにインデントをしたい場合は |<a href="starting_002etxt.html#vimrc">vimrc</a>| に次の設定を書くこと:
+</p><div class="example">
+<pre class="example">let r_indent_ess_comments = 1
+</pre></div>
+<p>1 つの # で始まる行の整列位置を 40 桁から變へたい場合は r_indent_comment_column の値を設定すること。次のやうにする:
+</p><div class="example">
+<pre class="example">let r_indent_comment_column = 30
+</pre></div>
+<p>行末が &quot;&lt;-&quot; で終はる行に續くコードはインデントされる。Emacs/ESS ではそれがトップレベル函數ならインデントはされない。Emacs/ESS と同じやうにインデントしたい場合は次の設定を |<a href="starting_002etxt.html#vimrc">vimrc</a>| に書くこと:
+</p><div class="example">
+<pre class="example">let r_indent_ess_compatible = 1
+</pre></div>
+<p>このオプションを設定するかしないかで次のやうにインデントが變はる:
+</p><pre class="verbatim">### r_indent_ess_compatible = 1           ### r_indent_ess_compatible = 0
+foo &lt;-                                    foo &lt;-
+    function(x)                               function(x)
+{                                             {
+    paste(x)                                      paste(x)
+}                                             }
+</pre><p>パターン &lsquo;&rsquo;\(&amp;\||\|+\|-\|\*\|/\|=\|\~\|%\|-&gt;\)\s*$&rsquo;&lsquo; にマッチする行以降は、コードはインデントされるでせう。別のパターンにマッチする行以降をインデントしたいなら、自身の |<a href="starting_002etxt.html#vimrc">vimrc</a>| で &lsquo;r_indent_op_pattern&lsquo; に適切な値を設定するべきです。
+</p>
+
+<a name="ft_002dsh_002dindent"></a><a name="index-ft_002dsh_002dindent"></a>
+<a name="SHELL-1"></a>
+<h4 class="unnumberedsubsubsec">SHELL</h4>
+
+<p>シェルファイルの樣々な狀況に適用されるインデント量を調整するには、|<a href="eval_002etxt.html#Dictionary">Dictionary</a>| b:sh_indent_defaults の以下のキーを設定するか、またはインデント量を計算して返す函數への參照 |<a href="eval_002etxt.html#Funcref">Funcref</a>| を用ゐる。
+</p>
+<dl compact="compact">
+<dt>b:sh_indent_options[&rsquo;default&rsquo;]</dt>
+<dd><p>インデント量の既定値。
+</p>
+</dd>
+<dt>b:sh_indent_options[&rsquo;continuation-line&rsquo;]</dt>
+<dd><p>繼續行に對して追加されるインデント量。(實際には實裝されてゐない)
+</p>
+</dd>
+<dt>b:sh_indent_options[&rsquo;case-labels&rsquo;]</dt>
+<dd><p>case のラベルに對して追加されるインデント量。
+</p>
+</dd>
+<dt>b:sh_indent_options[&rsquo;case-statements&rsquo;]</dt>
+<dd><p>case の文に對して追加されるインデント量。
+</p>
+</dd>
+<dt>b:sh_indent_options[&rsquo;case-breaks&rsquo;]</dt>
+<dd><p>case の break に對して追加 (あるいは削減) されるインデント量。
+</p></dd>
+</dl>
+
+<a name="ft_002dverilog_002dindent"></a><a name="index-ft_002dverilog_002dindent"></a>
+<a name="VERILOG"></a>
+<h4 class="unnumberedsubsubsec">VERILOG</h4>
+
+<p>一般的なブロック文である if, for, case, always, initial, function, specify そして begin 等などはインデントされる。module ブロック文 (最初のレベルのブロック) はデフォルトではインデントされない。次のやうに .vimrc で以下の變數を設定するとそのインデントを有效化できる:
+</p>
+<pre class="verbatim">let b:verilog_indent_modules = 1
+</pre>
+<p>これにより module ブロックがインデントされる。これをやめるには變數を削除すれば良い:
+</p>
+<div class="example">
+<pre class="example">:unlet b:verilog_indent_modules
+</pre></div>
+
+<p>Verilog のファイルにだけこの變數を設定するには、次の設定が使へる:
+</p>
+<pre class="verbatim">au BufReadPost * if exists(&quot;b:current_syntax&quot;)
+au BufReadPost *   if b:current_syntax == &quot;verilog&quot;
+au BufReadPost *     let b:verilog_indent_modules = 1
+au BufReadPost *   endif
+au BufReadPost * endif
+</pre>
+<p>その上、インデントの幅を變更するのに變數 b:verilog_indent_width を設定できる (既定値 &rsquo;shiftwidth&rsquo;):
+</p>
+<pre class="verbatim">let b:verilog_indent_width = 4
+let b:verilog_indent_width = shiftwidth() * 2
+</pre>
+<p>さらに、デバッグ目的で verbose モードを有效化できる:
+</p>
+<pre class="verbatim">let b:verilog_indent_verbose = 1
+</pre>
+<p>メッセージを表示できるやうにするために、先に &quot;:set cmdheight=2&quot; を實行することを確認すること。
+</p>
+
+<a name="ft_002dvhdl_002dindent"></a><a name="index-ft_002dvhdl_002dindent"></a>
+<a name="VHDL"></a>
+<h4 class="unnumberedsubsubsec">VHDL</h4>
+
+<p>generic/port 文の桁揃へが自動的に行はれる。これによつて、次のやうに桁揃へされる:
+</p>
+<pre class="verbatim">ENTITY sync IS
+PORT (
+       clk        : IN  STD_LOGIC;
+       reset_n    : IN  STD_LOGIC;
+       data_input : IN  STD_LOGIC;
+       data_out   : OUT STD_LOGIC
+     );
+END ENTITY sync;
+</pre>
+<p>これをオフにするには、次を .vimrc に加へる
+</p>
+<pre class="verbatim">let g:vhdl_indent_genportmap = 0
+</pre>
+<p>すると、先ほどの例が次のやうに變はる:
+</p>
+<pre class="verbatim">ENTITY sync IS
+PORT (
+  clk        : IN  STD_LOGIC;
+  reset_n    : IN  STD_LOGIC;
+  data_input : IN  STD_LOGIC;
+  data_out   : OUT STD_LOGIC
+);
+END ENTITY sync;
+</pre>
+<p>デフォルトで &quot;&lt;=&quot; の右邊の桁揃へが行はれる。例:
+</p>
+<pre class="verbatim">sig_out &lt;= (bus_a(1) AND
+           (sig_b OR sig_c)) OR
+           (bus_a(0) AND sig_d);
+</pre>
+<p>これをオフにするには次を ~/.vimrc に加へる。
+</p>
+<pre class="verbatim">let g:vhdl_indent_rhsassign = 0
+</pre>
+<p>すると先ほどの例が次のやうに變はる:
+</p>
+<pre class="verbatim">sig_out &lt;= (bus_a(1) AND
+  (sig_b OR sig_c)) OR
+  (bus_a(0) AND sig_d);
+</pre>
+<p>&quot;&lsquo;<samp>-- </samp>&rsquo;&quot; で始まるコメント行は、1 行前のコメント行と同じインデントになる。&quot;&lsquo;<samp>--</samp>&rsquo;&quot; の後にスペースがついてゐなければならないことに注意。
+</p>
+<p>例:
+</p>
+<pre class="verbatim">sig_a &lt;= sig_b; -- start of a comment
+                -- continuation of the comment
+                -- more of the same comment
+</pre>
+<p>插入モードでは、&quot;&lsquo;<samp>-- </samp>&rsquo;&quot; (スペース &quot; &quot; に注意) をタイプしたあと、<kbd>CTRL-F</kbd> を押すと現在行の &quot;&lsquo;<samp>-- </samp>&rsquo;&quot; を前の行の &quot;&lsquo;<samp>--</samp>&rsquo;&quot; に揃へることができる。
+</p>
+<p>1 行前が &quot;&lsquo;<samp>--</samp>&rsquo;&quot; を含んでゐない場合、その行は下方の「空行でもコメントでもない行」と同じインデントになる。
+</p>
+<p>以下のコードをインデントすると:
+</p>
+<pre class="verbatim">sig_c &lt;= sig_d; -- comment 0
+       -- comment 1
+             -- comment 2
+  --debug_code:
+  --PROCESS(debug_in)
+       --BEGIN
+          --  FOR i IN 15 DOWNTO 0 LOOP
+           --    debug_out(8*i+7 DOWNTO 8*i) &lt;= debug_in(15-i);
+          --  END LOOP;
+   --END PROCESS debug_code;
+
+    -- comment 3
+sig_e &lt;= sig_f; -- comment 4
+         -- comment 5
+</pre>
+<p>次のやうになる:
+</p>
+<pre class="verbatim">sig_c &lt;= sig_d; -- comment 0
+                -- comment 1
+                -- comment 2
+--debug_code:
+--PROCESS(debug_in)
+--BEGIN
+--  FOR i IN 15 DOWNTO 0 LOOP
+--    debug_out(8*i+7 DOWNTO 8*i) &lt;= debug_in(15-i);
+--  END LOOP;
+--END PROCESS debug_code;
+
+-- comment 3
+sig_e &lt;= sig_f; -- comment 4
+                -- comment 5
+</pre>
+<p>&quot;&lsquo;<samp>--debug_code:</samp>&rsquo;&quot;  は &quot;&lsquo;<samp>--</samp>&rsquo;&quot; の後にスペースがないため、&quot;&lsquo;<samp>-- comment 2</samp>&rsquo;&quot; に揃へられてないことに注意。
+</p>
+<p>コメントをインデントする處理は、動的な性質のため 2 パスで行はれる。1 パス目はコードがインデントされ、2 パス目は正しくインデントされたコードに沿つてコメントがインデントされる。
+</p>
+
+<a name="ft_002dvim_002dindent"></a><a name="index-ft_002dvim_002dindent"></a>
+<a name="VIM"></a>
+<h4 class="unnumberedsubsubsec">VIM</h4>
+
+<p>Vim script に對しては繼續行 (バックスラッシュで始まる行) のインデント量を指定する變數が 1 つある:
+</p>
+<div class="example">
+<pre class="example">:let g:vim_indent_cont = shiftwidth() * 3
+</pre></div>
+
+<p>shiftwidth の 3 倍が既定値である。
+</p>
+
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

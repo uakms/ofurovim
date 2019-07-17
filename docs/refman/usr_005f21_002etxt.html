@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>usr_21.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="usr_21.txt (Vim Reference Manual)">
+<meta name="keywords" content="usr_21.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="usr_005f22_002etxt.html#usr_005f22_002etxt" rel="next" title="usr_22.txt">
+<link href="usr_005f20_002etxt.html#usr_005f20_002etxt" rel="prev" title="usr_20.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="usr_005f21_002etxt"></a>
+<div class="header">
+<p>
+Next: <a href="usr_005f22_002etxt.html#usr_005f22_002etxt" accesskey="n" rel="next">usr_22.txt</a>, Previous: <a href="usr_005f20_002etxt.html#usr_005f20_002etxt" accesskey="p" rel="prev">usr_20.txt</a>, Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="ZhongDuan-toZai-Kai-"></a>
+<h2 class="unnumbered">中斷と再開</h2>
+<pre class="verbatim">*usr_21.txt*	For Vim バージョン 8.1.  Last change: 2019 Apr 25
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+				  中斷と再開
+</pre>
+
+<p>この章では、Vim と他のプログラムを竝行して使ふ方法を說明します。Vim の中から外部プログラムを實行したり、Vim を一次的に中斷することでそれを實現できます。さらに、作業狀態を記錄しておいて、後から復元する方法も說明します。
+</p>
+<table>
+<tr><td width="30%">|<a href="usr_005f20_002etxt.html#g_t20_002e1">20.1</a>|</td><td width="70%">サスペンドとレジューム</td></tr>
+<tr><td width="30%">|<a href="#g_t21_002e2">21.2</a>|</td><td width="70%">シェルコマンドの實行</td></tr>
+<tr><td width="30%">|<a href="#g_t21_002e3">21.3</a>|</td><td width="70%">viminfo に情報を記錄する</td></tr>
+<tr><td width="30%">|<a href="#g_t21_002e4">21.4</a>|</td><td width="70%">セッション</td></tr>
+<tr><td width="30%">|<a href="#g_t21_002e5">21.5</a>|</td><td width="70%">ビュー</td></tr>
+<tr><td width="30%">|<a href="#g_t21_002e6">21.6</a>|</td><td width="70%">モードライン</td></tr>
+</table>
+
+<a name="g_t21_002e1"></a><a name="index-sasupendotoreziyumu"></a>
+<a name="sasupendotoreziyumu"></a>
+<h3 class="section">サスペンドとレジューム</h3>
+
+<p>他の Unix プログラムと同樣に、Vim も <kbd>CTRL-Z</kbd> でサスペンドできます。<kbd>CTRL-Z</kbd> を押すと Vim が停止し、實行元のシェルに制禦が戾ります。そこで好きなだけ他のコマンドを實行できます。Vim に戾るには &quot;<code>fg</code>&quot; コマンドを使ひます。
+</p>
+<div class="example">
+<pre class="example">CTRL-Z
+{任意のシェルコマンドを實行}
+fg
+</pre></div>
+
+<p>サスペンドする前とまつたく同じ狀態に戾ることができます。
+</p>
+<p><kbd>CTRL-Z</kbd> を押しても反應がなかつた場合は &quot;<code>:suspend</code>&quot; コマンドを使つてください。Vim をフォアグラウンドに戾すのを忘れないでください。戾さなかつた場合は編輯作業が失はれてしまひます。
+</p>
+<p>この機能は Unix でのみサポートされてゐます。他のシステムでは新しいシェルが起動されるでせう。シェルのコマンドが使へることに違ひはありませんが、しかしそれは Vim を實行したシェルではなく、新しいシェルです。
+</p>
+<p>GUI で實行してゐるときは實行元のシェルに戾ることはできません。<code>CTRL-Z</code> を押すと Vim ウィンドウが最小化されます。
+</p>
+<a name="g_t21_002e2"></a><a name="index-sierukomandonoShi-Xing-"></a>
+<a name="sierukomandonoShi-Xing-"></a>
+<h3 class="section">シェルコマンドの實行</h3>
+
+<p>1 つのシェルコマンドを實行するには &quot;<code>:!{command}</code>&quot; を使ひます。例へば、ディレクトリのファイル一覽を見るには次のやうにします:
+</p>
+<div class="example">
+<pre class="example">:!ls    (Unix 環境)
+:!dir   (MS-DOS/MS-Windows 環境)
+</pre></div>
+
+<p>外部プログラムが實行されます。
+</p>
+<p>コマンドの實行が終はると <code class="tt-key">&lt;Enter&gt;</code> キーの入力を促すプロンプトが表示されるので、コマンドの出力を確認してから通常畫面に戾つてください。
+</p>
+<p>&quot;&lsquo;<samp>!</samp>&rsquo;&quot; は他のコマンドで外部プログラムを指定するときにも使はれます。次のコマンドで指定できます:
+</p>
+<table>
+<tr><td width="30%">:!{program}</td><td width="70%">{program} を實行する</td></tr>
+<tr><td width="30%">:r !{program}</td><td width="70%">{program} を實行し、その出力を讀み込む</td></tr>
+<tr><td width="30%">:w !{program}</td><td width="70%">{program} を實行し、標準入力にテキストを書き込む</td></tr>
+<tr><td width="30%">:[range]!{program}</td><td width="70%">{program} を實行し、テキストをフィルタリングする</td></tr>
+</table>
+
+<p>&quot;!{program}&quot; に範圍指定をするとまつたく違ふ動作になるので注意してください。範圍指定がなければ單純にプログラムが實行されるだけですが、範圍指定があると、その範圍のテキストがプログラムでフィルタ處理されます。
+</p>
+<p>この方法で外部プログラムを何度でも實行できますが、續けてたくさん實行したい場合はシェルを起動した方がいいでせう。次のコマンドで新しいシェルを起動できます:
+</p>
+<div class="example">
+<pre class="example">:shell
+</pre></div>
+
+<p><kbd>CTRL-Z</kbd> で Vim をサスペンドしたときの動作に似てゐますが、新しいシェルが起動されるといふ點が違ひます。
+</p>
+<p>GUI を使つてゐる場合は、シェルの入出力に Vim ウィンドウが使はれます。Vim は端末エミュレータではないので、端末の機能を完全に再現することはできません。うまく動作しない場合は、&rsquo;<samp>guipty</samp>&rsquo; オプションを設定してみてください。それでも動作しない場合は、新しい端末を作成し、そこでシェルを實行してください。例へば、次のやうにします:
+</p><div class="example">
+<pre class="example">:!xterm&amp;
+</pre></div>
+
+<a name="g_t21_002e3"></a><a name="index-viminfo-niQing-Bao-woJi-Lu-suru"></a>
+<a name="viminfo-niQing-Bao-woJi-Lu-suru"></a>
+<h3 class="section">viminfo に情報を記錄する</h3>
+
+<p>テキストを保持してゐるレジスタ、いろんな場所に設定されたマーク、愼重に書き上げたコマンドが記錄されたコマンドライン履歷などは、Vim を終了するとすべて失はれてしまひます。ただし、それらを復元することは可能です！
+</p>
+<p>viminfo ファイルには以下の情報を記錄できます:
+</p>
+<ul>
+<li> コマンドライン履歷と檢索履歷
+</li><li> レジスタ
+</li><li> マーク
+</li><li> バッファリスト
+</li><li> グローバル變數
+</li></ul>
+
+<p>Vim を終了すると、これらの情報が <samp>viminfo</samp> ファイルに保存されます。次に Vim を起動すると、<samp>viminfo</samp> ファイルが讀み込まれ、狀態が復元されます。
+</p>
+<p>&rsquo;<samp>viminfo</samp>&rsquo; オプションの初期設定では、あまり多くの情報は記錄されません。たくさんの情報を記錄したい場合は、次のコマンドで設定してください:
+</p>
+<div class="example">
+<pre class="example">:set viminfo=string
+</pre></div>
+
+<p>&quot;string&quot; の部分に、記錄したい情報を指定します。設定の書式は、オプション文字と引數の組み合はせをコンマ (&lsquo;<samp>,</samp>&rsquo;) で區切つたリストです。
+</p>
+<p>&rsquo;<samp>viminfo</samp>&rsquo; の設定方法を順番に見てゐきませう。まづ、<samp>'</samp> オプションを設定してみます。<samp>'</samp> オプションには、マーク (a-z) を記錄するファイルの數を指定できます。適當な數 (例へば 1000) を設定しませう。コマンドは次のやうになります:
+</p>
+<div class="example">
+<pre class="example">:set viminfo='1000
+</pre></div>
+
+<p>f オプションには、グローバルマーク (A-Z と 0-9) を記錄するかどうかを指定できます。引數が 0 なら何も記錄されません。f オプションを指定しない、あるいは引數に 1 を指定すると、マークが保存されます。このオプションを指定すると、コマンドは次のやうになります:
+</p>
+<div class="example">
+<pre class="example">:set viminfo='1000,f1
+</pre></div>
+
+<p><samp>&lt;</samp> オプションには、レジスタの行數制限を指定できます。初期設定ではすべての行が記錄されます。引數が 0 なら何も記錄されません。何千行もの (起動を遲くする以外に使ひ道のない) テキストを <samp>viminfo</samp> ファイルに記錄したくはないので、500 行に制限してみます:
+</p>
+<div class="example">
+<pre class="example">:set viminfo='1000,f1,&lt;500
+</pre></div>
+<p>他にも次のやうなオプションがあります:
+</p><table>
+<tr><td width="10%">:</td><td width="90%">記錄するコマンドライン履歷の數</td></tr>
+<tr><td width="10%">&nbsp;</td><td width="90%">記錄する入力行履歷の數</td></tr>
+<tr><td width="10%">/</td><td width="90%">記錄する檢索履歷の數</td></tr>
+<tr><td width="10%">r</td><td width="90%">指定されたリムーバブルメディア上のファイルのマークを記錄しない (複數指定可)</td></tr>
+<tr><td width="10%">!</td><td width="90%">名前がすべて大文字のグローバル變數を記錄する</td></tr>
+<tr><td width="10%">h</td><td width="90%">起動直後に &rsquo;<samp>hlsearch</samp>&rsquo; による强調表示をしない</td></tr>
+<tr><td width="10%">%</td><td width="90%">バッファリスト (Vim をファイル引數なしで起動したときのみ復元されます)</td></tr>
+<tr><td width="10%">c</td><td width="90%">テキストを &rsquo;<samp>encoding</samp>&rsquo; で變換する</td></tr>
+<tr><td width="10%">n</td><td width="90%">viminfo ファイルの名前 (このオプションは末尾に指定する必要があります)</td></tr>
+</table>
+
+<p>詳細は &rsquo;<samp>viminfo</samp>&rsquo; と |<a href="starting_002etxt.html#viminfo_002dfile">viminfo-file</a>| を參照してください。
+</p>
+<p>Vim を複數起動した場合は、最後に終了した Vim の狀態が記錄されます。それより前に終了した Vim が記錄した情報は失はれます。記錄できるのは 1 つの狀態だけです。
+</p>
+
+<a name="Qian-Hui-noChang-Suo-niLi-ru"></a>
+<h4 class="unnumberedsubsec">前囘の場所に戾る</h4>
+
+<p>ファイルの編輯中に終業時閒が來てしまひました。明日から休暇です。Vim を終了し、家路につきませう。仕事の事はすべて忘れて休暇を樂しんでください。數週閒後、仕事に戾つたら、Vim を立ち上げて、こう入力します:
+</p><div class="example">
+<pre class="example">'0
+</pre></div>
+
+<p>すると、最後に編輯してゐた場所に戾れます。これで仕事が續けられますね。
+</p>
+<p>Vim を終了するたびにマークが設定されます。最新のマークは &rsquo;0 です。マークは &rsquo;0 から &rsquo;1 へ、&rsquo;1 から &rsquo;2 へ、しだいにずれていき、&rsquo;9 まで記錄されます。
+</p>
+<p>&rsquo;0 から &rsquo;9 までのマークがどこを指してゐるのかは |<a href="motion_002etxt.html#g_t_003amarks">:marks</a>| コマンドで確認できます。
+</p>
+
+<a name="Zui-Jin-Kai-itahuairuniLi-ru"></a>
+<h4 class="unnumberedsubsec">最近開いたファイルに戾る</h4>
+
+<p>最近開いたファイルを再び開きたい場合はすこし面倒です (前囘の Vim 終了時に開いてゐたファイルではなくてまさに最近開いたファイルのこと)。次のコマンドでファイルの一覽を表示できます:
+</p>
+<div class="example">
+<pre class="example">:oldfiles
+</pre></div>
+<pre class="verbatim">1: ~/.viminfo
+2: ~/text/resume.txt
+3: /tmp/draft
+</pre>
+<p>2 番目のファイル (&quot;2:&quot; の行) を開きたい場合は次のやうに入力します:
+</p>
+<div class="example">
+<pre class="example">:e #&lt;2
+</pre></div>
+
+<p>&quot;<code>:e</code>&quot; 以外にも、ファイル名を引數に取るコマンドならどれを使つても構ひません。&quot;#&lt;2&quot; といふ表記は &quot;%&quot; (カレントファイル) や &quot;#&quot; (オルタネートファイル) と同じ要領で使用できます。例へば次のやうにすると、3 番目のファイルを分割ウィンドウで開くことができます:
+</p>
+<div class="example">
+<pre class="example">:split #&lt;3
+</pre></div>
+
+<p>單にファイルを開きたい場合には #&lt;123 といふ指定は少し面倒かもしれませんね。もつと簡單な方法があります:
+</p>
+<div class="example">
+<pre class="example">:browse oldfiles
+</pre></div>
+<pre class="verbatim">1: ~/.viminfo
+2: ~/text/resume.txt
+3: /tmp/draft
+-- More --
+</pre>
+<p>|<a href="starting_002etxt.html#g_t_003aoldfiles">:oldfiles</a>| と同じやうにファイル一覽が表示されます。&quot;<samp>resume.txt</samp>&quot; を開きたい場合にはまづ &quot;q&quot; を押して表示を止めます。プロンプトが表示されるので:
+</p>
+<div class="display">
+<pre class="display">番號と <code class="tt-key">&lt;Enter&gt;</code> を入力してください (空でキャンセル):
+</pre></div>
+
+<p>&quot;2&quot; を入力して <code class="tt-key">&lt;Enter&gt;</code> を押し、2 番目のファイルを開きます。
+</p>
+<p>詳細は |<a href="starting_002etxt.html#g_t_003aoldfiles">:oldfiles</a>|, |<a href="eval_002etxt.html#v_003aoldfiles">v:oldfiles</a>|, |<a href="cmdline_002etxt.html#c_005f_0023_003c">c_#&lt;</a>| を參照してください。
+</p>
+
+<a name="Ta-no-Vim-niQing-Bao-woYi-Dong-suru"></a>
+<h4 class="unnumberedsubsec">他の Vim に情報を移動する</h4>
+
+<p>&quot;<code>:wviminfo</code>&quot; コマンドと &quot;<code>:rviminfo</code>&quot; コマンドを使ふと、Vim の實行中でも <samp>viminfo</samp> ファイルの保存と復元ができます。例へば、他の Vim からレジスタの內容をコピーすることができます。片方の Vim で次のやうにして保存し:
+</p>
+<div class="example">
+<pre class="example">:wviminfo! ~/tmp/viminfo
+</pre></div>
+
+<p>もう一方の Vim でそれを讀み込みます:
+</p>
+<div class="example">
+<pre class="example">:rviminfo! ~/tmp/viminfo
+</pre></div>
+
+<p>言ふまでもなく、&quot;w&quot; は &quot;write&quot;、&quot;r&quot; は &quot;read&quot; の意味です。
+既存のファイルに上書きするときは、&quot;<code>:wviminfo</code>&quot; に &lsquo;<samp>!</samp>&rsquo; を付けてください。&lsquo;<samp>!</samp>&rsquo; を指定しなかつた場合は、現在の情報と既存のファイルの情報がマージされます。
+</p>
+<p>&quot;<code>:rviminfo</code>&quot; に &lsquo;<samp>!</samp>&rsquo; を付けると、ファイルのすべての情報が使はれます。つまり、現在の情報が上書きされます。&lsquo;<samp>!</samp>&rsquo; を指定しなかつた場合は、まだ設定されてゐない情報だけが使はれます。
+</p>
+<p>これらのコマンドを使へば、狀態を保存しておいて後で再利用することもできます。例へば、<samp>viminfo</samp> 專用のディレクトリに狀態を保存しておき、目的ごとに使ひ分けることも可能です。
+</p>
+<a name="g_t21_002e4"></a><a name="index-setusiyon"></a>
+<a name="setusiyon"></a>
+<h3 class="section">セッション</h3>
+
+<p>作業が終はらない內に 1 日が終はつてしまつた場合、その日の作業を中斷し、次の日に同じ狀態で作業を再開できたら便利ですよね。編輯セッションを保存しておけば、作業狀態を復元することができます。
+</p>
+<p>セッションには、作業狀態に關するすべての情報が保存されます。例へば、ファイルリスト、ウィンドウレイアウト、グローバル變數、オプションの設定などです。(正確には、下記で說明されてゐる &rsquo;<samp>sessionoptions</samp>&rsquo; に指定された項目が保存されます。)
+</p>
+<p>次のコマンドでセッションファイルを作成できます:
+</p>
+<div class="example">
+<pre class="example">:mksession vimbook.vim
+</pre></div>
+
+<p>セッションを復元するには、次のコマンドを使ひます:
+</p>
+<div class="example">
+<pre class="example">:source vimbook.vim
+</pre></div>
+
+<p>Vim の起動と同時にセッションを再開するには、次のやうにして Vim を起動します:
+</p>
+<div class="example">
+<pre class="example">vim -S vimbook.vim
+</pre></div>
+
+<p>Vim が起動し、指定したファイルが讀み込まれます。&rsquo;S&rsquo; はセッション (Session) の意味です (實際には、-S には Vim script ならなんでも指定できるので、&quot;source&quot; を意味してゐるとも言へます)。
+</p>
+<p>以前に開いてゐたウィンドウが、同じ場所、同じ大きさで作成されます。マップやオプションの設定も復元されます。
+復元される情報は &rsquo;<samp>sessionoptions</samp>&rsquo; オプションで設定できます。初期設定は &quot;&lsquo;<samp>blank,buffers,curdir,folds,help,options,tabpages,winsize,terminal</samp>&rsquo;&quot; です。
+</p>
+<table>
+<tr><td width="20%">blank</td><td width="80%">空のウィンドウ</td></tr>
+<tr><td width="20%">buffers</td><td width="80%">すべてのバッファ (ウィンドウに表示されてゐないバッファも含む)</td></tr>
+<tr><td width="20%">curdir</td><td width="80%">カレントディレクトリ</td></tr>
+<tr><td width="20%">folds</td><td width="80%">折り疊み (手動で設定したものも含む)</td></tr>
+<tr><td width="20%">help</td><td width="80%">ヘルプウィンドウ</td></tr>
+<tr><td width="20%">options</td><td width="80%">すべてのオプションとマップ</td></tr>
+<tr><td width="20%">tabpages</td><td width="80%">すべてのタブページ</td></tr>
+<tr><td width="20%">winsize</td><td width="80%">ウィンドウの大きさ</td></tr>
+<tr><td width="20%">terminal</td><td width="80%">端末ウィンドウを含む</td></tr>
+</table>
+
+<p>好きなやうに設定してください。例へば、Vim ウィンドウの大きさも復元したい場合は、次のやうにします:
+</p>
+<div class="example">
+<pre class="example">:set sessionoptions+=resize
+</pre></div>
+
+
+<a name="kotutinimosetusiyon_002c-atutinimosetusiyon"></a>
+<h4 class="unnumberedsubsec">こつちにもセッション、あつちにもセッション</h4>
+
+<p>セッションは、複數のプロジェクトで仕事をするときなどに使はれます。例へば、&quot;<samp>~/.vim</samp>&quot; にセッションファイルを保存するとします。そして、&quot;secret&quot; プロジェクトで作業してゐる最中に、&quot;boring&quot; プロジェクトで作業する必要がでてきました:
+</p>
+<div class="example">
+<pre class="example">:wall
+:mksession! ~/.vim/secret.vim
+:source ~/.vim/boring.vim
+</pre></div>
+
+<p>最初に、&quot;<code>:wall</code>&quot; ですべてのファイルを保存します。次に、現在のセッションを &quot;<code>:mksession!</code>&quot; で保存します。以前のセッション情報が上書きされました。後で secret セッションをロードすると今現在の狀態から作業を再開できます。最後に、&quot;boring&quot; セッションをロードします。
+</p>
+<p>ヘルプを開いたり、ウィンドウを分割したり閉ぢたりして、ウィンドウレイアウトが亂れてしまつた場合、セッションをロードし直せば元に戾せます:
+</p>
+<div class="example">
+<pre class="example">:source ~/.vim/boring.vim
+</pre></div>
+
+<p>每囘新しいセッションを保存するか、あるいは最初に保存したセッションを使ひ續けるかは自由に選擇できます。
+</p>
+<p>セッションには他の使ひ方もあります。例へば、好みのウィンドウレイアウトをセッションに保存しておけば、いつでも好きなときにそのレイアウトに戾ることができます。
+</p>
+<p>例へば、このやうなレイアウトは使ひやすいでせう:
+</p>
+<pre class="verbatim">+----------------------------------------+
+|                  VIM - main help file  |
+|                                        |
+|Move around:  Use the cursor keys, or &quot;h|
+|help.txt================================|
+|explorer   |                            |
+|dir        |~                           |
+|dir        |~                           |
+|file       |~                           |
+|file       |~                           |
+|file       |~                           |
+|file       |~                           |
+|~/=========|[No File]===================|
+|                                        |
++----------------------------------------+
+</pre>
+<p>ヘルプウィンドウが上部に表示され、いつでも參照できます。左端の縱長のウィンドウはファイルエクスプローラーといふ Vim のプラグインです。ディレクトリのファイル一覽を表示し、その中からファイルを選擇して開くことができます。詳しくは次章で說明します。
+</p>
+<p>このやうなウィンドウを作るには、Vim を起動してから次のコマンドを實行します:
+</p>
+<div class="example">
+<pre class="example">:help
+CTRL-W w
+:vertical split ~/
+</pre></div>
+
+<p>ウィンドウの大きさを調節し、セッションを保存してください:
+</p><div class="example">
+<pre class="example">:mksession ~/.vim/mine.vim
+</pre></div>
+
+<p>これで、同じレイアウトで Vim を起動できます:
+</p>
+<div class="example">
+<pre class="example">vim -S ~/.vim/mine.vim
+</pre></div>
+
+<p><strong>Hint:</strong> エクスプローラーでファイルを選擇し、空のウィンドウでファイルを開くには、ファイル名の場所にカーソルを移動して &quot;O&quot; を押します。マウスのダブルクリックでも同じ動作になります。
+</p>
+
+<a name="UNIX-to-MS_002dWINDOWS"></a>
+<h4 class="unnumberedsubsec">UNIX と MS-WINDOWS</h4>
+
+<p>MS-Windows と Unix を兩方使はなければならない人もゐるでせう。そのやうな人は、&rsquo;<samp>sessionoptions</samp>&rsquo; に &quot;<var>slash</var>&quot; と &quot;<var>unix</var>&quot; を追加した方がいいかもしれません。その設定で保存されたセッションファイルはどちらのシステムでも使へます。次のコマンドを <samp>vimrc</samp> ファイルに追加してください:
+</p>
+<div class="example">
+<pre class="example">:set sessionoptions+=unix,slash
+</pre></div>
+
+<p>セッションファイルが Unix 形式で保存されるやうになります。MS-Windows の Vim は Unix 形式のセッションファイルを讀み書きできますが、Unix の Vim は MS-Windows 形式のセッションファイルを讀み込むことができません。同樣に、MS-Windows の Vim は &lsquo;<samp>/</samp>&rsquo; で區切られたファイル名を處理できますが、Unix の Vim は &lsquo;<samp>\</samp>&rsquo; を處理できません。
+</p>
+
+<a name="setusiyon-to-viminfo"></a>
+<h4 class="unnumberedsubsec">セッション と viminfo</h4>
+
+<p>セッションファイルにはたくさんの情報が保存されますが、マークやレジスタ、コマンドライン履歷などは保存されません。それらの情報を保存するには viminfo を使つてください。
+</p>
+<p>セッションと viminfo は分けて使ふことが多いと思ひます。他のセッションに切り換へてもコマンドライン履歷をそのまま殘すことができますし、テキストをレジスタにヤンクし、他のセッションでペーストするといふこともできます。
+</p>
+<p>セッションと viminfo を同時に使ひたい場合は、自分で保存してください。例:
+</p>
+<div class="example">
+<pre class="example">:mksession! ~/.vim/secret.vim
+:wviminfo! ~/.vim/secret.viminfo
+</pre></div>
+
+<p>復元するには次のやうにします:
+</p>
+<div class="example">
+<pre class="example">:source ~/.vim/secret.vim
+:rviminfo! ~/.vim/secret.viminfo
+</pre></div>
+
+<a name="g_t21_002e5"></a><a name="index-biyu"></a>
+<a name="biyu"></a>
+<h3 class="section">ビュー</h3>
+
+<p>セッションは Vim 全體の表示設定を扱ひます。1 つのウィンドウに關する設定だけ保存したい場合は、ビューを使ひます。
+</p>
+<p>ビューは、ファイルごとに表示設定を變更したい場合に使ひます。例へば、&rsquo;<samp>number</samp>&rsquo; を設定して行番號を表示し、いくつかの折り疊みを定義した場合に、その情報を保存して、後で復元することができます。實際のところ、セッションには、各ウィンドウのビューが保存されてゐるのです。
+</p>
+<p>ビューの使ひ方は 2 つあります。1 つは、ビューファイルの名前を Vim に決めさせる方法です。保存したビューは、同じ名前のファイルを開いてゐるときに復元できます。カレントウィンドウのビューを保存するには、次のコマンドを使ひます:
+</p>
+<div class="example">
+<pre class="example">:mkview
+</pre></div>
+
+<p>ビューを保存する場所は自動的に決定されます。後で同じファイルを開いたときに、次のコマンドでビューを復元できます:
+</p>
+<div class="example">
+<pre class="example">:loadview
+</pre></div>
+
+<p>簡單ですね。
+</p>
+<p>さて、同じファイルを違ふ設定で表示してみませう。&rsquo;<samp>number</samp>&rsquo; オプションをオフに設定、あるいは折り疊みをすべて開き、ウィンドウの表示を變更してみます。そして、次のコマンドでビューを保存します:
+</p>
+<div class="example">
+<pre class="example">:mkview 1
+</pre></div>
+
+<p>當然、次のやうにして復元します:
+</p>
+<div class="example">
+<pre class="example">:loadview 1
+</pre></div>
+
+<p>これで、&quot;<code>:loadview</code>&quot; と &quot;<code>:loadview 1</code>&quot; を使つて、同じファイルの 2 つのビューを切り替へられるやうになりました。
+</p>
+<p>ファイル 1 つにつき、番號なしのビューと、1 から 9 までの 9 個のビュー、合はせて 10 個のビューが使へます。
+</p>
+
+<a name="Ming-Qian-Fu-kinobiyu"></a>
+<h4 class="unnumberedsubsec">名前付きのビュー</h4>
+
+<p>ビューのもう 1 つの使用方法は、指定したファイルにビューを保存する方法です。この方法なら、他のファイルを開いてゐてもビューを復元できます。ビューを復元すると、ビューに關聯付けられたファイルが開くので、編輯するファイルを素早く切り替へる方法としても使へます。
+</p>
+<p>例へば、カレントファイルのビューを保存するには、次のやうにします:
+</p>
+<div class="example">
+<pre class="example">:mkview ~/.vim/main.vim
+</pre></div>
+
+<p>次のコマンドで復元できます:
+</p>
+<div class="example">
+<pre class="example">:source ~/.vim/main.vim
+</pre></div>
+
+<a name="g_t21_002e6"></a><a name="index-modorain"></a>
+<a name="modorain"></a>
+<h3 class="section">モードライン</h3>
+
+<p>ファイル固有の設定を、ファイルを開くたびに設定しても構ひませんが、何度も何度も同じコマンドを入力するのはうんざりですよね。セッションやビューでは同じ設定を他人と共有できません。
+</p>
+<p>そのやうな場合にはモードラインを使ひます。モードラインとは、ファイル固有の設定をファイル內に記述するための仕組みです。
+</p>
+<p>例へば、C 言語ファイルのインデントをスペース 4 個分に設定したい場合に使ひます。それには &rsquo;<samp>shiftwidth</samp>&rsquo; オプションを 4 に設定する必要があるので、モードラインは次のやうになります:
+</p>
+<pre class="verbatim">/* vim:set shiftwidth=4: */
+</pre>
+<p>この行を、ファイルの先頭または末尾から五行以內のどこかに書いてください。そのファイルを開くと &rsquo;<samp>shiftwidth</samp>&rsquo; が自動的に設定されます。他のファイルを開くと、初期設定の 8 に戾ります。
+</p>
+<p>モードラインをファイルヘッダーに書くのが適當な場合はファイルの先頭にモードラインを書きます。テキストファイルなど、モードラインがその內容を邪魔してしまふやうな場合は末尾に書きます。
+</p>
+<p>&rsquo;<samp>modelines</samp>&rsquo; オプションでモードラインの有效範圍を設定できます。ファイルの先頭または末尾からの行數で指定してください。例へば、10 行にしたい場合は次のやうに設定します:
+</p>
+<div class="example">
+<pre class="example">:set modelines=10
+</pre></div>
+
+<p>モードライン機能を無效にするには &rsquo;<samp>modeline</samp>&rsquo; オプションをオフに設定します。Unix の root や MS-Windows の Administrator として作業する場合や、信用できないファイルを開く場合に設定してください:
+</p>
+<div class="example">
+<pre class="example">:set nomodeline
+</pre></div>
+
+<p>モードラインは次の書式で書きます:
+</p>
+<div class="example">
+<pre class="example">any-text vim:set {option}={value} ... : any-text
+</pre></div>
+
+<p>モードラインの前後、&quot;any-text&quot; の部分はどんな文字列でも構ひません。例へば上述の例のやうに、&lsquo;<samp>/*</samp>&rsquo; と &lsquo;<samp>*/</samp>&rsquo; で圍んでコメントにすることができます。
+</p>
+<p>Vim は &quot; vim:&quot; といふ部分を見てモードラインを認識します。直前に空白のある &quot;vim&quot;、または行頭の &quot;vim&quot; だけが認識されます。つまり、例へば &quot;gvim:&quot; は機能しません。
+</p>
+<p>2 つのコロン (:) の閒には &quot;<code>:set</code>&quot; コマンドを記述します。これは通常の &quot;<code>:set</code>&quot; コマンドと同じです。ただし、コロンの前にバックスラッシュ (&lsquo;<samp>\</samp>&rsquo;) を置く必要があります (バックスラッシュがない場合はそれがモードラインの終端だと認識されます)。
+</p>
+<p>例:
+</p>
+<div class="example">
+<pre class="example">// vim:set textwidth=72 dir=c\:\tmp:  use c:\tmp here
+</pre></div>
+
+<p>最初のコロンにはバックスラッシュが前置されてゐるので、それは &quot;<code>:set</code>&quot; コマンドの一部です。2 つ目のコロン以降は無視されるので、說明を書くことができます。
+</p>
+<p>詳細は |<a href="options_002etxt.html#modeline">modeline</a>| を參照してください。
+</p>
+<hr>
+<div class="header">
+<p>
+Next: <a href="usr_005f22_002etxt.html#usr_005f22_002etxt" accesskey="n" rel="next">usr_22.txt</a>, Previous: <a href="usr_005f20_002etxt.html#usr_005f20_002etxt" accesskey="p" rel="prev">usr_20.txt</a>, Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

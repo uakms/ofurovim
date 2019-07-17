@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>debug.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="debug.txt (Vim Reference Manual)">
+<meta name="keywords" content="debug.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="develop_002etxt.html#develop_002etxt" rel="next" title="develop.txt">
+<link href="quotes_002etxt.html#quotes_002etxt" rel="prev" title="quotes.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="debug_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Vim-nodebatugunituite"></a>
+<h2 class="unnumbered">Vim のデバッグについて</h2>
+<pre class="verbatim">*debug.txt*     For Vim バージョン 8.1.  Last change: 2019 May 107
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+</pre>
+
+<a name="debug_002dvim"></a><a name="index-debug_002dvim"></a>
+<a name="index-Vim-nodebatugu"></a>
+<p>Vim のデバッグ
+</p>
+<p>Vim のデバッグ方法についての說明です。Vim script や函數などのデバッグについては、|<a href="repeat_002etxt.html#debug_002dscripts">debug-scripts</a>| を參照してください。
+</p>
+<table>
+<tr><td width="65%">1. gcc と gdb を使つてクラッシュの場所を特定する</td><td width="35%">|<a href="#debug_002dgcc">debug-gcc</a>|</td></tr>
+<tr><td width="65%">2. メモリリークの檢出</td><td width="35%">|<a href="#debug_002dleaks">debug-leaks</a>|</td></tr>
+<tr><td width="65%">3. Windows でのバグレポート</td><td width="35%">|<a href="#debug_002dwin32">debug-win32</a>|</td></tr>
+</table>
+
+<a name="debug_002dgcc"></a><a name="gdb"></a><a name="index-debug_002dgcc"></a>
+<a name="index-gdb"></a>
+<a name="index-gcc-to-gdb-woShi-tutekuratusiyunoChang-Suo-woTe-Ding-suru"></a>
+<a name="g_t1_002e-gcc-to-gdb-woShi-tutekuratusiyunoChang-Suo-woTe-Ding-suru"></a>
+<h3 class="section">1. gcc と gdb を使つてクラッシュの場所を特定する</h3>
+
+<p>テストファイルで Vim がクラッシュした場合、gcc を使つてゐるなら、以下の方法で場所を特定できます。MinGW でも同じやうにできます。
+</p>
+<ol>
+<li> &quot;-g&quot; オプション付きで Vim をコンパイル (src/Makefile にそのための行があるので、それをコメントアウトしてください)。さらに &quot;strip&quot; を無效化 (strip をインストールしないか、&quot;STRIP = /bin/true&quot; の行を使ふ)。
+
+</li><li> 次のコマンドを實行 (&quot;11&quot; の所を失敗したテストの番號に變へてください):
+<div class="example">
+<pre class="example">cd testdir
+gdb ../vim
+run -u unix.vim -U NONE -s dotest.in test11.in
+</pre></div>
+
+</li><li> Vim のクラッシュを確認。gdb がメッセージを表示します。
+
+</li><li> 次のコマンドでスタックトレースを表示できます:
+<div class="example">
+<pre class="example">where
+</pre></div>
+<p>次のコマンドで別の場所のスタックトレースを表示できます:
+</p><div class="example">
+<pre class="example">frame 3
+</pre></div>
+<p>&quot;3&quot; のところにスタックトレースの番號を指定してください。
+</p></li></ol>
+
+<a name="debug_002dleaks"></a><a name="valgrind"></a><a name="index-debug_002dleaks"></a>
+<a name="index-valgrind"></a>
+<a name="index-memoririkunoJian-Chu-"></a>
+<a name="g_t2_002e-memoririkunoJian-Chu-"></a>
+<h3 class="section">2. メモリリークの檢出</h3>
+
+<p>もし Vim がメモリリークを起こしてゐるやうな感じがして、そしてあなたが Linux を使つてゐるなら、valgrind ツールを使ふことでメモリリークをピンポイントで檢出することができます。
+</p>
+<p>まづ、Vim を EXITFREE の定義付きでビルドします。MAKEFILE を檢索して該當行のコメントを外してください。
+</p>
+<p>次のコマンドで Vim を起動してください:
+</p><div class="example">
+<pre class="example">valgrind --log-file=valgrind.log --leak-check=full ./vim
+</pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+Vim の實行はとても遲くなります。<samp>.vimrc</samp> が大きかつたり多くのプラグインを入れてゐたりすると起動にとても時閒がかかるので、その場合は &quot;&ndash;clean&quot; 引數を指定して起動してみてください。
+</p></blockquote>
+
+<p>ライブラリがメモリリークを起こしてゐる場合もあります。例へば getpwuid() や XtVaAppCreateShell() などです。それらを避けることはできません。リークしてゐるバイト數は數キロバイト以下のはずです。
+</p>
+<a name="debug_002dwin32"></a><a name="index-debug_002dwin32"></a>
+<a name="index-Windows-denobagurepoto"></a>
+<a name="g_t3_002e-Windows-denobagurepoto"></a>
+<h3 class="section">3. Windows でのバグレポート</h3>
+
+<p>Windows版の Vim が再現可能な手段でクラッシュした場合、次の方法で有用なバグレポートを作成できます。
+</p>
+
+<a name="g_t3_002e1-YiBan-Shi-Xiang-"></a>
+<h4 class="unnumberedsubsec">3.1 一般事項</h4>
+
+<p>實行ファイルに對應したデバッグシンボルファイル (PDB) を用意してください。gvim.exe には gvim.pdb、vim.exe には vim.pdb が必要です。あなたが實行ファイルを入手したのと同じ場所に用意されてゐるはずです。EXE に對應した (同じ日附の) PDB でなければいけません。
+</p>
+<p>Microsoft Visual C++ コンパイラを使つて自分で實行ファイルを作成した場合は、PDB は EXE といつしよに作成されてゐます。
+</p>
+<p>Visual Studio を持つてゐる場合はそれを使つてください。VC Toolkit と WinDbg は必要ありません。
+</p>
+<p>他のコンパイラを使つてゐる場合は、それぞれ適切なデバッガを使つてください。Cygwin または MinGW のコンパイラなら gdb を使つてください (上記の |<a href="#debug_002dgcc">debug-gcc</a>| 參照)。
+</p>
+
+<a name="debug_002dvs2005"></a><a name="index-debug_002dvs2005"></a>
+<a name="index-Visual-Studio-2005_002fVisual-C_002b_002b-2005-Express-de-Vim-wodebatugusuru"></a>
+<a name="g_t3_002e2-Visual-Studio-2005_002fVisual-C_002b_002b-2005-Express-de-Vim-wodebatugusuru"></a>
+<h4 class="unnumberedsubsec">3.2 Visual Studio 2005/Visual C++ 2005 Express で Vim をデバッグする</h4>
+
+<p>vim.exe か gvim.exe を起動し、Visual Studio を起動してください。(Visual Studio を持つてゐない場合は、|<a href="#get_002dms_002ddebuggers">get-ms-debuggers</a>| の說明に從つて、無料の Visual C++ 2005 Express Edition を入手してください。)
+</p>
+<p>メニューから「ツール/プロセスにアタッチ」を選擇し、Vim のプロセスを選擇します。
+</p>
+<p>そして、Vim を操作してクラッシュを再現します。「ハンドルされてゐない例外が發生しました」といふ Visual Studio のダイアログが表示されるので、中斷ボタンをクリックしてプロセスを中斷してください。
+</p>
+<p>シンボルが讀み込めず、ソースコードを表示できなかつたときは、もう 1 つダイアログが表示されます。OK をクリックしてください。
+</p>
+<p>ウィンドウがいくつか開きます。呼び出し履歷ウィンドウの右クリックメニューから「シンボルの讀み込み」を選擇してください。シンボル檢索ダイアログが開くので、(g)vim.pdb のあるディレクトリを選擇してください。
+</p>
+<p>このとき、呼び出し履歷ウィンドウには Vim の函數名や行番號が表示されてゐるはずです。どれかをダブルクリックするとソースの檢索ダイアログが表示されます。Vim のソースがあるディレクトリを選擇してください (もしソースがあるなら)。
+</p>
+<p>さらに詳しくデバッグする方法が分からないときは、&quot;<code>:help bug-reports</code>&quot; の說明に從つてください。バグレポートに呼び出し履歷を貼り付けてください。
+</p>
+<p>有料版の Visual Studio を使つてゐる場合は、デバッグメニューから minidump を保存できるので、それをバグレポートに添付してください。minidump は 100KB 以下の小さなファイルで、Vim のプロセスに關する情報が入つてゐます。
+</p>
+<p>Visual C++ 2005 Express Edition では minidump を保存できません。just-in-time デバッガ (クラッシュを檢出して自動的に起動されるデバッガ) もインストールされません。それらが必要なときは WinDbg (|<a href="#debug_002dwindbg">debug-windbg</a>|) を使つてください。
+</p>
+<a name="debug_002dwindbg"></a><a name="index-debug_002dwindbg"></a>
+<a name="index-WinDbg-woShi-tute-Vim-wodebatugusuru"></a>
+<a name="g_t3_002e3-WinDbg-woShi-tute-Vim-wodebatugusuru"></a>
+<h4 class="unnumberedsubsec">3.3 WinDbg を使つて Vim をデバッグする</h4>
+
+<p>WinDbg の入手方法は |<a href="#get_002dms_002ddebuggers">get-ms-debuggers</a>| を參照してください。
+</p>
+<p>Visual Studio IDE を使ふのと同じやうに、WinDbg から Vim のプロセスにアタッチできます。プログラムがクラッシュしたときに、事後分析デバッガ (postmortem debugger) として、WinDebug を自動的に起動することができます。事後分析デバッガとして WinDeb を設定するには &quot;windbg -I&quot; を實行してください。
+</p>
+<p>WinDbg から、實行中の Vim のプロセスにアタッチするには、WinDeb を起動し、File メニューから「プロセスにアタッチ」を選擇し、Vim のプロセスを選擇して OK をクリックします。
+</p>
+<p>メニューから「File-&gt;Symbol File Path」を選擇し、Vim PDB の入つてゐるフォルダを symbolpath に追加してください。Vim のソースファイルもある場合は、File メニューの Source File Path を使つてください。WinDbg でソースファイルを開いたり、ブレークポイントを設定したりできます。Vim をクラッシュさせると、クラッシュした場所のソースファイルが WinDbg で開かれます。View メニューを使つて、コールスタック、ローカル變數、ウォッチウィンドウなどを見ることができます。
+</p>
+<p>事後分析デバッガとして WinDbg を使つてゐる場合、WinDbg から Vim のプロセスにアタッチする必要はありません。Vim をクラッシュさせるだけで WinDbg が自動的に起動します。上述のやうに、シンボルファイルパスとソースファイルパスを設定してください。
+</p>
+<p>minidump を保存するには、WinDbg コマンドラインで次のコマンドを入力します:
+</p><div class="example">
+<pre class="example">.dump vim.dmp
+</pre></div>
+<a name="debug_002dminidump"></a><a name="index-debug_002dminidump"></a>
+<a name="index-Minidump-woKai-ku"></a>
+<a name="g_t3_002e4-Minidump-woKai-ku"></a>
+<h4 class="unnumberedsubsec">3.4 Minidump を開く</h4>
+
+<p>Visual Studio か WinDbg を使つて minidump を開くことができます。
+</p>
+<p>Visual Studio 2005 の場合: メニューから「ファイル-&gt;開く-&gt;プロジェクト/ソリューション」選擇し、.dmp ファイルを開いてください。F5 キーを押してデバッガを起動します。Symbol File Path の設定について |<a href="#debug_002dvs2005">debug-vs2005</a>| の說明も參照してください。
+</p>
+<p>WinDbg の場合: メニューから「File-&gt;Open Crash Dump」を選擇します。Symbol File Pathの設定について |<a href="#debug_002dwindbg">debug-windbg</a>| の說明も參照してください。
+</p>
+<a name="get_002dms_002ddebuggers"></a><a name="index-get_002dms_002ddebuggers"></a>
+<a name="index-Microsoft-debatuguturunoRu-Shou-Fang-Fa-"></a>
+<a name="g_t3_002e5-Microsoft-debatuguturunoRu-Shou-Fang-Fa-"></a>
+<h4 class="unnumberedsubsec">3.5 Microsoft デバッグツールの入手方法</h4>
+
+<p>Windows 用のデバッグツールは次の場所からダウンロードできます
+</p>
+<p><a href="http://www.microsoft.com/whdc/devtools/debugging/default.mspx">http://www.microsoft.com/whdc/devtools/debugging/default.mspx</a>
+</p>
+<p>これには WinDbg デバッガが含まれてゐます。
+</p>
+<p>Visual C++ 2005 Express Edition は次の場所からダウンロードできます。無料です。
+</p>
+<p><a href="http://msdn.microsoft.com/vstudio/express/visualC/default.aspx">http://msdn.microsoft.com/vstudio/express/visualC/default.aspx</a>
+</p>
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

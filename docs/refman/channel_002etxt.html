@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>channel.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="channel.txt (Vim Reference Manual)">
+<meta name="keywords" content="channel.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="fold_002etxt.html#fold_002etxt" rel="next" title="fold.txt">
+<link href="eval_002etxt.html#eval_002etxt" rel="prev" title="eval.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="channel_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="ziyobu_002c-tiyaneru_002c-purosesuJian-Tong-Xin-"></a>
+<h2 class="unnumbered">ジョブ、チャネル、プロセス閒通信</h2>
+<pre class="verbatim">*channel.txt*      For Vim バージョン 8.1.  Last change: 2019 May 12
+
+
+		     VIMリファレンスマニュアル    by Bram Moolenaar
+</pre>
+
+<a name="channel"></a><a name="index-channel"></a>
+<p>プロセス閒通信
+</p>
+<p>Vim は別のプロセスと通信するのにチャネルを用ゐます。
+</p>
+<p>チャネルはソケットまたはパイプを用ゐます。
+</p>
+<a name="socket_002dinterface"></a><a name="index-socket_002dinterface"></a>
+<p>ジョブはプロセスを開始し、プロセスと通信するために使用できます。
+</p>
+<p>Netbeans インターフェイスもチャネルを使つてゐます。|<a href="netbeans_002etxt.html#netbeans">netbeans</a>|
+</p>
+<table>
+<tr><td width="60%">1. 槪要</td><td width="40%">|<a href="#job_002dchannel_002doverview">job-channel-overview</a>|</td></tr>
+<tr><td width="60%">2. チャネルデモ</td><td width="40%">|<a href="#channel_002ddemo">channel-demo</a>|</td></tr>
+<tr><td width="60%">3. チャネルを開く</td><td width="40%">|<a href="#channel_002dopen">channel-open</a>|</td></tr>
+<tr><td width="60%">4. JSON, JS チャネルを使ふ</td><td width="40%">|<a href="#channel_002duse">channel-use</a>|</td></tr>
+<tr><td width="60%">5. チャネルコマンド</td><td width="40%">|<a href="#channel_002dcommands">channel-commands</a>|</td></tr>
+<tr><td width="60%">6. RAW, NL チャネルを使ふ</td><td width="40%">|<a href="#channel_002draw">channel-raw</a>|</td></tr>
+<tr><td width="60%">7. その他のチャネル機能</td><td width="40%">|<a href="#channel_002dmore">channel-more</a>|</td></tr>
+<tr><td width="60%">8. チャネルでジョブを開始する</td><td width="40%">|<a href="#job_002dstart">job-start</a>|</td></tr>
+<tr><td width="60%">9. チャネルなしでジョブを開始する</td><td width="40%">|<a href="#job_002dstart_002dnochannel">job-start-nochannel</a>|</td></tr>
+<tr><td width="60%">10. ジョブオプション</td><td width="40%">|<a href="#job_002doptions">job-options</a>|</td></tr>
+<tr><td width="60%">11. ジョブを制禦する</td><td width="40%">|<a href="#job_002dcontrol">job-control</a>|</td></tr>
+<tr><td width="60%">12. プロンプトバッファを使ふ</td><td width="40%">|<a href="#prompt_002dbuffer">prompt-buffer</a>|</td></tr>
+</table>
+
+<p>{Vim が |<a href="various_002etxt.html#g_t_002bchannel">+channel</a>| 機能付きでコンパイルされたときのみ有效} <br>
+&lsquo;<code>has('channel')</code>&lsquo; でこれを確認できる
+</p>
+<p>{Vim が |<a href="various_002etxt.html#g_t_002bjob">+job</a>| 機能付きでコンパイルされたときのみ有效} <br>
+&lsquo;<code>has('job')</code>&lsquo; でこれを確認できる
+</p>
+<a name="job_002dchannel_002doverview"></a><a name="index-job_002dchannel_002doverview"></a>
+<a name="g_t1_002e-Gai-Yao-"></a>
+<h3 class="section">1. 槪要</h3>
+
+<p>主に 4 種類のジョブがあります:
+</p><ol>
+<li> いくつかの Vim インスタンスを扱ふデーモン。Vim はソケットで接續します。
+</li><li> 1 つの Vim インスタンスを 1 つのジョブが非同期に處理する。ソケットまたはパイプを使用します。
+</li><li> 短時閒、非同期で仕事をするジョブ。ソケットまたはパイプを使用します。
+</li><li> フィルタを同期して實行する。パイプを使用します。
+</li></ol>
+
+<p>ソケットを使用する場合 |<a href="#job_002dstart">job-start</a>|, |<a href="#job_002dstart_002dnochannel">job-start-nochannel</a>| および |<a href="#channel_002dopen">channel-open</a>| 參照。2 と 3 の場合は、パイプを使用する 1 つ以上のジョブです (|<a href="#job_002dstart">job-start</a>| 參照)。
+</p>
+<p>4 の場合、&quot;<code>:{range}!cmd</code>&quot; コマンドを使用します (|<a href="change_002etxt.html#filter">filter</a>| 參照)。
+</p>
+<p>ソケットとパイプ上でこれらのプロトコルを利用できます:
+</p><table>
+<tr><td width="10%">RAW</td><td width="90%">何も知られてゐない、Vim はメッセージの終はりを知らせない。</td></tr>
+<tr><td width="10%">NL</td><td width="90%">すべてのメッセージは NL (改行) 文字で終はります。</td></tr>
+<tr><td width="10%">JSON</td><td width="90%">JSON エンコーディング |<a href="eval_002etxt.html#json_005fencode_0028_0029">json_encode()</a>|</td></tr>
+<tr><td width="10%">JS</td><td width="90%">JavaScript スタイルの JSON 風のエンコーディング |<a href="eval_002etxt.html#js_005fencode_0028_0029">js_encode()</a>|</td></tr>
+</table>
+
+<p>共通の組み合はせ:
+</p><ul>
+<li> NL モードでパイプを介して接續されたジョブを使用します。例へば、スタイルチェッカーを實行し、エラーと警告を受け取ります。
+</li><li> デーモンを使用して、JSON モードでソケットに接續します。例へば、データベース內の相互參照を參照します。
+</li></ul>
+
+<a name="channel_002ddemo"></a><a name="demoserver_002epy"></a><a name="index-channel_002ddemo"></a>
+<a name="index-demoserver_002epy"></a>
+<a name="index-tiyanerudemo"></a>
+<a name="g_t2_002e-tiyanerudemo"></a>
+<h3 class="section">2. チャネルデモ</h3>
+
+<p>デモには Python が必要です。デモプログラムは次の場所にあります。
+</p>
+<p><code>$VIMRUNTIME</code>/tools/<samp>demoserver.py</samp>
+</p>
+<p>それをあるターミナルで實行しませう。そのターミナルを T1 と呼びます。
+</p>
+<p>次に別のターミナルで Vim を實行します。そして以下のコマンドでサーバーに接續します:
+</p><div class="example">
+<pre class="example">let channel = ch_open('localhost:8765')
+</pre></div>
+
+<p>T1 の中に次のやうに表示されます:
+</p><pre class="verbatim">=== socket opened ===
+</pre>
+<p>つひにサーバーにメッセージを送信できます:
+</p><div class="example">
+<pre class="example">echo ch_evalexpr(channel, 'hello!')
+</pre></div>
+
+<p>このメッセージは T1 で受信され、Vim には應答が送り返されます。
+</p>
+<p>T1 では Vim が送つた生のメッセージを確認できます:
+</p><pre class="verbatim">[1,&quot;hello!&quot;]
+</pre><p>そしてレスポンスはかうなります:
+</p><pre class="verbatim">[1,&quot;got it&quot;]
+</pre><p>この數値はメッセージを送るたびに增加していきます。
+</p>
+<p>サーバーは Vim にコマンドを送信できます。T1 において、次のやうに正確に (引用符を含めて文字通りに) タイプしてください:
+</p><pre class="verbatim">[&quot;ex&quot;,&quot;echo 'hi there'&quot;]
+</pre><p>するとそのメッセージが Vim に表示されます。カーソルを 1 單語先に移動することができます:
+</p><pre class="verbatim">[&quot;normal&quot;,&quot;w&quot;]
+</pre>
+<p>非同期通信を取り扱ふためにはコールバック (以下ハンドラー) が必要です:
+</p><pre class="verbatim">func MyHandler(channel, msg)
+  echo &quot;from the handler: &quot; . a:msg
+endfunc
+call ch_sendexpr(channel, 'hello!', {'callback': &quot;MyHandler&quot;})
+</pre><p>Vim は應答を待つことはありません。これで、サーバーは應答を後で送信し、MyHandler が呼び出されます。
+</p>
+<p>send を呼ぶたびに每囘コールバックを指定する代はりに、チャネルを開く際に指定することもできます:
+</p><pre class="verbatim">call ch_close(channel)
+let channel = ch_open('localhost:8765', {'callback': &quot;MyHandler&quot;})
+call ch_sendexpr(channel, 'hello!')
+</pre>
+<p>チャネルを試してみると、何が起こつてゐるのかを知ることができます。あなたは Vim にログファイルに行を書くよう指示することができます:
+</p><div class="example">
+<pre class="example">call ch_logfile('channellog', 'w')
+</pre></div>
+<p>|<a href="eval_002etxt.html#ch_005flogfile_0028_0029">ch_logfile()</a>| 參照.
+</p>
+<a name="channel_002dopen"></a><a name="index-channel_002dopen"></a>
+<a name="index-tiyaneruwoKai-ku"></a>
+<a name="g_t3_002e-tiyaneruwoKai-ku"></a>
+<h3 class="section">3. チャネルを開く</h3>
+
+<p>チャネルを開くには次のやうにします:
+</p><pre class="verbatim">let channel = ch_open({address} [, {options}])
+if ch_status(channel) == &quot;open&quot;
+  &quot; use the channel
+</pre>
+<p>|<a href="eval_002etxt.html#ch_005fstatus_0028_0029">ch_status()</a>| を使用して、チャネルを開くことができたかどうかを確認します。
+</p>
+<p>{address} は &quot;ホスト名:ポート番號&quot; の形式です。例: &quot;localhost:8765&quot;
+</p>
+<a name="channel_002dopen_002doptions"></a><a name="index-channel_002dopen_002doptions"></a>
+<p>{options} はオプションのエントリを持つ辭書です:
+</p>
+<a name="channel_002dmode"></a><a name="index-channel_002dmode"></a>
+<p>&quot;mode&quot; でモード (通信フォーマット) を指定します:
+</p><table>
+<tr><td width="10%">&quot;json&quot;</td><td width="90%">JSON を使ふ (詳しくは下記を參照。もつとも使ひやすい方法。既定)</td></tr>
+<tr><td width="10%">&quot;js&quot;</td><td width="90%">JS (JavaScript) エンコーディングを使用し、JSON よりも效率的。</td></tr>
+<tr><td width="10%">&quot;nl&quot;</td><td width="90%">NL 文字で終はるメッセージを使ふ</td></tr>
+<tr><td width="10%">&quot;raw&quot;</td><td width="90%">raw メッセージを使ふ</td></tr>
+</table>
+<dl compact="compact">
+<dd><a name="channel_002dcallback"></a><a name="E921"></a><a name="index-channel_002dcallback"></a>
+<a name="index-E921"></a>
+</dd>
+<dt>&quot;callback&quot;</dt>
+<dd><p>メッセージ受信時に他のハンドラーで扱はれない時に呼ばれます。これはチャネルのハンドルと、受信したメッセージの 2 つの引數を取ります。例:
+</p><pre class="verbatim">func Handle(channel, msg)
+  echo '受信した: ' . a:msg
+endfunc
+let channel = ch_open(&quot;localhost:8765&quot;, {&quot;callback&quot;: &quot;Handle&quot;})
+</pre><p>&quot;mode&quot; が &quot;json&quot;, &quot;js&quot; の時には、&quot;msg&quot; 引數は受信したメッセージの本文で、Vim の型に變換されてゐます。
+</p>
+<p>&quot;mode&quot; が &quot;nl&quot; の時には、&quot;msg&quot; 引數は NL を除く 1 つのメッセージです。
+</p>
+<p>&quot;mode&quot; が &quot;raw&quot; の時には、&quot;msg&quot; 引數はメッセージ全體を格納した文字列です。
+</p>
+<p>すべてのコールバック: |<a href="eval_002etxt.html#function_0028_0029">function()</a>| を使用して、引數および/または辭書にバインドします。または、&quot;dict.function&quot; といふ形式を使用して辭書をバインドします。
+</p>
+<p>コールバックは、通常、Vim がユーザーが文字を入力するのを待つてゐるとき、「安全な」瞬閒にのみ呼び出されます。Vim はマルチスレッドを使用しません。
+</p>
+<a name="close_005fcb"></a><a name="index-close_005fcb"></a>
+</dd>
+<dt>&quot;close_cb&quot;</dt>
+<dd><p>|<a href="eval_002etxt.html#ch_005fclose_0028_0029">ch_close()</a>| を呼び出す以外に、チャネルが閉ぢられたときに呼び出される函數。このやうに定義する必要があります:
+</p><div class="example">
+<pre class="example">func MyCloseHandler(channel)
+</pre></div>
+<p>Vim は close_cb を呼び出す前にデータを處理するコールバックを呼び出します。したがつて、この函數が呼び出されると、それ以上のデータはコールバックに渡されません。ただし、コールバックにより Vim のメッセージのチェックが發生するなら、コールバック中に close_cb が呼び出されることがあります。プラグインは何とかこれを處理する必要があり、これ以上データが來てゐないことを知つておくと便利です。
+<a name="channel_002ddrop"></a><a name="index-channel_002ddrop"></a>
+</p></dd>
+<dt>&quot;drop&quot;</dt>
+<dd><p>メッセージをいつドロップするかを指定します:
+</p><table>
+<tr><td width="10%">&quot;auto&quot;</td><td width="90%">メッセージを處理するコールバックがない場合。&quot;close_cb&quot; もこのために考慮されます。</td></tr>
+<tr><td width="10%">&quot;never&quot;</td><td width="90%">すべてのメッセージが保存されます。</td></tr>
+</table>
+
+<a name="channel_002dnoblock"></a><a name="index-channel_002dnoblock"></a>
+</dd>
+<dt>&quot;noblock&quot;</dt>
+<dd><p>|<a href="#job_002dnoblock">job-noblock</a>| と同じ效果。書き込み時にのみ重要です。
+</p>
+<a name="waittime"></a><a name="index-waittime"></a>
+</dd>
+<dt>&quot;waittime&quot;</dt>
+<dd><p>接續がミリ秒單位で待機する時閒。負の數は永遠に待ちます。
+</p>
+<p>デフォルトはゼロで、待機しません。これは、ローカルサーバーがすでに實行されてゐる場合に便利です。Unix Vim では實際には 1ms のタイムアウトが使はれます。多くのシステムではそれが必要なためです。リモートサーバーには大きな値を使用してください。例: 少なくとも 10msec。
+<a name="channel_002dtimeout"></a><a name="index-channel_002dtimeout"></a>
+</p></dd>
+<dt>&quot;timeout&quot;</dt>
+<dd><p>ブロッキング時にリクエストを待つ時閒。例: |<a href="eval_002etxt.html#ch_005fevalexpr_0028_0029">ch_evalexpr()</a>| を使用するとき。ミリ秒單位。デフォルトは 2000 (2秒) です。
+</p></dd>
+</dl>
+
+<p>&quot;mode&quot; が &quot;json&quot; か &quot;js&quot; の時には &quot;callback&quot; はオプションです。これを省略した場合、メッセージを 1 つ受信するにはメッセージを 1 つ送信する必要があります。
+</p>
+<p>チャネルオプションを開いた後に變更するには、|<a href="eval_002etxt.html#ch_005fsetoptions_0028_0029">ch_setoptions()</a>| を使用します。引數は |<a href="eval_002etxt.html#ch_005fopen_0028_0029">ch_open()</a>| に渡されるものと似てゐますが、&quot;waittime&quot; は與へられません。これはチャネルを開く場合にのみ適用されるためです。
+</p>
+<p>例へば、ハンドラーは後から追加したり、變更したりできます:
+</p><div class="example">
+<pre class="example">call ch_setoptions(channel, {'callback': callback})
+</pre></div>
+<p>&quot;callback&quot; が空の場合 (一度も指定しないか、空文字列を指定した場合) ハンドラーは削除されます。
+</p>
+<p>コールバックが呼び出された後、Vim は畫面を更新し、カーソルをそれが屬する場所に戾します。コールバックは &lsquo;<code>:redraw</code>&lsquo; を行ふ必要はありません。
+</p>
+<p>タイムアウトは次のやうに變更できます:
+</p><div class="example">
+<pre class="example">call ch_setoptions(channel, {'timeout': msec})
+</pre></div>
+<a name="channel_002dclose"></a><a name="E906"></a><a name="index-channel_002dclose"></a>
+<a name="index-E906"></a>
+<p>チャネルを使ひ終はつたら、以下のやうに切斷してください:
+</p><div class="example">
+<pre class="example">call ch_close(channel)
+</pre></div>
+<p>ソケットが使用されてゐると、兩方向のソケットが閉ぢられます。パイプが使用されてゐると (stdin/stdout/stderr)、それらはすべて閉ぢられます。これはあなたが望むものではないかもしれません! |<a href="eval_002etxt.html#job_005fstop_0028_0029">job_stop()</a>| でジョブを停止する方が良いかもしれません。すべての先讀みは破毀され、コールバックは呼び出されなくなります。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+チャネルは 3 つの段階で閉ぢられることに注意してください:
+</p><ul>
+<li> I/O が終了し、ログメッセージ: &quot;Closing channel&quot; が表示されます。呼び出すための讀み込みまたはコールバックのキューに入れられたメッセージがまだ殘つてゐる可能性があります。
+</li><li> 先讀みがクリアされ、ログメッセージ: &quot;Clearing channel&quot; が表示されます。變數によつては引き續きチャネルを參照することがあります。
+</li><li> チャネルが解放され、ログメッセージ： &quot;Freeing channel&quot; が表示されます。
+</li></ul>
+</blockquote>
+
+<a name="E898"></a><a name="E901"></a><a name="E902"></a><a name="index-E898"></a>
+<a name="index-E901"></a>
+<a name="index-E902"></a>
+<p>チャネルを開くことができない場合、エラーメッセージが表示されます。MS-Windows と Unix には違ひがあります: Unix では、ポートが存在しないとき、|<a href="eval_002etxt.html#ch_005fopen_0028_0029">ch_open()</a>| はすぐに失敗します。MS-Windows では &quot;waittime&quot; が適用されます。
+</p>
+<a name="E630"></a><a name="E631"></a><a name="index-E630"></a>
+<a name="index-E631"></a>
+<p>チャネルを讀み書きする際にエラーが發生した場合、チャネルは閉ぢられます。
+</p>
+<a name="channel_002duse"></a><a name="index-channel_002duse"></a>
+<a name="index-JSON_002c-JS-tiyaneruwoShi-u"></a>
+<a name="g_t4_002e-JSON_002c-JS-tiyaneruwoShi-u"></a>
+<h3 class="section">4. JSON、JS チャネルを使ふ</h3>
+
+<p>&quot;mode&quot; が JSON の場合は、以下のやうにメッセージを同期的に送信できます:
+</p><div class="example">
+<pre class="example">let response = ch_evalexpr(channel, {expr})
+</pre></div>
+<p>これは通信相手から應答があるまで待ち合はせます。
+</p>
+<p>mode が JS の場合は、メッセージが JavaScript エンコーディングを使用する點を除いて、これは同じです。その違ひについては、|<a href="eval_002etxt.html#js_005fencode_0028_0029">js_encode()</a>| 參照。
+</p>
+<p>應答を處理せずにメッセージを送信する、またはチャネルコールバックに應答を處理させるには:
+</p><div class="example">
+<pre class="example">call ch_sendexpr(channel, {expr})
+</pre></div>
+
+<p>メッセージを送信し、應答を特別な函數で非同期的に處理する場合には、このやうにします:
+</p><div class="example">
+<pre class="example">call ch_sendexpr(channel, {expr}, {'callback': Handler})
+</pre></div>
+
+<p>Vim は、メッセージ ID を使用して要求との應答を照合します。應答が受信されると、コールバックが呼び出されます。同じ ID を持つさらなる應答は無視されます。あなたのサーバーが複數の應答を返信する場合、ID ゼロで送信する必要があります。それらはチャネルコールバックに渡されます。
+</p>
+<p>{expr} は JSON に變換され、排列で包まれます。{expr} として文字列 &quot;hello&quot; を送信した場合に、通信相手が受け取るメッセージの例は次のやうになります:
+</p><pre class="verbatim">[12,&quot;hello&quot;]
+</pre>
+<p>送信される JSON のフォーマットはこのやうになつてゐます:
+</p><pre class="verbatim">[{number},{expr}]
+</pre>
+<p>{number} には每囘異なる値が入ります。これは應答があるならば、必ず使はれます:
+</p><pre class="verbatim">[{number},{response}]
+</pre>
+<p>このやうにして、受信したメッセージがどの送信メッセージに對應するかを知ることができ、正しいハンドラーを呼び出すことができます。これによつて應答メッセージの到着順序を氣にしなくても良くなります。
+</p>
+<p>改行文字が JSON テキストを終了してゐます。これは、讀み込まれたテキストを區切るために使用できます。例へば Python では:
+</p><pre class="verbatim">splitidx = read_text.find('\n')
+message = read_text[:splitidx]
+rest = read_text[splitidx + 1:]
+</pre>
+<p>送信側はかならず有效な JSON を Vim へ送らなければなりません。Vim は JSON として解釋することで、受信メッセージの終端をチェックします。終端を受信することが、メッセージを受理する唯一の方法です。メッセージ最後の改行はオプションです。
+</p>
+<p>サーバープロセスが Vim からのメッセージを受信すること無く、メッセージを送信するには、數値に 0 を使ふ必要があります。
+</p><pre class="verbatim">[0,{response}]
+</pre>
+<p>するとチャネルのハンドラーが {response} を Vim の方に變換したものを受け取るでせう。チャネルにハンドラーが關聯付けられてゐない場合には、メッセージは破毀されます。
+</p>
+<p>JSON または JS チャネルで |<a href="eval_002etxt.html#ch_005fsendraw_0028_0029">ch_sendraw()</a>| および |<a href="eval_002etxt.html#ch_005fevalraw_0028_0029">ch_evalraw()</a>| を使用することもできます。その場合呼び出し元は、正しくエンコードとデコードを行ふ完全な責任があります。
+</p>
+<a name="channel_002dcommands"></a><a name="index-channel_002dcommands"></a>
+<a name="index-tiyanerukomando"></a>
+<a name="g_t5_002e-tiyanerukomando"></a>
+<h3 class="section">5. チャネルコマンド</h3>
+
+<p>JSON チャネルを使用すると、サーバープロセス側は Vim へコマンドを送信できます。そのコマンドはチャネルのハンドラーを介さずに、Vim の內部で實行されます。
+</p>
+<a name="E903"></a><a name="E904"></a><a name="E905"></a><a name="index-E903"></a>
+<a name="index-E904"></a>
+<a name="index-E905"></a>
+<p>實行可能なコマンドは以下のとほりです:
+</p><table>
+<tr><td width="90%">[&quot;redraw&quot;, {forced}]</td></tr>
+<tr><td width="90%">[&quot;ex&quot;,     {Ex コマンド}]</td></tr>
+<tr><td width="90%">[&quot;normal&quot;, {ノーマルモードコマンド}]</td></tr>
+<tr><td width="90%">[&quot;eval&quot;,   {式}, {數値}]</td></tr>
+<tr><td width="90%">[&quot;expr&quot;,   {式}]</td></tr>
+<tr><td width="90%">[&quot;call&quot;,   {函數名}, {引數リスト}, {數値}]</td></tr>
+<tr><td width="90%">[&quot;call&quot;,   {函數名}, {引數リスト}]</td></tr>
+</table>
+
+<p>これらを使ふときは、これらのコマンドが何をするかに十分氣をつけてください！ユーザーが何をしてゐるかによつては容易に干涉してしまひます。トラブルを避けるには |<a href="eval_002etxt.html#mode_0028_0029">mode()</a>| を使ひ、エディタが期待した狀態にあるかチェックしてください。例へば、コマンド實行ではなくテキストとして入力させたい文字列を送るには、以下のやうにします:
+</p><div class="example">
+<pre class="example">[&quot;ex&quot;,&quot;if mode() == 'i' | call feedkeys('ClassName') | endif&quot;]
+</pre></div>
+
+<p>これらのコマンドのエラーは、表示が亂れないやうにするため、通常は報告されません。表示したい場合は、&rsquo;<samp>verbose</samp>&rsquo; オプションを 3 以上に設定してください。
+</p>
+
+<a name="index-komando-_0022redraw_0022"></a>
+<a name="komando-_0022redraw_0022"></a>
+<h4 class="unnumberedsubsec">コマンド &quot;redraw&quot;</h4>
+
+<p>他のコマンドは明示的に畫面を更新しないので、カーソルを動かさずに一聯のコマンドを送ることができます。再描畫は他のコマンドの副作用として發生することがあります。變更されたテキストを表示し、それが屬する場所にカーソルを表示するには、&quot;<code>redraw</code>&quot; コマンドで終了する必要があります。
+</p>
+<p>引數は通常は空の文字列です:
+</p><div class="example">
+<pre class="example">[&quot;redraw&quot;, &quot;&quot;]
+</pre></div>
+<p>最初に畫面をクリアするには &quot;force&quot; を渡してください:
+</p><div class="example">
+<pre class="example">[&quot;redraw&quot;, &quot;force&quot;]
+</pre></div>
+
+
+<a name="index-komando-_0022ex_0022"></a>
+<a name="komando-_0022ex_0022"></a>
+<h4 class="unnumberedsubsec">コマンド &quot;ex&quot;</h4>
+
+<p>&quot;ex&quot; コマンドは Ex コマンドを實行します。完了やエラーの應答はありません。|<a href="eval_002etxt.html#autoload">autoload</a>| スクリプトの中の函數を使へます:
+</p><div class="example">
+<pre class="example">[&quot;ex&quot;,&quot;call myscript#MyFunc(arg)&quot;]
+</pre></div>
+
+<p>&quot;call |<a href="eval_002etxt.html#feedkeys_0028_0029">feedkeys()</a>|&quot; を使用してキーシーケンスを插入することもできます。
+</p>
+<p>エラーが發生すると、チャネルログにメッセージが書き込まれ、存在する場合は v:errmsg にエラーが設定されます。
+</p>
+
+<a name="index-komando-_0022normal_0022"></a>
+<a name="komando-_0022normal_0022"></a>
+<h4 class="unnumberedsubsec">コマンド &quot;normal&quot;</h4>
+
+<p>&quot;normal&quot; コマンドは &quot;:normal!&quot; のやうに實行され、コマンドはマップされません。カーソルの下の折疊を開く例:
+</p><div class="example">
+<pre class="example">[&quot;normal&quot; &quot;zO&quot;]
+</pre></div>
+
+
+<a name="index-komando-_0022expr_0022-_0028Ying-Da-ari_0029"></a>
+<a name="komando-_0022expr_0022-_0028Ying-Da-ari_0029"></a>
+<h4 class="unnumberedsubsec">コマンド &quot;expr&quot; (應答あり)</h4>
+
+<p>&quot;expr&quot; コマンドは、式の結果を得るために使ふことができます。たとへば、現在のバッファ內の行數を取得するには、次のやうにします:
+</p><div class="example">
+<pre class="example">[&quot;expr&quot;,&quot;line('$')&quot;, -2]
+</pre></div>
+
+<p>式の結果を返します:
+</p><div class="example">
+<pre class="example">[-2, &quot;last line&quot;]
+</pre></div>
+<p>形式は次のとほりです:
+</p><div class="example">
+<pre class="example">[{number}, {result}]
+</pre></div>
+
+<p>{number} は、リクエストに指定したのと同じものです。Vim が送信するメッセージとの混亂を避けるには、負の數を使用します。リクエストとレスポンスを一致させるには、リクエストごとに異なる番號を使用します。
+</p>
+<p>{result} は評價の結果であり、JSON エンコードされてゐます。評價が失敗したり、結果を JSON でエンコードできない場合は、文字列 &quot;ERROR&quot; となります。
+</p>
+
+<a name="index-komando-_0022expr_0022-_0028Ying-Da-nasi_0029"></a>
+<a name="komando-_0022expr_0022-_0028Ying-Da-nasi_0029"></a>
+<h4 class="unnumberedsubsec">コマンド &quot;expr&quot; (應答なし)</h4>
+
+<p>このコマンドは上記の &quot;expr&quot; に近いのですが、應答を返信しません。例:
+</p><div class="example">
+<pre class="example">[&quot;expr&quot;,&quot;setline('$', ['one', 'two', 'three'])&quot;]
+</pre></div>
+<p>リクエストに第 3 引數はありません。
+</p>
+
+<a name="index-komando-_0022call_0022"></a>
+<a name="komando-_0022call_0022"></a>
+<h4 class="unnumberedsubsec">コマンド &quot;call&quot;</h4>
+
+<p>これは &quot;expr&quot; に似てゐますが、式全體を文字列として渡す代はりに、函數の名前と引數のリストを渡します。これは、引數の文字列への變換を避け、エスケープして連結します。例:
+</p><div class="example">
+<pre class="example">[&quot;call&quot;, &quot;line&quot;, [&quot;$&quot;], -2]
+</pre></div>
+
+<p>應答が送信されない場合は、第 4 引數を省いてください:
+</p><div class="example">
+<pre class="example">[&quot;call&quot;, &quot;setline&quot;, [&quot;$&quot;, [&quot;one&quot;, &quot;two&quot;, &quot;three&quot;]]]
+</pre></div>
+
+<a name="channel_002draw"></a><a name="index-channel_002draw"></a>
+<a name="index-RAW_002c-NL-tiyaneruwoShi-u"></a>
+<a name="g_t6_002e-RAW_002c-NL-tiyaneruwoShi-u"></a>
+<h3 class="section">6. RAW、NL チャネルを使ふ</h3>
+
+<p>モードが RAW か NL の場合には、以下のやうにしてメッセージを送信します:
+</p><div class="example">
+<pre class="example">let response = ch_evalraw(channel, {string})
+</pre></div>
+
+<p>{string} はそのまま送信されます。受信した應答メッセージは直ちにチャネルから讀み込み可能になります。この時、Vim にはメッセージの終了をどう判斷するかがわかりませんから、あなた自身が面倒を見る必要があります。タイムアウトは、最初のバイトを讀み取るために適用され、その後は何も待つことはありません。
+</p>
+<p>mode が &quot;nl&quot; の場合、同樣の方法でメッセージを送信できます。あなたは各メッセージの後に NL に入れなければなりません。したがつて、一度に NL で終はる複數のメッセージを送信することもできます。應答は最初の NL までのテキストとなります。これは空のレスポンスの NL だけでもかまひません。チャネルタイムアウトの前に NL が讀み取られなかつた場合、空の文字列が返されます。
+</p>
+<p>應答を必要としないメッセージを送信するには以下のやうにします:
+</p><div class="example">
+<pre class="example">call ch_sendraw(channel, {string})
+</pre></div>
+<p>プロセス {譯注: サーバーのこと} はレスポンスを返し、チャネルのハンドラーに渡されます。
+</p>
+<p>メッセージを送信し、レスポンスを特定の函數で非同期的に取り扱ふには以下のやうにします:
+</p><div class="example">
+<pre class="example">call ch_sendraw(channel, {string}, {'callback': 'MyHandler'})
+</pre></div>
+
+<p>この {string} は JSON にもできます。その場合、|<a href="eval_002etxt.html#json_005fencode_0028_0029">json_encode()</a>| でそれを作成し |<a href="eval_002etxt.html#json_005fdecode_0028_0029">json_decode()</a>| で受信した JSON メッセージを取り扱ひます。
+</p>
+<p>生のチャネルで |<a href="eval_002etxt.html#ch_005fevalexpr_0028_0029">ch_evalexpr()</a>| または |<a href="eval_002etxt.html#ch_005fsendexpr_0028_0029">ch_sendexpr()</a>| を使用することはできません。
+</p>
+<p>Vim の文字列に NUL バイトを含めることはできません。NUL バイトを送受信するには、バッファから讀み書きしてください。|<a href="#in_005fio_002dbuffer">in_io-buffer</a>| と |<a href="#out_005fio_002dbuffer">out_io-buffer</a>| 參照。
+</p>
+<a name="channel_002dmore"></a><a name="index-channel_002dmore"></a>
+<a name="index-sonoTa-notiyaneruJi-Neng-"></a>
+<a name="g_t7_002e-sonoTa-notiyaneruJi-Neng-"></a>
+<h3 class="section">7. その他のチャネル機能</h3>
+
+<p>チャネルのステータスを取得するには、ch_status(channel) を使用します。ありうる結果は次のとほりです:
+</p><table>
+<tr><td width="20%">&quot;fail&quot;</td><td width="80%">チャネルを開くことができませんでした。</td></tr>
+<tr><td width="20%">&quot;open&quot;</td><td width="80%">チャネルを使用することができます。</td></tr>
+<tr><td width="20%">&quot;buffered&quot;</td><td width="80%">チャネルは閉ぢられましたが讀み込むデータがあります。</td></tr>
+<tr><td width="20%">&quot;closed&quot;</td><td width="80%">チャネルが閉ぢられました。</td></tr>
+</table>
+
+<p>チャネルに關聯付けられたジョブを取得するには: ch_getjob(channel)
+</p>
+<p>チャネルから 1 つのメッセージを讀むには:
+</p><div class="example">
+<pre class="example">let output = ch_read(channel)
+</pre></div>
+<p>これは、チャネルのタイムアウトを使用します。タイムアウトなしで讀むには、利用可能なメッセージを取得するだけです:
+</p><div class="example">
+<pre class="example">let output = ch_read(channel, {'timeout': 0})
+</pre></div>
+<p>メッセージが利用できなかつた場合、結果は JSON またはJSモードのチャネルでは v:none, RAW または NL チャネルでは空の文字列です。|<a href="eval_002etxt.html#ch_005fcanread_0028_0029">ch_canread()</a>| を使用して、何かがあるかどうかを調べることができます。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+コールバックメッセージがない場合、メッセージは破毀されます。これを囘避するには、チャネルにコールバックを追加します。
+</p></blockquote>
+
+<p>使用可能なRAWチャネルからすべての出力を讀み込むには:
+</p><div class="example">
+<pre class="example">let output = ch_readraw(channel)
+</pre></div>
+<p>エラー出力を讀むには:
+</p><div class="example">
+<pre class="example">let output = ch_readraw(channel, {&quot;part&quot;: &quot;err&quot;})
+</pre></div>
+
+<p>ch_read() と ch_readraw() はチャネルタイムアウトを使用します。その時閒內に何も讀み込めない場合、空の文字列が返されます。別のタイムアウトをミリ秒で指定するには、&quot;timeout&quot; オプションを使用します:
+</p><div class="example">
+<pre class="example">{&quot;timeout&quot;: 123}
+</pre></div>
+<p>エラー出力から讀み込むには、&quot;part&quot; オプションを使用します:
+</p><div class="example">
+<pre class="example">{&quot;part&quot;: &quot;err&quot;}
+</pre></div>
+<p>特定の ID を持つメッセージを JS または JSON チャネルで讀み取るには:
+</p><div class="example">
+<pre class="example">{&quot;id&quot;: 99}
+</pre></div>
+<p>ID が指定されてゐないか、または ID が -1 の場合、最初のメッセージが返されます。これは、このメッセージを待つてゐるコールバックをすべて無效にします。
+</p>
+<p>RAW チャネルの場合、Vim はメッセージの終はりを知らないので、利用可能なものを返します。
+</p>
+<p>NL チャネルの場合、これは 1 つのメッセージを返します。
+</p>
+<p>JS または JSON チャネルの場合、これは 1 つのデコードされたメッセージを返します。
+</p>
+<p>これには、任意のシーケンス番號が含まれます。
+</p>
+<a name="job_002dstart"></a><a name="job"></a><a name="index-job_002dstart"></a>
+<a name="index-job"></a>
+<a name="index-tiyanerudeziyobuwoKai-Shi-suru"></a>
+<a name="g_t8_002e-tiyanerudeziyobuwoKai-Shi-suru"></a>
+<h3 class="section">8. チャネルでジョブを開始する</h3>
+
+<p>ジョブを開始し、stdin/stdout/stderr のチャネルを開くには:
+</p><div class="example">
+<pre class="example">let job = job_start(command, {options})
+</pre></div>
+
+<p>チャネルを得るには:
+</p><div class="example">
+<pre class="example">let channel = job_getchannel(job)
+</pre></div>
+
+<p>チャネルは NL モードを使用します。別のモードが必要な場合は、{options} でこれを指定することをお勸めします。後でモードを變更すると、一部のテキストがすでに受信され、正しく解析されてゐない可能性があります。
+</p>
+<p>コマンドが處理したい出力行を生成する場合は、stdout のハンドラを指定します:
+</p><div class="example">
+<pre class="example">let job = job_start(command, {&quot;out_cb&quot;: &quot;MyHandler&quot;})
+</pre></div>
+<p>この函數は、チャネルとメッセージで呼び出されます。あなたはこれをこのやうに定義します:
+</p><div class="example">
+<pre class="example">func MyHandler(channel, msg)
+</pre></div>
+
+<p>ハンドラがなければ、|<a href="eval_002etxt.html#ch_005fread_0028_0029">ch_read()</a>| または |<a href="eval_002etxt.html#ch_005freadraw_0028_0029">ch_readraw()</a>| で出力を讀み取る必要があります。クローズコールバックでこれを行ふことができます。|<a href="#read_002din_002dclose_002dcb">read-in-close-cb</a>| 參照。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+出力を讀み取る前にジョブが終了すると、出力が失はれる可能性があることに注意してください。これはシステムによつて異なります (Unix 上では、パイプの書き込み終了を閉ぢると EOF が得られます)。これを避けるには、ジョブが終了する前にそれをしばらくスリープさせること。
+</p></blockquote>
+
+<p>&quot;out_cb&quot; に定義されたハンドラは stderr を受け取りません。もし個別に扱ひたい場合は、&quot;err_cb&quot; ハンドラを追加します:
+</p><div class="example">
+<pre class="example">let job = job_start(command, {&quot;out_cb&quot;: &quot;MyHandler&quot;,
+        \			  &quot;err_cb&quot;: &quot;ErrHandler&quot;})
+</pre></div>
+
+<p>1 つのハンドラで stderr と stdout の兩方を處理する場合は、&quot;callback&quot; オプションを使用します:
+</p><div class="example">
+<pre class="example">let job = job_start(command, {&quot;callback&quot;: &quot;MyHandler&quot;})
+</pre></div>
+
+<p>システムによつては、ジョブを開始するとVimをバックグラウンドに移動することがあり、開始されたジョブはフォーカスを取得します。これを避けるには &lsquo;foreground()&lsquo; 函數を使用してください。これは、早く呼び出されたとき、コールバックハンドラ內に置いたとき、またはジョブが開始した後にタイマーを使用して呼び出すときは、必ずしも機能しない場合があります。
+</p>
+<p>ch_evalraw() でコマンドにメッセージを送ることができます。チャネルが JSON または JS モードの場合、ch_evalexpr() を使用できます。
+</p>
+<p>使用できるオプションがいくつかあります。|<a href="#job_002doptions">job-options</a>| 參照。
+</p>
+<p>例へば、ジョブを開始し、その出力をバッファ &quot;dummy&quot; に書き込むには:
+</p><div class="example">
+<pre class="example">let logjob = job_start(&quot;tail -f /tmp/log&quot;,
+                     \ {'out_io': 'buffer', 'out_name': 'dummy'})
+sbuf dummy
+</pre></div>
+
+
+<a name="index-batuhuakaranoziyobuRu-Li-"></a>
+<a name="batuhuakaranoziyobuRu-Li-"></a>
+<h4 class="unnumberedsubsec">バッファからのジョブ入力</h4>
+<a name="in_005fio_002dbuffer"></a><a name="index-in_005fio_002dbuffer"></a>
+<p>バッファから讀み取るジョブを實行するには:
+</p><div class="example">
+<pre class="example">let job = job_start({command},
+    \ {'in_io': 'buffer', 'in_name': 'mybuffer'})
+</pre></div>
+<a name="E915"></a><a name="E918"></a><a name="index-E915"></a>
+<a name="index-E918"></a>
+<p>バッファは、|<a href="eval_002etxt.html#bufnr_0028_0029">bufnr()</a>| と同樣の名前で見つけられます。バッファは、job_start() が呼び出されたときに存在し、ロードされてゐなければなりません。
+</p>
+<p>デフォルトでは、これはバッファ全體を讀み込みます。これは &quot;in_top&quot; と &quot;in_bot&quot; オプションで變更できます。
+</p>
+<p>特殊モードは、&quot;in_top&quot; が 0 に設定され、&quot;in_bot&quot; が設定されてゐない場合です。バッファに行が追加されるたびに、最後の 1 行がジョブ stdin に送信されます。これにより、最後の行を編輯し、Enter を押したときに送信することができます。
+<a name="channel_002dclose_002din"></a><a name="index-channel_002dclose_002din"></a>
+特殊モードを使用しないときは、最後の行が書き込まれた後にパイプまたはソケットが閉ぢられます。これは、入力が終了した讀み取り終了を知らせます。|<a href="eval_002etxt.html#ch_005fclose_005fin_0028_0029">ch_close_in()</a>| を使用すると、より早く終了することもできます。
+</p>
+<p>テキストの NUL バイトはジョブに渡されます (內部では Vim はこれらを NL バイトとして格納します)。
+</p>
+
+<a name="index-kurozukorubatukudeziyobuChu-Li-woDu-miIp-mu"></a>
+<a name="kurozukorubatukudeziyobuChu-Li-woDu-miIp-mu"></a>
+<h4 class="unnumberedsubsec">クローズコールバックでジョブ出力を讀み込む</h4>
+<a name="read_002din_002dclose_002dcb"></a><a name="index-read_002din_002dclose_002dcb"></a>
+<p>ジョブに時閒がかかり、中閒結果が必要ない場合は、クローズコールバックを追加してそこの出力を讀み取ることができます:
+</p>
+<pre class="verbatim">func! CloseHandler(channel)
+  while ch_status(a:channel, {'part': 'out'}) == 'buffered'
+    echomsg ch_read(a:channel)
+  endwhile
+endfunc
+let job = job_start(command, {'close_cb': 'CloseHandler'})
+</pre>
+<p>あなたは &quot;echomsg&quot; よりも役に立つ何かをしたいでせう。
+</p>
+<a name="job_002dstart_002dnochannel"></a><a name="index-job_002dstart_002dnochannel"></a>
+<a name="index-tiyanerunasideziyobuwoKai-Shi-suru"></a>
+<a name="g_t9_002e-tiyanerunasideziyobuwoKai-Shi-suru"></a>
+<h3 class="section">9. チャネルなしでジョブを開始する</h3>
+
+<p>チャネルを作成せずに別のプロセスを開始するには:
+</p><div class="example">
+<pre class="example">let job = job_start(command,
+    \ {&quot;in_io&quot;: &quot;null&quot;, &quot;out_io&quot;: &quot;null&quot;, &quot;err_io&quot;: &quot;null&quot;})
+</pre></div>
+
+<p>これはバックグラウンドで {command} を開始し、Vim はそれが完了するのを待ちません。
+</p>
+<p>Vim が stdin、stdout、stderr のいづれも接續されてゐないと判斷すると、チャネルは作成されません。コマンドが停止するのを避けるために、リダイレクションをコマンドに含めることがよくあります。
+</p>
+<p>使用できるオプションがいくつかあります。|<a href="#job_002doptions">job-options</a>| 參照。
+</p>
+<a name="job_002dstart_002dif_002dneeded"></a><a name="index-job_002dstart_002dif_002dneeded"></a>
+<p>アドレスへの接續が動作しない時にのみジョブを開始するには、次のやうな操作を行ひます:
+</p><pre class="verbatim">let channel = ch_open(address, {&quot;waittime&quot;: 0})
+if ch_status(channel) == &quot;fail&quot;
+  let job = job_start(command)
+  let channel = ch_open(address, {&quot;waittime&quot;: 1000})
+endif
+</pre>
+<blockquote>
+<p><strong>Note:</strong> <br>
+ch_open() の待ち時閒は、ポートを利用可能にするためにジョブに 1 秒を與へることに注意してください。
+</p></blockquote>
+
+<a name="job_002doptions"></a><a name="index-job_002doptions"></a>
+<a name="index-ziyobuopusiyon"></a>
+<a name="g_t10_002e-ziyobuopusiyon"></a>
+<h3 class="section">10. ジョブオプション</h3>
+
+<p>job_start() の {options} 引數は辭書です。すべての入力はオプションです。job_setoptions(job, {options}) を使用して、ジョブの開始後にいくつかのオプションを使用できます。ch_setoptions(channel, {options}) を使用して、ジョブに關聯するチャネルで多くのオプションを使用できます。|<a href="eval_002etxt.html#job_005fsetoptions_0028_0029">job_setoptions()</a>| および |<a href="eval_002etxt.html#ch_005fsetoptions_0028_0029">ch_setoptions()</a>| 參照。
+</p>
+<dl compact="compact">
+<dd><a name="in_005fmode"></a><a name="out_005fmode"></a><a name="err_005fmode"></a><a name="index-in_005fmode"></a>
+<a name="index-out_005fmode"></a>
+<a name="index-err_005fmode"></a>
+</dd>
+<dt>&quot;in_mode&quot;</dt>
+<dd><p>stdin 用のモード、パイプを使用してゐる場合にのみ。
+</p></dd>
+<dt>&quot;out_mode&quot;</dt>
+<dd><p>stdout 用のモード、パイプを使用してゐる場合にのみ。
+</p></dd>
+<dt>&quot;err_mode&quot;</dt>
+<dd><p>stderr 用のモード、パイプを使用してゐる場合にのみ。
+</p></dd>
+</dl>
+<p>値については、|<a href="#channel_002dmode">channel-mode</a>| 參照。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+&quot;mode&quot; を設定すると、パーツ固有のモードが上書きされます。したがつて、最初に &quot;mode&quot; を、後でパーツ固有のモードを設定します。
+</p></blockquote>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+ファイルやバッファに書き込むときやバッファから讀み込むときは、NL モードがデフォルトで使用されます。
+</p></blockquote>
+
+<dl compact="compact">
+<dd><a name="job_002dnoblock"></a><a name="index-job_002dnoblock"></a>
+</dd>
+<dt>&quot;noblock&quot;: 1</dt>
+<dd><p>書き込み時にノンブロッキング書き込み呼び出しを使ふ。これは、もしも Vim が他のメッセージを扱ふべき場合に、スタックするのを囘避する。例へばジョブがバックデータを Vim の送る時など。まだすべてを書き込まれてゐないデータを &lsquo;ch_sendraw()&lsquo; が返す時を意味する。
+このオプションはパッチ 8.1.0350 にて追加された。次でテストしよう:
+</p><div class="example">
+<pre class="example">if has(&quot;patch-8.1.350&quot;)
+  let options['noblock'] = 1
+endif
+</pre></div>
+<a name="job_002dcallback"></a><a name="index-job_002dcallback"></a>
+</dd>
+<dt>&quot;callback&quot;: handler</dt>
+<dd><p>チャネルの任意の部分で何かを讀むためのコールバック。
+<a name="job_002dout_005fcb"></a><a name="out_005fcb"></a><a name="index-job_002dout_005fcb"></a>
+<a name="index-out_005fcb"></a>
+</p></dd>
+<dt>&quot;out_cb&quot;: handler</dt>
+<dd><p>stdout で讀み込むべきものがあるときのコールバック。チャネルがパイプを使用してゐる場合のみ。&quot;out_cb&quot; が設定されてゐない場合は、チャネルコールバックが使用されます。2 つの引數はチャネルとメッセージです。
+</p>
+<a name="job_002derr_005fcb"></a><a name="err_005fcb"></a><a name="index-job_002derr_005fcb"></a>
+<a name="index-err_005fcb"></a>
+</dd>
+<dt>&quot;err_cb&quot;: handler</dt>
+<dd><p>stderr で讀み込むべきものがあるときのコールバック。チャネルがパイプを使用してゐる場合のみ。&quot;err_cb&quot; が設定されてゐない場合は、チャネルコールバックが使用されます。2 つの引數はチャネルとメッセージです。
+<a name="job_002dclose_005fcb"></a><a name="index-job_002dclose_005fcb"></a>
+</p></dd>
+<dt>&quot;close_cb&quot;: handler</dt>
+<dd><p>チャネルが閉ぢられるときのコールバック。|<a href="eval_002etxt.html#ch_005fopen_0028_0029">ch_open()</a>| の &quot;close_cb&quot; と同じです。|<a href="#close_005fcb">close_cb</a>| 參照。
+<a name="job_002ddrop"></a><a name="index-job_002ddrop"></a>
+</p></dd>
+<dt>&quot;drop&quot;: when</dt>
+<dd><p>メッセージをいつドロップするかを指定します。|<a href="eval_002etxt.html#ch_005fopen_0028_0029">ch_open()</a>| の &quot;drop&quot; と同樣 (|<a href="#channel_002ddrop">channel-drop</a>| 參照)。&quot;auto&quot; の場合、exit_cb は考慮されません。
+<a name="job_002dexit_005fcb"></a><a name="index-job_002dexit_005fcb"></a>
+</p></dd>
+<dt>&quot;exit_cb&quot;: handler</dt>
+<dd><p>ジョブが終了したときのコールバック。引數はジョブと終了ステータスです。
+</p>
+<p>Vim は、終了したジョブに對して最大 10 回/秒をチェックします。チェックは、|<a href="eval_002etxt.html#job_005fstatus_0028_0029">job_status()</a>| を呼び出すことによつてトリガーすることもでき、exit_cb ハンドラを呼び出すことができます。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+データがバッファリングされ、プロセスが終了した後もコールバックが呼び出されることに注意してください。
+</p></blockquote>
+<a name="job_002dtimeout"></a><a name="index-job_002dtimeout"></a>
+</dd>
+<dt>&quot;timeout&quot;: time</dt>
+<dd><p>ブロッキング時にリクエストを待つ時閒 (例: ch_evalexpr() を使用するとき。ミリ秒單位。デフォルトは 2000(2 秒) です。
+<a name="out_005ftimeout"></a><a name="index-out_005ftimeout"></a>
+</p></dd>
+<dt>&quot;out_timeout&quot;: time</dt>
+<dd><p>stdout のタイムアウト。パイプ使用時のみ。
+<a name="err_005ftimeout"></a><a name="index-err_005ftimeout"></a>
+</p></dd>
+<dt>&quot;err_timeout&quot;: time</dt>
+<dd><p>stderr のタイムアウト。パイプ使用時のみ。
+</p></dd>
+</dl>
+<blockquote>
+<p><strong>Note:</strong> <br>
+&quot;timeout&quot; を設定すると、パーツ固有のモードが上書きされます。したがつて、最初に &quot;timeout&quot; を設定し、後でパーツ固有のモードを設定します。
+</p></blockquote>
+
+<dl compact="compact">
+<dd><a name="job_002dstoponexit"></a><a name="index-job_002dstoponexit"></a>
+</dd>
+<dt>&quot;stoponexit&quot;: {signal}</dt>
+<dd><p>Vim が終了すると {signal} をジョブに送ります。可能な値については、|<a href="eval_002etxt.html#job_005fstop_0028_0029">job_stop()</a>| 參照。
+</p></dd>
+<dt>&quot;stoponexit&quot;: &quot;&quot;</dt>
+<dd><p>Vim が終了してもジョブを停止しません。デフォルトは &quot;term&quot; です。
+</p>
+<a name="job_002dterm"></a><a name="index-job_002dterm"></a>
+</dd>
+<dt>&quot;term&quot;: &quot;open&quot;</dt>
+<dd><p>新しいウィンドウでターミナルを起動し、ジョブ stdin/stdout/stderr を接續します。&lsquo;:terminal&lsquo; を使用することと同じです。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+まだ實裝されてゐません！
+</p></blockquote>
+
+</dd>
+<dt>&quot;channel&quot;: {channel}</dt>
+<dd><p>新しいチャネルを作成する代はりに、既存のチャネルを使用します。新しいジョブに使用されるチャネルの部分は、以前使用された部分から切り離されます。チャネルが別のジョブで引き續き使用されてゐた場合、I/O エラーが發生する可能性があります。
+</p>
+<p>既存のコールバックやその他の設定が殘つてゐます。
+</p>
+</dd>
+<dt>&quot;pty&quot;: 1</dt>
+<dd><p>可能であれば、パイプのかはりに pty (pseudo-tty) を使ひます。これは端末ウィンドウとの組み合せで最も便利です。|<a href="terminal_002etxt.html#terminal">terminal</a>| を參照。
+</p>
+<p>{Unix と Unix系 のシステムでのみ有效}
+</p>
+<a name="job_002din_005fio"></a><a name="index-job_002din_005fio"></a>
+</dd>
+<dt>&quot;in_io&quot;: &quot;null&quot;</dt>
+<dd><p>stdin を切斷する (/dev/null から讀み込む)
+</p></dd>
+<dt>&quot;in_io&quot;: &quot;pipe&quot;</dt>
+<dd><p>標準入力がチャネルに接續されてゐる (デフォルト)
+</p></dd>
+<dt>&quot;in_io&quot;: &quot;file&quot;</dt>
+<dd><p>stdin はファイルから讀み込む
+</p></dd>
+<dt>&quot;in_io&quot;: &quot;buffer&quot;</dt>
+<dd><p>stdin はバッファから讀み込む
+<a name="in_005ftop"></a><a name="index-in_005ftop"></a>
+</p></dd>
+<dt>&quot;in_top&quot;: number</dt>
+<dd><p>&quot;buffer&quot; を使用する場合: 送信する最初の行 (デフォルト: 1)
+<a name="in_005fbot"></a><a name="index-in_005fbot"></a>
+</p></dd>
+<dt>&quot;in_bot&quot;: number</dt>
+<dd><p>&quot;buffer&quot; を使用する場合: 送信する最後の行 (デフォルト:最後)
+<a name="in_005fname"></a><a name="index-in_005fname"></a>
+</p></dd>
+<dt>&quot;in_name&quot;: &quot;/path/file&quot;</dt>
+<dd><p>讀み込むファイルまたはバッファの名前
+<a name="in_005fbuf"></a><a name="index-in_005fbuf"></a>
+</p></dd>
+<dt>&quot;in_buf&quot;: number</dt>
+<dd><p>讀み込むバッファの番號
+</p>
+<a name="job_002dout_005fio"></a><a name="index-job_002dout_005fio"></a>
+</dd>
+<dt>&quot;out_io&quot;: &quot;null&quot;</dt>
+<dd><p>stdout を切斷する (/dev/null に行く)
+</p></dd>
+<dt>&quot;out_io&quot;: &quot;pipe&quot;</dt>
+<dd><p>stdout がチャネルに接續されてゐる (デフォルト)
+</p></dd>
+<dt>&quot;out_io&quot;: &quot;file&quot;</dt>
+<dd><p>stdout がファイルに書き込む
+</p></dd>
+<dt>&quot;out_io&quot;: &quot;buffer&quot;</dt>
+<dd><p>stdout はバッファに追加する (下記參照)
+<a name="out_005fname"></a><a name="index-out_005fname"></a>
+</p></dd>
+<dt>&quot;out_name&quot;: &quot;/path/file&quot;</dt>
+<dd><p>書き込むファイルまたはバッファの名前
+<a name="out_005fbuf"></a><a name="index-out_005fbuf"></a>
+</p></dd>
+<dt>&quot;out_buf&quot;: number</dt>
+<dd><p>書き込むバッファの番號
+</p></dd>
+<dt>&quot;out_modifiable&quot;: 0</dt>
+<dd><p>バッファに書き込むときに、&rsquo;<samp>modifiable</samp>&rsquo; はオフになる (下記參照)
+</p></dd>
+<dt>&quot;out_msg&quot;: 0</dt>
+<dd><p>新しいバッファに書き込むとき、最初の行は &quot;Reading from channel output...&quot; に設定される
+</p>
+<a name="job_002derr_005fio"></a><a name="index-job_002derr_005fio"></a>
+</dd>
+<dt>&quot;err_io&quot;: &quot;out&quot;</dt>
+<dd><p>stderr のメッセージは stdout に行く
+</p></dd>
+<dt>&quot;err_io&quot;: &quot;null&quot;</dt>
+<dd><p>stderr を切斷する (/dev/null に行く)
+</p></dd>
+<dt>&quot;err_io&quot;: &quot;pipe&quot;</dt>
+<dd><p>stderr がチャネルに接續されてゐる (デフォルト)
+</p></dd>
+<dt>&quot;err_io&quot;: &quot;file&quot;</dt>
+<dd><p>stderr はファイルに書き込む
+</p></dd>
+<dt>&quot;err_io&quot;: &quot;buffer&quot;</dt>
+<dd><p>stderr はバッファに追加する (下記參照)
+<a name="err_005fname"></a><a name="index-err_005fname"></a>
+</p></dd>
+<dt>&quot;err_name&quot;: &quot;/path/file&quot;</dt>
+<dd><p>書き込むファイルまたはバッファの名前
+<a name="err_005fbuf"></a><a name="index-err_005fbuf"></a>
+</p></dd>
+<dt>&quot;err_buf&quot;: number</dt>
+<dd><p>書き込むバッファの番號
+</p></dd>
+<dt>&quot;err_modifiable&quot;: 0</dt>
+<dd><p>バッファに書き込むときに、&rsquo;<samp>modifiable</samp>&rsquo; はオフになる (下記參照)
+</p></dd>
+<dt>&quot;err_msg&quot;: 0</dt>
+<dd><p>新しいバッファに書き込むとき、最初の行は &quot;Reading from channel error...&quot; に設定される
+</p>
+</dd>
+<dt>&quot;block_write&quot;: number</dt>
+<dd><p>テストのためにのみ: stdin への他のすべての書き込みをブロックするふりをする
+</p>
+</dd>
+<dt>&quot;env&quot;: dict</dt>
+<dd><p>新しいプロセスのための環境變數
+</p></dd>
+<dt>&quot;cwd&quot;: &quot;/path/to/dir&quot;</dt>
+<dd><p>新しいプロセスのためのカレント作業ディレクトリ。ディレクトリが存在しない場合は、エラーが發生します。
+</p></dd>
+</dl>
+
+
+<a name="index-batuhuahenoShu-kiIp-mi"></a>
+<a name="batuhuahenoShu-kiIp-mi"></a>
+<h4 class="unnumberedsubsec">バッファへの書き込み</h4>
+<a name="out_005fio_002dbuffer"></a><a name="index-out_005fio_002dbuffer"></a>
+<p>out_io または err_io モードが &quot;buffer&quot; で、コールバックがある場合、コールバックを呼び出す前にテキストがバッファに追加されます。
+</p>
+<p>入力と出力の兩方にバッファが使用されてゐる場合、最後の行はチャネル入力に書き込まれたものなので、出力行は最後の行の上に置かれます。それ以外の場合は最後の行の下に行が追加されます。
+</p>
+<p>&quot;buffer&quot; を指定して JS または JSON モードを使用すると、デコード + エンコーディング後に、ゼロまたは負の ID を持つメッセージのみがバッファに追加されます。正の數を持つメッセージはコールバックによつて處理され、コマンドは通常通り處理されます。
+</p>
+<p>&quot;out_name&quot; または &quot;err_name&quot; のバッファ名は、現在のディレクトリの名前を擴張した後も、既存のバッファの完全名と比較されます。たとへば、&quot;<code>:edit somename</code>&quot; でバッファが作成され、バッファ名が &quot;somename&quot; の場合、そのバッファが使用されます。
+</p>
+<p>一致するバッファがない場合、新しいバッファが作成されます。新しいバッファを常に作成するには、空の名前を使用します。|<a href="eval_002etxt.html#ch_005fgetbufnr_0028_0029">ch_getbufnr()</a>| を使用してバッファ番號を取得できます。
+</p>
+<p>新しいバッファの場合、&rsquo;<samp>buftype</samp>&rsquo; は &quot;nofile&quot; に設定され、&rsquo;<samp>bufhidden</samp>&rsquo; は &quot;hide&quot; に設定されます。他の設定が必要な場合は、まづバッファを作成し、バッファ番號を渡します。
+<a name="out_005fmodifiable"></a><a name="err_005fmodifiable"></a><a name="index-out_005fmodifiable"></a>
+<a name="index-err_005fmodifiable"></a>
+&quot;out_modifiable&quot; と &quot;err_modifiable&quot; オプションは、&rsquo;<samp>modifiable</samp>&rsquo; オプションをオフにするか、&rsquo;<samp>modifiable</samp>&rsquo; になつてゐるバッファに書き込むために使用できます。つまり、行がバッファに追加されますが、ユーザーはバッファを簡單に變更できません。
+<a name="out_005fmsg"></a><a name="err_005fmsg"></a><a name="index-out_005fmsg"></a>
+<a name="index-err_005fmsg"></a>
+&quot;out_msg&quot; オプションは、新しいバッファが最初の行を &quot;Reading from channel output...&quot; に設定するかどうかを指定するために使用できます。デフォルトではメッセージを追加します。&quot;err_msg&quot; はチャネルエラーでも同じです。
+</p>
+<p>既存のバッファに &rsquo;<samp>modifiable</samp>&rsquo; が指定されてをらず、&quot;out_modifiable&quot; または &quot;err_modifiable&quot; オプションがゼロでない場合、エラーが發生し、バッファに書き込まれません。
+</p>
+<p>書き込まれたバッファがウィンドウに表示され、カーソルが最後の行の最初の列にある場合、カーソルは新しく追加された行に移動され、ウィンドウは必要に應じてカーソルを表示するために上にスクロールされます。
+</p>
+<p>追加されたすべての行に對して、取り消しが同期されます。NUL バイトは受け入れられます (內部では Vim はこれらを NL バイトとして格納します)。
+</p>
+
+<a name="index-huairuhenoShu-kiIp-mi"></a>
+<a name="huairuhenoShu-kiIp-mi"></a>
+<h4 class="unnumberedsubsec">ファイルへの書き込み</h4>
+<a name="E920"></a><a name="index-E920"></a>
+<p>ファイルはアクセス許可 600 (ユーザーに對しては讀み書き可能、他のユーザーはアクセス不可) で作成されます。これを變更するには、|<a href="eval_002etxt.html#setfperm_0028_0029">setfperm()</a>| を使用してください。
+</p>
+<p>ファイルがすでに存在する場合は切り捨てられます。
+</p>
+<a name="job_002dcontrol"></a><a name="index-job_002dcontrol"></a>
+<a name="index-ziyobuwoZhi-Yu-suru"></a>
+<a name="g_t11_002e-ziyobuwoZhi-Yu-suru"></a>
+<h3 class="section">11. ジョブを制禦する</h3>
+
+<p>ジョブの狀態を取得するには:
+</p><div class="example">
+<pre class="example">echo job_status(job)
+</pre></div>
+
+<p>ジョブの實行を停止するには:
+</p><div class="example">
+<pre class="example">job_stop(job)
+</pre></div>
+
+<p>これはジョブを終了させる通常の方法です。Unix では、ジョブに SIGTERM を送信します。他の方法でジョブを停止したり、任意の信號を送信したりすることもできます。例へば、ジョブを强制的に停止させるには、&quot;kill it&quot;:
+</p><div class="example">
+<pre class="example">job_stop(job, &quot;kill&quot;)
+</pre></div>
+
+<p>他のオプションについては、|<a href="eval_002etxt.html#job_005fstop_0028_0029">job_stop()</a>| 參照。
+</p>
+<a name="prompt_002dbuffer"></a><a name="index-prompt_002dbuffer"></a>
+<a name="g_t12_002e-puronputobatuhuawoShi-u"></a>
+<h3 class="section">12. プロンプトバッファを使ふ</h3>
+
+<p>Vim のウィンドウでジョブのための入力をタイプしたい場合、いくつかのオプションがあります:
+</p><ul>
+<li> 通常のバッファを使用して、すべての起こりうるコマンドを自分で處理します。たくさんの起こりうるコマンドが存在するので、これは複雜になります。
+</li><li> 端末ウィンドウを使用します。入力した內容がジョブに送られ、ジョブの出力がウィンドウに直接表示される場合は、これはうまく機能します。|<a href="terminal_002etxt.html#terminal_002dwindow">terminal-window</a>| を參照。
+</li><li> プロンプトウィンドウを使用します。これは、Vim でジョブからの出力 (フィルタリングされてゐる可能性もある) を表示してゐる閒に、ジョブのための行を入力してゐるときにうまく動作します。
+</li></ul>
+
+<p>プロンプトバッファは &rsquo;<samp>buftype</samp>&rsquo; を &quot;<var>prompt</var>&quot; に設定することによつて作成されます。通常は新規作成バッファでのみおこなひます。
+</p>
+<p>ユーザーは、バッファの最後の行に 1 行のテキストを編輯して入力することができます。プロンプト行で <code class="tt-key">Enter</code> キーを押すと、|<a href="eval_002etxt.html#prompt_005fsetcallback_0028_0029">prompt_setcallback()</a>| で設定されたコールバックが呼び出されます。通常は、その行をジョブに送信します。別のコールバックは、ジョブからの出力を受け取り、バッファ內のプロンプトの下 (次のプロンプトの上) に表示します。
+</p>
+<p>プロンプトの後の最後の行のテキストのみが編輯可能です。殘りのバッファはノーマルモードのコマンドでは變更できません。|<a href="eval_002etxt.html#append_0028_0029">append()</a>| などの函數を呼び出すことで變更できます。他のコマンドを使用すると、バッファを壞す可能性があります。
+</p>
+<p>&rsquo;<samp>buftype</samp>&rsquo; を &quot;<var>prompt</var>&quot; に設定した後、Vim は自動的に插入モードを開始しません。插入モードに入るには &lsquo;<code>:startinsert</code>&lsquo; を使ひます。これにより、ユーザーは行の入力を開始できます。
+</p>
+<p>プロンプトのテキストは |<a href="eval_002etxt.html#prompt_005fsetprompt_0028_0029">prompt_setprompt()</a>| 函數で設定することができます。
+</p>
+<p>ユーザーはノーマルモードに移行し、バッファ內を移動できます。これは、古い出力の參照やテキストのコピーに便利です。
+</p>
+<p><kbd>CTRL-W</kbd> キーを使用して次のウィンドウに切り替へるための <kbd>CTRL-W w</kbd> などのウィンドウコマンドを開始できます。これは插入モードでも機能します (單語を削除するには <kbd>Shift-CTRL-W</kbd> を使用します)。ウィンドウを離れたとき插入モードは停止します。プロンプトウィンドウに戾ると、插入モードが復元されます。
+</p>
+<p>&quot;a&quot;, &quot;i&quot;, &quot;A&quot; や &quot;I&quot; などの插入モードを開始するコマンドは、最終行にカーソルを移動します。&quot;A&quot; は 行末に移動し、&quot;I&quot; は行頭に移動します。
+</p>
+
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

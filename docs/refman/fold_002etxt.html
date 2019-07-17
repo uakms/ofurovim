@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>fold.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="fold.txt (Vim Reference Manual)">
+<meta name="keywords" content="fold.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="print_002etxt.html#print_002etxt" rel="next" title="print.txt">
+<link href="channel_002etxt.html#channel_002etxt" rel="prev" title="channel.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="fold_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="aruFan-Wei-woYin-su-_0028Zhe-riDie-mu_0029"></a>
+<h2 class="unnumbered">ある範圍を隱す (折り疊む)</h2>
+<pre class="verbatim">*fold.txt*      For Vim バージョン 8.1.  Last change: 2019 Jun 02
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+</pre>
+
+<a name="Folding"></a><a name="folding"></a><a name="folds"></a><a name="index-Folding"></a>
+<a name="index-folding"></a>
+<a name="index-folds"></a>
+<p>折疊 (Folding)
+</p>
+<p>ユーザーマニュアルの 28 章に折疊についての紹介がされてゐる。|<a href="usr_005f28_002etxt.html#usr_005f28_002etxt">usr_28.txt</a>|
+</p>
+<table>
+<tr><td width="50%">1. 折疊方法</td><td width="50%">|<a href="#fold_002dmethods">fold-methods</a>|</td></tr>
+<tr><td width="50%">2. 折疊コマンド</td><td width="50%">|<a href="#fold_002dcommands">fold-commands</a>|</td></tr>
+<tr><td width="50%">3. 折疊オプション</td><td width="50%">|<a href="#fold_002doptions">fold-options</a>|</td></tr>
+<tr><td width="50%">4. 折疊の振舞</td><td width="50%">|<a href="#fold_002dbehavior">fold-behavior</a>|</td></tr>
+</table>
+
+<p>{|<a href="various_002etxt.html#g_t_002bfolding">+folding</a>| 機能無しでコンパイルした場合には利用できない}
+</p>
+<a name="fold_002dmethods"></a><a name="index-fold_002dmethods"></a>
+<a name="index-Zhe-Die-Fang-Fa-"></a>
+<a name="g_t1_002e-Zhe-Die-Fang-Fa-"></a>
+<h3 class="section">1. 折疊方法</h3>
+
+<p>折疊を行ふ方法は &rsquo;<samp>foldmethod</samp>&rsquo; オプションで設定できる。
+</p>
+<p>&rsquo;<samp>foldmethod</samp>&rsquo; を &quot;manual&quot; 以外の値に設定すると、存在してゐる折疊は全て削除され新たな折疊が作成される。&quot;manual&quot; に切換へた時には既存の折疊は削除されない。これを利用すればまず自動的に折疊を定義し、それから手動で變更することが可能である。
+</p>
+<p>折疊方法は 6 つの中から選擇できる:
+</p><table>
+<tr><td width="20%">manual</td><td width="80%">手動で折疊を定義する</td></tr>
+<tr><td width="20%">indent</td><td width="80%">インデントの數を折疊のレベル (深さ) とする</td></tr>
+<tr><td width="20%">expr</td><td width="80%">折疊を定義する式を指定する</td></tr>
+<tr><td width="20%">syntax</td><td width="80%">構文强調により折疊を定義する</td></tr>
+<tr><td width="20%">diff</td><td width="80%">變更されてゐないテキストを折疊對象とする</td></tr>
+<tr><td width="20%">marker</td><td width="80%">テキスト中の印で折疊を定義する</td></tr>
+</table>
+
+
+<a name="fold_002dmanual"></a><a name="index-fold_002dmanual"></a>
+<a name="index-Zhe-Die-Shou-Dong-"></a>
+<a name="Shou-Dong--_0028MANUAL_0029"></a>
+<h4 class="unnumberedsubsec">手動 (MANUAL)</h4>
+
+<p>折疊領域を定義するためにコマンドを手動で利用する。これはテキスト中の折疊を行ふ箇所をスクリプトにより解析するのに使ふこともできる。
+</p>
+<p>折疊のレベルは折疊の入れ子の深さとなる。ある行範圍の折疊レベルを增やすには、折疊がある同じ範圍に對して再び折疊を設定する。
+</p>
+<p>手動折疊はファイルを抛棄すると失はれる。折疊を保存するには |<a href="starting_002etxt.html#g_t_003amkview">:mkview</a>| コマンドを使用する。後に復元するには |<a href="starting_002etxt.html#g_t_003aloadview">:loadview</a>| を使用する。
+</p>
+
+<a name="fold_002dindent"></a><a name="index-fold_002dindent"></a>
+<a name="index-Zhe-Die-indento"></a>
+<a name="indento-_0028INDENT_0029"></a>
+<h4 class="unnumberedsubsec">インデント (INDENT)</h4>
+
+<p>折疊は各行のインデントにより自動的に定義される。
+</p>
+<p>折疊レベルは各行のインデント量を、&rsquo;<samp>shiftwidth</samp>&rsquo; で割る (端數切捨て) ことで計算される。同じかより高い折疊レベルを持つた一續きの範圍は 1 つの折疊を形成し、より高いレベルを持つた範圍はその中で入れ子の折疊となる。
+</p>
+<p>折疊の入れ子は &rsquo;<samp>foldnestmax</samp>&rsquo; によつて制限される。
+</p>
+<p>ある行ではインデントを無視して直ぐ上か下の行のうち、低いほうの折疊レベルが使用される。無視されるのは完全な空行か、空白文字だけからなる行、および &rsquo;<samp>foldignore</samp>&rsquo; の文字で始まる行である。&rsquo;<samp>foldignore</samp>&rsquo; の文字の前に空白文字があつても無視される。C ではプリプロセッサー行を無視するために &quot;#&quot; を使用する。
+</p>
+<p>他の方法で無視する行を定義するには、&quot;expr&quot; の方法を使用する。&rsquo;<samp>foldexpr</samp>&rsquo; の中で、ある行のインデントを取得するのに、函數|<a href="eval_002etxt.html#indent_0028_0029">indent()</a>|を使ふことができる。
+</p>
+
+<a name="fold_002dexpr"></a><a name="index-fold_002dexpr"></a>
+<a name="index-Zhe-Die-Shi-"></a>
+<a name="Shi--_0028EXPR_0029"></a>
+<h4 class="unnumberedsubsec">式 (EXPR)</h4>
+
+<p>折疊は &quot;indent&quot; 方式のやうに、折疊レベルによつて自動的に定義される。&rsquo;<samp>foldexpr</samp>&rsquo; オプションの値は、各行についてこの折疊レベルを計算するためにスクリプトとして實行される。例:
+</p>
+<p>タブで始まる一聯の行範圍を 1 つの折疊にまとめる:
+</p><div class="example">
+<pre class="example">:set foldexpr=getline(v:lnum)[0]==\&quot;\\t\&quot;
+</pre></div>
+<p>折疊レベルを計算するのに Vim script の函數を呼び出す:
+</p><div class="example">
+<pre class="example">:set foldexpr=MyFoldLevel(v:lnum)
+</pre></div>
+<p>空行で仕切られた「段落」を折疊とする:
+</p><div class="example">
+<pre class="example">:set foldexpr=getline(v:lnum)=~'^\\s*$'&amp;&amp;getline(v:lnum+1)=~'\\S'?'&lt;1':1
+</pre></div>
+<p>同じ事(「段落」を折疊に)をする別の表現:
+</p><div class="example">
+<pre class="example">:set foldexpr=getline(v:lnum-1)=~'^\\s*$'&amp;&amp;getline(v:lnum)=~'\\S'?'&gt;1':1
+</pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+バックスラッシュ (日本では \ 記號)が &quot;:set&quot; の流儀で、通常とは異なるキャラクタ (空白文字、バックスラッシュ、ダブルクォート、その他、詳細は |<a href="options_002etxt.html#option_002dbackslash">option-backslash</a>| 參照) をエスケープしてゐることに注意。
+</p></blockquote>
+
+<p>式が評價される際の前提條件は以下の通り:
+</p><ul>
+<li> その行について現在のバッファとウィンドウが常に存在してゐる。
+</li><li> 變數 &quot;v:lnum&quot; には評價對象となる行番號が設定されてゐる。
+</li><li> 式の結果 (戾り値) は以下の形式で折疊レベルを示す:
+<table>
+<thead><tr><th width="20%">値</th><th width="80%">意味</th></tr></thead>
+<tr><td width="20%">0</td><td width="80%">對象行は折疊に含まれない</td></tr>
+<tr><td width="20%">1, 2, ..</td><td width="80%">對象行はこのレベルの折疊に含まれる</td></tr>
+<tr><td width="20%">-1</td><td width="80%">折疊レベルを未定義とし、對象行の直前か直後の行のうち低い方を、對象行のレベルとする。</td></tr>
+<tr><td width="20%">&quot;=&quot;</td><td width="80%">直前の行と同じレベルを使用する</td></tr>
+<tr><td width="20%">&quot;a1&quot;, &quot;a2&quot;, ..</td><td width="80%">直前の行のレベルを +1, +2 して、結果を現在の行に適用する。</td></tr>
+<tr><td width="20%">&quot;s1&quot;, &quot;s2&quot;, ..</td><td width="80%">直前の行のレベルを -1, -2 して、結果を現在の行に適用する。</td></tr>
+<tr><td width="20%">&quot;&lt;1&quot;, &quot;&lt;2&quot;, ..</td><td width="80%">指定したレベルの折疊を對象行で終了する</td></tr>
+<tr><td width="20%">&quot;&gt;1&quot;, &quot;&gt;2&quot;, ..</td><td width="80%">指定したレベルの折疊を對象行から開始する</td></tr>
+</table>
+</li></ul>
+
+<p>折疊は直前の行の折疊レベルより高い (低い) 行から開始 (終了) されるので、折疊の開始 (終了) マーク &quot;&gt;1&quot; (&quot;&lt;1&quot;) は明示的に指定する必要は無い。
+</p>
+<p>式に副作用があつてはならない。バッファ內のテキストや、カーソルの位置や、檢索パターン、オプションその他。どれひとつ變更してはならない。ただし、注意深く行へば、變更してもそれを復元しておけばよい。
+</p>
+<p>式にエラーがあるか、結果が認識できない時には、何のエラーメッセージも表示せずに折疊レベルは 0 に設定される。&rsquo;<samp>debug</samp>&rsquo; オプションに &quot;<var>msg</var>&quot; を設定すれば、エラーメッセージが表示されるやうになるので、デバッグに利用できる。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+各行について式評價が實行されるので、この折疊方式は非常に動作が遲くなる可能性がある！
+</p></blockquote>
+
+<p>&quot;=&quot;, &quot;a&quot;, そして &quot;s&quot; は極力避けるやうにする。なぜなら Vim はそれらが使はれると、折疊レベルが定義された行が見つかるまで戾つて、幾度も檢索を行はなければならないからだ。これは動作が遲くなることがある。
+</p>
+<p>&quot;a1&quot; と &quot;s1&quot; の使用例: C 言語の複數行コメントを折りたたむ場合、&quot;/*&quot; を含む行では &quot;a1&quot; を返してその開始位置を、&quot;*/&quot; を含む行では &quot;s1&quot; を返してその終了位置を示す:
+</p><pre class="verbatim">if match(thisline, '/\*') &gt;= 0
+  return 'a1'
+elseif match(thisline, '\*/') &gt;= 0
+  return 's1'
+else
+  return '='
+endif
+</pre><p>ただし、單一行コメント內、文字列リテラル內などではこれは正しく機能しない。
+</p>
+<p>フォールドレベルを調べるには |<a href="eval_002etxt.html#foldlevel_0028_0029">foldlevel()</a>| を使ふのが便利である。レベルがわからないときは -1 を返すことに注意すること。フォールドがその行で終はつてゐるときには行頭のレベルを返す。
+</p>
+<p>折疊が適切に更新されない場合がある。その場合は |<a href="#zx">zx</a>| か |<a href="#zX">zX</a>| を使つて强制的に更新すること。
+</p>
+
+<a name="fold_002dsyntax"></a><a name="index-fold_002dsyntax"></a>
+<a name="index-Zhe-Die-Gou-Wen"></a>
+<a name="Gou-Wen-_0028SYNTAX_0029"></a>
+<h4 class="unnumberedsubsec">構文 (SYNTAX)</h4>
+
+<p>折疊が &quot;fold&quot; 引數を持つ構文要素によつて定義される。|<a href="syntax_002etxt.html#g_t_003asyn_002dfold">:syn-fold</a>|
+</p>
+<p>折疊レベルは入れ子によつて定義される。入れ子の深さは &rsquo;<samp>foldnestmax</samp>&rsquo; によつて制限される。
+</p>
+<p>シンタックスの同期の設定に注意すること。これが正しく設定されてゐないとフォールドが閒違つたハイライトで表示される。これは特に複數行にマッチするシンタックスで問題になる。そのやうなときには次のやうな力技がある:
+</p><div class="example">
+<pre class="example">:syn sync fromstart
+</pre></div>
+
+
+<a name="fold_002ddiff"></a><a name="index-fold_002ddiff"></a>
+<a name="index-Zhe-Die-Chai-Fen-"></a>
+<a name="Chai-Fen--_0028DIFF_0029"></a>
+<h4 class="unnumberedsubsec">差分 (DIFF)</h4>
+
+<p>テキストの變更された箇所とその近邊以外が自動的に折疊として定義される。
+</p>
+<p>この方法は現在のウィンドウに對して &rsquo;<samp>diff</samp>&rsquo; オプションが設定されてゐる時にだけ正しく働き、變更點が表示される。さうでない場合バッファ全體が 1 つの大きな折疊となる。
+</p>
+<p>コンテキスト (の行數) を指定するのに &rsquo;<samp>diffopt</samp>&rsquo; を使ふことができる。これにより變更點の近邊の折疊に含まない行數を指定できる。下の例では 8 行表示するやうに設定してゐる:
+</p><div class="example">
+<pre class="example">:set diffopt=filler,context:8
+</pre></div>
+<p>省略した場合には 6 行が表示される。
+</p>
+<p>&rsquo;<samp>scrollbind</samp>&rsquo; が設定されてゐるとき、Vim は他のウィンドウと見た目が同じになるやうにフォールドを開いた狀態に保たうとする。
+</p>
+
+<a name="fold_002dmarker"></a><a name="index-fold_002dmarker"></a>
+<a name="index-Zhe-Die-Yin-"></a>
+<a name="Yin--_0028MARKER_0029"></a>
+<h4 class="unnumberedsubsec">印 (MARKER)</h4>
+
+<p>テキスト中の印により折疊の開始と終了地點を指定する。これにより明確に折疊を設定することができる。また誤つた行を含むことなく、折疊を削除・設定できる。通常 &rsquo;<samp>foldtext</samp>&rsquo; オプションは折疊の行に表示されるテキストとして、印の直前のテキスト設定する。これにより折疊に名前を設定することが可能になる。
+</p>
+<p>印には折疊レベルを含むことができ、また開始と終了で對になる文字を使ふこともできる。必ずしも終了の印を加へる必要はなく、また對がない印が無い場合の問題も避けられるので、レベルを含んだはうがより簡單である。例:
+</p><pre class="verbatim">/* グローバル變數 {{{1 */
+int varA, varB;
+
+/* 函數 {{{1 */
+/* funcA() {{{2 */
+void funcA() {}
+
+/* funcB() {{{2 */
+void funcB() {}
+</pre>
+<p>折疊は印 &quot;{{{&quot; で開始する。印の後ろの番號は折疊レベルを示す。現在の折疊レベルと異なるレベルが印によつて與へられた時に何が起こるかは、そのレベルの差に依存する:
+</p><ol>
+<li> 同じ折疊レベルの印が與へられた時には、前の折疊は終了し同じレベルの新たな折疊が開始する。
+</li><li> 高い折疊レベルの印を見つけた時には、入れ子の折疊が開始する。
+</li><li> 低い折疊レベルの印を見つけた時には、指定されたレベル以上の全部の折疊を終了し、指定されたレベルで新たな折疊が開始する。
+</li></ol>
+
+<p>番號は折疊レベルを示す。0 を使ふことはできない (レベル 0 の印は無視される)。特定のレベルの折疊を終了させるため &quot;}}}&quot; 數字を付けて使ふことができる。その印の直後の行の折疊レベルは示されたレベルよりも 1 つだけ低くなる。Vim は指定されたレベルにマッチする印を檢索はしないことに注意 (計算に時閒がかかりすぎてしまふので)。例:
+</p>
+<pre class="verbatim">{{{1
+ここからレベル 1 の折疊
+{{{3
+ここからレベル 3 の折疊
+}}}3
+ここからレベル 2 の折疊
+</pre>
+<p>折疊を定義するのに對になる &quot;{{{&quot; と &quot;}}}&quot; を使用することもできる。折疊レベルは &quot;{{{&quot; 1 つにつき 1 ずつ增加し、&quot;}}}&quot; 1 つにつき 1 ずつ減少する。印同士の對應關係を維持するやうに氣をつけること！ 例:
+</p>
+<pre class="verbatim">{{{
+ここからレベル 1 の折疊
+{{{
+ここからレベル 2 の折疊
+}}}
+ここからレベル 1 の折疊
+</pre>
+<p>番號付きの印と番號無しの印を混ぜて使用することもできる。大きな折疊には番號付きの印を使用し、函數中の小さな折疊などには番號無しの印を使ふと便利だらう。一例を擧げれば、ファイルの &quot;構造體定義&quot; や &quot;ローカル變數&quot; それから &quot;函數定義&quot; のやうな部分にはレベル 1 (番號付き) の折疊を使用する。
+</p>
+<p>そして 1 つ 1 つの定義や函數實裝にはレベル 2 の折疊を使用し、函數內部 (例へばあるブロックなど) には番號無しの印を使用する。かうしておけば函數の中で折疊を分割するやうな變更を行ふ時に、印にレベルを付け直す必要はなくなる。
+</p>
+<p>印は &rsquo;<samp>foldmarker</samp>&rsquo; オプションにより變更できる。Vim ユーザー閒でファイルを交換できるやうにするためには、このオプションのデフォルトである &quot;{{{,}}}&quot; は變更しないことが推奬される。ファイルによつてそれがどうしても必要な時 (例へば別のエディタで作成した折疊を示す異なる印を含んでゐる時や、ファイル內容の制約によりデフォルトの印が問題を起こすため、それを使ふことができない場合) にだけ變へるやうに。
+</p>
+<a name="fold_002dcreate_002dmarker"></a><a name="index-fold_002dcreate_002dmarker"></a>
+<p>印による折疊を作成するのに &quot;zf&quot; コマンドを使用することができる。Vim がユーザーに代はつて印を插入する。Vim は &rsquo;<samp>foldmarker</samp>&rsquo; で指定された開始の印と終了の印を追加する。印は行末に追加される。&rsquo;<samp>commentstring</samp>&rsquo; が空でなければそれが使用される。これは次のやうな時には正しく働かない:
+</p><ul>
+<li> 既に番號付き折疊が含まれてゐる。Vim はそれをどのやうに扱へば良いか知らない。
+</li><li> 番號付き折疊の近くで、それらの印が邪魔になる場合。
+</li><li> 行がコメントの中で、&rsquo;<samp>commentstring</samp>&rsquo; が空ではなく、かつ入れ子コメントを使用できない場合。例へば C 言語: /* {{{ */ を既に存在するコメントを消さずにその中に追加するやうなこと。コメントの直前か直後に印を設定するか、もしくは手動で印を追加する必要がある。
+</li></ul>
+<p>一般的に、既に番號付き折疊が存在する場合には、Vim に印を作成させるのは良いアイデアではない。
+</p>
+<a name="fold_002ddelete_002dmarker"></a><a name="index-fold_002ddelete_002dmarker"></a>
+<p>印による折疊を削除するのに &quot;zd&quot; コマンドを使用することができる。Vim がユーザーに代はつて印を削除する。Vim は &rsquo;<samp>foldmarker</samp>&rsquo; で指定された開始の印と終了の印を檢索する。印の周りにある &rsquo;<samp>commentstring</samp>&rsquo; に適合するテキストは可能な限り削除される。
+これは次のやうな時には正しく働かない:
+</p><ul>
+<li> ある行に印が 1 つ以上含まれてゐて、そのうち少なくとも 1 つがレベルを指定してゐる場合。折疊を削除することで期待される效果どうりになるかどうかはチェックされることなく、單に初めの折疊が 1 つ削除される。
+</li><li> 番號付き印で、複數の折疊を同時に開始したり終了するために使用されてゐる場合。
+</li></ul>
+
+<a name="fold_002dcommands"></a><a name="E490"></a><a name="index-fold_002dcommands"></a>
+<a name="index-E490"></a>
+<a name="index-Zhe-Die-komando"></a>
+<a name="g_t2_002e-Zhe-Die-komando"></a>
+<h3 class="section">2. 折疊コマンド</h3>
+
+<p>全ての折疊コマンドは &quot;z&quot; で始まつてゐる。ヒント: &quot;z&quot; は紙片を折つた樣子を橫からみた姿に見える。
+</p>
+
+<a name="index-Zhe-Die-noZuo-Cheng-toXue-Chu-"></a>
+<a name="Zhe-Die-noZuo-Cheng-toXue-Chu-"></a>
+<h4 class="unnumberedsubsec">折疊の作成と削除</h4>
+<dl compact="compact">
+<dd><a name="zf"></a><a name="E350"></a><a name="index-zf"></a>
+<a name="index-E350"></a>
+</dd>
+<dt>zf{motion} または</dt>
+<dt>{Visual}zf</dt>
+<dd><p>折疊を作成する操作。
+</p>
+<p>&rsquo;<samp>foldmethod</samp>&rsquo; が &quot;manual&quot; か &quot;marker&quot; の時だけ動作する。&quot;manual&quot; の時には新しい折疊は閉ぢられる。&rsquo;<samp>foldenable</samp>&rsquo; がセット (有效化) される。
+</p>
+<p>|<a href="#fold_002dcreate_002dmarker">fold-create-marker</a>| も參照。
+</p>
+<a name="zF"></a><a name="index-zF"></a>
+</dd>
+<dt>zF</dt>
+<dd><p>[count] 行を折疊として作成する。&quot;zf&quot; と同じやうに動作する。
+</p>
+<a name="g_t_003afold"></a><a name="g_t_003afo"></a><a name="index-_003afold"></a>
+<a name="index-_003afo"></a>
+</dd>
+<dt>:{range}fo[ld]</dt>
+<dd><p>{range} で示された範圍を折疊にする。&quot;zf&quot; と同樣に動作する。
+</p>
+<a name="zd"></a><a name="E351"></a><a name="index-zd"></a>
+<a name="index-E351"></a>
+</dd>
+<dt>zd</dt>
+<dd><p>カーソルの位置にある折疊を 1 つ削除する。カーソルが折疊になつてゐる行にある場合には、その折疊が削除される。入れ子になつた折疊は 1 レベル分が削除される。ビジュアルモードでは選擇された範圍の全ての折疊 (partially) の 1 レベル分が削除される。
+</p><blockquote>
+<p><strong>Careful:</strong> <br>
+これは期待したよりも餘計に折疊を削除し易く、また手動折疊に對してはアンドゥもできないので注意が必要。&rsquo;<samp>foldmethod</samp>&rsquo; が &quot;manual&quot; か &quot;marker&quot; の時だけ動作する。
+</p>
+<p>|<a href="#fold_002ddelete_002dmarker">fold-delete-marker</a>| も參照。
+</p></blockquote>
+
+<a name="zD"></a><a name="index-zD"></a>
+</dd>
+<dt>zD</dt>
+<dd><p>カーソルの位置の折疊を再歸的に削除する。ビジュアルモードでは、選擇された範圍內の入れ子も含め全ての折疊 (partially) が削除される。&rsquo;<samp>foldmethod</samp>&rsquo; が &quot;manual&quot; か &quot;marker&quot; の時だけ動作する。
+</p>
+<p>|<a href="#fold_002ddelete_002dmarker">fold-delete-marker</a>| も參照。
+</p>
+<a name="zE"></a><a name="E352"></a><a name="index-zE"></a>
+<a name="index-E352"></a>
+</dd>
+<dt>zE</dt>
+<dd><p>ウィンドウにある全ての折疊を削除する。&rsquo;<samp>foldmethod</samp>&rsquo; が &quot;manual&quot; か &quot;marker&quot; の時だけ動作する。
+</p>
+<p>|<a href="#fold_002ddelete_002dmarker">fold-delete-marker</a>| も參照。
+</p></dd>
+</dl>
+
+
+<a name="index-Zhe-Die-woKai-kuBi-ziru"></a>
+<a name="Zhe-Die-woKai-kuBi-ziru"></a>
+<h4 class="unnumberedsubsec">折疊を開く・閉ぢる</h4>
+
+<p>&rsquo;<samp>foldminlines</samp>&rsquo; よりも少ない行數の折疊は常に開いたやうに表示される。從つて以下のコマンドは小さな折疊に關しては異なつた働きを持つ。
+</p>
+<dl compact="compact">
+<dd><a name="zo"></a><a name="index-zo"></a>
+</dd>
+<dt>zo</dt>
+<dd><p>カーソルの下の折疊を一段階開く。カウントが與へられた場合には、複數の深さの折疊が開かれる。ビジュアルモードでは、選擇された範圍にある全ての折疊が 1 レベル開かれる。
+</p>
+<a name="zO"></a><a name="index-zO"></a>
+</dd>
+<dt>zO</dt>
+<dd><p>カーソルの下の折疊を再歸的に全て開く。カーソルのある行を含まないフォールドは變更されない。
+</p>
+<p>ビジュアルモードでは、選擇された範圍の全ての折疊が、部分的に選擇されてゐただけでも全て完全に開かれる。
+</p>
+<a name="zc"></a><a name="index-zc"></a>
+</dd>
+<dt>zc</dt>
+<dd><p>カーソルの下の折疊を一段階閉ぢる。カウントが與へられた場合には、複數の深さの折疊が閉ぢられる。ビジュアルモードでは、選擇された範圍にある全ての折疊が 1 レベル閉ぢられる。&rsquo;<samp>foldenable</samp>&rsquo; がセット (有效化) される。
+</p>
+<a name="zC"></a><a name="index-zC"></a>
+</dd>
+<dt>zC</dt>
+<dd><p>カーソルの下の折疊を再歸的に全て閉ぢる。カーソルのある行を含まないフォールドは變更されない。
+</p>
+<p>ビジュアルモードでは、選擇された範圍の全ての折疊が、部分的に選擇されてゐただけでも全て完全に閉ぢられる。&rsquo;<samp>foldenable</samp>&rsquo; がセット (有效化) される。
+</p>
+<a name="za"></a><a name="index-za"></a>
+</dd>
+<dt>za</dt>
+<dd><p>折疊が閉ぢてゐた場合: それを開く。折疊が入れ子になつてゐる時には、&quot;za&quot; を何度も使ふ必要がある。カウントが與へられた場合には、複數の閉ぢられた折疊が開かれる。
+</p>
+<p>折疊が開いてゐた場合: それを閉ぢ &rsquo;<samp>foldenable</samp>&rsquo; をセットする。繰り返し使つても閉ぢた折疊が開くだけだから、これは 1 レベル開くだけである。カウントが與へられた場合には、複數の折疊が閉ぢられる (これは &quot;za&quot; を複數回繰り返した場合の動作と同じではない)。
+</p>
+<a name="zA"></a><a name="index-zA"></a>
+</dd>
+<dt>zA</dt>
+<dd><p>折疊が閉ぢてゐた場合: 再歸的に開く。折疊が開いてゐた場合: 再歸的に閉ぢ &rsquo;<samp>foldenable</samp>&rsquo; をセットする。
+</p>
+<a name="zv"></a><a name="index-zv"></a>
+</dd>
+<dt>zv</dt>
+<dd><p>カーソル行を表示する: カーソルのある行がちやうど表示されるレベルまで折疊を開く。
+</p>
+<a name="zx"></a><a name="index-zx"></a>
+</dd>
+<dt>zx</dt>
+<dd><p>折疊を更新する: 手動で行つた折疊の開閉操作をアンドゥする: &rsquo;<samp>foldlevel</samp>&rsquo; を再適用し、&quot;zv&quot; を行ふ: カーソル行を表示する。
+</p>
+<p>折疊の計算を强制するのにも使へる。これは &rsquo;<samp>foldexpr</samp>&rsquo; を使つてゐてバッファが變更されたにもかかはらず折疊が適切に更新されないやうな場合に便利である。
+</p>
+<a name="zX"></a><a name="index-zX"></a>
+</dd>
+<dt>zX</dt>
+<dd><p>手動で行つた折疊の開閉操作をアンドゥする: &rsquo;<samp>foldlevel</samp>&rsquo; を再適用する。折疊の計算を强制するのにも使へる (|<a href="#zx">zx</a>| と同樣)。
+</p>
+<a name="zm"></a><a name="index-zm"></a>
+</dd>
+<dt>zm</dt>
+<dd><p>折疊をより閉ぢる: &rsquo;<samp>foldlevel</samp>&rsquo; を |<a href="eval_002etxt.html#v_003acount1">v:count1</a>| 減少させる。&rsquo;<samp>foldlevel</samp>&rsquo; が既に 0 ならば何も起こらない。&rsquo;<samp>foldenable</samp>&rsquo; がセット (有效化) される。
+</p>
+<a name="zM"></a><a name="index-zM"></a>
+</dd>
+<dt>zM</dt>
+<dd><p>全ての折疊を閉ぢる: &rsquo;<samp>foldlevel</samp>&rsquo; に 0 を設定する。&rsquo;<samp>foldenable</samp>&rsquo; がセット (有效化) される。
+</p>
+<a name="zr"></a><p>&nbsp;</p></dd>
+<dt>zr</dt>
+<dd><p>折疊をより開く: &rsquo;<samp>foldlevel</samp>&rsquo; を |<a href="eval_002etxt.html#v_003acount1">v:count1</a>| 增加させる。
+</p>
+<a name="zR"></a><a name="index-zR"></a>
+</dd>
+<dt>zR</dt>
+<dd><p>全ての折疊を開く: &rsquo;<samp>foldlevel</samp>&rsquo; に最大の折疊レベルを設定する。
+</p>
+<a name="g_t_003afoldo"></a><a name="g_t_003afoldopen"></a><a name="index-_003afoldo"></a>
+<a name="index-_003afoldopen"></a>
+</dd>
+<dt>:{range}foldo[pen][!]</dt>
+<dd><p>{range} の範圍の折疊を開く。[!] が付け加はると全ての折疊が開かれる。{range} 範圍內の全てのテキストを見るのに役立つ。[!] が無い時は1レベル分の折疊が開かれる。
+</p>
+<a name="g_t_003afoldc"></a><a name="g_t_003afoldclose"></a><a name="index-_003afoldc"></a>
+<a name="index-_003afoldclose"></a>
+</dd>
+<dt>:{range}foldc[lose][!]</dt>
+<dd><p>{range} の範圍の折疊を閉ぢる。[!] が付け加はると全ての折疊が閉ぢられる。{range} 範圍內の全てのテキストを隱すのに役立つ。[!] が無い時は1レベル分の折疊が閉ぢられる。
+</p>
+<a name="zn"></a><a name="index-zn"></a>
+</dd>
+<dt>zn</dt>
+<dd><p>折疊しない: &rsquo;<samp>foldenable</samp>&rsquo; をリセットする。全ての折疊が開かれる。
+</p>
+<a name="zN"></a><a name="index-zN"></a>
+</dd>
+<dt>zN</dt>
+<dd><p>折疊する: &rsquo;<samp>foldenable</samp>&rsquo; をセットする。全ての折疊が &rsquo;<samp>foldenable</samp>&rsquo; がリセットされる以前と同樣になる。
+</p>
+<a name="zi"></a><a name="index-zi"></a>
+</dd>
+<dt>zi</dt>
+<dd><p>&rsquo;<samp>foldenable</samp>&rsquo; を反轉する。
+</p></dd>
+</dl>
+
+
+<a name="index-Zhe-Die-woChao-eteYi-Dong-suru"></a>
+<a name="Zhe-Die-woChao-eteYi-Dong-suru"></a>
+<h4 class="unnumberedsubsec">折疊を超えて移動する</h4>
+<dl compact="compact">
+<dd><a name="g_t_005bz"></a><a name="index-_005bz"></a>
+</dd>
+<dt>[z</dt>
+<dd><p>現在の開いてゐる折疊の先頭へ移動する。既に先頭にゐるのならば、それを含む外側の折疊の先頭へ移動する。外側の折疊が無い場合は、コマンドは失敗する。
+</p>
+<p>カウントが與へられた場合には、[count] 回繰り返される。
+</p>
+<a name="g_t_005dz"></a><a name="index-_005dz"></a>
+</dd>
+<dt>]z</dt>
+<dd><p>現在の開いてゐる折疊の末尾へ移動する。既に末尾にゐるのならば、それを含む外側の折疊の末尾へ移動する。外側の折疊が無い場合は、コマンドは失敗する。
+</p>
+<p>カウントが與へられた場合には、[count] 回繰り返される。
+</p>
+<a name="zj"></a><a name="index-zj"></a>
+</dd>
+<dt>zj</dt>
+<dd><p>カーソルより下方の折疊へ移動する。閉ぢられた折疊が 1 つの折疊として數へられる。
+</p>
+<p>カウントが與へられた場合には、[count] 回繰り返される。このコマンドは |<a href="motion_002etxt.html#operator">operator</a>| のやうに使ふことができる。
+</p>
+<a name="zk"></a><a name="index-zk"></a>
+</dd>
+<dt>zk</dt>
+<dd><p>カーソルより上方の折疊へ移動する。閉ぢられた折疊が 1 つの折疊として數へられる。
+</p>
+<p>カウントが與へられた場合には、[count] 回繰り返される。このコマンドは |<a href="motion_002etxt.html#operator">operator</a>| のやうに使ふことができる。
+</p></dd>
+</dl>
+
+
+<a name="index-Zhe-Die-niDui-sitekomandowoShi-Xing-suru"></a>
+<a name="Zhe-Die-niDui-sitekomandowoShi-Xing-suru"></a>
+<h4 class="unnumberedsubsec">折疊に對してコマンドを實行する</h4>
+
+<dl compact="compact">
+<dd><a name="g_t_003afoldd"></a><a name="g_t_003afolddo"></a><a name="g_t_003afolddoopen"></a><a name="index-_003afoldd"></a>
+<a name="index-_003afolddo"></a>
+<a name="index-_003afolddoopen"></a>
+</dd>
+<dt>:[range]foldd[oopen] {cmd}</dt>
+<dd><p>閉ぢた折疊の中以外の全ての行に對して {cmd} を實行する。[range] が與へられた時は、その範圍だけが對象となる。
+</p>
+<p>コマンドが各行に對して實行される時にはカーソルはその對象となる行に置かれてゐる。
+これは &quot;<code>:global</code>&quot; コマンドのやうに動作する: まず閉ぢられた折疊に入つてゐない全ての行がマークされる。それからマークされた全ての行に對して {cmd} が實行される。だから {cmd} が折疊に對して變更を加へても、コマンドの實行には影響が無い (もちろん行が消された時は除く)。
+</p>
+<p>例:
+</p><div class="example">
+<pre class="example">:folddoopen s/end/loop_end/ge
+</pre></div>
+<blockquote>
+<p><strong>Note:</strong> <br>
+&quot;e&quot; フラグには &quot;end&quot; がマッチしなかつた時にエラーメッセージが表示させない效果がある。
+</p></blockquote>
+
+<a name="g_t_003afolddoc"></a><a name="g_t_003afolddoclosed"></a><a name="index-_003afolddoc"></a>
+<a name="index-_003afolddoclosed"></a>
+</dd>
+<dt>:[range]folddoc[losed] {cmd}</dt>
+<dd><p>閉ぢた折疊の中にある全ての行に對して {cmd} を實行する。その他は &quot;<code>:folddoopen</code>&quot; と同じ。
+</p></dd>
+</dl>
+
+<a name="fold_002doptions"></a><a name="index-fold_002doptions"></a>
+<a name="index-Zhe-Die-opusiyon"></a>
+<a name="g_t3_002e-Zhe-Die-opusiyon"></a>
+<h3 class="section">3. 折疊オプション</h3>
+
+<a name="fold_002dcolors"></a><a name="index-fold_002dcolors"></a>
+<a name="index-Zhe-Die-Se-"></a>
+<a name="Se--_0028COLORS_0029"></a>
+<h4 class="unnumberedsubsec">色 (COLORS)</h4>
+
+<p>閉ぢられた折疊の色は Folded グループによつて設定される |<a href="syntax_002etxt.html#hl_002dFolded">hl-Folded</a>|。折疊表示カラムの色は FoldColumn グループによつて設定される |<a href="syntax_002etxt.html#hl_002dFoldColumn">hl-FoldColumn</a>|。色の設定例:
+</p>
+<div class="example">
+<pre class="example">:highlight Folded guibg=grey guifg=blue
+:highlight FoldColumn guibg=darkgrey guifg=white
+</pre></div>
+
+
+<a name="fold_002dfoldlevel"></a><a name="index-fold_002dfoldlevel"></a>
+<a name="index-Zhe-Die-reberu"></a>
+<a name="Zhe-Die-reberu-_0028FOLDLEVEL_0029"></a>
+<h4 class="unnumberedsubsec">折疊レベル (FOLDLEVEL)</h4>
+
+<p>&rsquo;<samp>foldlevel</samp>&rsquo; は數を設定するオプションである: 大きな數を設定するとより多くの折疊が開かれる。
+</p><ul>
+<li> &rsquo;<samp>foldlevel</samp>&rsquo; が 0 の時には、全ての折疊が閉ぢられる。
+</li><li> &rsquo;<samp>foldlevel</samp>&rsquo; が正の時には、幾つかの折疊が閉ぢられる。
+</li><li> &rsquo;<samp>foldlevel</samp>&rsquo; が非常に大きい時は、全ての折疊が開かれる。
+</li></ul>
+<p>&rsquo;<samp>foldlevel</samp>&rsquo; は變更された時に適用される。その後に手動で折疊を開いたり閉ぢたりできる。
+</p>
+<p>値を增やした時には、新しいレベルの値以上の折疊が開かれる。手動で開かれてゐた折疊は閉ぢられない。
+</p>
+<p>値を減らした時には、新しいレベルの値以上の折疊が閉ぢられる。手動で閉ぢられてゐた折疊は開かれない。
+</p>
+
+<a name="fold_002dfoldtext"></a><a name="index-fold_002dfoldtext"></a>
+<a name="index-Zhe-Die-tekisuto"></a>
+<a name="Zhe-Die-tekisuto-_0028FOLDTEXT_0029"></a>
+<h4 class="unnumberedsubsec">折疊テキスト (FOLDTEXT)</h4>
+
+<p>&rsquo;<samp>foldtext</samp>&rsquo; は式を指定する文字列オプションである。この式は閉ぢられた折疊を示すテキストを得るために評價實行される。例:
+</p>
+<div class="example">
+<pre class="example">:set foldtext=v:folddashes.substitute(getline(v:foldstart),'/\\*\\\|\\*/\\\|{{{\\d\\=','','g')
+</pre></div>
+
+<p>これは折疊の最初の1行を、&quot;/*&quot; と &quot;*/&quot; を追加し &quot;{{{&quot; を削除して表示する。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+多めのバックスラッシュ (\ 記號) はある文字が &quot;<code>:set</code>&quot; コマンドに解釋されてしまふのを避けるために使用されてゐる。これは以下のやうに函數を定義するとより簡單になる:
+</p>
+<pre class="verbatim">:set foldtext=MyFoldText()
+:function MyFoldText()
+:  let line = getline(v:foldstart)
+:  let sub = substitute(line, '/\*\|\*/\|{{{\d\=', '', 'g')
+:  return v:folddashes . sub
+:endfunction
+</pre>
+<p>&rsquo;<samp>foldtext</samp>&rsquo; は |<a href="eval_002etxt.html#sandbox">sandbox</a>| 環境下で實行評價される。現在のウィンドウはそのラインの屬するウィンドウへ設定される。エラーは無視される。
+</p></blockquote>
+
+<p>省略値は |<a href="eval_002etxt.html#foldtext_0028_0029">foldtext()</a>| である。これはほとんどのタイプの折疊に對して妥當なテキストを返す。それが氣に入らないのならば、獨自の式を &rsquo;<samp>foldtext</samp>&rsquo; に設定することができる。その式中では以下の特別な Vim 變數を使用することができる:
+</p><table>
+<tr><td width="30%">v:foldstart</td><td width="70%">折疊の先頭の行番號</td></tr>
+<tr><td width="30%">v:foldend</td><td width="70%">折疊の末尾の行番號</td></tr>
+<tr><td width="30%">v:folddashes</td><td width="70%">折疊レベルを表現したダッシュ (-) 記號を含む文字列。</td></tr>
+<tr><td width="30%">v:foldlevel</td><td width="70%">折疊のレベル</td></tr>
+</table>
+
+<p>結果の文字列中のタブ文字は 1 つの空白文字に置き換へられ、表示不可能な文字は表示可能な文字に作り變へられる。
+</p>
+<p>結果の文字列はウィンドウに合ふやうに切り捨てられ、折り返されることはない。テキストの後ろに餘白があれば、&rsquo;<samp>fillchars</samp>&rsquo; で指定された文字で充たされる。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+&quot;<code>:set</code>&quot; コマンドが解釋してしまふ文字: 空白、バックスラッシュ (\ 記號) そしてダブルクォートを使ふ場合にはバックスラッシュが必要である。|<a href="options_002etxt.html#option_002dbackslash">option-backslash</a>|
+</p></blockquote>
+
+
+<a name="fold_002dfoldcolumn"></a><a name="index-fold_002dfoldcolumn"></a>
+<a name="index-Zhe-Die-Biao-Shikaramu"></a>
+<a name="Zhe-Die-Biao-Shikaramu-_0028FOLDCOLUMN_0029"></a>
+<h4 class="unnumberedsubsec">折疊表示カラム (FOLDCOLUMN)</h4>
+
+<p>&rsquo;<samp>foldcolumn</samp>&rsquo; は、ウィンドウの端に確保される折疊を示すカラムの幅を指定する數。0 ならば、折疊表示カラムは確保されない。通常は 4 から 5 が一般的。使ひ物になる最小値は 2 であるが、1 にしてもいくらかの情報を提供する。最大値は 12。
+</p>
+<p>折疊表示カラムには、開いた折疊の先頭に &rsquo;-&rsquo; が續いて &rsquo;|&rsquo; が表示される。このカラムは開いた折疊が終了した位置で終了する。入れ子になつた折疊では、それを含む折疊の1つ左側に表示される。
+</p>
+<p>閉ぢた折疊は &rsquo;+&rsquo; で表示される。
+</p>
+<p>全ての折疊を表示できないほど折疊表示カラムが狹いときには、入れ子のレベルが數字で表示される。
+</p>
+<p>折疊表示カラムをクリックすることで、マウスにより折疊を開閉することができる:
+</p><ul>
+<li> 閉ぢた折疊を開くにはその行の &rsquo;+&rsquo; をクリックする。
+</li><li> 開いた折疊を閉ぢるにはそれ以外の非空白文字をクリックする。
+</li></ul>
+
+
+<a name="index-Zhe-Die-sonoTa-noopusiyon"></a>
+<a name="sonoTa-noopusiyon-_0028OTHER-OPTIONS_0029"></a>
+<h4 class="unnumberedsubsec">その他のオプション (OTHER OPTIONS)</h4>
+
+<table>
+<tr><td width="50%">&rsquo;<samp>foldenable</samp>&rsquo; &rsquo;<samp>fen</samp>&rsquo;:</td><td width="50%">無效に設定すると全ての折疊が開く。</td></tr>
+<tr><td width="50%">&rsquo;<samp>foldexpr</samp>&rsquo; &rsquo;<samp>fde</samp>&rsquo;:</td><td width="50%">式 (&quot;expr&rsquo;) による折疊で使用される。</td></tr>
+<tr><td width="50%">&rsquo;<samp>foldignore</samp>&rsquo; &rsquo;<samp>fdi</samp>&rsquo;:</td><td width="50%">インデントによる折疊で使用される。</td></tr>
+<tr><td width="50%">&rsquo;<samp>foldmarker</samp>&rsquo; &rsquo;<samp>fmr</samp>&rsquo;:</td><td width="50%">印による折疊で使用される印を定義する。</td></tr>
+<tr><td width="50%">&rsquo;<samp>foldmethod</samp>&rsquo; &rsquo;<samp>fdm</samp>&rsquo;:</td><td width="50%">現在の折疊方法の名稱。</td></tr>
+<tr><td width="50%">&rsquo;<samp>foldminlines</samp>&rsquo; &rsquo;<samp>fml</samp>&rsquo;:</td><td width="50%">閉ぢた狀態で表示されるべき折疊の、スクリーン上での最小行數</td></tr>
+<tr><td width="50%">&rsquo;<samp>foldnestmax</samp>&rsquo; &rsquo;<samp>fdn</samp>&rsquo;:</td><td width="50%">インデント及び構文折疊での最大入れ子數</td></tr>
+<tr><td width="50%">&rsquo;<samp>foldopen</samp>&rsquo; &rsquo;<samp>fdo</samp>&rsquo;:</td><td width="50%">閉ぢてゐる折疊を開くコマンドの種類</td></tr>
+<tr><td width="50%">&rsquo;<samp>foldclose</samp>&rsquo; &rsquo;<samp>fcl</samp>&rsquo;:</td><td width="50%">カーソルの下ではない折疊をいつ閉ぢるか。</td></tr>
+</table>
+
+<a name="fold_002dbehavior"></a><a name="index-fold_002dbehavior"></a>
+<a name="index-Zhe-Die-noZhen-Wu-"></a>
+<a name="g_t4_002e-Zhe-Die-noZhen-Wu-"></a>
+<h3 class="section">4. 折疊の振舞</h3>
+
+<p>カーソルを上下に移動させたりスクロールさせると、カーソルは一聯の折疊行の先頭へ移動する。カーソルが既に折疊の行にあれば、カーソルは次の折疊ではない行か、閉ぢられた折疊へ移動する。
+</p>
+<p>折疊の行にカーソルがある時には、カーソルは常に先頭のカラムに表示される。ルーラーは實際のカーソルの位置を示すが、行が折疊の場合には、そこに實際に表示することはできない。
+</p>
+<p>移動コマンドは一聯の折疊を空行として扱ふ。例へば、&quot;w&quot; コマンドは一旦先頭のカラムで停止する。
+</p>
+<p>插入モードでは、カーソルのある行は決して折疊にならない。このため何を入力してゐるかわからなくなることはない！
+</p>
+<p>オペレータを使用したときには、閉ぢた折疊は全體が含まれる。だから &quot;dl&quot; はカーソルの下の閉ぢた折疊の全體を削除してしまふ。
+</p>
+<p>バッファの行に作用するExコマンドの作用範圍は、開始位置と終了位置ともに閉ぢられた折疊のそれらへ、それぞれ補正される。よつて以下のコマンドを:
+</p><div class="example">
+<pre class="example">:s/foo/bar/g
+</pre></div>
+<p>閉ぢた折疊へカーソルを合はせて實行すると、折疊內の全ての行にある &quot;foo&quot; が &quot;bar&quot;へ置き換へられてしまふ。
+</p>
+<p>これは |<a href="#g_t_003afolddoopen">:folddoopen</a>| と |<a href="#g_t_003afolddoclosed">:folddoclosed</a>| に對してはあてはまらない。
+</p>
+<p>(同一セッション中で) 以前に編輯したバッファに對しては、最後の折疊設定が再び使用される。手動折疊では以前に定義された折疊が復元される。全ての折疊方法で、手動で開閉した折疊は復元される。同じウィンドウで同じバッファが編輯される時は、以前の編輯時の値が使用される。さうでなければそのウィンドウで最後に編輯されてゐたバッファの値が使用される。
+</p>
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

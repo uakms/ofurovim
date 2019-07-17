@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>textprop.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="textprop.txt (Vim Reference Manual)">
+<meta name="keywords" content="textprop.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="filetype_002etxt.html#filetype_002etxt" rel="next" title="filetype.txt">
+<link href="syntax_002etxt.html#syntax_002etxt" rel="prev" title="syntax.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="textprop_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="tekisutoniShi-Yong-sareteirupuropateiwoBiao-Shisuru-1"></a>
+<h2 class="unnumbered">テキストに適用されてゐるプロパティを表示する</h2>
+<pre class="verbatim">*textprop.txt*  For Vim バージョン 8.1.  Last change: 2019 Jun 13
+
+
+                VIMリファレンスマニュアル    by Bram Moolenaar
+</pre>
+
+<a name="textprop"></a><a name="text_002dproperties"></a><a name="index-textprop"></a>
+<a name="index-text_002dproperties"></a>
+<p>プロパティが付加されたテキストを表示します。
+</p>
+<a name="E967"></a><a name="index-E967"></a>
+<p>THIS IS UNDER DEVELOPMENT - ANYTHING MAY STILL CHANGE
+</p>
+<p>{これは開發中です - 何かがまだ變更されるかもしれません}
+</p>
+<p>まだ動作してゐないもの:
+</p><ul>
+<li> テキストを插入するときの桁/長さの調整
+</li><li> 複數の行にまたがるテキストプロパティ
+</li><li> prop_find()
+</li></ul>
+
+
+<table>
+<tr><td width="50%">1. 前書き</td><td width="50%">|<a href="#text_002dprop_002dintro">text-prop-intro</a>|</td></tr>
+<tr><td width="50%">2. 函數</td><td width="50%">|<a href="#text_002dprop_002dfunctions">text-prop-functions</a>|</td></tr>
+<tr><td width="50%">3. テキストが變更された場合</td><td width="50%">|<a href="#text_002dprop_002dchanges">text-prop-changes</a>|</td></tr>
+</table>
+
+
+<p>{Vim が |<a href="various_002etxt.html#g_t_002btextprop">+textprop</a>| 機能無效でコンパイルされたときはテキストプロパティを使用できません}
+</p>
+<a name="text_002dprop_002dintro"></a><a name="index-text_002dprop_002dintro"></a>
+<a name="g_t1_002e-Qian-Shu-ki-1"></a>
+<h3 class="section">1. 前書き</h3>
+
+<p>テキストプロパティは、バッファ內のテキストに付加することができます。それらはテキストとともに移動します: 行が削除または插入された場合、プロパティはそれらが付加されてゐるテキストと共に移動します。テキストプロパティの前の行にテキストを插入/削除する場合も同樣です。また、テキストプロパティ內にテキストを插入/削除すると、サイズが增減します。
+</p>
+<p>テキストプロパティの主な用途は、テキストを强調表示することです。これは、構文ハイライトの置き換へと見ることができます。テキストと一致するやうにパターンを定義する代はりに、スクリプトによつて、おそらく外部パーサーの出力を使用して强調表示が設定されます。これは、畫面を再描畫するたびにではなく、一度だけおこなへば良いため、テキストプロパティを付加する最初のコスト以降ははるかに高速になります。
+</p>
+<p>テキストプロパティは、テキストを識別するための他の目的にも使用できます。たとへば、函數名にテキストプロパティを追加すると、檢索を定義して次/前の函數にジャンプすることができます。
+</p>
+<p>テキストプロパティは、特定の行と桁に付加され、指定された長さを持ちます。プロパティは複數の行にまたがることができます。
+</p>
+<p>テキストプロパティには、次のフィールドがあります:
+</p><table>
+<tr><td width="30%">&quot;id&quot;</td><td width="70%">必要に應じて使はれる番號</td></tr>
+<tr><td width="30%">&quot;type&quot;</td><td width="70%">プロパティタイプ名</td></tr>
+</table>
+
+
+<a name="puropateitaipu"></a>
+<h4 class="unnumberedsubsec">プロパティタイプ</h4>
+<a name="E971"></a><a name="index-E971"></a>
+<p>テキストプロパティは、通常、テキストをハイライトする方法を定義するプロパティタイプ名を持ちます。プロパティタイプには、次のエントリを含めることができます:
+</p><table>
+<tr><td width="30%">&quot;highlight&quot;</td><td width="70%">使用するハイライトグループ名</td></tr>
+<tr><td width="30%">&quot;combine&quot;</td><td width="70%">TRUE の場合はテキストプロパティのハイライトが構文ハイライトと組み合はされ、省略されるかFALSEの場合はテキストプロパティのハイライトが構文ハイライトに置き換はります。</td></tr>
+<tr><td width="30%">&quot;priority&quot;</td><td width="70%">プロパティが重なるする場合は、優先度の高いものが使用されます。</td></tr>
+<tr><td width="30%">&quot;start_incl&quot;</td><td width="70%">TRUE の場合、開始位置の插入はテキストプロパティに含まれます。</td></tr>
+<tr><td width="30%">&quot;end_incl&quot;</td><td width="70%">TRUE の場合、終了位置の插入はテキストプロパティに含まれます。</td></tr>
+</table>
+
+
+<a name="Li-2"></a>
+<h4 class="unnumberedsubsec">例</h4>
+
+<p>バッファの 11 行目にこのテキスト (インデントを除く) があるとします:
+</p><div class="example">
+<pre class="example">The number 123 is smaller than 4567.
+</pre></div>
+
+<p>このテキスト內の數字をハイライトするには:
+</p><pre class="verbatim">call prop_type_add('number', {'highlight': 'Constant'})
+call prop_add(11, 12, {'length': 3, 'type': 'number'})
+call prop_add(11, 32, {'length': 4, 'type': 'number'})
+</pre>
+<p>テキストの上の行を插入または削除してみると、テキストのプロパティがテキストに固定されてゐることが分かります。したがつて、行番號は必要に應じて調整されます。
+</p>
+<p>&quot;start_incl&quot; と &quot;end_incl&quot; を設定すると、空白がテキストを圍む場合に便利です。例へば、函數名のために。false を使用すると、文字列を圍む引用符などの特定の文字で開始または終了する場合に便利です。
+</p>
+<div class="example">
+<pre class="example">func FuncName(arg) ~
+     ^^^^^^^^        start_incl と end_incl が設定されたプロパティ
+
+var = &quot;text&quot;; ~
+      ^^^^^^         start_incl と end_incl が設定されてゐないプロパティ
+</pre></div>
+
+<p>しかしながら、テキストが插入または削除されると、テキストを解析してテキストプロパティを更新する必要があります。しかし、これは非同期で行ふことができます。
+</p>
+<a name="text_002dprop_002dfunctions"></a><a name="index-text_002dprop_002dfunctions"></a>
+<a name="g_t2_002e-Guan-Shu--1"></a>
+<h3 class="section">2. 函數</h3>
+
+<a name="tekisutopuropateitaipunoCao-Zuo-_003a"></a>
+<h4 class="unnumberedsubsec">テキストプロパティタイプの操作:</h4>
+
+<table>
+<tr><td width="50%">prop_type_add({name}, {props})</td><td width="50%">新しいプロパティタイプを定義</td></tr>
+<tr><td width="50%">prop_type_change({name}, {props})</td><td width="50%">既存のプロパティタイプを變更</td></tr>
+<tr><td width="50%">prop_type_delete({name} [, {props}])</td><td width="50%">プロパティタイプを削除</td></tr>
+<tr><td width="50%">prop_type_get([{name} [, {props}])</td><td width="50%">プロパティタイプの値を取得</td></tr>
+<tr><td width="50%">prop_type_list([{props}])</td><td width="50%">プロパティタイプのリストを取得</td></tr>
+</table>
+
+
+<a name="tekisutopuropateinoCao-Zuo-_003a"></a>
+<h4 class="unnumberedsubsec">テキストプロパティの操作:</h4>
+
+<table>
+<tr><td width="50%">prop_add({lnum}, {col}, {props})</td><td width="50%">テキストプロパティを追加</td></tr>
+<tr><td width="50%">prop_clear({lnum} [, {lnum-end} [, {bufnr}]])</td><td width="50%">全てのテキストプロパティを削除</td></tr>
+<tr><td width="50%">prop_find({props} [, {direction}])</td><td width="50%">テキストプロパティを檢索</td></tr>
+<tr><td width="50%">prop_list({lnum} [, {props})</td><td width="50%">{lnum} のテキストプロパティ</td></tr>
+<tr><td width="50%">prop_remove({props} [, {lnum} [, {lnum-end}]])</td><td width="50%">テキストプロパティを削除</td></tr>
+</table>
+
+<a name="text_002dprop_002dchanges"></a><a name="index-text_002dprop_002dchanges"></a>
+<a name="g_t3_002e-tekisutogaBian-Geng-saretaChang-He-"></a>
+<h3 class="section">3. テキストが變更された場合</h3>
+
+<p>Vim はテキストプロパティをそれが付加されたテキストの上に置くやうに最善を盡くします。 テキストを插入または削除するときは、變更後のプロパティもそれに從つて移動します。
+</p>
+<p>テキストが削除され、テキストプロパティにテキストが含まれなくなつた場合は削除されます。 ただし、行全體が削除されない限り、幅ゼロとして定義されたテキストプロパティは殘ります。
+</p>
+<p>置換モードを使用すると、文字自體が變更しても、テキストプロパティは同じ文字位置に留まります。
+</p>
+<p>テキストが變更された後にテキストのプロパティを更新するには、&lsquo;<code>listener_add()</code>&lsquo; でコールバックを設置します。例へば、もしあなたのプラグインがスペルチェックをしてゐるのなら、變更されたテキスト內のスペルミスをコールバックで更新することができます。變更されたテキストの下にプロパティが移動し、同じテキストがハイライトされるため、これらを更新する必要はありません。
+</p>
+
+<a name="tekisutopuropateinoHang-gaGeng-Xin-saremasen_003a"></a>
+<h4 class="unnumberedsubsec">テキストプロパティの桁が更新されません:</h4>
+
+<ul>
+<li> |<a href="eval_002etxt.html#setline_0028_0029">setline()</a>| または Lua, Tcl または Python などのインターフェイスを介して行を設定した場合。Vim はどのテキストが插入または削除されたのかを知りません。
+</li></ul>
+
+
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

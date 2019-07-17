@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>if_mzsch.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="if_mzsch.txt (Vim Reference Manual)">
+<meta name="keywords" content="if_mzsch.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="if_005fperl_002etxt.html#if_005fperl_002etxt" rel="next" title="if_perl.txt">
+<link href="if_005flua_002etxt.html#if_005flua_002etxt" rel="prev" title="if_lua.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="if_005fmzsch_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="MzScheme-intahueisu"></a>
+<h2 class="unnumbered">MzScheme インターフェイス</h2>
+<pre class="verbatim">*if_mzsch.txt*  For Vim バージョン 8.1.  Last change: 2019 May 05
+
+
+                  VIMリファレンスマニュアル    by Sergey Khorev
+</pre>
+
+<a name="mzscheme"></a><a name="MzScheme"></a><a name="index-mzscheme"></a>
+<a name="index-MzScheme"></a>
+<p>Vim の MzScheme インターフェイス
+</p>
+<table>
+<tr><td width="50%">1. コマンド</td><td width="50%">|<a href="#mzscheme_002dcommands">mzscheme-commands</a>|</td></tr>
+<tr><td width="50%">2. 例</td><td width="50%">|<a href="#mzscheme_002dexamples">mzscheme-examples</a>|</td></tr>
+<tr><td width="50%">3. スレッド</td><td width="50%">|<a href="#mzscheme_002dthreads">mzscheme-threads</a>|</td></tr>
+<tr><td width="50%">4. MzScheme から Vim にアクセスする</td><td width="50%">|<a href="#mzscheme_002dvim">mzscheme-vim</a>|</td></tr>
+<tr><td width="50%">5. mzeval() Vim 函數</td><td width="50%">|<a href="#mzscheme_002dmzeval">mzscheme-mzeval</a>|</td></tr>
+<tr><td width="50%">6. 函數參照を使ふ</td><td width="50%">|<a href="#mzscheme_002dfuncref">mzscheme-funcref</a>|</td></tr>
+<tr><td width="50%">7. 動的ローディング</td><td width="50%">|<a href="#mzscheme_002ddynamic">mzscheme-dynamic</a>|</td></tr>
+<tr><td width="50%">8. MzScheme のセットアップ</td><td width="50%">|<a href="#mzscheme_002dsetup">mzscheme-setup</a>|</td></tr>
+</table>
+
+<p>{Vim が |<a href="various_002etxt.html#g_t_002bmzscheme">+mzscheme</a>| 機能付きでコンパイルされたときのみ利用できます}
+</p>
+<p>Brent Fulgham の作業にもとづいてゐます。 <br>
+動的ローディングは Sergey Khorev によつて追加されました。
+</p>
+<p>MzScheme と PLT Scheme は Racket といふ名前になりました。詳しいことは <a href="http://racket-lang.org">http://racket-lang.org</a> を見てください。
+</p>
+<p>Racket 5.x (5.3.1も含む) の futures と places は Vim から作成されたプロセスでは機能しません。簡單な解決法はそれらの機能を無效にした Racket を自分でビルドすることです:
+</p><pre class="verbatim">./configure --disable-futures --disable-places --prefix=your-install-prefix
+</pre>
+<p>プロセスを高速化するには、&lsquo;<samp>--disable-gracket</samp>&rsquo; と &lsquo;<samp>--disable-docs</samp>&rsquo; も指定するといいかもしれません。
+</p>
+<a name="mzscheme_002dcommands"></a><a name="index-mzscheme_002dcommands"></a>
+<a name="g_t1_002e-komando-1"></a>
+<h3 class="section">1. コマンド</h3>
+
+<dl compact="compact">
+<dd><a name="g_t_003amzscheme"></a><a name="g_t_003amz"></a><a name="index-_003amzscheme"></a>
+<a name="index-_003amz"></a>
+</dd>
+<dt>:[range]mz[scheme] {stmt}</dt>
+<dd><p>MzScheme のステートメント {stmt} を實行します。
+</p>
+</dd>
+<dt>:[range]mz[scheme] &lt;&lt; {endmarker}</dt>
+<dt>{script}</dt>
+<dt>{endmarker}</dt>
+<dd><p>MzScheme のスクリプト {script} を實行します。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+このコマンドは MzScheme 用の機能を含めてコンパイルされてゐないときは機能しません。エラーを抑制するには |<a href="if_005fperl_002etxt.html#script_002dhere">script-here</a>| を參照してください。
+</p></blockquote>
+
+<a name="g_t_003amzfile"></a><a name="g_t_003amzf"></a><a name="index-_003amzfile"></a>
+<a name="index-_003amzf"></a>
+</dd>
+<dt>:[range]mzf[ile] {file}</dt>
+<dd><p>{file} 內の MzScheme スクリプトを實行します。
+</p></dd>
+</dl>
+
+<p>これらのコマンドは、本質的には同じことを行ひます - つまり、MzScheme のコードを、與へられた &quot;現在の範圍&quot; に對して實行します。
+</p>
+<p>:mzscheme の場合は、實行するコードはコマンドラインから與へます。:mzfile の場合は、實行するコードは指定したファイルから讀み込まれます。
+</p>
+<p>MzScheme インターフェイスは、exn から派生した例外 exn:vim を定義します。Vim の樣々なエラーを通知するために、この例外が投げられます。
+</p>
+<p>コンパイルの實行中に、その時點の MzScheme コレクションのパスが記錄されます。もし他にもパスを指定したい場合は、パラメーター &rsquo;current-library-collection-paths&rsquo; を使つてください。例: ユーザーごとのコレクションパスを追加するには:
+</p><div class="example">
+<pre class="example">:mz &lt;&lt; EOF
+(current-library-collection-paths
+    (cons
+        (build-path (find-system-path 'addon-dir) (version) &quot;collects&quot;)
+        (current-library-collection-paths)))
+EOF
+</pre></div>
+
+<p>すべての機能は vimext モジュールを通して提供されます。
+</p>
+<p>exn:vim は明示的なインポートをしなくても利用可能です。
+</p>
+<p>モジュールを require するときは、MzScheme との衝突を避けるため、プリフィックスを使ふことも考へてください。例:
+</p><div class="example">
+<pre class="example">:mzscheme (require (prefix vim- vimext))
+</pre></div>
+<p>本マニュアル中、以降のすべての例は、このプリフィックスを使つてゐます。
+</p>
+<a name="mzscheme_002dsandbox"></a><a name="index-mzscheme_002dsandbox"></a>
+<p>サンドボックス |<a href="eval_002etxt.html#sandbox">sandbox</a>| の中で實行されてゐるときは、ファイルシステムへのアクセスや Vim インターフェイスプロシージャの實行は制限されてゐます。
+</p>
+<a name="mzscheme_002dexamples"></a><a name="index-mzscheme_002dexamples"></a>
+<a name="g_t2_002e-Li"></a>
+<h3 class="section">2. 例</h3>
+<div class="example">
+<pre class="example">:mzscheme (display &quot;Hello&quot;)
+:mz (display (string-append &quot;Using MzScheme version &quot; (version)))
+:mzscheme (require (prefix vim- vimext)) ; MzScheme &lt; 4.x 用
+:mzscheme (require (prefix-in vim- 'vimext)) ; MzScheme 4.x 用
+:mzscheme (vim-set-buff-line 10 &quot;This is line #10&quot;)
+</pre></div>
+
+<p>使つてゐる MzScheme のバージョンを見るには:
+</p><div class="example">
+<pre class="example">:mzscheme (display (version))
+</pre></div>
+<p>インラインスクリプトの例:
+</p><div class="example">
+<pre class="example">function! &lt;SID&gt;SetFirstLine()
+    :mz &lt;&lt; EOF
+    (display &quot;!!!&quot;)
+    (require (prefix vim- vimext))
+    ; ↑新しいバージョンでは (require (prefix-in vim- 'vimext))
+    (vim-set-buff-line 1 &quot;This is line #1&quot;)
+    (vim-beep)
+EOF
+endfunction
+
+nmap &lt;F9&gt; :call &lt;SID&gt;SetFirstLine() &lt;CR&gt;
+</pre></div>
+<p>ファイルの實行:
+</p><div class="example">
+<pre class="example">:mzfile supascript.scm
+</pre></div>
+<p>例外制禦:
+</p><div class="example">
+<pre class="example">:mz &lt;&lt; EOF
+(require (prefix vim- vimext))
+; ↑新しいバージョンでは (require (prefix-in vim- 'vimext))
+(with-handlers
+  ([exn:vim? (lambda (e) (display (exn-message e)))])
+  (vim-eval &quot;nonsense-string&quot;))
+EOF
+</pre></div>
+<p>vimext モジュールの自動インスタンス化 (|<a href="starting_002etxt.html#vimrc">vimrc</a>| に書くことができます):
+</p><div class="example">
+<pre class="example">function! MzRequire()
+    :redir =&gt; l:mzversion
+    :mz (version)
+    :redir END
+    if strpart(l:mzversion, 1, 1) &lt; &quot;4&quot;
+        &quot; MzScheme versions &lt; 4.x では:
+        :mz (require (prefix vim- vimext))
+    else
+        &quot; それ以降のバージョンでは
+        :mz (require (prefix-in vim- 'vimext))
+    endif
+endfunction
+
+if has(&quot;mzscheme&quot;)
+    silent call MzRequire()
+endif
+</pre></div>
+<a name="mzscheme_002dthreads"></a><a name="index-mzscheme_002dthreads"></a>
+<a name="g_t3_002e-suretudo"></a>
+<h3 class="section">3. スレッド</h3>
+
+<p>MzScheme インターフェイスはスレッドをサポートしてゐます。これは OS のスレッドとは獨立してをり、よつてスケジューリングが必要になります。オプション &rsquo;<samp>mzquantum</samp>&rsquo; によつて、Vim がどれだけの時閒閒隔で MzScheme スレッドに切り替へるかが決定されます。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+コンソール版 Vim のスレッドスケジューリングは GUI 版よりやや信賴性が低くなります。
+</p></blockquote>
+
+<a name="mzscheme_002dvim"></a><a name="index-mzscheme_002dvim"></a>
+<a name="g_t4_002e-MzScheme-kara-VIM-niakusesusuru"></a>
+<h3 class="section">4. MzScheme から VIM にアクセスする</h3>
+
+<a name="mzscheme_002dvimext"></a><a name="index-mzscheme_002dvimext"></a>
+<p>&rsquo;vimext&rsquo; モジュールは MzScheme インターフェイスで定義されたプロシージャへのアクセスを提供します。
+</p>
+<a name="Gong-Tong-"></a>
+<h4 class="unnumberedsubsec">共通</h4>
+<dl compact="compact">
+<dt>(command {command-string})</dt>
+<dd><p>Vim の Ex コマンドを實行する。
+</p></dd>
+<dt>(eval {expr-string})</dt>
+<dd><p>Vim の式を評價し、對應する MzScheme のオブジェクトに變換する。リスト (|<a href="eval_002etxt.html#Lists">Lists</a>|) はScheme のリスト、辭書 (|<a href="eval_002etxt.html#Dictionaries">Dictionaries</a>|) ははハッシュテーブル、函數參照 (|<a href="eval_002etxt.html#Funcref">Funcref</a>|) は函數になる。(|<a href="#mzscheme_002dfuncref">mzscheme-funcref</a>| も參照)
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+MzScheme の eval と名前が衝突してゐるので、呼び出すにはモジュール限定子を使つてください。
+</p></blockquote>
+</dd>
+<dt>(range-start)</dt>
+<dd><p>Scheme コマンドに渡された範圍の開始行を取得
+</p></dd>
+<dt>(range-end)</dt>
+<dd><p>Scheme コマンドに渡された範圍の終了行を取得
+</p></dd>
+<dt>(beep)</dt>
+<dd><p>ビープを鳴らす
+</p></dd>
+<dt>(get-option {option-name} [buffer-or-window])</dt>
+<dd><p>Vim の (ローカルまたはグローバルな) オプションの値を取得する。
+</p></dd>
+<dt>(set-option {string} [buffer-or-window])</dt>
+<dd><p>Vim のオプションをセットする。{string} はオプション設定形式 (optname=optvalue や optname+=optval など) になつてゐなければならない。{buffer} または {window} を指定した場合、そのバッファまたはウィンドウにローカルなオプションがセットされる。{buffer-or-window} としてシンボル &rsquo;global を渡すと |<a href="options_002etxt.html#g_t_003asetglobal">:setglobal</a>| と同じになる。
+</p></dd>
+</dl>
+
+<a name="mzscheme_002dbuffer"></a><a name="index-mzscheme_002dbuffer"></a>
+<a name="batuhua"></a>
+<h4 class="unnumberedsubsec">バッファ</h4>
+<dl compact="compact">
+<dt>(buff? {object})</dt>
+<dd><p>オブジェクトがバッファであるか？
+</p></dd>
+<dt>(buff-valid? {object})</dt>
+<dd><p>オブジェクトが有效なバッファであるか？(實際に Vim のバッファに對應してゐるか)
+</p></dd>
+<dt>(get-buff-line {linenr} [buffer])</dt>
+<dd><p>バッファから行を取得する
+</p></dd>
+<dt>(set-buff-line {linenr} {string} [buffer])</dt>
+<dd><p>バッファの {linenr} 行目を {string} にする。{string} が #f ならその行は削除される。引數 [buffer] は省略可能。省略された場合はカレントバッファが對象となる。
+</p></dd>
+<dt>(get-buff-line-list {start} {end} [buffer])</dt>
+<dd><p>バッファ內の行のリストを取得する。{start} と {end} は 1 から始まる。{start} 行目と {end} 行目は含まれる。
+</p></dd>
+<dt>(set-buff-line-list {start} {end} {string-list} [buffer])</dt>
+<dd><p>バッファに行のリストをセットする。{string-list} が #f または null の場合、その行は削除される。リストの長さが {end} - {start} 以下である場合、足りない分の行は削除される。
+</p></dd>
+<dt>(get-buff-name [buffer])</dt>
+<dd><p>バッファの名前を取得する
+</p></dd>
+<dt>(get-buff-num [buffer])</dt>
+<dd><p>バッファ番號を取得する
+</p></dd>
+<dt>(get-buff-size [buffer])</dt>
+<dd><p>バッファの行數を取得する
+</p></dd>
+<dt>(insert-buff-line-list {linenr} {string/string-list} [buffer])</dt>
+<dd><p>{linenr} 行目の後ろに行を插入する。{linenr} が 0 の場合、バッファの先頭に插入される。
+</p></dd>
+<dt>(curr-buff)</dt>
+<dd><p>カレントバッファ(オブジェクト)を取得する。バッファを變更するには他の MzScheme インターフェイス手續きを使ふ。
+</p></dd>
+<dt>(buff-count)</dt>
+<dd><p>バッファの總數を取得する。
+</p></dd>
+<dt>(get-next-buff [buffer])</dt>
+<dd><p>次のバッファを取得する
+</p></dd>
+<dt>(get-prev-buff [buffer])</dt>
+<dd><p>前のバッファを取得する。それ以上前が存在しないときは #f を返す。
+</p></dd>
+<dt>(open-buff {filename})</dt>
+<dd><p>{filename} といふ名前で新規バッファを開く
+</p></dd>
+<dt>(get-buff-by-name {buffername})</dt>
+<dd><p>バッファ名を指定してバッファオブジェクトを取得する。見つからなければ #f を返す。
+</p></dd>
+<dt>(get-buff-by-num {buffernum})</dt>
+<dd><p>バッファ番號を指定してバッファオブジェクトを取得する。見つからなければ #f を返す。
+</p></dd>
+</dl>
+
+<a name="mzscheme_002dwindow"></a><a name="index-mzscheme_002dwindow"></a>
+<a name="uindou"></a>
+<h4 class="unnumberedsubsec">ウィンドウ</h4>
+<dl compact="compact">
+<dt>(win? {object})</dt>
+<dd><p>オブジェクトはウィンドウか？
+</p></dd>
+<dt>(win-valid? {object})</dt>
+<dd><p>オブジェクトは有效なウィンドウであるか？(實際に Vim のウィンドウに對應してゐるか)
+</p></dd>
+<dt>(curr-win)</dt>
+<dd><p>カレントウィンドウ (オブジェクト) を取得する
+</p></dd>
+<dt>(win-count)</dt>
+<dd><p>ウィンドウの個數を取得する
+</p></dd>
+<dt>(get-win-num [window])</dt>
+<dd><p>ウィンドウ番號を取得する
+</p></dd>
+<dt>(get-win-by-num {windownum})</dt>
+<dd><p>番號を指定してウィンドウを取得する
+</p></dd>
+<dt>(get-win-buffer [window])</dt>
+<dd><p>指定したウィンドウ內のバッファを取得する
+</p></dd>
+<dt>(get-win-height [window])</dt>
+<dd><p>ウィンドウの高さを取得する
+</p></dd>
+<dt>(set-win-height {height} [window])</dt>
+<dd><p>ウィンドウの高さをセットする
+</p></dd>
+<dt>(get-win-width [window])</dt>
+<dd><p>ウィンドウの幅を取得する
+</p></dd>
+<dt>(set-win-width {width} [window])</dt>
+<dd><p>ウィンドウの幅をセットする
+</p></dd>
+<dt>(get-win-list [buffer])</dt>
+<dd><p>バッファを表示してゐるウィンドウのリスト
+</p></dd>
+<dt>(get-cursor [window])</dt>
+<dd><p>ウィンドウ內のカーソル位置をペア (linenr . column) として取得する
+</p></dd>
+<dt>(set-cursor (line . col) [window])</dt>
+<dd><p>カーソル位置をセットする
+</p></dd>
+</dl>
+
+<a name="mzscheme_002dmzeval"></a><a name="index-mzscheme_002dmzeval"></a>
+<a name="g_t5_002e-mzeval_0028_0029-Vim-Guan-Shu-"></a>
+<h3 class="section">5. mzeval() Vim 函數</h3>
+
+<p>相互接續を容易にするために |<a href="eval_002etxt.html#mzeval_0028_0029">mzeval()</a>| 函數が提供されてゐます。この函數は MzScheme の式を評價してその結果を Vim script の値に變換したものを返します。
+</p>
+<a name="mzscheme_002dfuncref"></a><a name="index-mzscheme_002dfuncref"></a>
+<a name="g_t6_002e-Guan-Shu-Can-Zhao-woShi-u"></a>
+<h3 class="section">6. 函數參照を使ふ</h3>
+
+<p>MzScheme インターフェイスでは函數參照 (|<a href="eval_002etxt.html#Funcref">Funcref</a>|) が使へます。Vim の函數を Scheme から直接呼び出せます。例:
+</p><div class="example">
+<pre class="example">function! MyAdd2(arg)
+    return a:arg + 2
+endfunction
+mz (define f2 (vim-eval &quot;function(\&quot;MyAdd2\&quot;)&quot;))
+mz (f2 7)
+</pre></div>
+<p>または:
+</p><div class="example">
+<pre class="example">:mz (define indent (vim-eval &quot;function('indent')&quot;))
+&quot; return Vim indent for line 12
+:mz (indent 12)
+</pre></div>
+
+<a name="mzscheme_002ddynamic"></a><a name="E815"></a><a name="index-mzscheme_002ddynamic"></a>
+<a name="index-E815"></a>
+<a name="g_t7_002e-Dong-De-rodeingu"></a>
+<h3 class="section">7. 動的ローディング</h3>
+
+<p>MS-Windows では MzScheme ライブラリを動的に讀み込むことが可能です。これを行ふと |<a href="various_002etxt.html#g_t_003aversion">:version</a>| の出力に |<a href="various_002etxt.html#g_t_002bmzscheme_002fdyn">+mzscheme/dyn</a>| が含まれるやうになります。
+</p>
+<p>この場合、Vim は必要なときだけ MzScheme の DLL ファイルを檢索するやうになります。MzScheme インターフェイスを使はないときは DLL を必要としないので、DLL なしで Vim を使ふことができます。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+比較的新しいバージョンの MzScheme (Racket) は scheme_main_setup によるトランポリンを用いた事前初期化處理を必要とします。そのために Vim は可能であれば常に MzScheme の DLL を初期化時に讀み込みます。これは Vim の起動を遲くするかもしれません。
+</p></blockquote>
+
+<p>MzScheme インターフェイスを使ふには MzScheme の DLL が檢索パス內に存在しなければなりません。コンソールウィンドウで &quot;path&quot; とタイプすると、どのディレクトリが檢索パスとなるか表示できます。
+</p>
+<p>MS-Windows では、&rsquo;<samp>mzschemedll</samp>&rsquo; および &rsquo;<samp>mzschemegcdll</samp>&rsquo; オプションが讀み込むライブラリの名前として使用されます。初期値はビルド時に指定されます。
+</p>
+<p>DLL のバージョンは Vim をコンパイルした時の MzScheme のバージョンと一致しなければなりません。MzScheme 209 用ならば &quot;libmzsch209_000.dll&quot; と &quot;libmzgc209_000.dll&quot; となるでせう。確認するには &quot;:version&quot; コマンドの出力を見て、コンパイル情報から -DDYNAMIC_MZSCH_DLL=&quot;なんらか&quot; と -DDYNAMIC_MZGC_DLL=&quot;なんらか&quot; を探してください。
+</p>
+<p>例へば、MzScheme (Racket) が C:\Racket63 にインストールされてゐる場合、次のやうに環境變數を設定する必要があるかもしれません:
+</p>
+<div class="example">
+<pre class="example">PATH=%PATH%;C:\Racket63\lib
+PLTCOLLECTS=C:\Racket63\collects
+PLTCONFIGDIR=C:\Racket63\etc
+</pre></div>
+<a name="mzscheme_002dsetup"></a><a name="E895"></a><a name="index-mzscheme_002dsetup"></a>
+<a name="index-E895"></a>
+<a name="g_t8_002e-MzScheme-nosetutoatupu"></a>
+<h3 class="section">8. MzScheme のセットアップ</h3>
+
+<p>Vim は if_mzsch のコアモジュールとして &quot;racket/base&quot; (もし存在しなければ &quot;scheme/base&quot; にフォールバックします) を、テストのために &quot;r5rs&quot; モジュールを、そして Vim のビルド時に必要な &quot;raco ctool&quot; コマンドを要求します。MzScheme がそれらを持つてゐなかつた場合は MzScheme の raco コマンドで次のやうにインストールできます:
+</p><div class="example">
+<pre class="example">raco pkg install scheme-lib       # scheme/base module
+raco pkg install r5rs-lib         # r5rs module
+raco pkg install cext-lib         # raco ctool command
+</pre></div>
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

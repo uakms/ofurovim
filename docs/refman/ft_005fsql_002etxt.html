@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>ft_sql.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="ft_sql.txt (Vim Reference Manual)">
+<meta name="keywords" content="ft_sql.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="digraph_002etxt.html#digraph_002etxt" rel="next" title="digraph.txt">
+<link href="ft_005frust_002etxt.html#ft_005frust_002etxt" rel="prev" title="ft_rust.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="ft_005fsql_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="SQL-huairutaipupuraguin"></a>
+<h2 class="unnumbered">SQL ファイルタイププラグイン</h2>
+<pre class="verbatim">*ft_sql.txt*	For Vim バージョン 8.1.  Last change: 2013 May 15
+
+by David Fishburn
+</pre>
+<p>これは SQL ファイルを編輯するためのファイルタイププラグインです。
+</p>
+<p>Structured Query Language (SQL) はリレーショナルデータベースと對話するための文を規定した規格です。Vim には SQL 內を移動、インデント、構文ハイライトする機能が備はつてゐます。
+</p>
+<table>
+<tr><td width="50%">1. 移動</td><td width="50%">|<a href="#sql_002dnavigation">sql-navigation</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;1.1 Matchit</td><td width="50%">|<a href="#sql_002dmatchit">sql-matchit</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;1.2 オブジェクト單位の移動</td><td width="50%">|<a href="#sql_002dobject_002dmotions">sql-object-motions</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;1.3 SQL 獨自のオブジェクト單位移動</td><td width="50%">|<a href="#sql_002dpredefined_002dobjects">sql-predefined-objects</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;1.4 マクロ</td><td width="50%">|<a href="#sql_002dmacros">sql-macros</a>|</td></tr>
+<tr><td width="50%">2. SQL の方言</td><td width="50%">|<a href="#sql_002ddialects">sql-dialects</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;2.1 SQLSetType</td><td width="50%">|<a href="#SQLSetType">SQLSetType</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;2.2 SQLGetType</td><td width="50%">|<a href="#SQLGetType">SQLGetType</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;2.3 SQL 方言の既定値</td><td width="50%">|<a href="#sql_002dtype_002ddefault">sql-type-default</a>|</td></tr>
+<tr><td width="50%">3. SQL 方言を追加する</td><td width="50%">|<a href="#sql_002dadding_002ddialects">sql-adding-dialects</a>|</td></tr>
+<tr><td width="50%">4. SQL オムニ補完</td><td width="50%">|<a href="#sql_002dcompletion">sql-completion</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;4.1 static モード</td><td width="50%">|<a href="#sql_002dcompletion_002dstatic">sql-completion-static</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;4.2 dynamic モード</td><td width="50%">|<a href="#sql_002dcompletion_002ddynamic">sql-completion-dynamic</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;4.3 SQL 補完のチュートリアル</td><td width="50%">|<a href="#sql_002dcompletion_002dtutorial">sql-completion-tutorial</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.3.1 テーブル補完</td><td width="50%">|<a href="#sql_002dcompletion_002dtables">sql-completion-tables</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.3.2 カラム補完</td><td width="50%">|<a href="#sql_002dcompletion_002dcolumns">sql-completion-columns</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.3.3 プロシージャ補完</td><td width="50%">|<a href="#sql_002dcompletion_002dprocedures">sql-completion-procedures</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4.3.4 ビュー補完</td><td width="50%">|<a href="#sql_002dcompletion_002dviews">sql-completion-views</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;4.4 補完のカスタマイズ</td><td width="50%">|<a href="#sql_002dcompletion_002dcustomization">sql-completion-customization</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;4.5 SQL 關聯のマップ</td><td width="50%">|<a href="#sql_002dcompletion_002dmaps">sql-completion-maps</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;4.6 他のファイルタイプのファイル內で使ふには</td><td width="50%">|<a href="#sql_002dcompletion_002dfiletypes">sql-completion-filetypes</a>|</td></tr>
+</table>
+
+<a name="sql_002dnavigation"></a><a name="index-sql_002dnavigation"></a>
+<a name="g_t1_002e-Yi-Dong-"></a>
+<h3 class="section">1. 移動</h3>
+
+<p>SQL ファイルタイププラグインはファイル內の移動を支援するためのオプションを多數備へてゐます。
+</p>
+
+<a name="sql_002dmatchit"></a><a name="index-sql_002dmatchit"></a>
+<a name="g_t1_002e1-Matchit"></a>
+<h4 class="unnumberedsubsec">1.1 Matchit</h4>
+<p>matchit プラグイン (<a href="http://www.vim.org/scripts/script.php?script_id=39">http://www.vim.org/scripts/script.php?script_id=39</a>) はたくさんの機能を備へてをり、異なる言語に對應するためにカスタマイズすることができます。matchit プラグインはローカル變數 b:match_words を定義することで設定します。樣々なキーワードの上で % キーを押すと、それに對應する位置へカーソルを移動します。例へばカーソルが &quot;if&quot; の上にあるとき % を押すと &quot;else&quot;, &quot;elseif&quot;, &quot;end if&quot; の閒を循環して移動します。
+</p>
+<p>以下のキーワードがサポートされてゐます:
+</p><pre class="verbatim">if
+elseif | elsif
+else [if]
+end if
+
+[while condition] loop
+    leave
+    break
+    continue
+    exit
+end loop
+
+for
+    leave
+    break
+    continue
+    exit
+end loop
+
+do
+    statements
+doend
+
+case
+when
+when
+default
+end case
+
+merge
+when not matched
+when matched
+
+create[ or replace] procedure|function|event
+returns
+</pre>
+
+<a name="sql_002dobject_002dmotions"></a><a name="index-sql_002dobject_002dmotions"></a>
+<a name="g_t1_002e2-Text-Object-Motions"></a>
+<h4 class="unnumberedsubsec">1.2 Text Object Motions</h4>
+<p>Vim には既定でテキストオブジェクトを操作するキーがたくさん定義されてゐます |<a href="motion_002etxt.html#object_002dmotions">object-motions</a>|。このファイルタイププラグインはこれらのキーの一部を SQL 用に再定義します。
+</p>
+<p>SQL ファイルを編輯するとき、以下のノーマルモード |<a href="intro_002etxt.html#Normal">Normal</a>| とビジュアルモード |<a href="visual_002etxt.html#Visual">Visual</a>| のマップが定義されます:
+</p><table>
+<tr><td width="20%">]]</td><td width="80%">次の &rsquo;begin&rsquo; へ移動する</td></tr>
+<tr><td width="20%">[[</td><td width="80%">前の &rsquo;begin&rsquo; へ移動する</td></tr>
+<tr><td width="20%">][</td><td width="80%">次の &rsquo;end&rsquo; へ移動する</td></tr>
+<tr><td width="20%">[]</td><td width="80%">前の &rsquo;end&rsquo; へ移動する</td></tr>
+</table>
+
+
+<a name="sql_002dpredefined_002dobjects"></a><a name="index-sql_002dpredefined_002dobjects"></a>
+<a name="g_t1_002e3-SQL-Du-Zi-noobuziekutoDan-Wei-Yi-Dong-"></a>
+<h4 class="unnumberedsubsec">1.3 SQL 獨自のオブジェクト單位移動</h4>
+<p>ほとんどのリレーショナルデータベースはテーブル、インデックス、トリガー、ストアドプロシージャなど樣々な標準的な機能を備へてゐます。また、ベンダーごとに樣々な獨自オブジェクトがあります。次のマップたちはこれらのオブジェクト閒を移動するために作られてゐます。お使ひのデータベースによつてオブジェクトのリストを調整できるやうでなればなりません。このファイルタイププラグインは標準オブジェクトのほとんどと、多くの追加的なオブジェクトを定義してゐます。これを可能な限りフレキシブルにするために、|<a href="starting_002etxt.html#vimrc">vimrc</a>| でオブジェクトのリストを上書きできるやうになつてゐます。次のやうにします:
+</p><div class="example">
+<pre class="example">let g:ftplugin_sql_objects = 'function,procedure,event,table,trigger' .
+            \ ',schema,service,publication,database,datatype,domain' .
+            \ ',index,subscription,synchronization,view,variable'
+</pre></div>
+
+<p>上記のリストを對象として、以下のノーマルモード |<a href="intro_002etxt.html#Normal">Normal</a>| とビジュアルモード |<a href="visual_002etxt.html#Visual">Visual</a>| のマップが定義されてゐます:
+</p><table>
+<tr><td width="20%">]}</td><td width="80%">次の &rsquo;create &lt;オブジェクト名&gt;&rsquo; へ移動する</td></tr>
+<tr><td width="20%">[{</td><td width="80%">前の &rsquo;create &lt;オブジェクト名&gt;&rsquo; へ移動する</td></tr>
+</table>
+
+<p>繰り返し ]} を押すとこれらの create 文の閒を循環して移動します:
+</p><pre class="verbatim">create table t1 (
+    ...
+);
+
+create procedure p1
+begin
+    ...
+end;
+
+create index i1 on t1 (c1);
+</pre>
+<p>g:ftplugin_sql_objects の既定値は以下の通りです:
+</p><div class="example">
+<pre class="example">let g:ftplugin_sql_objects = 'function,procedure,event,' .
+            \ '\\(existing\\\\|global\\s\\+temporary\\s\\+\\)\\\{,1}' .
+            \ 'table,trigger' .
+            \ ',schema,service,publication,database,datatype,domain' .
+            \ ',index,subscription,synchronization,view,variable'
+</pre></div>
+
+<p>上記の設定は以下の場合にも對應してゐます:
+</p><pre class="verbatim">create table t1 (
+    ...
+);
+create existing table t2 (
+    ...
+);
+create global temporary table t3 (
+    ...
+);
+</pre>
+<p>既定では CREATE 文だけを檢索します。|<a href="starting_002etxt.html#vimrc">vimrc</a>| に以下を書くと、他の文も對象にすることができます:
+</p><div class="example">
+<pre class="example">let g:ftplugin_sql_statements = 'create,alter'
+</pre></div>
+
+<p>このファイルタイププラグインは以下の 3 種類のコメントを定義してゐます:
+</p><pre class="verbatim">1.  --
+2.  //
+3.  /*
+     *
+     */
+</pre>
+<p>コメントを對象として、以下のノーマルモード |<a href="intro_002etxt.html#Normal">Normal</a>| とビジュアルモード |<a href="visual_002etxt.html#Visual">Visual</a>| でのマップが定義されてゐます:
+</p><table>
+<tr><td width="20%">]&quot;</td><td width="80%">次のコメントの開始位置へ移動</td></tr>
+<tr><td width="20%">[&quot;</td><td width="80%">前のコメントの終了位置へ移動</td></tr>
+</table>
+
+
+
+<a name="sql_002dmacros"></a><a name="index-sql_002dmacros"></a>
+<a name="g_t1_002e4-makuro"></a>
+<h4 class="unnumberedsubsec">1.4 マクロ</h4>
+<p>|<a href="options_002etxt.html#g_t_0027define_0027">'define'</a>| に以下の正規表現を設定することにより、マクロ定義を見つけるための Vim の機能に對應してゐます:
+</p><div class="example">
+<pre class="example">\c\&lt;\(VARIABLE\|DECLARE\|IN\|OUT\|INOUT\)\&gt;
+</pre></div>
+
+<p>この正規表現は以下のやうなコードに對應してゐます:
+</p><pre class="verbatim">CREATE VARIABLE myVar1 INTEGER;
+
+CREATE PROCEDURE sp_test(
+    IN myVar2 INTEGER,
+    OUT myVar3 CHAR(30),
+    INOUT myVar4 NUMERIC(20,0)
+)
+BEGIN
+    DECLARE myVar5 INTEGER;
+
+    SELECT c1, c2, c3
+      INTO myVar2, myVar3, myVar4
+      FROM T1
+     WHERE c4 = myVar1;
+END;
+</pre>
+<p>以下の行の &quot;myVar1&quot; の上にカーソルを置いて、:
+</p><pre class="verbatim">WHERE c4 = myVar1;
+            ^
+</pre>
+<p>以下のキーのどれかを押してみてください:
+</p><div class="example">
+<pre class="example">[d
+[D
+[CTRL-D
+</pre></div>
+
+
+<a name="sql_002ddialects"></a><a name="sql_002dtypes"></a><a name="sybase"></a><a name="TSQL"></a><a name="Transact_002dSQL"></a><a name="sqlanywhere"></a><a name="oracle"></a><a name="plsql"></a><a name="sqlj"></a><a name="sqlserver"></a><a name="mysql"></a><a name="postgresql"></a><a name="psql"></a><a name="informix"></a><a name="index-sql_002ddialects"></a>
+<a name="index-sql_002dtypes"></a>
+<a name="index-sybase"></a>
+<a name="index-TSQL"></a>
+<a name="index-Transact_002dSQL"></a>
+<a name="index-sqlanywhere"></a>
+<a name="index-oracle"></a>
+<a name="index-plsql"></a>
+<a name="index-sqlj"></a>
+<a name="index-sqlserver"></a>
+<a name="index-mysql"></a>
+<a name="index-postgresql"></a>
+<a name="index-psql"></a>
+<a name="index-informix"></a>
+<a name="g_t2_002e-SQL-noFang-Yan-"></a>
+<h3 class="section">2. SQL の方言</h3>
+
+<p>すべてのリレーショナルデータベースは SQL に對應してゐます。SQL の一部分はベンダー閒で移植可能です (例: CREATE TABLE, CREATE INDEX) が、ベンダー固有の擴張が大量にあります。Oracle は &quot;CREATE OR REPLACE&quot; 構文、CREATE TABLE 文でのカラム既定値の指定、プロシージャ言語 (ストアドプロシージャとトリガー) を備へてゐます。
+</p>
+<p>標準の Vim ディストリビューションには Oracle の PL/SQL に基づいた構文ハイライトが附屬してゐます。SQL インデントスクリプトは Oracle と SQL Anywhere 用に動作します。ファイルタイププラグインはすべてのベンダー用に動作し、ベンダー中立を保ちつつも擴張可能であるべきです。
+</p>
+<p>現在樣々なベンダーに對應してゐます。これは構文スクリプトを通して實現してゐます。殘念なことに、複數の構文ルールを切り替へるには以下のどれかを作成しなければなりません:
+</p><ol>
+<li> 新しいファイルタイプ
+</li><li> 獨自のオートコマンド
+</li><li> コマンド手動實行
+</li></ol>
+
+<p>大多數の人は 1 つのベンダーのデータベース製品しか扱はないため、|<a href="starting_002etxt.html#vimrc">vimrc</a>| で既定値を設定しておくとよいでせう。
+</p>
+
+<a name="sqlsettype"></a><a name="SQLSetType"></a><a name="index-sqlsettype"></a>
+<a name="index-SQLSetType"></a>
+<a name="g_t2_002e1-SQLSetType"></a>
+<h4 class="unnumberedsubsec">2.1 SQLSetType</h4>
+<p>複數のデータベースを扱つてゐる人々にとつては、バッファごとまたは任意のタイミングでベンダーのルール(インデント、構文)を切り替へられるとよいでせう。ftplugin/sql.vim では次のコマンドが定義されてゐます:
+</p><pre class="verbatim">SQLSetType
+</pre>
+<p>このコマンドを引數なしで實行すると、インデントと構文スクリプトが既定値に戾ります。既定値は |<a href="#sql_002dtype_002ddefault">sql-type-default</a>| を參照してください。Vi 互換モードをオフにしてゐると (|<a href="options_002etxt.html#g_t_0027compatible_0027">'compatible'</a>|)、<code class="tt-key">&lt;Tab&gt;</code> キーで引數を補完できます。
+</p>
+<p>コマンド名とスペースをタイプした後、引數を指定するために補完を利用できます。このコマンドは source したい Vim scriptの名前を受け取ります。|<a href="cmdline_002etxt.html#cmdline_002dcompletion">cmdline-completion</a>| 機能により、SQLSetType コマンドは |<a href="options_002etxt.html#g_t_0027runtimepath_0027">'runtimepath'</a>| から名前に &rsquo;sql&rsquo; を含む Vim script を檢索します。これは名前のスペルから推測を取り出します。以下が例です:
+</p><div class="example">
+<pre class="example">:SQLSetType
+:SQLSetType sqloracle
+:SQLSetType sqlanywhere
+:SQLSetType sqlinformix
+:SQLSetType mysql
+</pre></div>
+
+<p>もつとも簡單な方法は、<code class="tt-key">&lt;Tab&gt;</code> を使つてまずコマンド名 (SQLSetType) を補完し、スペースに續いてもう一度 <code class="tt-key">&lt;Tab&gt;</code> を押すと利用可能な Vim script の名前のリストが表示されます:
+</p><div class="example">
+<pre class="example">:SQL&lt;Tab&gt;&lt;space&gt;&lt;Tab&gt;
+</pre></div>
+
+
+<a name="sqlgettype"></a><a name="SQLGetType"></a><a name="index-sqlgettype"></a>
+<a name="index-SQLGetType"></a>
+<a name="g_t2_002e2-SQLGetType"></a>
+<h4 class="unnumberedsubsec">2.2 SQLGetType</h4>
+<p>現在、どの SQL の方言が使はれてゐるかを調べるには、コマンド SQLGetType を使ひます。ftplugin/sql.vim で次のコマンドが定義されてゐます:
+</p><div class="example">
+<pre class="example">SQLGetType
+</pre></div>
+
+<p>このコマンドを使ふと、以下のやうな文字列がエコー表示されます:
+</p><div class="example">
+<pre class="example">Current SQL dialect in use:sqlanywhere
+</pre></div>
+
+
+<a name="sql_002dtype_002ddefault"></a><a name="index-sql_002dtype_002ddefault"></a>
+<a name="g_t2_002e3-SQL-Fang-Yan-noJi-Ding-Zhi-"></a>
+<h4 class="unnumberedsubsec">2.3 SQL 方言の既定値</h4>
+<p>すでに述べたやうに、Vim の既定の構文ルールは Oracle (PL/SQL) に基づいてゐます。これを上書きするには、次のうちどれかを |<a href="starting_002etxt.html#vimrc">vimrc</a>| に書きます:
+</p><div class="example">
+<pre class="example">let g:sql_type_default = 'sqlanywhere'
+let g:sql_type_default = 'sqlinformix'
+let g:sql_type_default = 'mysql'
+</pre></div>
+
+<p>次を |<a href="starting_002etxt.html#vimrc">vimrc</a>| に書くと:
+</p><div class="example">
+<pre class="example">let g:sql_type_default = 'sqlinformix'
+</pre></div>
+
+<p>次囘 SQL ファイルを編輯するときには以下のスクリプトが自動的に讀み込まれます:
+</p><div class="example">
+<pre class="example">ftplugin/sql.vim
+syntax/sqlinformix.vim
+indent/sql.vim
+</pre></div>
+<blockquote>
+<p><strong>Note&rdquo;</strong> <br>
+indent/sqlinformix.sql は讀み込まれてゐないことに注意してください。Informix 用のインデントファイルは存在しないため、既定のインデントファイルが讀み込まれてゐます。
+</p></blockquote>
+
+
+<a name="sql_002dadding_002ddialects"></a><a name="index-sql_002dadding_002ddialects"></a>
+<a name="g_t3_002e-SQL-Fang-Yan-woZhui-Jia-suru"></a>
+<h3 class="section">3. SQL 方言を追加する</h3>
+
+<p>Vim の標準ディストリビューションにスクリプトが含まれてゐない SQL 方言を扱ふときは、對應するスクリプトが投稿されてゐないか <a href="http://www.vim.org">http://www.vim.org</a> をチェックしてみてください。もしなければ既存のスクリプトをコピーしてカスタマイズしませう。詳しくは |<a href="filetype_002etxt.html#filetype_002dplugins">filetype-plugins</a>| を參照してください。
+</p>
+<p>スクリプトを識別しやすくするために、ファイル名の先頭に &quot;sql&quot; といふ接頭辭をつけてください。例へば SQLite データベース用のカスタマイズを作りたい場合は、以下のファイルを作成します:
+</p><dl compact="compact">
+<dt>Unix</dt>
+<dd><p>~/.vim/syntax/sqlite.vim <br>
+~/.vim/indent/sqlite.vim
+</p></dd>
+<dt>Windows</dt>
+<dd><p>$VIM/vimfiles/syntax/sqlite.vim <br>
+$VIM/vimfiles/indent/sqlite.vim
+</p></dd>
+</dl>
+
+<p>SQLSetType コマンドには變更を加へる必要はありません。SQLSetType コマンドを實行すると自動的に新しい SQL ファイルが選ばれ、讀み込まれます。
+</p>
+
+<a name="sql_002dcompletion"></a><a name="omni_002dsql_002dcompletion"></a><a name="index-sql_002dcompletion"></a>
+<a name="index-omni_002dsql_002dcompletion"></a>
+<a name="g_t4_002e-SQL-omuniBu-Wan-"></a>
+<h3 class="section">4. SQL オムニ補完</h3>
+
+<p>Vim 7 にはプラグイン開發者が任意の言語用のコード補完を作るためのインターフェイスと函數が備はつてゐます。Vim 7 には SQL 言語用のコード補完が含まれてゐます。
+</p>
+<p>SQL 補完プラグインには static と dynamic といふ2つのモードがあります。static モードは 現在の構文强調ルールから生成されたデータをもとにポップアップを表示します。dynamic モードはデータベースから直接抽出したデータをもとにポップアップを表示します。このデータにはテーブルのリスト、カラムのリスト、プロシージャ名などが含まれます。
+</p>
+<a name="sql_002dcompletion_002dstatic"></a><a name="index-sql_002dcompletion_002dstatic"></a>
+<a name="g_t4_002e1-static-modo"></a>
+<h4 class="unnumberedsubsec">4.1 static モード</h4>
+<p>static ポップアップはファイルタイプが SQL のファイルを編輯してゐるときに、使用中の構文ルールで定義された項目を含んで表示されます。プラグインは、表示される項目のリストを絞り込むための樣々なマップを用意してゐます。
+</p>
+<p>既定の static マップは次の通りです:
+</p><div class="example">
+<pre class="example">imap &lt;buffer&gt; &lt;C-C&gt;a &lt;C-\&gt;&lt;C-O&gt;:call sqlcomplete#Map('syntax')&lt;CR&gt;&lt;C-X&gt;&lt;C-O&gt;
+imap &lt;buffer&gt; &lt;C-C&gt;k &lt;C-\&gt;&lt;C-O&gt;:call sqlcomplete#Map('sqlKeyword')&lt;CR&gt;&lt;C-X&gt;&lt;C-O&gt;
+imap &lt;buffer&gt; &lt;C-C&gt;f &lt;C-\&gt;&lt;C-O&gt;:call sqlcomplete#Map('sqlFunction')&lt;CR&gt;&lt;C-X&gt;&lt;C-O&gt;
+imap &lt;buffer&gt; &lt;C-C&gt;o &lt;C-\&gt;&lt;C-O&gt;:call sqlcomplete#Map('sqlOption')&lt;CR&gt;&lt;C-X&gt;&lt;C-O&gt;
+imap &lt;buffer&gt; &lt;C-C&gt;T &lt;C-\&gt;&lt;C-O&gt;:call sqlcomplete#Map('sqlType')&lt;CR&gt;&lt;C-X&gt;&lt;C-O&gt;
+imap &lt;buffer&gt; &lt;C-C&gt;s &lt;C-\&gt;&lt;C-O&gt;:call sqlcomplete#Map('sqlStatement')&lt;CR&gt;&lt;C-X&gt;&lt;C-O&gt;
+</pre></div>
+
+<p>&quot;&lt;C-C&gt;&quot; のキーは環境によつては動作しないかもしれません。そこで、以下の行を |<a href="starting_002etxt.html#g_t_002evimrc">.vimrc</a>| に書くことで &quot;&lt;C-C&gt;&quot; を他のキーに變更できます:
+</p><div class="example">
+<pre class="example">let g:ftplugin_sql_omni_key = '&lt;C-C&gt;'
+</pre></div>
+<p>static マップ (構文强調グループに基づいてゐる) は以下の形式で定義されてゐます:
+</p><div class="example">
+<pre class="example">imap &lt;buffer&gt; &lt;C-C&gt;k &lt;C-\&gt;&lt;C-O&gt;:call sqlcomplete#Map('sqlKeyword')&lt;CR&gt;&lt;C-X&gt;&lt;C-O&gt;
+imap &lt;buffer&gt; &lt;C-C&gt;k &lt;C-\&gt;&lt;C-O&gt;:call sqlcomplete#Map('sqlKeyword\w*')&lt;CR&gt;&lt;C-X&gt;&lt;C-O&gt;
+</pre></div>
+
+<p>このコマンドは次のやうに分解できます:
+</p><dl compact="compact">
+<dt>imap</dt>
+<dd><p>- 插入モードでのマップを作成する
+</p></dd>
+<dt>&lt;buffer&gt;</dt>
+<dd><p>- このバッファに對してのみ
+</p></dd>
+<dt>&lt;C-C&gt;k</dt>
+<dd><p>- マップするキー
+</p></dd>
+<dt>&lt;C-\&gt;&lt;C-O&gt;</dt>
+<dd><p>- コマンドを 1 個實行し、插入モードに戾る
+</p></dd>
+<dt>:call sqlcomplete#Map(</dt>
+<dd><p>- 他の補完プラグインと組み合はせて使へるやうにするために、いくつかの管理維持する函數を實行します。
+</p>
+<p>どの項目を補完して欲しいかを SQL 補完プラグインに指示します。
+</p>
+<p>この場合は構文强調グループ &rsquo;<samp>sqlKeyword</samp>&rsquo; の項目を表示するやう指定してゐます。
+</p>
+<p>選擇可能な構文强調グループ名のリストは、SQL ファイルを編輯中に次のコマンドで表示できます。
+</p><div class="example">
+<pre class="example">:syntax list
+</pre></div>
+</dd>
+<dt>&rsquo;sqlKeyword&rsquo;</dt>
+<dd><p>- 構文强調グループ sqlKeyword の項目を表示します。
+</p></dd>
+<dt>&rsquo;sqlKeyword\w*&rsquo;</dt>
+<dd><p>- Vim 7.4 からは、正規表現を使つて構文强調グループを選擇できます。
+</p></dd>
+<dt>)&lt;CR&gt;</dt>
+<dd><p>- :let コマンドを實行します。
+</p></dd>
+<dt>&lt;C-X&gt;&lt;C-O&gt;</dt>
+<dd><p>- 標準のオムニ補完のキーストロークを實行します。sqlcomplete#Map 函數の引數に &rsquo;sqlKeyword&rsquo; を渡してあるので、SQL 補完プラグインは構文强調グループsqlKeyword の項目をポップアップするやうになつてゐます。プラグインは Vim が再起動するまでこの結果をキャッシュします。構文のリストは syntaxcomplete プラグインを使つて抽出されます。
+</p></dd>
+</dl>
+
+<p>&rsquo;syntax&rsquo; キーワードを使ふのは特別な場合です。これは syntaxcomplete プラグインにすべての構文アイテムを抽出するやう指示します。そのためこれは Vim のどの SQL 構文ファイルに對しても有效です。これを書いてゐる時點でこれは SQL 方言用の 10 個の構文ファイルを含んでゐます (上のセクション 3 |<a href="#sql_002ddialects">sql-dialects</a>| を參照)。
+</p>
+<p>構文ファイルから抽出される項目の例を以下に示します:
+</p><dl compact="compact">
+<dt>全部</dt>
+<dd><p>- 全構文强調グループの中身
+</p></dd>
+<dt>文</dt>
+<dd><p>- Select, Insert, Update, Delete, Create, Alter, ...
+</p></dd>
+<dt>函數</dt>
+<dd><p>- Min, Max, Trim, Round, Date, ...
+</p></dd>
+<dt>キーワード</dt>
+<dd><p>- Index, Database, Having, Group, With
+</p></dd>
+<dt>オプション</dt>
+<dd><p>- Isolation_level, On_error, Qualify_owners, Fire_triggers, ...
+</p></dd>
+<dt>型</dt>
+<dd><p>- Integer, Char, Varchar, Date, DateTime, Timestamp, ...
+</p></dd>
+</dl>
+
+
+<a name="sql_002dcompletion_002ddynamic"></a><a name="index-sql_002dcompletion_002ddynamic"></a>
+<a name="g_t4_002e2-dynamic-modo"></a>
+<h4 class="unnumberedsubsec">4.2 dynamic モード</h4>
+<p>dynamic モードではデータベースから直接抽出したデータを元にポップアップを表示します。dynamic 機能を有效にするためには dbext.vim をインストールしなければなりません(<a href="http://vim.sourceforge.net/script.php?script_id=356">http://vim.sourceforge.net/script.php?script_id=356</a>)。
+</p>
+<p>dynamic モードは SQL 補完プラグインのいくつかの機能から使はれてゐます。dbext プラグインをインストールしたら dbext-tutorial の設定と使ひ方を讀んでください。dbext を使ふと SQL 補完プラグインがテーブル、プロシージャ、ビュー、カラムのリストを表示できるやうになります。
+</p><dl compact="compact">
+<dt>テーブルリスト</dt>
+<dd><p>- 全スキーマ所有者の全テーブル
+</p></dd>
+<dt>プロシージャリスト</dt>
+<dd><p>- 全スキーマ所有者の全ストアドプロシージャ
+</p></dd>
+<dt>ビューリスト</dt>
+<dd><p>- 全スキーマ所有者の全ビュー
+</p></dd>
+<dt>カラムリスト</dt>
+<dd><p>- 選擇したテーブル內のカラム
+</p></dd>
+</dl>
+
+<p>これらのリストをポップアップを表示するには、插入モードで以下のキーを使ひます (ここで <kbd>&lt;C-C&gt;</kbd> は <code class="tt-key">CTRL</code> キーを押しながら <code class="tt-key">C</code> キーを押すといふ意味です):
+</p><dl compact="compact">
+<dt>テーブルリスト</dt>
+<dd><p>- <kbd>&lt;C-C&gt;t</kbd> <br>
+- <kbd>&lt;C-X&gt;&lt;C-O&gt;</kbd> (既定のマップはテーブルリスト)
+</p></dd>
+<dt>ストアドプロシージャリスト</dt>
+<dd><p>- <kbd>&lt;C-C&gt;p</kbd>
+</p></dd>
+<dt>ビューリスト</dt>
+<dd><p>- <kbd>&lt;C-C&gt;v</kbd>
+</p></dd>
+<dt>カラムリスト</dt>
+<dd><p>- <kbd>&lt;C-C&gt;c</kbd>
+</p></dd>
+</dl>
+
+<dl compact="compact">
+<dt>ドリルイン／アウト</dt>
+<dd><p>- テーブルリストのポップアップウィンドウを表示中に <code class="tt-key">&lt;Right&gt;</code> を押すと現在選擇されてゐるテーブルのカラムリストの表示に切り替はります。
+</p>
+<p>- カラムリストのポップアップウィンドウを表示中に <code class="tt-key">&lt;Left&gt;</code> を押すとテーブルリスト表示に切り替はります。
+</p>
+<p>- これを使へばテーブルリストとカラムリストの表示を素早く切り替へることができます。
+</p>
+<p>- <code class="tt-key">&lt;Right&gt;</code> と <code class="tt-key">&lt;Left&gt;</code> のキーも |<a href="starting_002etxt.html#g_t_002evimrc">.vimrc</a>| により變更できます
+</p><div class="example">
+<pre class="example">let g:ftplugin_sql_omni_key_right = '&lt;Right&gt;'
+let g:ftplugin_sql_omni_key_left  = '&lt;Left&gt;'
+</pre></div>
+</dd>
+</dl>
+
+<p>SQL 補完プラグインはポップアップウィンドウに表示されるリストをキャッシュしておきます。これによつてリストの再表示がとても高速になります。データベースに新しいテーブルやカラムが追加されたときはプラグインのキャッシュをクリアする必要が出てくるかもしれません。キャッシュをクリアするための既定のマップは次の通りです:
+</p><div class="example">
+<pre class="example">imap &lt;buffer&gt; &lt;C-C&gt;R &lt;C-\&gt;&lt;C-O&gt;:call sqlcomplete#Map('ResetCache')&lt;CR&gt;&lt;C-X&gt;&lt;C-O&gt;
+</pre></div>
+
+
+<a name="sql_002dcompletion_002dtutorial"></a><a name="index-sql_002dcompletion_002dtutorial"></a>
+<a name="g_t4_002e3-SQL-Bu-Wan-notiyutoriaru"></a>
+<h4 class="unnumberedsubsec">4.3 SQL 補完のチュートリアル</h4>
+
+<p>このチュートリアルは SQL 補完プラグインの主な機能を一通り紹介することを意圖して次のことが書かれてゐます:
+</p><ul>
+<li> a) プラグインに慣れる
+</li><li> b) 主な機能を紹介する
+</li><li> c) カスタマイズする方法を示す
+</li><li> d) 「ベストな使ひ方」をデモする (一番簡單な設定方法)
+</li></ul>
+
+<p>まづ、新規バッファを作成しませう:
+</p><div class="example">
+<pre class="example">:e tutorial.sql
+</pre></div>
+
+
+<a name="static-naJi-Neng-"></a>
+<h4 class="unnumberedsubsubsec">static な機能</h4>
+<p>各種のリストを表示するには、單に插入モードで次をタイプします:
+</p><div class="example">
+<pre class="example">&lt;C-C&gt;s   (SQL 文を表示する)
+</pre></div>
+<p>そしてリストの中を &quot;select&quot; まで下に移動していきます。探してゐる項目をよく知つてゐる場合、例へばそれが &quot;s&quot; といふ文字で始まることを知つてゐる場合は、その文字を續けてタイプできます。&quot;se&quot; とタイプしてから (引用符はタイプしません):
+</p><div class="example">
+<pre class="example">&lt;C-Space&gt;t
+</pre></div>
+<p>を押してみてください。
+&quot;select&quot; が選擇されたところで &lt;Enter&gt; を押すとその項目を確定します。次に
+</p><div class="example">
+<pre class="example">* fr&lt;C-C&gt;a (すべての構文アイテムを表示する)
+</pre></div>
+<p>とタイプしてみてください。&quot;from&quot; が候補に現れるでせう。
+</p>
+<p>ストアドプロシージャを書くときには型リストが便利です。型リストはそのデータベースがサポートしてゐるすべての型を含んでゐます。ただしこれはお使ひの構文ファイルに依存します。SQL Anywhere 構文ファイル(sqlanywhere.vim)は以下のやうな場合に對應してゐます:
+</p><div class="example">
+<pre class="example">BEGIN
+   DECLARE customer_id &lt;C-C&gt;T &lt;-- リストから型を選ぶ
+</pre></div>
+
+
+<a name="dynamic-naJi-Neng-"></a>
+<h4 class="unnumberedsubsubsec">dynamic な機能</h4>
+<p>dynamic な機能を使ふにはまづ dbext.vim (<a href="http://vim.sourceforge.net/script.php?script_id=356">http://vim.sourceforge.net/script.php?script_id=356</a>) をインストールしなければなりません。このプラグインにはチュートリアルが附屬してゐます。SQL 補完プラグインの觀點からすると、dbext の主な機能はデータベースへの接續です。dbext の接續プロファイルは接續情報を定義するためのもつとも效果的なメカニズムです。一度接續が確立されてゐれば、SQL 補完プラグインはポップアップを表示する際にバックグラウンドで dbext の機能を利用します。
+</p>
+<p>dbext.vim を正しく設定したら、テストするためにコマンド :DBListTable を實行します。テーブルのリストが表示されれば dbext.vim が正常に動作してゐます。表示されない場合は dbext.txt を讀んで調べてください。
+</p>
+<p>既に dbext のチュートリアルをやつてゐれば、<kbd>&lt;C-C&gt;t</kbd> でテーブルのリストを表示できることをご存知でせう。dbext がテーブルリストを作成する閒、少々時閒がかかります。リストが表示されたら &lt;C-W&gt; を押してください。するとポップアップウィンドウと既に選擇されたテーブル名の兩方が消えます。
+</p>
+<a name="sql_002dcompletion_002dtables"></a><a name="index-sql_002dcompletion_002dtables"></a>
+<a name="g_t4_002e3_002e1-teburuBu-Wan-"></a>
+<h4 class="unnumberedsubsubsec">4.3.1 テーブル補完</h4>
+
+<p>dbext により接續したデータベース內のテーブルのリストを表示するには <kbd>&lt;C-c&gt;t</kbd> を押します。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+SQL 補完ポップアップはすべてキーマップの前のプリフィックスに對應してゐます。プリフィックスを指定すると、ポップアップウィンドウの內容がその文字列で始まるものだけに制限されます。
+</p></blockquote>
+
+<a name="sql_002dcompletion_002dcolumns"></a><a name="index-sql_002dcompletion_002dcolumns"></a>
+<a name="g_t4_002e3_002e2-karamuBu-Wan-"></a>
+<h4 class="unnumberedsubsubsec">4.3.2 カラム補完</h4>
+
+<p>SQL 補完プラグインは特定のテーブルのカラムのリストを表示することもできます。このカラム補完は <kbd>&lt;C-C&gt;c</kbd> で起動できます。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+以下の例ではポップアップウィンドウの表示中に <code class="tt-key">&lt;Right&gt;</code> でカラムリストを表示してゐます。
+</p></blockquote>
+
+<p>カラム補完を使用してゐる樣子の例:
+</p><ul>
+<li> もう一度 <kbd>&lt;C-C&gt;t</kbd> を押すとテーブルのリストが表示されます。
+</li><li> 補完ウィンドウにリストが表示されてゐるとき <code class="tt-key">&lt;Right&gt;</code> を押すとテーブルのリストが消え、途中まで 入力されたテーブルに含まれるカラムのリスト表示に切り替はります (すこし時閒がかかります)。
+</li><li> <code class="tt-key">&lt;Left&gt;</code> を押すとカラムリストからテーブルリストに切り替はります。これによつてテーブルリストとカラムリストをとても素早く切り替へられます。
+</li><li> 同じテーブルに對してもう一度 <code class="tt-key">&lt;Right&gt;</code> を押すと、今度はカラムリストがキャッシュされてゐるため時閒がかからないことに氣づくでせう。キャッシュしてゐるテーブルのスキーマが變更されたときは <kbd>&lt;C-C&gt;R</kbd> を押します。すると SQL 補完のキャッシュがクリアされます。
+</li></ul>
+<blockquote>
+<p><strong>Note:</strong> <br>
+<code class="tt-key">&lt;Right&gt;</code> と <code class="tt-key">&lt;Left&gt;</code> は補完ウィンドウがアクティブな狀態で動作するやう設計されてゐます。補完のポップアップウィンドウがアクティブでない場合はノーマルモードでの <code class="tt-key">&lt;Right&gt;</code> と <code class="tt-key">&lt;Left&gt;</code> の動作になります。
+</p></blockquote>
+
+<p>SQL 文を動的に組み立てる方法を見てゐきませう。select 文にはカラムのリストが必要です。SQL 補完プラグインを使つてカラムのリストを組み立てる方法は 2 通りあります。
+一度に 1 カラムを插入する方法:
+</p><ol>
+<li> SELECT を入力した後に <kbd>&lt;C-C&gt;t</kbd> を押してテーブルリストを表示します。
+</li><li> リストからテーブルを選擇します。
+</li><li> &lt;Right&gt; を押してカラムリストを表示します。
+</li><li> リストからカラムを選擇してエンターを押します。
+</li><li> &quot;,&quot; を入力して <kbd>&lt;C-C&gt;c</kbd> を押します。通常、カラムリストを生成するにはカーソルをテーブル名の上に置かねばなりません。プラグインはその名前を使つてどのテーブルからカラム リストを抽出するか決定します。このステップではカーソルをテーブル名の上に置かずに <kbd>&lt;C-C&gt;c</kbd> を押したため、表示されるカラムリストは前に使つたテーブルが對象となります。そしてカラムを選擇して續けます。
+</li><li> ステップ 5 を必要なだけ繰り返します。
+</li></ol>
+<p>テーブルの全カラムを插入する方法:
+</p><ol>
+<li> SELECT と入力してから <kbd>&lt;C-C&gt;t</kbd> を押すとテーブルのリストが表示されます。
+</li><li> カラムリストを表示したいテーブルにカーソルを合はせます。
+</li><li> <code class="tt-key">&lt;Enter&gt;</code> を押してテーブルを選擇します。
+</li><li> <kbd>&lt;C-C&gt;l</kbd> を押してそのテーブル內の全カラムのコンマ區切りのリストを表示させます。
+</li><li> ステップ 3 で選んだテーブル名に基づいてプラグインは妥當なテーブルエイリアスを決定します。ここでそのエイリアスを受け入れるかどうかプロンプトが表示されます。OK を押してください。
+</li><li> するとテーブル名が消え、代はりにそのテーブルのカラムリスト (各カラム名の前にエイリアスがつき、コンマ區切りになつたもの) が插入されます。
+</li><li> <kbd>&lt;C-C&gt;L</kbd> を押すとステップ 3 と 4 を同時に實行できます。これは、リストの中で現在選ばれてゐるテーブルで決定するためにマップの中に &lt;C-Y&gt; を埋め込んでゐます。
+</li></ol>
+
+<p>select 文を書くための特別な機能があります。次の文を書く場合を考へてください:
+</p><pre class="verbatim">select *
+  from customer c,
+       contact cn,
+       department as dp,
+       employee e,
+       site_options so
+ where c.
+</pre>
+<p>插入モードで &quot;customer&quot; テーブルのエイリアスである最後の &quot;c.&quot; を入力した後、<kbd>&lt;C-C&gt;c</kbd> または <kbd>&lt;C-X&gt;&lt;C-O&gt;</kbd> を押してみてください。すると customer テーブルのカラムのリストがポップアップ表示します。これは、select 文の開始位置を見て FROM 句で指定されたテーブルのリストを探してゐます。この場合は文字列 &quot;customer c&quot; (&quot;c&quot; は customer テーブルのエイリアス) が發見されます。省略可能なキーワード &quot;AS&quot; にも對應してゐます。例: &quot;customer AS c&quot;
+</p>
+
+<a name="sql_002dcompletion_002dprocedures"></a><a name="index-sql_002dcompletion_002dprocedures"></a>
+<a name="g_t4_002e3_002e3-purosiziyaBu-Wan-_003a"></a>
+<h4 class="unnumberedsubsubsec">4.3.3 プロシージャ補完:</h4>
+
+<p>テーブルリストと同樣に、<kbd>&lt;C-C&gt;p</kbd> でデータベースに登錄されてゐるストアドプロシージャのリストを表示できます。
+</p>
+<a name="sql_002dcompletion_002dviews"></a><a name="index-sql_002dcompletion_002dviews"></a>
+<a name="g_t4_002e3_002e4-biyuBu-Wan-_003a"></a>
+<h4 class="unnumberedsubsubsec">4.3.4 ビュー補完:</h4>
+
+<p>テーブルリストと同樣に、<kbd>&lt;C-C&gt;v</kbd> でデータベースに登錄されてゐるビューのリストを表示できます。
+</p>
+
+<a name="sql_002dcompletion_002dcustomization"></a><a name="index-sql_002dcompletion_002dcustomization"></a>
+<a name="g_t4_002e4-Bu-Wan-nokasutamaizu"></a>
+<h4 class="unnumberedsubsec">4.4 補完のカスタマイズ</h4>
+
+<p>|<a href="starting_002etxt.html#vimrc">vimrc</a>| でオプションをセットすることによつて SQL 補完プラグインをカスタマイズできます:
+</p><dl compact="compact">
+<dt>omni_sql_no_default_maps</dt>
+<dd><ul>
+<li> 既定値: この變數は定義されてゐない
+</li><li> この變數が定義されてゐる場合はオムニ補完用のマップが作られません。より詳しくは |<a href="#sql_002dcompletion_002dmaps">sql-completion-maps</a>| を參照。
+</li></ul>
+</dd>
+<dt>omni_sql_use_tbl_alias</dt>
+<dd><ul>
+<li> 既定値: a
+</li><li> この設定はコンマ區切りのカラムリストを生成するときに參照されます。既定ではカラムリストを生成するマップは &lt;C-C&gt;l です。カラムリストを生成するときに各カラムの前にエイリアスがつきます。例へば: e.emp_id, e.emp_name。このオプションには 3 種類の値を設定できます:
+<table>
+<tr><td width="10%">n</td><td width="90%">エイリアスを使はない</td></tr>
+<tr><td width="10%">d</td><td width="90%">既定のエイリアス (自動的に決定されたもの) を使ふ</td></tr>
+<tr><td width="10%">a</td><td width="90%">エイリアス名を問ひ合はせる</td></tr>
+</table>
+</li></ul>
+<p>エイリアスは以下の規則によつて決定されます:
+</p><ol>
+<li> テーブル名が &rsquo;_&rsquo; を含んでゐれば、それを區切り文字に使ひます:
+<div class="example">
+<pre class="example">MY_TABLE_NAME --&gt; MTN
+my_table_name --&gt; mtn
+My_table_NAME --&gt; MtN
+</pre></div>
+</li><li> テーブル名が &rsquo;_&rsquo; を含んでゐないが大文字・小文字が混在してゐれば、それを區切り文字に使ひます:
+<div class="example">
+<pre class="example">MyTableName --&gt; MTN
+</pre></div>
+</li><li> テーブル名が &rsquo;_&rsquo; を含んでゐなく、大文字・小文字も混在してゐなければテーブル名の最初の文字を使ひます:
+<div class="example">
+<pre class="example">mytablename --&gt; m
+MYTABLENAME --&gt; M
+</pre></div>
+</li></ol>
+
+</dd>
+<dt>omni_sql_ignorecase</dt>
+<dd><ul>
+<li> 既定値: &rsquo;<samp>ignorecase</samp>&rsquo; の現在値
+</li><li> 有效な値は 0 または 1。
+</li><li> 數文字を入力してから補完を開始すると、リストの要素がその文字列で始まるものだけにフィルタされます。このオプションが 0 の場合は、そのフィルタが大文字・小文字を區別します。
+</li></ul>
+
+</dd>
+<dt>omni_sql_include_owner</dt>
+<dd><ul>
+<li> 既定値: dbext.vim 3.00 がインストールされてゐなければ 0
+</li><li> 有效な値は 0 または 1。
+</li><li> テーブル、プロシージャ、ビューのリストを補完するとき、dbext.vim 3.00 以上を使つてゐればオブジェクトのリストにその所有者名がつきます。これらのオブジェクトを補完するとき omni_sql_include_owner が有效になつてゐればその所有者名も置き換へられます。
+</li></ul>
+
+</dd>
+<dt>omni_sql_precache_syntax_groups</dt>
+<dd><ul>
+<li> 既定値: <br>
+[&rsquo;<samp>syntax</samp>&rsquo;, &rsquo;<samp>sqlKeyword</samp>&rsquo;, &rsquo;<samp>sqlFunction</samp>&rsquo;, &rsquo;<samp>sqlOption</samp>&rsquo;, &rsquo;<samp>sqlType</samp>&rsquo;, &rsquo;<samp>sqlStatement</samp>&rsquo;]
+</li><li> sqlcomplete は他のプラグインと組み合はせて使ふことができます。その方法の槪略は |<a href="#sql_002dcompletion_002dfiletypes">sql-completion-filetypes</a>| で說明されてゐます。一時的にファイルタイプが SQL に變更されたとき、SQL 補完プラグインはこのオプションで指定されたリスト內の構文グループをキャッシュします。
+</li></ul>
+</dd>
+</dl>
+
+<a name="sql_002dcompletion_002dmaps"></a><a name="index-sql_002dcompletion_002dmaps"></a>
+<a name="g_t4_002e5-SQL-Guan-Lian-nomatupu"></a>
+<h4 class="unnumberedsubsec">4.5 SQL 關聯のマップ</h4>
+
+<p>既定の SQL 關聯のマップはこのドキュメントの他の節で詳しく說明しました。ここでは簡潔な說明つきのマップのリストを示します。
+</p>
+<a name="static-modonomatupu"></a>
+<h4 class="unnumberedsubsubsec">static モードのマップ</h4>
+<p>以下は Vim の構文强調ルールを使つて補完リストを作成するマップです。
+</p><dl compact="compact">
+<dt><kbd>&lt;C-C&gt;a</kbd></dt>
+<dd><p>SQL 構文アイテムを全て表示します。
+</p></dd>
+<dt><kbd>&lt;C-C&gt;k</kbd></dt>
+<dd><p>&rsquo;<samp>sqlKeyword</samp>&rsquo; と定義された構文アイテムを全て表示します。
+</p></dd>
+<dt><kbd>&lt;C-C&gt;f</kbd></dt>
+<dd><p>&rsquo;<samp>sqlFunction</samp>&rsquo; と定義された構文アイテムを全て表示します。
+</p></dd>
+<dt><kbd>&lt;C-C&gt;o</kbd></dt>
+<dd><p>&rsquo;<samp>sqlOption</samp>&rsquo; と定義された構文アイテムを全て表示します。
+</p></dd>
+<dt><kbd>&lt;C-C&gt;T</kbd></dt>
+<dd><p>&rsquo;<samp>sqlType</samp>&rsquo; と定義された構文アイテムを全て表示します。
+</p></dd>
+<dt><kbd>&lt;C-C&gt;s</kbd></dt>
+<dd><p>&rsquo;<samp>sqlStatement</samp>&rsquo; と定義された構文アイテムを全て表示します。
+</p></dd>
+</dl>
+
+<a name="dynamic-modonomatupu"></a>
+<h4 class="unnumberedsubsubsec">dynamic モードのマップ</h4>
+<p>以下は dbext.vim プラグインを使用して補完リストを作成するマップです。
+</p><dl compact="compact">
+<dt><kbd>&lt;C-C&gt;t</kbd></dt>
+<dd><p>テーブルのリストを表示します。
+</p></dd>
+<dt><kbd>&lt;C-C&gt;p</kbd></dt>
+<dd><p>プロシージャのリストを表示します。
+</p></dd>
+<dt><kbd>&lt;C-C&gt;v</kbd></dt>
+<dd><p>ビューのリストを表示します。
+</p></dd>
+<dt><kbd>&lt;C-C&gt;c</kbd></dt>
+<dd><p>指定テーブルのカラムのリストを表示します。
+</p></dd>
+<dt><kbd>&lt;C-C&gt;l</kbd></dt>
+<dd><p>指定テーブルのカラムのリストをコンマ區切りで表示します。
+</p></dd>
+<dt><kbd>&lt;C-C&gt;L</kbd></dt>
+<dd><p>指定テーブルのカラムのリストをコンマ區切りで表示します。補完ウィンドウがアクティブなときだけ使用できます。
+</p></dd>
+<dt><code class="tt-key">&lt;Right&gt;</code></dt>
+<dd><p>現在補完リストでカーソルが指してゐるテーブルのカラムリストを表示します。ほとんどの Unix システムでは <code class="tt-key">&lt;Right&gt;</code> を認識できないため、このマップは Windows でのみ定義されます。同じ機能を Unix でも利用するには他のキーを選んで自分の vimrc で同じマップを定義してください。
+</p></dd>
+<dt><code class="tt-key">&lt;Left&gt;</code></dt>
+<dd><p>テーブルのリストを表示します。ほとんどの Unix システムでは <code class="tt-key">&lt;Left&gt;</code> を認識できないため、このマップは Windows でのみ定義されます。同じ機能を Unix でも利用するには他のキーを選んで自分の vimrc で同じマップを定義してください。
+</p></dd>
+<dt><kbd>&lt;C-C&gt;R</kbd></dt>
+<dd><p>キャッシュされた項目を全て削除し、項目のリストを再生成するやう强制します。
+</p></dd>
+</dl>
+
+<a name="matupunokasutamaizu"></a>
+<h4 class="unnumberedsubsubsec">マップのカスタマイズ</h4>
+<p>好みに應じてマップを作成できます。一般的に、これらのマップは構文强調グループを定義します。
+</p>
+<p>デフォルトで作成されるマップが好みでなかつたり、そのキーがお使ひのプラットフォームでは動作しない場合、次の變數を |<a href="starting_002etxt.html#vimrc">vimrc</a>| で定義してください:
+</p><div class="example">
+<pre class="example">let g:omni_sql_no_default_maps = 1
+</pre></div>
+
+<p>ftplugin/sql.vim を直接編輯することはやめてください。このファイルを變更しても、將來アップデートしたときその變更は上書きされてしまひます。Vim は、ディストリビューションに含まれてゐるファイルを變更することなくカスタマイズを行ふために after といふディレクトリ構造を備へてゐます。マップをカスタマイズするには after/ftplugin/sql.vim を作成します (|<a href="options_002etxt.html#after_002ddirectory">after-directory</a>| を參照)。そしてその中で ftplugin/sql.vim に書かれてゐるのと同じマップを、好みのキーストロークに對して定義します。<kbd>&lt;C-C&gt;</kbd> が選ばれたのは、それが Windows、*nix のどちらでも動作するからです。Windows では <kbd>&lt;C-Space&gt;</kbd> や <code class="tt-key">ALT</code> キーを使ふこともできます。
+</p>
+
+<a name="sql_002dcompletion_002dfiletypes"></a><a name="index-sql_002dcompletion_002dfiletypes"></a>
+<a name="g_t4_002e6-Ta-nohuairutaipunohuairuNei-deShi-uniha"></a>
+<h4 class="unnumberedsubsec">4.6 他のファイルタイプのファイル內で使ふには</h4>
+
+<p>SQL を他のファイルタイプのファイル內で使ふ機會はよくあります。例へば Perl, Java, PHP, Javascript はどれもデータベースと對話できます。編輯中の言語の補完機能に加へて SQL 補完も使ひたいといふ狀況はよくあります。
+</p>
+<p>そんな場合は、以下のステップによつて簡單に實現できます (Perl の例です):
+</p><ol>
+<li> &lsquo;<samp>:e test.pl</samp>&rsquo;
+</li><li> &lsquo;<samp>:set filetype=sql</samp>&rsquo;
+</li><li> &lsquo;<samp>:set ft=perl</samp>&rsquo;
+</li></ol>
+
+<a name="sutetupu-1"></a>
+<h4 class="unnumberedsubsubsec">ステップ 1</h4>
+<p>Perl ファイルの編輯を始めます。自動的にファイルタイプが &quot;perl&quot; になります。デフォルトで、ファイルタイプ・ファイルの ftplugin/perl.vim が讀み込まれます。|<a href="insert_002etxt.html#ft_002dsyntax_002domni">ft-syntax-omni</a>| に書かれてゐるコマンドによつて構文補完プラグインを使つてゐる場合は、オプション |<a href="options_002etxt.html#g_t_0027omnifunc_0027">'omnifunc'</a>| が &quot;syntax#Complete&quot; にセットされます。<kbd>&lt;C-X&gt;&lt;C-O&gt;</kbd> を押すと Perl の構文アイテムを含むオムニポップアップが表示されます。
+</p>
+<a name="sutetupu-2"></a>
+<h4 class="unnumberedsubsubsec">ステップ 2</h4>
+<p>手動でファイルタイプを &rsquo;sql&rsquo; にセットすると、やはり對應するファイルタイプ・ファイルの ftplugin/sql.vim が讀み込まれます。このファイルは、SQL 補完用に多數のバッファ固有のマップを定義します (|<a href="#sql_002dcompletion_002dmaps">sql-completion-maps</a>| を參照)。かうしてマップが作成され、SQL 補完プラグインが初期化されます。全ての SQL 構文アイテムが準備的にキャッシュされます。SQL ファイルタイプ・スクリプトは 2 種類の補完プラグインを使はうとしてゐることを檢出します。&lt;C-C&gt; で始まる SQL 用のマップが呼び出されると、その實行中だけ |<a href="options_002etxt.html#g_t_0027omnifunc_0027">'omnifunc'</a>| を切り替へます。そのため、<kbd>&lt;C-X&gt;&lt;C-O&gt;</kbd> は (構文補完プラグインによる) Perl 用の補完のために使用し、<kbd>&lt;C-C&gt;</kbd> は SQL 補完機能のために使用できます。
+</p>
+<a name="sutetupu-3"></a>
+<h4 class="unnumberedsubsubsec">ステップ 3</h4>
+<p>ファイルタイプを Perl に戾すと、&quot;perl&quot; に關聯する全ての構文要素が元通りになります。
+</p>
+
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

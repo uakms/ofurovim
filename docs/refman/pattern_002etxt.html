@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>pattern.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="pattern.txt (Vim Reference Manual)">
+<meta name="keywords" content="pattern.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="map_002etxt.html#map_002etxt" rel="next" title="map.txt">
+<link href="options_002etxt.html#options_002etxt" rel="prev" title="options.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="pattern_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Jian-Suo-komandotoZheng-Gui-Biao-Xian--1"></a>
+<h2 class="unnumbered">檢索コマンドと正規表現</h2>
+<pre class="verbatim">*pattern.txt*   For Vim バージョン 8.1.  Last change: 2019 May 05
+
+
+		  VIMリファレンスマニュアル	  by Bram Moolenaar
+</pre>
+
+<a name="pattern_002dsearches"></a><a name="index-pattern_002dsearches"></a>
+<p>パターンと檢索コマンド
+</p>
+<p>最も基本的な說明はユーザーマニュアルの |<a href="usr_005f03_002etxt.html#g_t03_002e9">03.9</a>| にあります。27章 |<a href="usr_005f27_002etxt.html#usr_005f27_002etxt">usr_27.txt</a>| にも說明があります。
+</p>
+<table>
+<tr><td width="50%">1. 檢索コマンド</td><td width="50%">|<a href="#search_002dcommands">search-commands</a>|</td></tr>
+<tr><td width="50%">2. パターンの定義</td><td width="50%">|<a href="#search_002dpattern">search-pattern</a>|</td></tr>
+<tr><td width="50%">3. Magic</td><td width="50%">|<a href="#g_t_002fmagic">/magic</a>|</td></tr>
+<tr><td width="50%">4. パターンの槪要</td><td width="50%">|<a href="#pattern_002doverview">pattern-overview</a>|</td></tr>
+<tr><td width="50%">5. 量指定子</td><td width="50%">|<a href="#pattern_002dmulti_002ditems">pattern-multi-items</a>|</td></tr>
+<tr><td width="50%">6. 普通のアトム</td><td width="50%">|<a href="#pattern_002datoms">pattern-atoms</a>|</td></tr>
+<tr><td width="50%">7. 大文字と小文字を無視する</td><td width="50%">|<a href="#g_t_002fignorecase">/ignorecase</a>|</td></tr>
+<tr><td width="50%">8. 合成文字</td><td width="50%">|<a href="#patterns_002dcomposing">patterns-composing</a>|</td></tr>
+<tr><td width="50%">9. Perl のパターンとの比較</td><td width="50%">|<a href="#perl_002dpatterns">perl-patterns</a>|</td></tr>
+<tr><td width="50%">10. マッチしたテキストを强調する</td><td width="50%">|<a href="#match_002dhighlight">match-highlight</a>|</td></tr>
+</table>
+
+<a name="search_002dcommands"></a><a name="index-search_002dcommands"></a>
+<a name="index-Jian-Suo-komando"></a>
+<a name="g_t1_002e-Jian-Suo-komando"></a>
+<h3 class="section">1. 檢索コマンド</h3>
+
+<a name="g_t_002f"></a><a name="index-_002f"></a>
+<dl compact="compact">
+<dt>/{pattern}[/]&lt;CR&gt;</dt>
+<dd><p>[count] 番目にマッチする {pattern} を前方檢索します。|<a href="motion_002etxt.html#exclusive">exclusive</a>| (排他的)
+</p>
+</dd>
+<dt>/{pattern}/{offset}&lt;CR&gt;</dt>
+<dd><p>[count] 番目にマッチする {pattern} を前方檢索し、|<a href="#g_t_007boffset_007d">{offset}</a>| 行だけ上/下に移動します。|<a href="motion_002etxt.html#linewise">linewise</a>| (行指向)
+</p>
+<a name="g_t_002f_003cCR_003e"></a><a name="index-_002f_003cCR_003e"></a>
+</dd>
+<dt>/&lt;CR&gt;</dt>
+<dd><p>[count] 番目にマッチする最終檢索パターン |<a href="#last_002dpattern">last-pattern</a>| を、最後に使はれた |<a href="#g_t_007boffset_007d">{offset}</a>| を使つて、前方檢索します。
+</p>
+</dd>
+<dt>//{offset}&lt;CR&gt;</dt>
+<dd><p>[count] 番目にマッチする最終檢索パターン |<a href="#last_002dpattern">last-pattern</a>| を、新しい |<a href="#g_t_007boffset_007d">{offset}</a>| を使つて前方檢索します。{offset} を指定しなかつた場合、|<a href="#g_t_007boffset_007d">{offset}</a>| は使はれません。
+</p>
+<a name="g_t_003f"></a><a name="index-_003f"></a>
+</dd>
+<dt>?{pattern}[?]&lt;CR&gt;</dt>
+<dd><p>[count] 番目にマッチする {pattern} を後方檢索します。|<a href="motion_002etxt.html#exclusive">exclusive</a>| (排他的)
+</p>
+</dd>
+<dt>?{pattern}?{offset}&lt;CR&gt;</dt>
+<dd><p>[count] 番目にマッチする {pattern} を後方檢索して |<a href="#g_t_007boffset_007d">{offset}</a>| 行だけ上/下に移動します。|<a href="motion_002etxt.html#linewise">linewise</a>| (行指向)
+</p>
+<a name="g_t_003f_003cCR_003e"></a><a name="index-_003f_003cCR_003e"></a>
+</dd>
+<dt>?&lt;CR&gt;</dt>
+<dd><p>[count] 番目にマッチする最終檢索パターン |<a href="#last_002dpattern">last-pattern</a>| を、最後に使はれた |<a href="#g_t_007boffset_007d">{offset}</a>| を使つて、後方檢索します。
+</p>
+</dd>
+<dt>??{offset}&lt;CR&gt;</dt>
+<dd><p>[count] 番目にマッチする最終檢索パターン |<a href="#last_002dpattern">last-pattern</a>| を、新しい |<a href="#g_t_007boffset_007d">{offset}</a>| を使つて後方檢索します。{offset} を指定しなかつた場合、|<a href="#g_t_007boffset_007d">{offset}</a>| は使はれません。
+</p>
+<a name="n"></a><a name="index-n"></a>
+</dd>
+<dt>n</dt>
+<dd><p>最後の &quot;/&quot; か &quot;?&quot; を [count] 回繰り返します。カーソルが移動しないときは、檢索は [count] + 1 で繰り返されます。|<a href="#last_002dpattern">last-pattern</a>|
+</p>
+<a name="N"></a><a name="index-N"></a>
+</dd>
+<dt>N</dt>
+<dd><p>最後の &quot;/&quot; か &quot;?&quot; を逆方向に [count] 回繰り返します。|<a href="#last_002dpattern">last-pattern</a>|
+</p>
+<a name="star"></a><a name="E348"></a><a name="E349"></a><a name="index-_002a"></a>
+<a name="index-E348"></a>
+<a name="index-E349"></a>
+</dd>
+<dt>*</dt>
+<dd><p>[count] 番目にマッチする單語を前方檢索します。檢索される單語は、カーソルに最も近い單語です。次の順番で選擇されます:
+</p><ol>
+<li> カーソル位置のキーワード |<a href="options_002etxt.html#g_t_0027iskeyword_0027">'iskeyword'</a>|
+</li><li> 現在行の、カーソルの後ろの最初のキーワード
+</li><li> カーソル位置の單語 (|<a href="motion_002etxt.html#WORD">WORD</a>|)
+</li><li> 現在行の、カーソルの後ろの最初の單語 &quot;/\&lt;keyword\&gt;&quot; と檢索するのと同じやうに、完全なキーワードのみ檢索されます。|<a href="motion_002etxt.html#exclusive">exclusive</a>| (排他的)
+</li></ol>
+<p>&rsquo;<samp>smartcase</samp>&rsquo; ではなく &rsquo;<samp>ignorecase</samp>&rsquo; の設定が使はれます。
+</p>
+<a name="g_t_0023"></a><a name="index-_0023"></a>
+</dd>
+<dt>#</dt>
+<dd><p>&quot;*&quot; と同じですが、後方檢索します。ポンド記號 (文字コード 163) でも動作します。&quot;#&quot; キーがバックスペースとして動作する場合は、Vim を起動する前に &quot;stty erase &lt;BS&gt;&quot; としてみてください (&lt;BS&gt; は <kbd>CTRL-H</kbd> もしくは本當のバックスペースです)。
+</p>
+<a name="gstar"></a><a name="index-g_002a"></a>
+</dd>
+<dt>g*</dt>
+<dd><p>&quot;*&quot; と似てゐますが &quot;\&lt;&quot; と &quot;\&gt;&quot; を單語の周りに加へません。つまり單語の一部にマッチするものを檢索することもできます。
+</p>
+<a name="g_0023"></a><a name="index-g_0023"></a>
+</dd>
+<dt>g#</dt>
+<dd><p>&quot;#&quot; と似てゐますが &quot;\&lt;&quot; と &quot;\&gt;&quot; を單語の周りに加へません。つまり單語の一部にマッチするものを檢索することもできます。
+</p>
+<a name="gd"></a><a name="index-gd"></a>
+</dd>
+<dt>gd</dt>
+<dd><p>ローカル宣言を檢索します。カーソルがローカル變數の上にある場合、その變數の宣言にジャンプします。はじめに、Vim は現在の函數の開始行を檢索します (&quot;[[&quot; コマンドと同じ)。見つからなかつた場合は、ファイルの 1 行目に移動します。見つかつた場合は、その場所から空行を後方檢索します。そして、&quot;*&quot; コマンドで檢索するのと同じやうに、キーワードを檢索します。このとき、コメントと判斷した行は無視します (&rsquo;<samp>comments</samp>&rsquo; オプション參照)。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+Vim は文法を實際にチェックしてゐるわけではなく、キーワードにマッチするものを檢索してゐるだけですので、これがうまく動作するとは限りません。インクルードされてゐるファイル內も檢索したい場合は、|<a href="tagsrch_002etxt.html#include_002dsearch">include-search</a>| で列擧されてゐるコマンドを使つてください。このコマンドを實行した後、コマンド |<a href="#n">n</a>| で次のマッチを前方檢索できます。
+</p></blockquote>
+
+<a name="gD"></a><a name="index-gD"></a>
+</dd>
+<dt>gD</dt>
+<dd><p>グローバル宣言を檢索します。ファイル內で定義されてゐるグローバル變數の上にカーソルがある場合、その宣言にジャンプします。&quot;gd&quot; と同じですが、このコマンドは常に 1 行目からキーワードを檢索します。
+</p>
+<a name="g_t1gd"></a><a name="index-1gd"></a>
+</dd>
+<dt>1gd</dt>
+<dd><p>&quot;gd&quot; と同じですが、現在のカーソル位置より前の {} ブロック內を無視します。
+</p>
+<a name="g_t1gD"></a><a name="index-1gD"></a>
+</dd>
+<dt>1gD</dt>
+<dd><p>&quot;gD&quot; と同じですが、現在のカーソル位置より前の {} ブロック內を無視します。
+</p>
+<a name="CTRL_002dC"></a><a name="index-CTRL_002dC"></a>
+</dd>
+<dt>CTRL-C</dt>
+<dd><p>現在の (檢索) コマンドを中止します。MS-DOS では <kbd>CTRL-Break</kbd> を使つてください |<a href="os_005fdos_002etxt.html#dos_002dCTRL_002dBreak">dos-CTRL-Break</a>|。ノーマルモードでは、入力濟みの、まだ實行されてゐないコマンドをすべて中止します。
+</p>
+<a name="g_t_003anoh"></a><a name="g_t_003anohlsearch"></a><a name="index-_003anoh"></a>
+<a name="index-_003anohlsearch"></a>
+</dd>
+<dt>:noh[lsearch]</dt>
+<dd><p>&rsquo;<samp>hlsearch</samp>&rsquo; オプションによる强調表示をやめます。檢索コマンドを使ふか、&rsquo;<samp>hlsearch</samp>&rsquo; をオンに設定すると、再び强調表示されます。このコマンドはオートコマンド中は機能しません。オートコマンドを實行する時に强調表示の狀態を保存し、實行後に元に戾すからです。|<a href="autocmd_002etxt.html#autocmd_002dsearchpat">autocmd-searchpat</a>| ユーザー函數を呼び出したときも同樣。
+</p></dd>
+</dl>
+
+<p>&rsquo;<samp>incsearch</samp>&rsquo; オプションがオンの場合、檢索パターンを入力してゐる途中に、その時點でマッチしてゐるものが强調表示されます。實際に、その場所にカーソルを移動させるには <code class="tt-key">&lt;CR&gt;</code> を打つて檢索を終了する必要があります。檢索を中止するには <code class="tt-key">&lt;Esc&gt;</code> キーを使つてください。
+</p>
+<p>&rsquo;<samp>hlsearch</samp>&rsquo; オプションがオンの場合、最後に使つた檢索パターンは强調表示されます。|<a href="#g_t_003anohlsearch">:nohlsearch</a>| コマンドを使ふと、一時的に强調表示をやめさせることができます。
+</p>
+<p>&rsquo;<samp>shortmess</samp>&rsquo; が &quot;<var>S</var>&quot; フラグを含まない場合、Vim はカーソルが位置するインデックスを自動的に表示します。これはこのやうに見えます:
+</p>
+<pre class="verbatim">[1/5]         Cursor is on first of 5 matches.
+[1/&gt;99]       Cursor is on first of more than 99 matches.
+[&gt;99/&gt;99]     Cursor is after 99 match of more than 99 matches.
+[?/??]        Unknown how many matches exists, generating the
+              statistics was aborted because of search timeout.
+</pre>
+<blockquote>
+<p><strong>Note:</strong> <br>
+總數はオフセットを考慮してゐないことに注意してください。
+</p></blockquote>
+
+<p>マッチが見つからなかつた場合はエラーが表示されます:
+</p><div class="display">
+<pre class="display">*E486* Pattern not found
+</pre></div>
+<blockquote>
+<p><strong>Note:</strong> <br>
+|<a href="repeat_002etxt.html#g_t_003aglobal">:global</a>| コマンドではこの動作はノーマルメッセージと同じです (Vi 互換のため)。|<a href="change_002etxt.html#g_t_003as">:s</a>| コマンドでは &quot;e&quot; フラグを指定することでエラーメッセージを抑制できます |<a href="change_002etxt.html#g_t_003as_005fflags">:s_flags</a>|。
+</p></blockquote>
+
+<a name="search_002doffset"></a><a name="g_t_007boffset_007d"></a><a name="index-search_002doffset"></a>
+<a name="index-_007boffset_007d"></a>
+<p>上記の檢索コマンドは指定されたパターンを檢索します。&quot;/&quot; と &quot;?&quot; ではさらにオフセットを指定できます。オフセットには、行オフセットと文字オフセットの 2 種類あります。
+</p>
+<p>オフセットを指定して、マッチした場所から相對的にカーソルを移動できます:
+</p><table>
+<tr><td width="20%">[num]</td><td width="80%">[num] 行下、1 桁目に移動</td></tr>
+<tr><td width="20%">+[num]</td><td width="80%">[num] 行下、1 桁目に移動</td></tr>
+<tr><td width="20%">-[num]</td><td width="80%">[num] 行上、1 桁目に移動</td></tr>
+<tr><td width="20%">e[+num]</td><td width="80%">[num] 文字右に、マッチ部分の終はりの場所から移動</td></tr>
+<tr><td width="20%">e[-num]</td><td width="80%">[num] 文字左に、マッチ部分の終はりの場所から移動</td></tr>
+<tr><td width="20%">s[+num]</td><td width="80%">[num] 文字右に、マッチ部分の初めの場所 (start) から移動</td></tr>
+<tr><td width="20%">s[-num]</td><td width="80%">[num] 文字左に、マッチ部分の初めの場所 (start) から移動</td></tr>
+<tr><td width="20%">b[+num]</td><td width="80%">[num] 上記 s[+num] と同じ (begin の b)</td></tr>
+<tr><td width="20%">b[-num]</td><td width="80%">[num] 上記 s[-num] と同じ (begin の b)</td></tr>
+<tr><td width="20%">;{pattern}</td><td width="80%">さらに檢索する。|<a href="#g_t_002f_002f_003b">//;</a>| を參照。</td></tr>
+</table>
+
+<p>&rsquo;-&rsquo; か &rsquo;+&rsquo; を指定して [num] を省略した場合は 1 が使はれます。&rsquo;e&rsquo; を使つてオフセットを指定した場合、檢索は包括的になります (カーソルが移動するであらう位置の文字まで含めて操作の對象になります)。
+</p>
+<p>例:
+</p><table>
+<tr><td width="40%">パターン</td><td width="60%">カーソルの位置</td></tr>
+<tr><td width="40%">/test/+1</td><td width="60%">&quot;test&quot; の 1 行下の 1 桁目</td></tr>
+<tr><td width="40%">/test/e</td><td width="60%">&quot;test&quot; の最後</td></tr>
+<tr><td width="40%">/test/s+2</td><td width="60%">&quot;test&quot; の &rsquo;s&rsquo;</td></tr>
+<tr><td width="40%">/test/b-3</td><td width="60%">&quot;test&quot; の 3 文字前</td></tr>
+</table>
+
+<p>これらのコマンドがオペレータに對して使はれた場合、現在のカーソル位置から、檢索後のカーソル位置までが、操作の對象となります。ただし、行オフセットが指定された場合は、2 つのカーソル位置の閒の行全體が操作の對象となります。
+</p>
+<p>パターンを檢索して置換する例:
+</p><table>
+<tr><td width="40%">/foo&lt;CR&gt;</td><td width="60%">&quot;foo&quot; を檢索</td></tr>
+<tr><td width="40%">c//e&lt;CR&gt;</td><td width="60%">マッチした文字列を變更</td></tr>
+<tr><td width="40%">bar&lt;Esc&gt;</td><td width="60%">置換する文字を入力</td></tr>
+<tr><td width="40%">//&lt;CR&gt;</td><td width="60%">次のマッチへ移動</td></tr>
+<tr><td width="40%">c//e&lt;CR&gt;</td><td width="60%">マッチした文字列を變更</td></tr>
+<tr><td width="40%">beep&lt;Esc&gt;</td><td width="60%">今度は別の文字で置換</td></tr>
+<tr><td width="40%"></td><td width="60%">...</td></tr>
+</table>
+<a name="g_t_002f_002f_003b"></a><a name="E386"></a><a name="index-_002f_002f_003b"></a>
+<a name="index-E386"></a>
+<p>非常に特殊なオフセットですが、&rsquo;;&rsquo; に續けて檢索コマンドを指定できます。例:
+</p><pre class="verbatim">/test 1/;/test
+/test.*/+1;?ing?
+</pre><p>1 つ目の例は、はじめに次の &quot;test 1&quot; を檢索し、それから &quot;test&quot; を檢索します。
+</p>
+<p>これは、2 つの檢索コマンドを分けて實行するのと似てゐますが、次の點が違ひます:
+</p><ul>
+<li> 合はせて 1 つの檢索コマンドなので、オペレータに對して使ふことができます。
+</li><li> &quot;n&quot;、&quot;N&quot; コマンドを使つた場合、檢索方向は最初の檢索コマンドと同じです。
+</li><li> エラーが起きた場合、カーソルはまつたく動きません。
+</li></ul>
+
+<a name="last_002dpattern"></a><a name="index-last_002dpattern"></a>
+<p>最後に使はれた檢索パターン (最終檢索パターン) とオフセットは記憶され、同じ檢索を繰り返すのに使ふことができます。檢索方向を變へたり、カウントを指定したりすることもできます。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+記憶されるパターンは 2 つあります。1 つは「通常の」檢索コマンドのパターンです。もう 1 つは置換コマンド &quot;<code>:s</code>&quot; のパターンです。
+</p></blockquote>
+<p>空のパターンを指定すると直前に使用されたパターンが使はれます。ただし、檢索パターンがまだ使用されてなかつた場合は、可能であれば、直前の置換コマンドのパターンが使はれます。
+</p>
+<p>&rsquo;<samp>magic</samp>&rsquo; オプションは最終檢索パターンに影響しません。&rsquo;<samp>magic</samp>&rsquo; を變更しても、最終檢索パターンの解釋は變はりません。
+</p>
+<p>&rsquo;<samp>ignorecase</samp>&rsquo; オプションは違ひます。&rsquo;<samp>ignorecase</samp>&rsquo; が變更された場合、最終檢索パターンは、違ふテキストにマッチする可能性があります。
+</p>
+<p>&rsquo;<samp>hlsearch</samp>&rsquo; オプションがオンの場合、最終檢索パターンにマッチするテキストが强調表示されます。
+</p>
+<p>最終檢索パターンを消去するには次のやうにします:
+</p><div class="example">
+<pre class="example">:let  = &quot;&quot;
+</pre></div>
+<p>パターンに空文字列をセットしてゐるのではありません。それだと全ての場所にマッチしてしまひます。パターンは本當に消去され、Vim 起動直後のやうに、何もない狀態になります。
+</p>
+<p>檢索では通常、カーソル下のマッチはスキップされます。そのとき、すぐ隣の文字から檢索を開始するのか、スキップしたマッチの後ろから檢索を開始するのかは、&rsquo;<samp>cpoptions</samp>&rsquo; の &rsquo;<var>c</var>&rsquo; フラグに依存します。|<a href="options_002etxt.html#cpo_002dc">cpo-c</a>| を參照。
+</p><table>
+<tr><td width="50%">&rsquo;c&rsquo; フラグがある場合:</td><td width="50%">&quot;/...&quot; は 1 から 3 文字ずつ進みます。</td></tr>
+<tr><td width="50%">&rsquo;c&rsquo; フラグがない場合:</td><td width="50%">&quot;/...&quot; は 1 文字ずつ進みます。</td></tr>
+</table>
+<p>檢索は行頭から開始され、カーソル位置を過ぎたマッチを見附けるまでスキップされます。そのため、&rsquo;<var>c</var>&rsquo; フラグを含んでゐる場合の動作は豫想外かもしれません。
+{譯注:
+</p><pre class="verbatim">aaaaaa
+</pre><p>カーソルが 2 桁目にある場合、/aaa は 4 桁目からの &lsquo;<samp>aaa</samp>&rsquo; にマッチする。これは、行頭から &lsquo;<samp>aaa aaa</samp>&rsquo; といふマッチの區切りになり、カーソルを含んだ最初の &lsquo;<samp>aaa</samp>&rsquo; がスキップされるため。}
+</p>
+<p>後方檢索するときも、檢索は行頭から始まり、上述のやうに &rsquo;<samp>cpoptions</samp>&rsquo; の &rsquo;<var>c</var>&rsquo; フラグが使はれます。そして、カーソル位置より前でマッチする最後のマッチが使はれます。
+</p>
+<p>Vi では、&quot;<code>:tag</code>&quot; コマンドでタグを檢索すると、最終檢索パターンは上書きされます。Vim では、&rsquo;<samp>cpoptions</samp>&rsquo; に &rsquo;<var>t</var>&rsquo; フラグがある場合のみ、最終檢索パターンが上書きされます。どちらにしても、檢索パターンは常に檢索履歷に保存されます。
+</p>
+<p>&rsquo;<samp>wrapscan</samp>&rsquo; オプションがオン (初期設定) の場合、檢索がバッファの端に到達したときに、もう一方の端に移動して檢索が繼續されます。オフの場合は、後方檢索ならバッファの先頭、前方檢索ならバッファの末尾でストップします。
+</p>
+<p>パターンが見つからなかつた場合、&rsquo;<samp>wrapscan</samp>&rsquo; がオンのときは、&quot;pattern not found&quot; といふメッセージが表示され、カーソルは動きません。オフのときは、後方檢索なら &quot;search hit TOP without match&quot;、前方檢索なら &quot;search hit BOTTOM without match&quot;、といふメッセージが表示されます。
+</p>
+<p>&rsquo;<samp>wrapscan</samp>&rsquo; がオンのときに檢索がバッファの端から端へ繼續した場合、後方檢索なら &quot;search hit TOP, continuing at BOTTOM&quot;、前方檢索なら &quot;search hit BOTTOM, continuing at TOP&quot; といふメッセージが表示されます。このメッセージを表示しないやうにするには、&rsquo;<samp>shortmess</samp>&rsquo; オプションに &rsquo;<var>s</var>&rsquo; フラグを設定します。メッセージは &rsquo;<samp>highlight</samp>&rsquo; オプションの &rsquo;<var>w</var>&rsquo; で强調表示されます (初期設定: standout)。
+</p>
+<a name="search_002drange"></a><a name="index-search_002drange"></a>
+<p>&quot;/&quot; コマンドで檢索するとき、\%&gt;l を含めることで檢索の範圍を指定できます。例へば、199 行目と 300 行目の閒にある &quot;limit&quot; といふ單語を檢索するには次のやうにします:
+</p><div class="example">
+<pre class="example">/\%&gt;199l\%&lt;300llimit
+</pre></div>
+<p>|<a href="#g_t_002f_005c_0025_003el">/\%&gt;l</a>| も參照。
+</p>
+<p>他にも、&quot;<code>:substitute</code>&quot; コマンドに &rsquo;<var>c</var>&rsquo; フラグをつける方法で、擬似的な範圍內檢索ができます。例:
+</p><div class="example">
+<pre class="example">:.,300s/Pattern//gc
+</pre></div>
+<p>この例では、カーソル位置から 300 行目までの閒で &quot;Pattern&quot; が檢索されます。マッチした場所で、動作を指示するためのキーを入力必要があります。檢索を停止するには &rsquo;q&rsquo; を、次のマッチを檢索するには &rsquo;n&rsquo; を入力します。
+</p>
+<p>&quot;*&quot;, &quot;#&quot;, &quot;g*&quot;, &quot;g#&quot; コマンドはカーソルに近い單語を次の順番で檢索します。最初に見つかつたものが使はれます:
+</p><ul>
+<li> カーソル位置のキーワード
+</li><li> 同じ行の、カーソルの右側のキーワード
+</li><li> カーソル位置の單語
+</li><li> 同じ行の、カーソルの右側の單語
+</li></ul>
+<p>キーワードは、&rsquo;<samp>iskeyword</samp>&rsquo; で定義されてゐる文字だけを含む文字列です。單語 (|<a href="motion_002etxt.html#WORD">WORD</a>|) は、空白文字 (&lt;Tab&gt; や &lt;Space&gt;) を含まない文字列です。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+10 本の指を使つてタイプしてゐるなら、このコマンドを覺えるのは簡單です:
+</p><ul>
+<li> &quot;#&quot; は左手の中指で押します (左上に向かつて檢索します)。
+</li><li> &quot;*&quot; は右手の中指で押します (右下に向かつて檢索します)。
+</li></ul>
+<p>{譯注: これは英語キーボードでの話}
+</p></blockquote>
+
+<a name="E956"></a><a name="index-E956"></a>
+<p>非常に稀なケースで、再歸的に正規表現が使はれます。これは、パターンの實行に時閒がかかつてゐる時やチャネルのメッセージをチェックしてゐる時に、コールバックが呼び出されることを生じます。またパターンを使つたり自動コマンドが引き金にもなります。多くの場合、たぶんうまくいくはずですが、パターンがその中で再度使はれた時は失敗するでせう。たいていこれは何か惡いパターンが使はれてゐることを意味します。
+</p>
+<a name="search_002dpattern"></a><a name="pattern"></a><a name="g_t_005bpattern_005d"></a><a name="regular_002dexpression"></a><a name="regexp"></a><a name="Pattern"></a><a name="E76"></a><a name="E383"></a><a name="E476"></a><a name="index-search_002dpattern"></a>
+<a name="index-pattern"></a>
+<a name="index-_005bpattern_005d"></a>
+<a name="index-regular_002dexpression"></a>
+<a name="index-regexp"></a>
+<a name="index-Pattern"></a>
+<a name="index-E76"></a>
+<a name="index-E383"></a>
+<a name="index-E476"></a>
+<a name="index-patannoDing-Yi-"></a>
+<a name="g_t2_002e-patannoDing-Yi-"></a>
+<h3 class="section">2. パターンの定義</h3>
+
+<p>初心者の方はユーザーマニュアルの 27 章 |<a href="usr_005f27_002etxt.html#usr_005f27_002etxt">usr_27.txt</a>| を讀んでください。
+</p>
+<a name="g_t_002fbar"></a><a name="g_t_002f_005cbar"></a><a name="g_t_002fpattern"></a><a name="index-_002fbar"></a>
+<a name="index-_002f_005cbar"></a>
+<a name="index-_002fpattern"></a>
+<p>1. パターンは、&quot;\|&quot; で分けられた 1 つ以上のブランチからなります。ブランチがどれか 1 つでもマッチすればマッチします。例へば、&quot;foo\|beep&quot; は &quot;foo&quot; と &quot;beep&quot; にマッチします。複數のブランチがマッチした場合は、最初にマッチしたものが使はれます。
+</p><pre class="verbatim">pattern ::=      branch
+             or  branch \| branch
+             or  branch \| branch \| branch
+             etc.
+</pre>
+<a name="g_t_002fbranch"></a><a name="g_t_002f_005c_0026"></a><a name="index-_002fbranch"></a>
+<a name="index-_002f_005c_0026"></a>
+<p>2. ブランチは、&quot;\&amp;&quot; で分けられた1つ以上の連接からなります。全ての連接が同じ場所でマッチした場合に限り、最後の連接がマッチします。例:
+</p><ul>
+<li> &quot;foobeep\&amp;...&quot; は &quot;foobeep&quot; の &quot;foo&quot; にマッチします。
+</li><li> &quot;.*Peter\&amp;.*Bob&quot; は &quot;Peter&quot; と &quot;Bob&quot; が兩方ある行でマッチします。
+</li></ul>
+<pre class="verbatim">ranch ::=       concat
+            or  concat \&amp; concat
+            or  concat \&amp; concat \&amp; concat
+            etc.
+</pre>
+<a name="g_t_002fconcat"></a><a name="index-_002fconcat"></a>
+<p>3. 連接は、連續した 1 つ以上のピースからなります。ピースがすべて、順番どほりマッチした場合にマッチします。たとへば、&quot;f[0-9]b&quot; は最初に &quot;f&quot; にマッチし、次に 1 桁の數字、そして &quot;b&quot; にマッチします。
+</p><pre class="verbatim">concat  ::=      piece
+             or  piece piece
+             or  piece piece piece
+             etc.
+</pre>
+<a name="g_t_002fpiece"></a><a name="index-_002fpiece"></a>
+<p>4. ピースはアトムです。アトムが何囘マッチするかを指示する、量指定子を後ろに置くことができます。たとへば &quot;a*&quot; はいくつの &quot;a&quot; でもマッチします。&quot;&quot;, &quot;a&quot;, &quot;aa&quot; など。|<a href="#g_t_002fmulti">/multi</a>| を參照。
+</p><pre class="verbatim">piece   ::=      atom
+             or  atom  multi
+</pre>
+<a name="g_t_002fatom"></a><a name="index-_002fatom"></a>
+<p>5. アトムはパターンアイテムを構成する要素です。ほとんどのアトムは 1 文字にマッチします。多くの場合、アトムは普通の文字か文字クラスです。カッコを使つてパターンからアトムを作れます。&quot;\z(\)&quot; は構文强調專用です。
+</p><pre class="verbatim">atom    ::=      ordinary-atom       |/ordinary-atom|
+             or  \( pattern \)       |/\(|
+             or  \%( pattern \)      |/\%(|
+             or  \z( pattern \)      |/\z(|
+</pre><p>{verbatim 內で ref を使へないので:
+|<a href="#g_t_002fordinary_002datom">/ordinary-atom</a>|, |<a href="#g_t_002f_005c_0028">/\(</a>|, |<a href="#g_t_002f_005c_0025_0028">/\%(</a>|, |<a href="syntax_002etxt.html#g_t_002f_005cz_0028">/\z(</a>|
+}
+</p>
+
+<a name="g_t_002f_005c_0025_0023_003d"></a><a name="two_002dengines"></a><a name="NFA"></a><a name="index-_002f_005c_0025_0023_003d"></a>
+<a name="index-two_002dengines"></a>
+<a name="index-NFA"></a>
+<p>Vim は 2 つの正規表現エンジンを持つてゐます:
+</p><ul>
+<li> 古い、バックトラッキングエンジン。すべての機能をサポート。
+</li><li> 新しい、NFA エンジン。いくつかのパターンで動作が速いがいくつかのパターンでは遲くなる。
+</li></ul>
+
+<p>Vim は自動的に適切なエンジンを選擇します。何か問題が發生したか、あるいは明示的にエンジンを選擇したいか、あるいはその他の理由で、エンジンを指定したい場合はパターンの先頭で次のやうに指定します:
+</p><table>
+<tr><td width="10%">\%#=0</td><td width="90%">强制的に自動選擇にする。&rsquo;<samp>regexpengine</samp>&rsquo; が 0 以外のときだけ意味がある。</td></tr>
+<tr><td width="10%">\%#=1</td><td width="90%">强制的に古いエンジンを使ふ。</td></tr>
+<tr><td width="10%">\%#=2</td><td width="90%">强制的に NFA エンジンを使ふ。</td></tr>
+</table>
+<p>&rsquo;<samp>regexpengine</samp>&rsquo; オプションでもデフォルトのエンジンを選擇できます。
+</p>
+<a name="E864"></a><a name="E868"></a><a name="E874"></a><a name="E875"></a><a name="E876"></a><a name="E877"></a><a name="E878"></a><a name="index-E864"></a>
+<a name="index-E868"></a>
+<a name="index-E874"></a>
+<a name="index-E875"></a>
+<a name="index-E876"></a>
+<a name="index-E877"></a>
+<a name="index-E878"></a>
+<p>NFA エンジンが選擇され、未實裝の機能が使用され、パターンがマッチしなかつた場合に發生します。Vim のデバッグ用です。
+</p>
+<a name="g_t_002fmagic"></a><a name="index-_002fmagic"></a>
+<a name="index-Magic"></a>
+<a name="g_t3_002e-Magic"></a>
+<h3 class="section">3. Magic</h3>
+
+<p>パターンの中でリテラルとして扱はれる文字は、テキストの同じ文字とマッチします。しかし、バックスラッシュが前置されると、特別な意味を持つやうになります。
+</p>
+<p>バックスラッシュを前置しなくても特別な意味を持つ文字があります。そのやうな文字をリテラル文字としてマッチさせるには、バックスラッシュを前置する必要があります。
+</p>
+<p>ある文字がリテラルとして處理されるかどうかは、オプション &rsquo;<samp>magic</samp>&rsquo; と、以下で說明するアイテムに依存します。
+<a name="g_t_002f_005cm"></a><a name="g_t_002f_005cM"></a><a name="index-_002f_005cm"></a>
+<a name="index-_002f_005cM"></a>
+&quot;\m&quot; を使ふと、それ以降のパターンは &rsquo;<samp>magic</samp>&rsquo; がオンの狀態で處理されます。オプション &rsquo;<samp>magic</samp>&rsquo; の設定よりも優先されます。&quot;\M&quot; を使ふと、それ以降のパターンは &rsquo;<samp>nomagic</samp>&rsquo; の狀態で處理されます。
+<a name="g_t_002f_005cv"></a><a name="g_t_002f_005cV"></a><a name="index-_002f_005cv"></a>
+<a name="index-_002f_005cV"></a>
+&quot;\v&quot; を使ふと、それ以降の &rsquo;0&rsquo;-&rsquo;9&rsquo;, &rsquo;a&rsquo;-&rsquo;z&rsquo;, &rsquo;A&rsquo;-&rsquo;Z&rsquo;, &rsquo;_&rsquo; 以外のすべての ASCII 文字は特別な意味を持ちます: &quot;very magic&quot;
+</p>
+<p>&quot;\V&quot; を使ふと、それ以降はバックスラッシュと終端文字 (通常は / や ?) だけが特別な意味を持ちます: &quot;very nomagic&quot;
+</p>
+<p>例:
+</p><table>
+<tr><td width="12%">after:</td><td width="12%">\v</td><td width="12%">\m</td><td width="12%">\M</td><td width="12%">\V</td><td width="40%">マッチするもの</td></tr>
+<tr><td width="12%"></td><td width="12%"></td><td width="12%">&rsquo;<samp>magic</samp>&rsquo;</td><td width="12%">&rsquo;<samp>nomagic</samp>&rsquo;</td></tr>
+<tr><td width="12%"></td><td width="12%">$</td><td width="12%">$</td><td width="12%">$</td><td width="12%">\$</td><td width="40%">行末</td></tr>
+<tr><td width="12%"></td><td width="12%">.</td><td width="12%">.</td><td width="12%">\.</td><td width="12%">\.</td><td width="40%">何か 1 文字</td></tr>
+<tr><td width="12%"></td><td width="12%">*</td><td width="12%">*</td><td width="12%">\*</td><td width="12%">\*</td><td width="40%">直前のアトムの繰り返し</td></tr>
+<tr><td width="12%"></td><td width="12%">~</td><td width="12%">~</td><td width="12%">\~</td><td width="12%">\~</td><td width="40%">直近の置換文字列</td></tr>
+<tr><td width="12%"></td><td width="12%">()</td><td width="12%">\(\)</td><td width="12%">\(\)</td><td width="12%">\(\)</td><td width="40%">グループ化してアトムにする</td></tr>
+<tr><td width="12%"></td><td width="12%">|</td><td width="12%">\|</td><td width="12%">\|</td><td width="12%">\|</td><td width="40%">選擇の區切り</td></tr>
+<tr><td width="12%"></td><td width="12%">\a</td><td width="12%">\a</td><td width="12%">\a</td><td width="12%">\a</td><td width="40%">英字</td></tr>
+<tr><td width="12%"></td><td width="12%">\\</td><td width="12%">\\</td><td width="12%">\\</td><td width="12%">\\</td><td width="40%">リテラルのバックスラッシュ</td></tr>
+<tr><td width="12%"></td><td width="12%">\.</td><td width="12%">\.</td><td width="12%">.</td><td width="12%">.</td><td width="40%">リテラルのドット</td></tr>
+<tr><td width="12%"></td><td width="12%">\{</td><td width="12%">{</td><td width="12%">{</td><td width="12%">{</td><td width="40%">リテラルの &rsquo;{&rsquo;</td></tr>
+<tr><td width="12%"></td><td width="12%">a</td><td width="12%">a</td><td width="12%">a</td><td width="12%">a</td><td width="40%">リテラルの &rsquo;a&rsquo;</td></tr>
+</table>
+
+<p>{\m、\M、\v、\V、は Vim だけの機能です}
+</p>
+<p>オプション &rsquo;<samp>magic</samp>&rsquo; は初期設定のままにしておいてください。環境の違ひによるトラブルを囘避できます。パターンが &rsquo;<samp>magic</samp>&rsquo; の設定に影響されないやうにするには、パターンの先頭に &quot;\m&quot; か &quot;\M&quot; を置きます。
+</p>
+<a name="pattern_002doverview"></a><a name="E865"></a><a name="E866"></a><a name="E867"></a><a name="E869"></a><a name="index-pattern_002doverview"></a>
+<a name="index-E865"></a>
+<a name="index-E866"></a>
+<a name="index-E867"></a>
+<a name="index-E869"></a>
+<a name="index-patannoGai-Yao-"></a>
+<a name="g_t4_002e-patannoGai-Yao-"></a>
+<h3 class="section">4. パターンの槪要</h3>
+
+<a name="g_t_002fmulti"></a><a name="E61"></a><a name="E62"></a><a name="index-_002fmulti"></a>
+<a name="index-E61"></a>
+<a name="index-E62"></a>
+<a name="index-Liang-Zhi-Ding-Zi-noGai-Yao-"></a>
+<a name="Liang-Zhi-Ding-Zi-noGai-Yao-"></a>
+<h4 class="unnumberedsubsec">量指定子の槪要</h4>
+<a name="E64"></a><a name="E871"></a><a name="index-E64"></a>
+<a name="index-E871"></a>
+<p>詳しい說明や使用例は、リンク先を參照してください。
+</p>
+<a name="Liang-Zhi-Ding-Zi-"></a>
+<h4 class="unnumberedsubsubsec">量指定子</h4>
+<table>
+<tr><td width="10%"></td><td width="15%">&rsquo;<samp>magic</samp>&rsquo;</td><td width="15%">&rsquo;<samp>nomagic</samp>&rsquo;</td><td width="20%">アトムがいくつマッチするか</td><td width="40%"></td></tr>
+<tr><td width="10%">|<a href="#g_t_002fstar">/star</a>|</td><td width="15%">*</td><td width="15%">\*</td><td width="20%">0 以上</td><td width="40%">最長一致</td></tr>
+<tr><td width="10%">|<a href="#g_t_002f_005c_002b">/\+</a>|</td><td width="15%">\+</td><td width="15%">\+</td><td width="20%">1 以上</td><td width="40%">最長一致</td></tr>
+<tr><td width="10%">|<a href="#g_t_002f_005c_003d">/\=</a>|</td><td width="15%">\=</td><td width="15%">\=</td><td width="20%">0 か 1</td><td width="40%">最長一致</td></tr>
+<tr><td width="10%">|<a href="#g_t_002f_005c_003f">/\?</a>|</td><td width="15%">\?</td><td width="15%">\?</td><td width="20%">0 か 1</td><td width="40%">最長一致</td></tr>
+<tr><td width="10%"></td></tr>
+<tr><td width="10%">|<a href="#g_t_002f_005c_007b">/\{</a>|</td><td width="15%">\{n,m}</td><td width="15%">\{n,m}</td><td width="20%">n 以上 m 以下</td><td width="40%">最長一致</td></tr>
+<tr><td width="10%"></td><td width="15%">\{n}</td><td width="15%">\{n}</td><td width="20%">n</td><td width="40%">正確に指定した數だけ</td></tr>
+<tr><td width="10%"></td><td width="15%">\{n,}</td><td width="15%">\{n,}</td><td width="20%">n 以上</td><td width="40%">最長一致</td></tr>
+<tr><td width="10%"></td><td width="15%">\{,m}</td><td width="15%">\{,m}</td><td width="20%">0 以上 m 以下</td><td width="40%">最長一致</td></tr>
+<tr><td width="10%"></td><td width="15%">\{}</td><td width="15%">\{}</td><td width="20%">0 以上</td><td width="40%">最長一致 (* と同じ)</td></tr>
+<tr><td width="10%"></td></tr>
+<tr><td width="10%">|<a href="#g_t_002f_005c_007b_002d">/\{-</a>|</td><td width="15%">\{-n,m}</td><td width="15%">\{-n,m}</td><td width="20%">n 以上 m 以下</td><td width="40%">最短一致</td></tr>
+<tr><td width="10%"></td><td width="15%">\{-n}</td><td width="15%">\{-n}</td><td width="20%">n</td><td width="40%">正確に指定した數だけ</td></tr>
+<tr><td width="10%"></td><td width="15%">\{-n,}</td><td width="15%">\{-n,}</td><td width="20%">n 以上</td><td width="40%">最短一致</td></tr>
+<tr><td width="10%"></td><td width="15%">\{-,m}</td><td width="15%">\{-,m}</td><td width="20%">0 以上 m 以下</td><td width="40%">最短一致</td></tr>
+<tr><td width="10%"></td><td width="15%">\{-}</td><td width="15%">\{-}</td><td width="20%">0 以上</td><td width="40%">最短一致
+
+<a name="E59"></a><a name="index-E59"></a></td></tr>
+<tr><td width="10%">|<a href="#g_t_002f_005c_0040_003e">/\@&gt;</a>|</td><td width="15%">\@&gt;</td><td width="15%">\@&gt;</td><td width="20%">1</td><td width="40%">强慾な量指定子</td></tr>
+<tr><td width="10%">|<a href="#g_t_002f_005c_0040_003d">/\@=</a>|</td><td width="15%">\@=</td><td width="15%">\@=</td><td width="20%">なし</td><td width="40%">幅ゼロの肯定先讀み |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="10%">|<a href="#g_t_002f_005c_0040_0021">/\@!</a>|</td><td width="15%">\@!</td><td width="15%">\@!</td><td width="20%">なし</td><td width="40%">幅ゼロの否定先讀み |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="10%">|<a href="#g_t_002f_005c_0040_003c_003d">/\@&lt;=</a>|</td><td width="15%">\@&lt;=</td><td width="15%">\@&lt;=</td><td width="20%">なし</td><td width="40%">幅ゼロの肯定後讀み |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="10%">|<a href="#g_t_002f_005c_0040_003c_0021">/\@&lt;!</a>|</td><td width="15%">\@&lt;!</td><td width="15%">\@&lt;!</td><td width="20%">なし</td><td width="40%">幅ゼロの否定後讀み |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+</table>
+
+
+<a name="g_t_002fordinary_002datom"></a><a name="index-_002fordinary_002datom"></a>
+<a name="index-Pu-Tong-noatomunoGai-Yao-"></a>
+<a name="Pu-Tong-noatomunoGai-Yao-"></a>
+<h4 class="unnumberedsubsec">普通のアトムの槪要</h4>
+<p>詳しい說明や使用例は、リンク先を參照してください。
+</p>
+<a name="atomu"></a>
+<h4 class="unnumberedsubsubsec">アトム</h4>
+<table>
+<tr><td width="15%"></td><td width="15%">magic</td><td width="15%">nomagic</td><td width="55%">マッチするもの</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005e">/^</a>|</td><td width="15%">^</td><td width="15%">^</td><td width="55%">行頭 (パターンの先頭にある場合だけ) |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_005e">/\^</a>|</td><td width="15%">\^</td><td width="15%">\^</td><td width="55%">リテラル文字 &rsquo;^&rsquo;</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_005f_005e">/\_^</a>|</td><td width="15%">\_^</td><td width="15%">\_^</td><td width="55%">行頭 (どこでも使へる) |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_0024">/$</a>|</td><td width="15%">$</td><td width="15%">$</td><td width="55%">行末 (パターンの末尾にある場合だけ) |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0024">/\$</a>|</td><td width="15%">\$</td><td width="15%">\$</td><td width="55%">リテラル文字 &rsquo;$&rsquo;</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_005f_0024">/\_$</a>|</td><td width="15%">\_$</td><td width="15%">\_$</td><td width="55%">行末 (どこでも使へる) |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_002e">/.</a>|</td><td width="15%">.</td><td width="15%">\.</td><td width="55%">何か 1 文字 (改行以外)</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_005f_002e">/\_.</a>|</td><td width="15%">\_.</td><td width="15%">\_.</td><td width="55%">何か 1 文字 (改行含む)</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_003c">/\&lt;</a>|</td><td width="15%">\&lt;</td><td width="15%">\&lt;</td><td width="55%">單語の先頭 |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_003e">/\&gt;</a>|</td><td width="15%">\&gt;</td><td width="15%">\&gt;</td><td width="55%">單語の末尾 |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005czs">/\zs</a>|</td><td width="15%">\zs</td><td width="15%">\zs</td><td width="55%">なし。マッチの開始地點を設定します</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cze">/\ze</a>|</td><td width="15%">\ze</td><td width="15%">\ze</td><td width="55%">なし。マッチの終了地點を設定します
+<a name="E71"></a><a name="index-E71"></a></td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025_005e">/\%^</a>|</td><td width="15%">\%^</td><td width="15%">\%^</td><td width="55%">ファイルの先頭 |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025_0024">/\%$</a>|</td><td width="15%">\%$</td><td width="15%">\%$</td><td width="55%">ファイルの末尾 |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025V">/\%V</a>|</td><td width="15%">\%V</td><td width="15%">\%V</td><td width="55%">選擇範圍內 |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025_0023">/\%#</a>|</td><td width="15%">\%#</td><td width="15%">\%#</td><td width="55%">カーソル位置 |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025_0027m">/\%'m</a>|</td><td width="15%">\%&rsquo;m</td><td width="15%">\%&rsquo;m</td><td width="55%">マーク m の位置 |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025l">/\%l</a>|</td><td width="15%">\%23l</td><td width="15%">\%23l</td><td width="55%">23 行目 |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025c">/\%c</a>|</td><td width="15%">\%23c</td><td width="15%">\%23c</td><td width="55%">23 列目 |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025v">/\%v</a>|</td><td width="15%">\%23v</td><td width="15%">\%23v</td><td width="55%">23 列目 (表示單位) |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+</table>
+
+<a name="g_t_002fcharacter_002dclasses"></a><a name="index-_002fcharacter_002dclasses"></a>
+<a name="index-WenZi-kurasu-1"></a>
+<a name="WenZi-kurasu_003a"></a>
+<h4 class="unnumberedsubsubsec">文字クラス:</h4>
+<table>
+<tr><td width="15%"></td><td width="15%">magic</td><td width="15%">nomagic</td><td width="55%">マッチするもの</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005ci">/\i</a>|</td><td width="15%">\i</td><td width="15%">\i</td><td width="55%">識別子文字 (オプション &rsquo;<samp>isident</samp>&rsquo; を參照)</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cI">/\I</a>|</td><td width="15%">\I</td><td width="15%">\I</td><td width="55%">&quot;\i&quot; と同じですが、數字は除外します</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005ck">/\k</a>|</td><td width="15%">\k</td><td width="15%">\k</td><td width="55%">キーワード文字 (オプション &rsquo;<samp>iskeyword</samp>&rsquo; を參照)</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cK">/\K</a>|</td><td width="15%">\K</td><td width="15%">\K</td><td width="55%">&quot;\k&quot; と同じですが、數字は除外します</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cf">/\f</a>|</td><td width="15%">\f</td><td width="15%">\f</td><td width="55%">ファイル名の文字 (オプション &rsquo;<samp>isfname</samp>&rsquo; を參照)</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cF">/\F</a>|</td><td width="15%">\F</td><td width="15%">\F</td><td width="55%">&quot;\f&quot; と同じですが、數字は除外します</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cp">/\p</a>|</td><td width="15%">\p</td><td width="15%">\p</td><td width="55%">印字可能文字 (オプション &rsquo;<samp>isprint</samp>&rsquo; を參照)</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cP">/\P</a>|</td><td width="15%">\P</td><td width="15%">\P</td><td width="55%">&quot;\p&quot; と同じですが、數字は除外します</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cs">/\s</a>|</td><td width="15%">\s</td><td width="15%">\s</td><td width="55%">空白文字: &lt;Space&gt; と &lt;Tab&gt;</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cS">/\S</a>|</td><td width="15%">\S</td><td width="15%">\S</td><td width="55%">空白文字以外。\s の反對です</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cd">/\d</a>|</td><td width="15%">\d</td><td width="15%">\d</td><td width="55%">數字 [0-9]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cD">/\D</a>|</td><td width="15%">\D</td><td width="15%">\D</td><td width="55%">數字以外 [^0-9]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cx">/\x</a>|</td><td width="15%">\x</td><td width="15%">\x</td><td width="55%">16 進數字 [0-9A-Fa-f]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cX">/\X</a>|</td><td width="15%">\X</td><td width="15%">\X</td><td width="55%">16 進數字以外 [^0-9A-Fa-f]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005co">/\o</a>|</td><td width="15%">\o</td><td width="15%">\o</td><td width="55%">8 進數字 [0-7]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cO">/\O</a>|</td><td width="15%">\O</td><td width="15%">\O</td><td width="55%">8 進數字以外 [^0-7]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cw">/\w</a>|</td><td width="15%">\w</td><td width="15%">\w</td><td width="55%">單語を構成する文字 [0-9A-Za-z_]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cW">/\W</a>|</td><td width="15%">\W</td><td width="15%">\W</td><td width="55%">單語を構成する文字以外 [^0-9A-Za-z_]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005ch">/\h</a>|</td><td width="15%">\h</td><td width="15%">\h</td><td width="55%">單語の先頭の文字 [A-Za-z_]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cH">/\H</a>|</td><td width="15%">\H</td><td width="15%">\H</td><td width="55%">單語の先頭の文字以外 [^A-Za-z_]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005ca">/\a</a>|</td><td width="15%">\a</td><td width="15%">\a</td><td width="55%">英字 [A-Za-z]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cA">/\A</a>|</td><td width="15%">\A</td><td width="15%">\A</td><td width="55%">英字以外 [^A-Za-z]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cl">/\l</a>|</td><td width="15%">\l</td><td width="15%">\l</td><td width="55%">小文字英字 [a-z]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cL">/\L</a>|</td><td width="15%">\L</td><td width="15%">\L</td><td width="55%">小文字英字以外 [^a-z]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cu">/\u</a>|</td><td width="15%">\u</td><td width="15%">\u</td><td width="55%">大文字英字 [A-Z]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cU">/\U</a>|</td><td width="15%">\U</td><td width="15%">\U</td><td width="55%">大文字英字以外 [^A-Z]</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_005f">/\_</a>|</td><td width="15%">\_x</td><td width="15%">\_x</td><td width="55%">x は上記の文字クラスのどれかです。文字クラスと改行がマッチします。</td></tr>
+</table>
+<p>(文字クラスここまで)
+</p>
+<table>
+<tr><td width="15%"></td><td width="15%">magic</td><td width="15%">nomagic</td><td width="55%">マッチするもの</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005ce">/\e</a>|</td><td width="15%">\e</td><td width="15%">\e</td><td width="55%">&lt;Esc&gt;</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005ct">/\t</a>|</td><td width="15%">\t</td><td width="15%">\t</td><td width="55%">&lt;Tab&gt;</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cr">/\r</a>|</td><td width="15%">\r</td><td width="15%">\r</td><td width="55%">&lt;CR&gt;</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cb">/\b</a>|</td><td width="15%">\b</td><td width="15%">\b</td><td width="55%">&lt;BS&gt;</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cn">/\n</a>|</td><td width="15%">\n</td><td width="15%">\n</td><td width="55%">改行</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_007e">/~</a>|</td><td width="15%">~</td><td width="15%">\~</td><td width="55%">最後に置換された文字列</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c1">/\1</a>|</td><td width="15%">\1</td><td width="15%">\1</td><td width="55%">最初の \(\) と同じ文字列</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c2">/\2</a>|</td><td width="15%">\2</td><td width="15%">\2</td><td width="55%">&quot;\1&quot; と同じですが、2 番目の \(\) を使ひます</td></tr>
+<tr><td width="15%"></td><td width="15%">...</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c9">/\9</a>|</td><td width="15%">\9</td><td width="15%">\9</td><td width="55%">&quot;\1&quot; と同じですが、9 番目の \(\) を使ひます
+<a name="E68"></a><a name="index-E68"></a></td></tr>
+<tr><td width="15%">|<a href="syntax_002etxt.html#g_t_002f_005cz1">/\z1</a>|</td><td width="15%">\z1</td><td width="15%">\z1</td><td width="55%">構文强調專用。|<a href="syntax_002etxt.html#g_t_003asyn_002dext_002dmatch">:syn-ext-match</a>| を參照</td></tr>
+<tr><td width="15%"></td><td width="15%">...</td></tr>
+<tr><td width="15%">|<a href="syntax_002etxt.html#g_t_002f_005cz1">/\z1</a>|</td><td width="15%">\z9</td><td width="15%">\z9</td><td width="55%">構文强調專用。|<a href="syntax_002etxt.html#g_t_003asyn_002dext_002dmatch">:syn-ext-match</a>| を參照</td></tr>
+<tr><td width="15%"></td></tr>
+<tr><td width="15%"></td><td width="15%">x</td><td width="15%">x</td><td width="55%">特別な意味のない文字は、その文字自身とマッチします</td></tr>
+<tr><td width="15%"></td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005b_005d">/[]</a>|</td><td width="15%">[]</td><td width="15%">\[]</td><td width="55%">[] で圍んだ文字のうちどれか</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025_005b_005d">/\%[]</a>|</td><td width="15%">\%[]</td><td width="15%">\%[]</td><td width="55%">任意にマッチするアトム列</td></tr>
+<tr><td width="15%"></td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cc">/\c</a>|</td><td width="15%">\c</td><td width="15%">\c</td><td width="55%">大文字小文字を無視します。&rsquo;<samp>ignorecase</samp>&rsquo; は使用されない</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cC">/\C</a>|</td><td width="15%">\C</td><td width="15%">\C</td><td width="55%">大文字小文字を區別します。&rsquo;<samp>ignorecase</samp>&rsquo; は使用されない</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cZ">/\Z</a>|</td><td width="15%">\Z</td><td width="15%">\Z</td><td width="55%">Unicode の合成文字かどうかを無視します。ヘブライ語やアラビア語で母音を檢索するときに便利です。</td></tr>
+</table>
+
+<table>
+<tr><td width="15%"></td><td width="15%">magic</td><td width="15%">nomagic</td><td width="55%">マッチするもの</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cm">/\m</a>|</td><td width="15%">\m</td><td width="15%">\m</td><td width="55%">以降のパターン文字を &rsquo;<samp>magic</samp>&rsquo; がオンの狀態で處理します</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cM">/\M</a>|</td><td width="15%">\M</td><td width="15%">\M</td><td width="55%">以降のパターン文字を &rsquo;<samp>magic</samp>&rsquo; がオフの狀態で處理します</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cv">/\v</a>|</td><td width="15%">\v</td><td width="15%">\v</td><td width="55%">以降のパターン文字を &quot;very magic&quot; で處理します</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005cV">/\V</a>|</td><td width="15%">\V</td><td width="15%">\V</td><td width="55%">以降のパターン文字を &quot;very nomagic&quot; で處理します</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025_0023_003d">/\%#=</a>|</td><td width="15%">\%#=1</td><td width="15%">\%#=1</td><td width="55%">正規表現エンジンを選擇する |<a href="#g_t_002fzero_002dwidth">/zero-width</a>|</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025d">/\%d</a>|</td><td width="15%">\%d</td><td width="15%">\%d</td><td width="55%">10 進數指定の特定の文字 (例 \%d123)</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025x">/\%x</a>|</td><td width="15%">\%x</td><td width="15%">\%x</td><td width="55%">16 進數指定の特定の文字 (例 \%x2a)</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025o">/\%o</a>|</td><td width="15%">\%o</td><td width="15%">\%o</td><td width="55%">8 進數指定の特定の文字  (例 \%o040)</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025u">/\%u</a>|</td><td width="15%">\%u</td><td width="15%">\%u</td><td width="55%">特定のマルチバイト文字 (例 \%u20ac)</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025U">/\%U</a>|</td><td width="15%">\%U</td><td width="15%">\%U</td><td width="55%">特定の廣汎圍のマルチバイト文字 (例 \%U12345678)</td></tr>
+<tr><td width="15%">|<a href="#g_t_002f_005c_0025C">/\%C</a>|</td><td width="15%">\%C</td><td width="15%">\%C</td><td width="55%">すべての合成文字</td></tr>
+</table>
+
+<table>
+<thead><tr><th width="40%">例</th><th width="60%">マッチするもの</th></tr></thead>
+<tr><td width="40%">\&lt;\I\i* <br>
+\&lt;\h\w* <br>
+\&lt;[a-zA-Z_][a-zA-Z0-9_]*</td><td width="60%">識別子 (例へば C 言語の識別子)</td></tr>
+<tr><td width="40%"></td></tr>
+<tr><td width="40%">\(\.$\|\. \)</td><td width="60%">&lt;EOL&gt; かスペースの直前のピリオド</td></tr>
+<tr><td width="40%"></td></tr>
+<tr><td width="40%">[.!?][])&quot;&rsquo;]*\($\|[ ]\)</td><td width="60%">文末。&quot;)&quot; コマンドが認識する文末と同じ定義です。</td></tr>
+<tr><td width="40%"></td></tr>
+<tr><td width="40%">cat\Z</td><td width="60%">&quot;cat&quot; と &quot;càt&quot; (&quot;a&quot; + 0x0300) にマッチする。見た目は似てゐますが、&quot;càt&quot; (0x00e0) にはマッチしません。</td></tr>
+</table>
+
+
+<a name="pattern_002dmulti_002ditems"></a><a name="index-pattern_002dmulti_002ditems"></a>
+<a name="index-Liang-Zhi-Ding-Zi-"></a>
+<a name="g_t5_002e-Liang-Zhi-Ding-Zi--_0028Multi-items_0029"></a>
+<h3 class="section">5. 量指定子 (Multi items)</h3>
+
+<p>アトムがどのやうに、何囘マッチするかを指示するものを、量指定子 (multi) と呼びます。槪要は |<a href="#g_t_002fmulti">/multi</a>| を參照してください。
+</p>
+<a name="g_t_002fstar"></a><a name="g_t_002f_005cstar"></a><a name="index-_002f_002a"></a>
+<a name="index-_002f_005c_002a"></a>
+<dl compact="compact">
+<dt>*</dt>
+<dd><p>(&rsquo;<samp>magic</samp>&rsquo; がオフのときは \* )
+</p>
+<p>アトムの 0 回以上の繰り返し。最長一致。
+</p><table>
+<tr><td width="25%">Example</td><td width="25%">&rsquo;<samp>nomagic</samp>&rsquo;</td><td width="50%">マッチするもの</td></tr>
+<tr><td width="25%">a*</td><td width="25%">a\*</td><td width="50%">&quot;&quot;、&quot;a&quot;、&quot;aa&quot;、&quot;aaa&quot;、など。</td></tr>
+<tr><td width="25%">.*</td><td width="25%">\.\*</td><td width="50%">改行以外の全て (空文字列も)</td></tr>
+<tr><td width="25%">\_.*</td><td width="25%">\_.\*</td><td width="50%">バッファの末尾までの全て</td></tr>
+<tr><td width="25%">\_.*END</td><td width="25%">\_.\*END</td><td width="50%">一番最後の &quot;END&quot; までの全て</td></tr>
+</table>
+
+<p>例外: パターンの最初と &quot;^&quot; の直後の &quot;*&quot; は、リテラルの &quot;*&quot; にマッチします。
+</p>
+<p>&quot;\_.&quot; の繰り返しには注意してください。たくさんのテキストがマッチして、そして、時閒が掛かります。たとへば、&quot;\_.*END&quot; は、カーソルの位置から 1 番最後の &quot;END&quot; までのすべてのテキストがマッチします。&quot;*&quot; は最長一致なので、まづファイルの末尾までスキップして、それから 1 文字ずつ後退しながら &quot;END&quot; を探します。
+</p>
+
+<a name="g_t_002f_005c_002b"></a><a name="index-_002f_005c_002b"></a>
+</dd>
+<dt>\+</dt>
+<dd><p>アトムの 1 回以上の繰り返し。最長一致。
+</p><table>
+<tr><td width="40%">Example</td><td width="60%">マッチするもの</td></tr>
+<tr><td width="40%">^.\+$</td><td width="60%">空行以外の行</td></tr>
+<tr><td width="40%">\s\+</td><td width="60%">1 文字以上の空白</td></tr>
+</table>
+
+<a name="g_t_002f_005c_003d"></a><a name="index-_002f_005c_003d"></a>
+</dd>
+<dt>\=</dt>
+<dd><p>0 回または 1 回のアトム。最長一致。
+</p><table>
+<tr><td width="40%">Example</td><td width="60%">マッチするもの</td></tr>
+<tr><td width="40%">foo\=</td><td width="60%">&quot;fo&quot; と &quot;foo&quot;</td></tr>
+</table>
+
+<a name="g_t_002f_005c_003f"></a><a name="index-_002f_005c_003f"></a>
+</dd>
+<dt>\?</dt>
+<dd><p>\= と同じ。&quot;?&quot; コマンドによる後方檢索では使へません。
+</p>
+<a name="g_t_002f_005c_007b"></a><a name="E60"></a><a name="E554"></a><a name="E870"></a><a name="index-_002f_005c_007b"></a>
+<a name="index-E60"></a>
+<a name="index-E554"></a>
+<a name="index-E870"></a>
+</dd>
+<dt>\{n,m}</dt>
+<dd><p>アトムの n 以上 m 以下の繰り返し。最長一致
+</p></dd>
+<dt>\{n}</dt>
+<dd><p>アトムの n 回の繰り返し
+</p></dd>
+<dt>\{n,}</dt>
+<dd><p>アトムの n 回以上の繰り返し。最長一致
+</p></dd>
+<dt>\{,m}</dt>
+<dd><p>アトムの 0 以上 m 以下の繰り返し。最長一致
+</p></dd>
+<dt>\{}</dt>
+<dd><p>アトムの 0 回以上の繰り返し。最長一致 (*と同じ)
+<a name="g_t_002f_005c_007b_002d"></a><a name="index-_002f_005c_007b_002d"></a>
+</p></dd>
+<dt>\{-n,m}</dt>
+<dd><p>アトムの n 以上 m 以下の繰り返し。最短一致
+</p></dd>
+<dt>\{-n}</dt>
+<dd><p>アトムの n 回の繰り返し
+</p></dd>
+<dt>\{-n,}</dt>
+<dd><p>アトムの n 回以上の繰り返し。最短一致
+</p></dd>
+<dt>\{-,m}</dt>
+<dd><p>アトムの 0 以上 m 以下の繰り返し。最短一致
+</p></dd>
+<dt>\{-}</dt>
+<dd><p>アトムの 0 回以上の繰り返し。最短一致
+</p>
+<p>n と m には 10 進數正數、またはゼロを指定できます。
+<a name="non_002dgreedy"></a><a name="index-non_002dgreedy"></a>
+&quot;{&quot; の直後に &quot;-&quot; がある場合は、最短一致のアルゴリズムが使はれます (下記の例を參照)。特に、&quot;\{-}&quot; は &quot;*&quot; と同じですが、最短一致のアルゴリズムが使はれます。しかし、早い位置でマッチするものが、短いマッチよりも優先されます。たとへば、&quot;a\{-}b&quot; は &quot;xaaab&quot; の &quot;aaab&quot; にマッチします。
+</p>
+<table>
+<tr><td width="30%">Example</td><td width="70%">マッチするもの</td></tr>
+<tr><td width="30%">ab\{2,3}c</td><td width="70%">&quot;abbc&quot; または &quot;abbbc&quot;</td></tr>
+<tr><td width="30%">a\{5}</td><td width="70%">&quot;aaaaa&quot;</td></tr>
+<tr><td width="30%">ab\{2,}c</td><td width="70%">&quot;abbc&quot;, &quot;abbbc&quot;, &quot;abbbbc&quot;, など</td></tr>
+<tr><td width="30%">ab\{,3}c</td><td width="70%">&quot;ac&quot;, &quot;abc&quot;, &quot;abbc&quot; or &quot;abbbc&quot;</td></tr>
+<tr><td width="30%">a[bc]\{3}d</td><td width="70%">&quot;abbbd&quot;, &quot;abbcd&quot;, &quot;acbcd&quot;, &quot;acccd&quot; など</td></tr>
+<tr><td width="30%">a\(bc\)\{1,2}d</td><td width="70%">&quot;abcd&quot; または &quot;abcbcd&quot;</td></tr>
+<tr><td width="30%">a[bc]\{-}[cd]</td><td width="70%">&quot;abcd&quot; の &quot;abc&quot;</td></tr>
+<tr><td width="30%">a[bc]*[cd]</td><td width="70%">&quot;abcd&quot; の &quot;abcd&quot;</td></tr>
+</table>
+
+<p>} にバックスラッシュを前置するかどうかは任意です: \{n,m\}
+</p>
+<a name="g_t_002f_005c_0040_003d"></a><a name="index-_002f_005c_0040_003d"></a>
+</dd>
+<dt>\@=</dt>
+<dd><p>幅ゼロの肯定先讀み。先行するアトムに幅ゼロでマッチします。
+</p>
+<p>Perl の &quot;(?=pattern)&quot; と似てゐます。
+</p><table>
+<tr><td width="50%">Example</td><td width="50%">マッチするもの</td></tr>
+<tr><td width="50%">foo\(bar\)\@=</td><td width="50%">&quot;foobar&quot; の &quot;foo&quot;</td></tr>
+<tr><td width="50%">foo\(bar\)\@=foo</td><td width="50%">何もマッチしない</td></tr>
+</table>
+<a name="g_t_002fzero_002dwidth"></a><a name="index-_002fzero_002dwidth"></a>
+<p>&quot;\@=&quot; (や、&quot;^&quot;、&quot;$&quot;、&quot;\&lt;&quot;、&quot;\&gt;&quot;、など) を使つた場合、その文字はマッチに含まれません。これらのアイテムは、マッチすることができるかどうかのチェックだけに使はれます。續くアイテムが同じ場所でマッチすることに注意してください。上記の最後の例は &quot;foobarfoo&quot; にはマッチしません。&quot;bar&quot; がマッチしたのと同じ場所で &quot;foo&quot; とマッチしようとするからです。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+&quot;\&amp;&quot; は &quot;\@=&quot; と同じやうな働きをします。&quot;foo\&amp;..&quot; と &quot;\(foo\)\@=..&quot; は同じです。カッコを書かなくていいので &quot;\&amp;&quot; の方が簡單です。
+</p></blockquote>
+
+
+<a name="g_t_002f_005c_0040_0021"></a><a name="index-_002f_005c_0040_0021"></a>
+</dd>
+<dt>\@!</dt>
+<dd><p>幅ゼロの否定先讀み。先行するアトムが現在の位置でマッチしない場合に、幅ゼロでマッチします。|<a href="#g_t_002fzero_002dwidth">/zero-width</a>|
+</p>
+<p>Perl の &quot;(?!pattern)&quot; と似てゐます。
+</p><table>
+<tr><td width="40%">Example</td><td width="60%">マッチするもの</td></tr>
+<tr><td width="40%">foo\(bar\)\@!</td><td width="60%">後ろに &quot;bar&quot; のない &quot;foo&quot;</td></tr>
+<tr><td width="40%">a.\{-}p\@!</td><td width="60%">後ろに &quot;p&quot; のない &quot;a&quot;, &quot;ap&quot;, &quot;app&quot;, &quot;appp&quot; など</td></tr>
+<tr><td width="40%">if \(\(then\)\@!.\)*$</td><td width="60%">後ろに &quot;then&quot; のない &quot;if &quot;</td></tr>
+</table>
+
+<p>&quot;\@!&quot; を使ふには注意が必要です。パターンにマッチしない場所、といふのはそこらじゅうにあるからです。&quot;a.*p\@!&quot; は &quot;a&quot; から行末までマッチします。なぜなら、&quot;.*&quot; が全ての文字にマッチし、&quot;p&quot; は行末にマッチしないからです。&quot;a.\{-}p\@!&quot; は後ろに &quot;p&quot; のない文字列、&quot;a&quot;, &quot;ap&quot;, &quot;app&quot; などにマッチします。なぜなら、&quot;.&quot; が &quot;p&quot; にもマッチし、&quot;p\@!&quot; がその後ろにマッチする (つまり &quot;p&quot; がマッチしない) からです。
+</p>
+<p>直前がマッチしないことを調べるために &quot;\@!&quot; を使ふことはできません。&quot;\(foo\)\@!bar&quot; は &quot;foobar&quot; の &quot;bar&quot; にマッチします。なぜなら、&quot;foo&quot; がマッチしなかつた場所で、&quot;bar&quot; がマッチするからです。&quot;foobar&quot; がマッチしないやうに、&quot;\(foo\)\@!...bar&quot; とすることもできますが、これは行頭の &quot;bar&quot; にはマッチしません。&quot;\(foo\)\@&lt;!bar&quot; を使つてください。
+</p>
+<p>實用的な例: &quot;bar&quot; を含んでゐない行から &quot;foo&quot; を探す:
+</p><pre class="verbatim">/^\%(.*bar\)\@@!.*\zsfoo
+</pre><p>このパターンはまづ、行の中で &quot;bar&quot; がマッチしないことを確認します。もしどこかで &quot;.*bar&quot; がマッチすると \@! によつてこのパターンは否決されます。それがマッチせず、そしてどこかで &quot;foo&quot; が見つかると、&quot;\zs&quot; によつて &quot;foo&quot; の直前でマッチが開始したことにされます。
+</p>
+<a name="g_t_002f_005c_0040_003c_003d"></a><a name="index-_002f_005c_0040_003c_003d"></a>
+</dd>
+<dt>\@&lt;=</dt>
+<dd><p>幅ゼロの肯定後讀み。先行するアトムが、この後に續くパターンの直前にマッチする場合に、幅ゼロでマッチします。|<a href="#g_t_002fzero_002dwidth">/zero-width</a>|
+</p>
+<p>Perl の &quot;(?&lt;=pattern)&quot; と似てゐますが、Vim では可變長パターンも使へます。
+</p><table>
+<tr><td width="40%">Example</td><td width="60%">マッチするもの</td></tr>
+<tr><td width="40%">\(an\_s\+\)\@&lt;=file</td><td width="60%">&quot;an&quot; と空白文字 (改行含む) の後の &quot;file&quot;</td></tr>
+</table>
+<p>處理速度を氣にするなら、この量指定子は避けたはうが無難です。代はりに &quot;\zs&quot; を使つてください |<a href="#g_t_002f_005czs">/\zs</a>|。次のものは上記の例と同じものにマッチします:
+</p><pre class="verbatim">an\_s\+\zsfile
+</pre><p>あるいは少なくとも探索範圍を制限した方がいいでせう。下記參照。
+</p>
+<p>&quot;\@&lt;=&quot; と &quot;\@&lt;!&quot; は直前の文字がマッチしてゐるかどうかをチェックします。理論上は、マッチの現在位置よりも前ならどこでもマッチできます。しかし、處理時閒を制限するために、マッチの現在行と、(もしあれば) 1 つ前の行だけが檢索されます。ほとんどの場合はこれで十分ですし、遲くなり過ぎることもありません。
+</p>
+<p>古い正規表現エンジンでは &quot;\@&lt;=&quot; や &quot;\@&lt;!&quot; の後にくるパターンは最初にチェックされます。そのため、先行するアトムの內側にある \(\) に對する &quot;\1&quot; のやうな參照は機能しません。順番を逆にした場合は機能します:
+</p><table>
+<tr><td width="50%">惡い例</td><td width="50%">マッチするもの</td></tr>
+<tr><td width="50%">\%#=1\1\@&lt;=,\([a-z]\+\)</td><td width="50%">&quot;abc,abc&quot; の中の &quot;,abc&quot;</td></tr>
+</table>
+
+<p>新しい正規表現エンジンでは動作が異なるので、この動作の違ひに依存しないやうにするのが無難です。可能なら \@&lt;= の使用を避けてください:
+</p><table>
+<tr><td width="50%">例</td><td width="50%">マッチするもの</td></tr>
+<tr><td width="50%">\([a-z]\+\)\zs,\1</td><td width="50%">&quot;abc,abc&quot; の中の &quot;,abc&quot;</td></tr>
+</table>
+
+</dd>
+<dt>\@123&lt;=</dt>
+<dd><p>&quot;\@&lt;=&quot; と同じですが 123 バイトまでしか探索しません。失敗すると分かつてゐて、その探索のせゐで遲くなる狀況を囘避できます。例へば、&quot;span&quot; の前に &quot;&lt;&quot; があるかどうかをチェックする場合:
+</p><pre class="verbatim">/&lt;\@1&lt;=span
+</pre><p>このパターンは &quot;span&quot; の前の 1 バイトだけを見て &quot;&lt;&quot; を探します。この例ではなんにしても 1 バイト前だけが唯一マッチする場所です。
+</p>
+<p>行をまたいだ場合、探索範圍はその行末からの相對位置になります。つまり、探索開始位置の行の文字はカウントされません (ものごとをシンプルに保つため)。
+</p>
+<p>數値のゼロは制限なしと同じです。
+</p>
+<a name="g_t_002f_005c_0040_003c_0021"></a><a name="index-_002f_005c_0040_003c_0021"></a>
+</dd>
+<dt>\@&lt;!</dt>
+<dd><p>幅ゼロの否定後讀み。先行するアトムが、この後に續くパターンの直前にマッチしない場合に、幅ゼロでマッチします。現在行と 1 つ前の行だけがチェックされます。|<a href="#g_t_002fzero_002dwidth">/zero-width</a>|
+</p>
+<p>Perl の &quot;(?&lt;!pattern)&quot; と似てゐますが、Vimでは可變長パターンも使へます。對象のアトムは、續くアトムの直前までがマッチの範圍になるため、最後が &quot;.*&quot; で終はつてゐるアトムも機能します。
+</p><blockquote>
+<p><strong>警告:</strong> <br>
+これは遲くなることがあります (マッチするかどうかを多くの場所でチェックする必要があるため)。可能であれば探索範圍に制限をかけてください。下記參照。
+</p><table>
+<tr><td width="50%">Example</td><td width="50%">マッチするもの</td></tr>
+<tr><td width="50%">\(foo\)\@&lt;!bar</td><td width="50%">&quot;foobar&quot; 以外の &quot;bar&quot;</td></tr>
+<tr><td width="50%">\(\/\/.*\)\@&lt;!in</td><td width="50%">&quot;//&quot; の後ろ以外の &quot;in&quot;</td></tr>
+</table>
+</blockquote>
+
+</dd>
+<dt>\@123&lt;!</dt>
+<dd><p>&quot;\@&lt;!&quot; と同じですが 123 バイトまでしか探索しません。失敗すると分かつてゐて、その探索のせゐで遲くなる狀況を囘避できます。
+</p>
+<a name="g_t_002f_005c_0040_003e"></a><a name="index-_002f_005c_0040_003e"></a>
+</dd>
+<dt>\@&gt;</dt>
+<dd><p>强慾な量指定子。
+</p>
+<p>Perlの &quot;(?&gt;pattern)&quot; と似てゐます。
+</p><table>
+<tr><td width="25%">Example</td><td width="75%">マッチするもの</td></tr>
+<tr><td width="25%">\(a*\)\@&gt;a</td><td width="75%">何もマッチしない (&quot;a*&quot; が全ての &quot;a&quot; を取るので、その後に &quot;a&quot; があることはありません)</td></tr>
+</table>
+
+<p>パターンがそのアトムだけであるかのやうにマッチします。そして、パターン全體がマッチしなくても、そのアトムのマッチを短くして再トライしたりはしません (バックトラックしません)。次の違ひに注意してください。&quot;a*b&quot; と &quot;a*ab&quot; は兩方とも &quot;aaab&quot; にマッチします。このとき、後者の &quot;a*&quot; は先頭の &quot;aa&quot; にマッチしてゐます。&quot;\(a*\)\@&gt;ab&quot; は &quot;aaab&quot; にマッチしません。なぜなら、&quot;a*&quot; が &quot;aaa&quot; にマッチする (最長一致する) ため、&quot;ab&quot; がマッチできないからです。
+</p></dd>
+</dl>
+
+
+<a name="pattern_002datoms"></a><a name="index-pattern_002datoms"></a>
+<a name="index-Pu-Tong-noatomu"></a>
+<a name="g_t6_002e-Pu-Tong-noatomu"></a>
+<h3 class="section">6. 普通のアトム</h3>
+
+<p>普通のアトムは次のものです:
+</p>
+<a name="g_t_002f_005e"></a><a name="index-_002f_005e"></a>
+<dl compact="compact">
+<dt>^</dt>
+<dd><p>パターンの先頭にある場合、行頭にマッチします。&quot;\|&quot;、&quot;\(&quot;、&quot;\%(&quot; の直後でも構ひません。他の場所にある場合は、リテラル文字の &rsquo;^&rsquo; にマッチします。|<a href="#g_t_002fzero_002dwidth">/zero-width</a>|
+</p><table>
+<tr><td width="30%">Example</td><td width="70%">マッチするもの</td></tr>
+<tr><td width="30%">^beep(</td><td width="70%">(おそらく) C 言語の函數 &quot;beep&quot; の開始。</td></tr>
+</table>
+
+<a name="g_t_002f_005c_005e"></a><a name="index-_002f_005c_005e"></a>
+</dd>
+<dt>\^</dt>
+<dd><p>リテラル文字の &rsquo;^&rsquo; にマッチします。パターンのどの場所でも使へます。
+</p>
+<a name="g_t_002f_005c_005f_005e"></a><a name="index-_002f_005c_005f_005e"></a>
+</dd>
+<dt>\_^</dt>
+<dd><p>行頭にマッチします。|<a href="#g_t_002fzero_002dwidth">/zero-width</a>| パターンのどの場所でも使へます。
+</p><table>
+<tr><td width="30%">Example</td><td width="70%">マッチするもの</td></tr>
+<tr><td width="30%">\_s*\_^foo</td><td width="70%">空白文字や空行の直後の、行頭の &quot;foo&quot;</td></tr>
+</table>
+
+<a name="g_t_002f_0024"></a><a name="index-_002f_0024"></a>
+</dd>
+<dt>$</dt>
+<dd><p>パターンの末尾、または &quot;\|&quot;、&quot;\)&quot;、&quot;\n&quot; (&rsquo;<samp>magic</samp>&rsquo; on時) の前にある場合、行末 (&lt;EOL&gt;) にマッチします。他の場所にある場合は、リテラル文字の &rsquo;$&rsquo; にマッチします。|<a href="#g_t_002fzero_002dwidth">/zero-width</a>|
+</p>
+<a name="g_t_002f_005c_0024"></a><a name="index-_002f_005c_0024"></a>
+</dd>
+<dt>\$</dt>
+<dd><p>リテラル文字の &rsquo;$&rsquo; にマッチします。パターンのどの場所でも使へます。
+</p>
+<a name="g_t_002f_005c_005f_0024"></a><a name="index-_002f_005c_005f_0024"></a>
+</dd>
+<dt>\_$</dt>
+<dd><p>行末にマッチします。|<a href="#g_t_002fzero_002dwidth">/zero-width</a>| パターンのどの場所でも使へます。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+&quot;a\_$b&quot; はどこにもマッチしません。&quot;b&quot; は行末とはマッチしないからです。代はりに、&quot;a\nb&quot; を使つてください |<a href="#g_t_002f_005cn">/\n</a>|。
+</p><table>
+<tr><td width="30%">Example</td><td width="70%">マッチするもの</td></tr>
+<tr><td width="30%">foo\_$\_s*</td><td width="70%">行末の &quot;foo&quot; と、それに續く空白や空行</td></tr>
+</table>
+</blockquote>
+
+<a name="g_t_002f_002e"></a><a name="g_t_002f_005c_002e"></a><a name="index-_002f_002e"></a>
+<a name="index-_002f_005c_002e"></a>
+</dd>
+<dt>. (&rsquo;<samp>nomagic</samp>&rsquo; なら \.)</dt>
+<dd><p>改行以外のすべての文字がマッチします。
+</p>
+<a name="g_t_002f_005c_005f_002e"></a><a name="index-_002f_005c_005f_002e"></a>
+</dd>
+<dt>\_.</dt>
+<dd><p>改行も含め、すべての文字がマッチします。
+<strong>注意:</strong> &quot;\_.*&quot; はバッファの末尾までのすべてのテキストがマッチします。
+</p>
+<a name="g_t_002f_005c_003c"></a><a name="index-_002f_005c_003c"></a>
+</dd>
+<dt>\&lt;</dt>
+<dd><p>單語の先頭にマッチします。このアトムの次の文字は單語の 1 文字目です。どの文字が單語を構成するかは、オプション &rsquo;<samp>iskeyword</samp>&rsquo; で設定します。|<a href="#g_t_002fzero_002dwidth">/zero-width</a>|
+</p>
+<a name="g_t_002f_005c_003e"></a><a name="index-_002f_005c_003e"></a>
+</dd>
+<dt>\&gt;</dt>
+<dd><p>單語の末尾にマッチします。このアトムの前の文字は單語の最後の文字です。どの文字が單語を構成するかは、オプション &rsquo;<samp>iskeyword</samp>&rsquo; で設定します。|<a href="#g_t_002fzero_002dwidth">/zero-width</a>|
+</p>
+<a name="g_t_002f_005czs"></a><a name="index-_002f_005czs"></a>
+</dd>
+<dt>\zs</dt>
+<dd><p>どこにでもマッチして、マッチの開始地點を設定します。このアトムの次の文字は、マッチした文字列の 1 文字目です。|<a href="#g_t_002fzero_002dwidth">/zero-width</a>|
+</p>
+<p>例:
+</p><pre class="verbatim">/^\s*\zsif
+</pre><p>これは、行頭からスペースを無視して、&quot;if&quot; にマッチします。複數回の繰り返しで使つた場合は、最後にマッチしたものが使はれます。
+</p>
+<p>例:
+</p><pre class="verbatim">/\(.\{-}\zsFab\)\{3}
+</pre><p>これは、3 番目に現れた &quot;Fab&quot; にマッチします。
+<a name="E888"></a><a name="index-E888"></a>
+後ろに量指定子を置くことはできない。
+</p>
+<p>{|<a href="various_002etxt.html#g_t_002bsyntax">+syntax</a>| が有效な場合のみ利用できます}
+<a name="g_t_002f_005cze"></a><a name="index-_002f_005cze"></a>
+</p></dd>
+<dt>\ze</dt>
+<dd><p>どこにでもマッチして、マッチの末尾を設定します。このアトムの前の文字は、マッチした文字列の最後の文字です。|<a href="#g_t_002fzero_002dwidth">/zero-width</a>| 複數回の繰り返しで使つた場合は、最後にマッチしたものが使はれます。
+</p>
+<p>例:
+</p><pre class="verbatim">/end\ze\(if\|for\)
+</pre><p>これは、&quot;endif&quot; または &quot;endfor&quot; の &quot;end&quot; にマッチします。
+後ろに量指定子を置くことはできない。|<a href="#E888">E888</a>|
+</p>
+<p>{|<a href="various_002etxt.html#g_t_002bsyntax">+syntax</a>| が有效な場合のみ利用できます}
+</p>
+<a name="g_t_002f_005c_0025_005e"></a><a name="start_002dof_002dfile"></a><a name="index-_002f_005c_0025_005e"></a>
+<a name="index-start_002dof_002dfile"></a>
+</dd>
+<dt>\%^</dt>
+<dd><p>ファイルの先頭にマッチします。文字列 (|<a href="eval_002etxt.html#expr_002dstring">expr-string</a>|) とマッチングする場合は、文字列の先頭にマッチします。
+</p>
+<p>例:
+</p><pre class="verbatim">/\%^\_.\{-}\zsVIM
+</pre><p>これは、ファイルの最初にある &quot;VIM&quot; にマッチします。
+<a name="g_t_002f_005c_0025_0024"></a><a name="end_002dof_002dfile"></a><a name="index-_002f_005c_0025_0024"></a>
+<a name="index-end_002dof_002dfile"></a>
+</p></dd>
+<dt>\%$</dt>
+<dd><p>ファイルの末尾にマッチします。文字列 (|<a href="eval_002etxt.html#expr_002dstring">expr-string</a>|) とマッチングする場合は、文字列の末尾にマッチします。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+次のパターンでは、ファイルの最後の &quot;VIM&quot; を檢索できません:
+</p><pre class="verbatim">/VIM\_.\{-}\%$
+</pre><p>これは、カーソル位置から次の &quot;VIM&quot; を檢索します。&quot;VIM&quot; の後の &quot;\_.\{-}\%$&quot; が常にマッチするからです。ファイルの最後の &quot;VIM&quot; を檢索するには、次のやうにします:
+</p><pre class="verbatim">/VIM\ze\(\(VIM\)\@!\_.\)*\%$
+</pre><p>&quot;VIM&quot; の後に &quot;VIM&quot; がないことを確實にするために |<a href="#g_t_002f_005c_0040_0021">/\@!</a>| を使つてゐます。ファイルの末尾から後方檢索する方が簡單です。
+</p></blockquote>
+
+<a name="g_t_002f_005c_0025V"></a><a name="index-_002f_005c_0025V"></a>
+</dd>
+<dt>\%V</dt>
+<dd><p>選擇範圍內にマッチします。ビジュアルモードでないときは、|<a href="visual_002etxt.html#gv">gv</a>| で再選擇できる範圍にマッチします。
+</p>
+<p>これはゼロ幅マッチ |<a href="#g_t_002fzero_002dwidth">/zero-width</a>| です。パターンを選擇範圍內でマッチさせたい場合は、パターンの最初と最後の直前にこれを指定してください。例:
+</p><pre class="verbatim">/\%Vfoo.*ba\%Vr
+</pre><p>これは &quot;foo bar&quot; のみがビジュアル選擇されてゐる場合でも機能します。以下は、
+</p><pre class="verbatim">/\%Vfoo.*bar\%V
+</pre><p>ビジュアル選擇が &quot;r&quot; より後も含む場合に &quot;foo bar&quot; にマッチします。カレントバッファでのみ機能します。
+</p>
+<a name="g_t_002f_005c_0025_0023"></a><a name="cursor_002dposition"></a><a name="index-_002f_005c_0025_0023"></a>
+<a name="index-cursor_002dposition"></a>
+</dd>
+<dt>\%#</dt>
+<dd><p>カーソルの位置にマッチします。ウィンドウに表示されてゐるバッファ內でマッチングする場合のみ機能します。
+</p><blockquote>
+<p>警告: パターンが使はれた後で、カーソルを移動した場合、マッチの結果は正確ではなくなつてしまひます。マッチの結果は自動的に更新されません。これは特に、構文强調と &rsquo;<samp>hlsearch</samp>&rsquo; に關係します。
+</p>
+<p>カーソルが移動しても、表示は自動的に更新されません。表示が更新されるのは、行を變更したため行全體が更新されたときや、|<a href="various_002etxt.html#CTRL_002dL">CTRL-L</a>| コマンドを使つてスクリーン全體を更新したときです。カーソル位置の單語を强調表示するには次のやうにします:
+</p><pre class="verbatim">/\k*\%#\k*
+</pre><p>&rsquo;<samp>hlsearch</samp>&rsquo; をオンにして、カーソルを移動し、テキストを變更してみて、表示が更新されるかどうか確認してください。
+</p></blockquote>
+
+<a name="g_t_002f_005c_0025_0027m"></a><a name="g_t_002f_005c_0025_003c_0027m"></a><a name="g_t_002f_005c_0025_003e_0027m"></a><a name="index-_002f_005c_0025_0027m"></a>
+<a name="index-_002f_005c_0025_003c_0027m"></a>
+<a name="index-_002f_005c_0025_003e_0027m"></a>
+</dd>
+<dt>\%&rsquo;m</dt>
+<dd><p>マーク m の位置にマッチします。
+</p></dd>
+<dt>\%&lt;&rsquo;m</dt>
+<dd><p>マーク m より前の位置にマッチします。
+</p></dd>
+<dt>\%&gt;&rsquo;m</dt>
+<dd><p>マーク m より後の位置にマッチします。
+</p>
+<p>例へば、マーク &rsquo;s から &rsquo;e までを强調するには次のやうにします:
+</p><pre class="verbatim">/.\%&gt;'s.*\%&lt;'e..
+</pre><blockquote>
+<p><strong>Note:</strong> <br>
+マーク &rsquo;e の位置をマッチに含めるには &rsquo;e の後に 2 つのドットが必要です。なぜなら、&quot;\%&lt;&rsquo;e&quot; はマーク &rsquo;e の前の文字にマッチし、そしてそれはゼロ幅マッチ|<a href="#g_t_002fzero_002dwidth">/zero-width</a>| なので、その文字は結果に含まれないからです。
+</p></blockquote>
+<blockquote>
+<p><strong>警告:</strong> <br>
+マークを檢索した後にマークを移動した場合、その結果は正しくなくなります。Vim は自動的にマッチの强調表示を更新したりしません。|<a href="#g_t_002f_005c_0025_0023">/\%#</a>| で檢索した後にカーソルを動かした場合と似てゐます。
+</p></blockquote>
+
+<a name="g_t_002f_005c_0025l"></a><a name="g_t_002f_005c_0025_003el"></a><a name="g_t_002f_005c_0025_003cl"></a><a name="E951"></a><a name="index-_002f_005c_0025l"></a>
+<a name="index-_002f_005c_0025_003el"></a>
+<a name="index-_002f_005c_0025_003cl"></a>
+<a name="index-E951"></a>
+</dd>
+<dt>\%23l</dt>
+<dd><p>指定した行にマッチします。
+</p></dd>
+<dt>\%&lt;23l</dt>
+<dd><p>指定した行より上にマッチします。
+</p></dd>
+<dt>\%&gt;23l</dt>
+<dd><p>指定した行より下にマッチします。
+</p>
+<p>この 3 つを使つて、バッファの特定の行にマッチできます。&quot;23&quot; の所に行番號を指定してください。先頭の番號は 1 です。
+</p><blockquote>
+<p>警告: 行を插入したり削除したりしても、マッチの結果は自動的に更新されません。そのため、このアトムを使つた構文强調は、すぐに誤つた表示になつてしまひます。現在行を强調表示するには次のやうにします:
+</p><pre class="verbatim">:exe '/\%' . line(&quot;.&quot;) . 'l.*'
+</pre><p>&rsquo;<samp>hlsearch</samp>&rsquo; をオンにして、カーソルを移動し、テキストを變更してみて、表示が更新されるかどうか確認してください。
+</p></blockquote>
+
+<a name="g_t_002f_005c_0025c"></a><a name="g_t_002f_005c_0025_003ec"></a><a name="g_t_002f_005c_0025_003cc"></a><a name="index-_002f_005c_0025c"></a>
+<a name="index-_002f_005c_0025_003ec"></a>
+<a name="index-_002f_005c_0025_003cc"></a>
+</dd>
+<dt>\%23c</dt>
+<dd><p>指定した列にマッチします。
+</p></dd>
+<dt>\%&lt;23c</dt>
+<dd><p>指定した列より前にマッチします。
+</p></dd>
+<dt>\%&gt;23c</dt>
+<dd><p>指定した列より後にマッチします。
+</p>
+<p>この 3 つを使つて、バッファの特定の列にマッチできます。&quot;23&quot; の所に列番號を指定してください。先頭の番號は 1 です。實際には、何バイト目かを指定するので、マルチバイト文字を扱ふときには、&quot;列番號&quot; といふ表現は正確ではありません。
+</p><blockquote>
+<p><strong>警告:</strong> <br>
+行を插入したり削除したりしても、マッチの結果は自動的に更新されません。そのため、このアトムを使つた構文强調は、すぐに誤つた表示になつてしまひます。カーソル位置の列を强調表示するには次のやうにします:
+</p><pre class="verbatim">:exe '/\%' . col(&quot;.&quot;) . 'c'
+</pre><p>&rsquo;<samp>hlsearch</samp>&rsquo; をオンにして、カーソルを移動し、テキストを變更してみて、表示が更新されるかどうか確認してください。44 バイト目を强調表示するには次のやうにします:
+</p><pre class="verbatim">/\%&gt;43c.\%&lt;46c
+</pre><blockquote>
+<p><strong>Note:</strong> <br>
+&quot;.&quot; が 44 バイト目にマッチした場合、&quot;%&lt;46c&quot; は 45 列目にマッチします。
+</p></blockquote>
+</blockquote>
+<a name="g_t_002f_005c_0025v"></a><a name="g_t_002f_005c_0025_003ev"></a><a name="g_t_002f_005c_0025_003cv"></a><a name="index-_002f_005c_0025v"></a>
+<a name="index-_002f_005c_0025_003ev"></a>
+<a name="index-_002f_005c_0025_003cv"></a>
+</dd>
+<dt>\%23v</dt>
+<dd><p>指定した表示列にマッチします。
+</p></dd>
+<dt>\%&lt;23v</dt>
+<dd><p>指定した表示列より前にマッチします。
+</p></dd>
+<dt>\%&gt;23v</dt>
+<dd><p>指定した表示列より後にマッチします。
+</p>
+<p>この 3 つを使つて、バッファの特定の表示列にマッチできます。文字列 (|<a href="eval_002etxt.html#expr_002dstring">expr-string</a>|) とマッチングするときは、カレントウィンドウの、&rsquo;<samp>tabstop</samp>&rsquo; などの設定が使はれます。
+</p>
+<p>&quot;23&quot; の所に表示列番號を指定してください。先頭の番號は 1 です。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+Tab 文字や全角文字などの、複數列で表示される文字の途中の列を指定した場合は、マッチしません。
+</p></blockquote>
+<blockquote>
+<p><strong>警告:</strong> <br>
+行を插入したり削除したりしても、マッチの强調表示は自動的に更新されません。そのため、このアトムを使つた構文强調は、すぐに誤つた表示になつてしまひます。
+</p></blockquote>
+<p>表示列の 72 桁目以降のすべての文字を强調表示するには次のやうにします:
+</p><pre class="verbatim">/\%&gt;72v.*
+</pre><p>&rsquo;<samp>hlsearch</samp>&rsquo; をオンにして、カーソルを移動し、テキストを變更してみて、表示が更新されるかどうか確認してください。
+</p>
+<p>17 列までのテキストにマッチさせるには次のやうにします:
+</p><pre class="verbatim">/^.*\%17v
+</pre><p>17 列目は含まれません。なぜならこれはゼロ幅マッチ (|<a href="#g_t_002fzero_002dwidth">/zero-width</a>|) である爲です。列を含むには次を使用します:
+</p><pre class="verbatim">/^.*\%17v.
+</pre><p>次のコマンドも同樣の動作ですが、17 列目に文字が存在しなくてもマッチします:
+</p><pre class="verbatim">/^.*\%&lt;18v.
+</pre><blockquote>
+<p><strong>Note:</strong> <br>
+これは &quot;^&quot; 無しでも最初のカラムに居たままマッチします。17 列目もハイライトされます:
+</p><pre class="verbatim">/.*\%17v
+</pre><p>&quot;.*&quot; がゼロ幅文字として別の文字にマッチするため 17 列目は &rsquo;<samp>hlsearch</samp>&rsquo; によりハイライトされます。
+</p></blockquote>
+
+</dd>
+<dt>文字クラス:</dt>
+<dd><table>
+<tr><td><a name="g_t_002f_005ci"></a><a name="index-_002f_005ci"></a></td></tr>
+<tr><td width="10%">\i</td><td width="90%">識別子文字 (&rsquo;<samp>isident</samp>&rsquo; 參照)
+<a name="g_t_002f_005cI"></a><a name="index-_002f_005cI"></a></td></tr>
+<tr><td width="10%">\I</td><td width="90%">&quot;\i&quot; と同じですが、數字は除外します
+<a name="g_t_002f_005ck"></a><a name="index-_002f_005ck"></a></td></tr>
+<tr><td width="10%">\k</td><td width="90%">キーワード文字 (&rsquo;<samp>iskeyword</samp>&rsquo; 參照)
+<a name="g_t_002f_005cK"></a><a name="index-_002f_005cK"></a></td></tr>
+<tr><td width="10%">\K</td><td width="90%">&quot;\k&quot; と同じですが、數字は除外します
+<a name="g_t_002f_005cf"></a><a name="index-_002f_005cf"></a></td></tr>
+<tr><td width="10%">\f</td><td width="90%">ファイル名の文字 (&rsquo;<samp>isfname</samp>&rsquo; 參照)
+<a name="g_t_002f_005cF"></a><a name="index-_002f_005cF"></a></td></tr>
+<tr><td width="10%">\F</td><td width="90%">&quot;\f&quot; と同じですが、數字は除外します
+<a name="g_t_002f_005cp"></a><a name="index-_002f_005cp"></a></td></tr>
+<tr><td width="10%">\p</td><td width="90%">印字可能文字 (&rsquo;<samp>isprint</samp>&rsquo; 參照)
+<a name="g_t_002f_005cP"></a><a name="index-_002f_005cP"></a></td></tr>
+<tr><td width="10%">\P</td><td width="90%">&quot;\p&quot; と同じですが、數字は除外します</td></tr>
+</table>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+上記のものはマルチバイト文字に對しても機能します。次のものは、示された範圍の ASCII 文字だけがマッチします。
+</p></blockquote>
+
+<a name="whitespace"></a><a name="white_002dspace"></a><a name="index-whitespace"></a>
+<a name="index-white_002dspace"></a>
+<table>
+<tr><td><a name="g_t_002f_005cs"></a><a name="index-_002f_005cs"></a></td></tr>
+<tr><td width="10%">\s</td><td width="50%">空白文字:</td><td width="40%">&lt;Space&gt; と &lt;Tab&gt;
+<a name="g_t_002f_005cS"></a><a name="index-_002f_005cS"></a></td></tr>
+<tr><td width="10%">\S</td><td width="50%">空白文字以外。\s の反對です
+<a name="g_t_002f_005cd"></a><a name="index-_002f_005cd"></a></td></tr>
+<tr><td width="10%">\d</td><td width="50%">數字:</td><td width="40%">[0-9]
+<a name="g_t_002f_005cD"></a><a name="index-_002f_005cD"></a></td></tr>
+<tr><td width="10%">\D</td><td width="50%">數字以外:</td><td width="40%">[^0-9]
+<a name="g_t_002f_005cx"></a><a name="index-_002f_005cx"></a></td></tr>
+<tr><td width="10%">\x</td><td width="50%">16 進數字:</td><td width="40%">[0-9A-Fa-f]
+<a name="g_t_002f_005cX"></a><a name="index-_002f_005cX"></a></td></tr>
+<tr><td width="10%">\X</td><td width="50%">16 進數字以外:</td><td width="40%">[^0-9A-Fa-f]
+<a name="g_t_002f_005co"></a><a name="index-_002f_005co"></a></td></tr>
+<tr><td width="10%">\o</td><td width="50%">8 進數字:</td><td width="40%">[0-7]
+<a name="g_t_002f_005cO"></a><a name="index-_002f_005cO"></a></td></tr>
+<tr><td width="10%">\O</td><td width="50%">8 進數字以外:</td><td width="40%">[^0-7]
+<a name="g_t_002f_005cw"></a><a name="index-_002f_005cw"></a></td></tr>
+<tr><td width="10%">\w</td><td width="50%">單語を構成する文字:</td><td width="40%">[0-9A-Za-z_]
+<a name="g_t_002f_005cW"></a><a name="index-_002f_005cW"></a></td></tr>
+<tr><td width="10%">\W</td><td width="50%">單語を構成する文字以外:</td><td width="40%">[^0-9A-Za-z_]
+<a name="g_t_002f_005ch"></a><a name="index-_002f_005ch"></a></td></tr>
+<tr><td width="10%">\h</td><td width="50%">單語の先頭の文字:</td><td width="40%">[A-Za-z_]
+<a name="g_t_002f_005cH"></a><a name="index-_002f_005cH"></a></td></tr>
+<tr><td width="10%">\H</td><td width="50%">單語の先頭の文字以外:</td><td width="40%">[^A-Za-z_]
+<a name="g_t_002f_005ca"></a><a name="index-_002f_005ca"></a></td></tr>
+<tr><td width="10%">\a</td><td width="50%">英字:</td><td width="40%">[A-Za-z]
+<a name="g_t_002f_005cA"></a><a name="index-_002f_005cA"></a></td></tr>
+<tr><td width="10%">\A</td><td width="50%">英字以外:</td><td width="40%">[^A-Za-z]
+<a name="g_t_002f_005cl"></a><a name="index-_002f_005cl"></a></td></tr>
+<tr><td width="10%">\l</td><td width="50%">小文字英字:</td><td width="40%">[a-z]
+<a name="g_t_002f_005cL"></a><a name="index-_002f_005cL"></a></td></tr>
+<tr><td width="10%">\L</td><td width="50%">小文字英字以外:</td><td width="40%">[^a-z]
+<a name="g_t_002f_005cu"></a><a name="index-_002f_005cu"></a></td></tr>
+<tr><td width="10%">\u</td><td width="50%">大文字英字:</td><td width="40%">[A-Z]
+<a name="g_t_002f_005cU"></a><a name="index-_002f_005cU"></a></td></tr>
+<tr><td width="10%">\U</td><td width="50%">大文字英字以外:</td><td width="40%">[^A-Z]</td></tr>
+</table>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+これらのアトムは |<a href="#g_t_002f_005b_005d">/[]</a>| を使ふよりも高速です。
+</p></blockquote>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+&rsquo;<samp>ignorecase</samp>&rsquo;, &quot;\c&quot;, &quot;\C&quot; は文字クラスには影響しません。
+</p></blockquote>
+
+<a name="g_t_002f_005c_005f"></a><a name="E63"></a><a name="g_t_002f_005c_005fi"></a><a name="g_t_002f_005c_005fI"></a><a name="g_t_002f_005c_005fk"></a><a name="g_t_002f_005c_005fK"></a><a name="g_t_002f_005c_005ff"></a><a name="g_t_002f_005c_005fF"></a><a name="g_t_002f_005c_005fp"></a><a name="g_t_002f_005c_005fP"></a><a name="g_t_002f_005c_005fs"></a><a name="g_t_002f_005c_005fS"></a><a name="g_t_002f_005c_005fd"></a><a name="g_t_002f_005c_005fD"></a><a name="g_t_002f_005c_005fx"></a><a name="g_t_002f_005c_005fX"></a><a name="g_t_002f_005c_005fo"></a><a name="g_t_002f_005c_005fO"></a><a name="g_t_002f_005c_005fw"></a><a name="g_t_002f_005c_005fW"></a><a name="g_t_002f_005c_005fh"></a><a name="g_t_002f_005c_005fH"></a><a name="g_t_002f_005c_005fa"></a><a name="g_t_002f_005c_005fA"></a><a name="g_t_002f_005c_005fl"></a><a name="g_t_002f_005c_005fL"></a><a name="g_t_002f_005c_005fu"></a><a name="g_t_002f_005c_005fU"></a><a name="index-_002f_005c_005f"></a>
+<a name="index-E63"></a>
+<a name="index-_002f_005c_005fi"></a>
+<a name="index-_002f_005c_005fI"></a>
+<a name="index-_002f_005c_005fk"></a>
+<a name="index-_002f_005c_005fK"></a>
+<a name="index-_002f_005c_005ff"></a>
+<a name="index-_002f_005c_005fF"></a>
+<a name="index-_002f_005c_005fp"></a>
+<a name="index-_002f_005c_005fP"></a>
+<a name="index-_002f_005c_005fs"></a>
+<a name="index-_002f_005c_005fS"></a>
+<a name="index-_002f_005c_005fd"></a>
+<a name="index-_002f_005c_005fD"></a>
+<a name="index-_002f_005c_005fx"></a>
+<a name="index-_002f_005c_005fX"></a>
+<a name="index-_002f_005c_005fo"></a>
+<a name="index-_002f_005c_005fO"></a>
+<a name="index-_002f_005c_005fw"></a>
+<a name="index-_002f_005c_005fW"></a>
+<a name="index-_002f_005c_005fh"></a>
+<a name="index-_002f_005c_005fH"></a>
+<a name="index-_002f_005c_005fa"></a>
+<a name="index-_002f_005c_005fA"></a>
+<a name="index-_002f_005c_005fl"></a>
+<a name="index-_002f_005c_005fL"></a>
+<a name="index-_002f_005c_005fu"></a>
+<a name="index-_002f_005c_005fU"></a>
+</dd>
+<dt>\_x</dt>
+<dd><p>x は上記の文字クラスのどれかです。文字クラスと改行がマッチします。
+</p>
+<p>(文字クラスここまで)
+</p>
+<a name="g_t_002f_005ce"></a><a name="index-_002f_005ce"></a>
+</dd>
+<dt>\e</dt>
+<dd><p>&lt;Esc&gt; にマッチします
+<a name="g_t_002f_005ct"></a><a name="index-_002f_005ct"></a>
+</p></dd>
+<dt>\t</dt>
+<dd><p>&lt;Tab&gt; にマッチします
+<a name="g_t_002f_005cr"></a><a name="index-_002f_005cr"></a>
+</p></dd>
+<dt>\r</dt>
+<dd><p>&lt;CR&gt; にマッチします
+<a name="g_t_002f_005cb"></a><a name="index-_002f_005cb"></a>
+</p></dd>
+<dt>\b</dt>
+<dd><p>&lt;BS&gt; にマッチします
+<a name="g_t_002f_005cn"></a><a name="index-_002f_005cn"></a>
+</p></dd>
+<dt>\n</dt>
+<dd><p>改行にマッチします。バッファのテキストではなく、文字列 (|<a href="eval_002etxt.html#expr_002dstring">expr-string</a>|) とマッチングするときは、リテラルの改行文字がマッチします。
+</p>
+<a name="g_t_002f_007e"></a><a name="g_t_002f_005c_007e"></a><a name="index-_002f_007e"></a>
+<a name="index-_002f_005c_007e"></a>
+</dd>
+<dt>~</dt>
+<dd><p>最後に置換された文字列とマッチします
+</p>
+<a name="g_t_002f_005c_0028"></a><a name="g_t_002f_005c_0028_005c_0029"></a><a name="g_t_002f_005c_0029"></a><a name="index-_002f_005c_0028"></a>
+<a name="index-_002f_005c_0028_005c_0029"></a>
+<a name="index-_002f_005c_0029"></a>
+</dd>
+<dt>\(\)</dt>
+<dd><p>パターンをカッコでまとめます
+<a name="E51"></a><a name="E54"></a><a name="E55"></a><a name="E872"></a><a name="E873"></a><a name="index-E51"></a>
+<a name="index-E54"></a>
+<a name="index-E55"></a>
+<a name="index-E872"></a>
+<a name="index-E873"></a>
+たとへば、&quot;\(^a\)&quot; は行頭の &rsquo;a&rsquo; にマッチします。
+</p>
+<a name="g_t_002f_005c1"></a><a name="E65"></a><a name="index-_002f_005c1"></a>
+<a name="index-E65"></a>
+</dd>
+<dt>\1</dt>
+<dd><p>\( と \) に圍まれた最初の部分正規表現がマッチした文字列と、同じ文字列にマッチします。
+</p>
+<p>たとへば、&quot;\([a-z]\).\1&quot; は &quot;ata&quot;, &quot;ehe&quot;, &quot;tot&quot; などにマッチします。
+<a name="g_t_002f_005c2"></a><a name="index-_002f_005c2"></a>
+</p></dd>
+<dt>\2</dt>
+<dd><p>&quot;\1&quot; と同じですが、2 番目の部分正規表現を使ひます
+<a name="g_t_002f_005c3"></a><a name="index-_002f_005c3"></a>
+</p></dd>
+<dt>...</dt>
+<dd><a name="g_t_002f_005c9"></a><a name="index-_002f_005c9"></a>
+</dd>
+<dt>\9</dt>
+<dd><p>&quot;\1&quot; と同じですが、9 番目の部分正規表現を使ひます
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+部分正規表現の番號は、最初の &quot;\(&quot; から數へて、左から右へ、順番に番號が付けられます。マッチする順番ではありません。
+</p></blockquote>
+
+<a name="g_t_002f_005c_0025_0028_005c_0029"></a><a name="g_t_002f_005c_0025_0028"></a><a name="E53"></a><a name="index-_002f_005c_0025_0028_005c_0029"></a>
+<a name="index-_002f_005c_0025_0028"></a>
+<a name="index-E53"></a>
+</dd>
+<dt>\%(\)</dt>
+<dd><p>パターンをカッコでまとめます
+</p>
+<p>\(\) と同じですが、部分正規表現としてカウントされません。たくさんのグループを作ることができますし、處理が少し高速です。
+</p>
+</dd>
+<dt>x</dt>
+<dd><p>特別な意味のない文字は、その文字自身とマッチします
+</p>
+<a name="g_t_002f_005c"></a><a name="g_t_002f_005c_005c"></a><a name="index-_002f_005c"></a>
+<a name="index-_002f_005c_005c"></a>
+</dd>
+<dt>\x</dt>
+<dd><p>バックスラッシュと文字の組合せで、現在、特別な意味を持つてゐない文字は、將來の擴張のために豫約されてゐます。
+</p>
+<a name="g_t_002f_005b_005d"></a><a name="g_t_002f_005c_005b_005d"></a><a name="g_t_002f_005c_005f_005b_005d"></a><a name="g_t_002fcollection"></a><a name="index-_002f_005b_005d"></a>
+<a name="index-_002f_005c_005b_005d"></a>
+<a name="index-_002f_005c_005f_005b_005d"></a>
+<a name="index-_002fcollection"></a>
+</dd>
+<dt>[] (&rsquo;<samp>nomagic</samp>&rsquo; のときは \[]) または</dt>
+<dt>\_[]</dt>
+<dd><p>コレクションです。複數の文字を角カッコで圍みます。コレクションに含まれる任意の 1 文字とマッチします。
+</p><table>
+<tr><td width="30%">Example</td><td width="70%">マッチするもの</td></tr>
+<tr><td width="30%">[xyz]</td><td width="70%">&rsquo;x&rsquo;、&rsquo;y&rsquo;、&rsquo;z&rsquo; のどれか</td></tr>
+<tr><td width="30%">[a-zA-Z]$</td><td width="70%">行末の英字</td></tr>
+<tr><td width="30%">\c[a-z]$</td><td width="70%">同上</td></tr>
+<tr><td width="30%">[А-яЁё]</td><td width="70%">ロシア語アルファベット (utf-8 と cp1251)</td></tr>
+</table>
+
+<a name="g_t_002f_005b_005cn_005d"></a><a name="index-_002f_005b_005cn_005d"></a>
+<p>&quot;\_&quot; を付けた場合、コレクションは改行も含みます。コレクションに &quot;\n&quot; を含めた場合と同じですが、&quot;\_&quot; を付けた場合は、コレクションの先頭が &quot;^&quot; の場合でも改行にマッチします。つまり、&quot;\_[^ab]&quot; は &quot;a&quot; や &quot;b&quot; 以外の文字と改行にマッチします。
+</p>
+<p>これは Vi 互換です。&quot;\_&quot; や &quot;\n&quot; を使はなければ、改行にはマッチしません。
+<a name="E769"></a><a name="index-E769"></a>
+&rsquo;]&rsquo; がない場合、Vim はエラーを表示せず、コレクションが使はれてゐるのではないと判斷します。&rsquo;[&rsquo; を檢索するときに便利です。しかし、Vim 內部での檢索では E769 のエラーがでます。そして、&lsquo;<code>:substitute</code>&lsquo; コマンドでコマンド全體がパターンとなることに注意してください。例へば、&quot;:s/[/x/&quot; は &quot;[/x&quot; を檢索します。置換はおこなはれません。&quot;[&quot; を檢索して &quot;x&quot; に置換するのではありません！
+</p>
+<a name="E944"></a><a name="E945"></a><a name="index-E944"></a>
+<a name="index-E945"></a>
+<p>コレクション文字列の先頭が &quot;^&quot; の場合、コレクションに含まれてゐる文字以外の文字がマッチします。&quot;[^xyz]&quot; は &rsquo;x&rsquo;、&rsquo;y&rsquo;、&rsquo;z&rsquo; 以外の文字にマッチします。
+</p><ul>
+<li> 2 つの文字で &rsquo;-&rsquo; を挾んで、ASCII 文字の範圍を指定できます。たとへば、&quot;[0-9]&quot; はすべての數字にマッチします。例へば [c-a] のやうに最初の文字が後ろの文字よりも大きい場合は E944 が發生します。非ASCII 文字も指定できますが、古い正規表現エンジンでは 2 つの文字の値の差が 256 を超えてはなりません。例へば re=1 をセットした後に [\u3000-\u4000] で檢索すると E945 が發生します。先頭に \%#=2 を追加することでこれを囘避できます。
+</li><li> 文字クラス表現を使つて、その文字クラスが含んでゐる文字を取り込むことができます。次の文字クラスがサポートされてゐます。
+<table>
+<tr><td width="20%">名前</td><td width="20%">函數</td><td width="60%">含んでゐるもの
+<a name="g_t_005b_003aalnum_003a_005d"></a><a name="index-_005b_003aalnum_003a_005d"></a></td></tr>
+<tr><td width="20%">[:alnum:]</td><td width="20%">isalnum</td><td width="60%">ASCII の英數字
+<a name="g_t_005b_003aalpha_003a_005d"></a><a name="index-_005b_003aalpha_003a_005d"></a></td></tr>
+<tr><td width="20%">[:alpha:]</td><td width="20%">isalpha</td><td width="60%">ASCII の英字
+<a name="g_t_005b_003ablank_003a_005d"></a><a name="index-_005b_003ablank_003a_005d"></a></td></tr>
+<tr><td width="20%">[:blank:]</td><td width="20%"></td><td width="60%">スペースと Tab 文字
+<a name="g_t_005b_003acntrl_003a_005d"></a><a name="index-_005b_003acntrl_003a_005d"></a></td></tr>
+<tr><td width="20%">[:cntrl:]</td><td width="20%">iscntrl</td><td width="60%">コントロール文字
+<a name="g_t_005b_003adigit_003a_005d"></a><a name="index-_005b_003adigit_003a_005d"></a></td></tr>
+<tr><td width="20%">[:digit:]</td><td width="20%"></td><td width="60%">10 進數字
+<a name="g_t_005b_003agraph_003a_005d"></a><a name="index-_005b_003agraph_003a_005d"></a></td></tr>
+<tr><td width="20%">[:graph:]</td><td width="20%">isgraph</td><td width="60%">スペース以外の印字可能文字
+<a name="g_t_005b_003alower_003a_005d"></a><a name="index-_005b_003alower_003a_005d"></a></td></tr>
+<tr><td width="20%">[:lower:]</td><td width="20%">(1)</td><td width="60%">小文字英字 (&rsquo;<samp>ignorecase</samp>&rsquo; がオンのときはすべての英字)
+<a name="g_t_005b_003aprint_003a_005d"></a><a name="index-_005b_003aprint_003a_005d"></a></td></tr>
+<tr><td width="20%">[:print:]</td><td width="20%">(2)</td><td width="60%">スペースを含む印字可能文字
+<a name="g_t_005b_003apunct_003a_005d"></a><a name="index-_005b_003apunct_003a_005d"></a></td></tr>
+<tr><td width="20%">[:punct:]</td><td width="20%">ispunct</td><td width="60%">ASCII の句讀點
+<a name="g_t_005b_003aspace_003a_005d"></a><a name="index-_005b_003aspace_003a_005d"></a></td></tr>
+<tr><td width="20%">[:space:]</td><td width="20%"></td><td width="60%">空白文字 (スペース、Tab、改ページ文字)
+<a name="g_t_005b_003aupper_003a_005d"></a><a name="index-_005b_003aupper_003a_005d"></a></td></tr>
+<tr><td width="20%">[:upper:]</td><td width="20%">(3)</td><td width="60%">大文字英字 (&rsquo;<samp>ignorecase</samp>&rsquo; がオンのときはすべての英字)
+<a name="g_t_005b_003axdigit_003a_005d"></a><a name="index-_005b_003axdigit_003a_005d"></a></td></tr>
+<tr><td width="20%">[:xdigit:]</td><td width="20%"></td><td width="60%">16 進數字
+<a name="g_t_005b_003areturn_003a_005d"></a><a name="index-_005b_003areturn_003a_005d"></a></td></tr>
+<tr><td width="20%">[:return:]</td><td width="20%"></td><td width="60%">&lt;CR&gt; 文字
+<a name="g_t_005b_003atab_003a_005d"></a><a name="index-_005b_003atab_003a_005d"></a></td></tr>
+<tr><td width="20%">[:tab:]</td><td width="20%"></td><td width="60%">&lt;Tab&gt; 文字
+<a name="g_t_005b_003aescape_003a_005d"></a><a name="index-_005b_003aescape_003a_005d"></a></td></tr>
+<tr><td width="20%">[:escape:]</td><td width="20%"></td><td width="60%">&lt;Esc&gt; 文字
+<a name="g_t_005b_003abackspace_003a_005d"></a><a name="index-_005b_003abackspace_003a_005d"></a></td></tr>
+<tr><td width="20%">[:backspace:]</td><td width="20%"></td><td width="60%">&lt;BS&gt; 文字
+<a name="g_t_005b_003aident_003a_005d"></a><a name="index-_005b_003aident_003a_005d"></a></td></tr>
+<tr><td width="20%">[:ident:]</td><td width="20%"></td><td width="60%">識別子文字 (&quot;\i&quot; と同じ)
+<a name="g_t_003akeyword_003a"></a><a name="index-_003akeyword_003a"></a></td></tr>
+<tr><td width="20%">[:keyword:]</td><td width="20%"></td><td width="60%">キーワード文字 (&quot;\k&quot; と同じ)
+<a name="g_t_003afname_003a"></a><a name="index-_003afname_003a"></a></td></tr>
+<tr><td width="20%">[:fname:]</td><td width="20%"></td><td width="60%">ファイル名の文字 (&quot;\f&quot; と同じ)</td></tr>
+</table>
+<p>角カッコで圍んだ文字クラス表現を、コレクションの角カッコ內に書きます。たとへば、&quot;[-./[:alnum:]_~]\+&quot; は、UNIX のファイル名として妥當なパターンです。このパターンは &rsquo;-&rsquo;, &rsquo;.&rsquo;, &rsquo;/&rsquo;, 英數字, &rsquo;_&rsquo;, &rsquo;~&rsquo; のどの文字の組合せでも、1 文字以上の文字列にマッチします。
+</p>
+<p>これらのものは、8 ビット文字のみマッチします。ただし、新しい正規表現エンジンを使用してゐる場合は [:lower:] と [:upper:] のみマルチバイト文字にも作用します。|<a href="#two_002dengines">two-engines</a>| を參照。將來的にはこれらの項目は、マルチバイト文字に作用するやうになるでせう。現狀 &quot;alpha&quot; の全てを得るには [[:lower:][:upper:]] を使ふ事ができます。
+</p>
+<p>&quot;函數&quot; 列はどのライブラリ函數が使はれるかを示してゐます。實裝はシステムに依存します。特殊なものは以下の通りです:
+</p><ul>
+<li> (1) ASCII には islower()、それ以外には、Vim の組み込みルールが使用されます。
+</li><li> (2) Vim の組み込みルールが使用されます
+</li><li> (3) (1)と同じですが、代はりに isupper() が使用されます。
+</li></ul>
+<a name="g_t_002f_005b_005b_003d"></a><a name="g_t_005b_003d_003d_005d"></a></li><li> <a name="index-_002f_005b_005b_003d"></a>
+<a name="index-_005b_003d_003d_005d"></a>
+等價クラス。これはその文字とほぼ同じ文字にマッチします。例へば、アクセントを無視するなど。これは Unicode, latin1, latin9 でのみ機能します。次のやうに書きます:
+<pre class="verbatim">[=a=]
+</pre><a name="g_t_002f_005b_005b_002e"></a><a name="g_t_005b_002e_002e_005d"></a></li><li> <a name="index-_002f_005b_005b_002e"></a>
+<a name="index-_005b_002e_002e_005d"></a>
+照合要素。現在は中に一文字だけ指定できます:
+<pre class="verbatim">[.a.]
+</pre><a name="g_t_002f_005c_005d"></a><a name="index-_002f_005c_005d"></a>
+<p>リテラル文字の &rsquo;]&rsquo;、&rsquo;^&rsquo;、&rsquo;-&rsquo;、&rsquo;\&rsquo; をコレクションに含めるには、バックスラッシュを前置して、&quot;[xyz\]]&quot;、&quot;[\^xyz]&quot;、&quot;[xy\-z]&quot;、&quot;[xyz\\]&quot; と書きます。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+POSIX ではこのやうなバックスラッシュの使ひ方はサポートされてゐません。
+</p></blockquote>
+<p>&rsquo;]&rsquo; は、コレクションの先頭、または &rsquo;^&rsquo; の直後にそのまま書いて、&quot;[]xyz]&quot; や &quot;[^]xyz]&quot; とすることができます。
+</p>
+<p>&rsquo;-&rsquo; も、先頭や末尾にそのまま書いて &quot;[-xyz]&quot;, &quot;[^-xyz]&quot;, &quot;[xyz-]&quot; とすることができます。&rsquo;\&rsquo; も指定文字 &quot;^]-\bdertnoUux&quot; 以外の文字の前ならそのまま書けます。&quot;[\xyz]&quot; は、&rsquo;\&rsquo;, &rsquo;x&rsquo;, &rsquo;y&rsquo;, &rsquo;z&rsquo; の文字にマッチします。しかし、常に &quot;\\&quot; と書くやうにした方がいいでせう。&rsquo;\&rsquo; と何かの文字の組合せは將來的に擴張に使はれる可能性があります。
+</p></li><li> 末尾の ] を省略してもエラーにはなりません。&quot;[]&quot; は &quot;[]]&quot; と同じ意味になり &rsquo;]&rsquo; 文字にマッチします。
+</li><li> &rsquo;<samp>cpoptions</samp>&rsquo; が &rsquo;<var>l</var>&rsquo; フラグを含んでゐない場合、次のものが特別に解釋されます:
+<table>
+<tr><td width="10%">\e</td><td width="90%">&lt;Esc&gt;</td></tr>
+<tr><td width="10%">\t</td><td width="90%">&lt;Tab&gt;</td></tr>
+<tr><td width="10%">\r</td><td width="90%">&lt;CR&gt; (改行文字ではありません)</td></tr>
+<tr><td width="10%">\b</td><td width="90%">&lt;BS&gt;</td></tr>
+<tr><td width="10%">\n</td><td width="90%">改行。|<a href="#g_t_002f_005b_005cn_005d">/[\n]</a>| 參照。</td></tr>
+<tr><td width="10%">\d123</td><td width="90%">10 進數の文字番號</td></tr>
+<tr><td width="10%">\o40</td><td width="90%">8 進數の文字番號 (最大値 0377)</td></tr>
+<tr><td width="10%">\x20</td><td width="90%">16 進數の文字番號 (最大値 0xff)</td></tr>
+<tr><td width="10%">\u20AC</td><td width="90%">16 進數のマルチバイト文字番號 (最大値 0xffff)</td></tr>
+<tr><td width="10%">\U1234</td><td width="90%">16 進數のマルチバイト文字番號 (最大値 0xffffffff)</td></tr>
+</table>
+<blockquote>
+<p><strong>Note:</strong> <br>
+他のバックスラッシュによる特殊文字の表記は、[] の中では機能しません。
+</p></blockquote>
+</li><li> コレクションを使つたマッチングは遲くなることがあります。コレクションの文字と、テキストの文字を、それぞれ 1 文字ずつ比較する必要があるからです。同じ意味のアトムが他にある場合は、それを使つてください。たとへば、&quot;\d&quot; は &quot;[0-9]&quot; よりも速く、同じ文字にマッチします。ただし新しい |<a href="#NFA">NFA</a>| 正規表現エンジンにおけるこれらの取り扱ひは、古いものよりも高速です。
+</li></ul>
+
+<a name="g_t_002f_005c_0025_005b_005d"></a><a name="E69"></a><a name="E70"></a><a name="E369"></a><a name="index-_002f_005c_0025_005b_005d"></a>
+<a name="index-E69"></a>
+<a name="index-E70"></a>
+<a name="index-E369"></a>
+</dd>
+<dt>\%[]</dt>
+<dd><p>任意にマッチするアトム列です。これは常にマッチします。アトム單位で最長一致し、最初にアトムがマッチしなかつたところでストップします。例:
+</p><pre class="verbatim">/r\%[ead]
+</pre><p>これは、&quot;r&quot;, &quot;re&quot;, &quot;rea&quot;, &quot;read&quot; にマッチします。1 番長いマッチが使はれます。Ex コマンドの &quot;function&quot; は、&quot;fu&quot; が必須で、&quot;nction&quot; は省略可能ですが、次の例は、そのやうなものにマッチします:
+</p><pre class="verbatim">/\&lt;fu\%[nction]\&gt;
+</pre><p>&quot;full&quot; の &quot;fu&quot; にマッチするやうなことがないやうに、單語末尾のアトム &quot;\&gt;&quot; が使はれてゐます。使ふ機會はあまりないかもしれませんが、普通の文字以外のアトムを使つて、さらに複雜なものも表現できます。例:
+</p><pre class="verbatim">/\&lt;r\%[[eo]ad]\&gt;
+</pre><p>これは、&quot;r&quot;, &quot;re&quot;, &quot;ro&quot;, &quot;rea&quot;, &quot;roa&quot;, &quot;read&quot;, &quot;road&quot; にマッチします。[] の中では \(\), \%(\), \z(\) は使へません。\%[] はネストできません。&quot;[&quot; を含めるには &quot;[[]&quot; を、&quot;]&quot; を含めるには &quot;[]]&quot; を使つてください。例:
+</p><pre class="verbatim">/index\%[[[]0[]]]
+</pre><p>これは &quot;index&quot;, &quot;index[&quot;, &quot;index[0&quot;, &quot;index[0]&quot; にマッチします。
+</p>
+<p>{|<a href="various_002etxt.html#g_t_002bsyntax">+syntax</a>| が有效な場合のみ利用可能}
+</p>
+<a name="g_t_002f_005c_0025d"></a><a name="g_t_002f_005c_0025x"></a><a name="g_t_002f_005c_0025o"></a><a name="g_t_002f_005c_0025u"></a><a name="g_t_002f_005c_0025U"></a><a name="E678"></a><a name="index-_002f_005c_0025d"></a>
+<a name="index-_002f_005c_0025x"></a>
+<a name="index-_002f_005c_0025o"></a>
+<a name="index-_002f_005c_0025u"></a>
+<a name="index-_002f_005c_0025U"></a>
+<a name="index-E678"></a>
+</dd>
+<dt>\%d123</dt>
+<dd><p>10 進數で指定した文字にマッチします。このアトムの後ろには數字以外の文字を置いてください。
+</p></dd>
+<dt>\%o40</dt>
+<dd><p>8 進數で指定した文字にマッチします (最大値 0377)。040 より小さい値を指定するとき、このアトムの後ろには 8 進數字以外の文字か、數字以外の文字を置いてください。
+</p></dd>
+<dt>\%x2a</dt>
+<dd><p>16 進數で指定した文字にマッチします。2 桁まで。
+</p></dd>
+<dt>\%u20AC</dt>
+<dd><p>16 進數で指定した文字にマッチします。4 桁まで。
+</p></dd>
+<dt>\%U1234abcd</dt>
+<dd><p>16 進數で指定した文字にマッチします。8 桁まで。0x7fffffff まで。
+</p></dd>
+</dl>
+
+<a name="g_t_002fignorecase"></a><a name="index-_002fignorecase"></a>
+<a name="index-Da-WenZi-toXiao-WenZi-woWu-Shi-suru"></a>
+<a name="g_t7_002e-Da-WenZi-toXiao-WenZi-woWu-Shi-suru"></a>
+<h3 class="section">7. 大文字と小文字を無視する</h3>
+
+<p>オプション &rsquo;<samp>ignorecase</samp>&rsquo; がオンの場合、普通の英字の大文字と小文字の違ひは無視されます。&rsquo;<samp>smartcase</samp>&rsquo; がオンの場合、パターンが大文字を含んでゐないときだけ、大文字と小文字が無視されます。
+<a name="g_t_002f_005cc"></a><a name="g_t_002f_005cC"></a><a name="index-_002f_005cc"></a>
+<a name="index-_002f_005cC"></a>
+&quot;\c&quot; はパターン中のどこにでも置くことができ、パターン全體が、&rsquo;<samp>ignorecase</samp>&rsquo; をオンにした狀態で處理されます。實際の &rsquo;<samp>ignorecase</samp>&rsquo; と &rsquo;<samp>smartcase</samp>&rsquo; の設定は無視されます。&quot;\C&quot; は &quot;\c&quot; の反對の意味で、大文字と小文字は必ず區別されます。
+</p>
+<p>{Vim だけが \c と \C をサポートしてゐます}
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+&rsquo;<samp>ignorecase</samp>&rsquo;, &quot;\c&quot;, &quot;\C&quot; は文字クラスには作用しません。
+</p></blockquote>
+
+<p>例:
+</p><table>
+<tr><td>パターン</td><td>&rsquo;<samp>ignorecase</samp>&rsquo;</td><td>&rsquo;<samp>smartcase</samp>&rsquo;</td><td>マッチするもの</td></tr>
+<tr><td>foo</td><td>off</td><td>-</td><td>foo</td></tr>
+<tr><td>foo</td><td>on</td><td>-</td><td>foo Foo FOO</td></tr>
+<tr><td>Foo</td><td>on</td><td>off</td><td>foo Foo FOO</td></tr>
+<tr><td>Foo</td><td>on</td><td>on</td><td>Foo</td></tr>
+<tr><td>\cfoo</td><td>-</td><td>-</td><td>foo Foo FOO</td></tr>
+<tr><td>foo\C</td><td>-</td><td>-</td><td>foo</td></tr>
+</table>
+
+<a name="NL_002dused_002dfor_002dNul"></a><a name="index-NL_002dused_002dfor_002dNul"></a>
+<p>技術的な說明:
+</p>
+<p>ファイル中の &lt;Nul&gt; 文字は、&lt;NL&gt; 文字としてメモリに保存され、ディスプレイには &quot;^@&quot; と表示されます。これは、ファイルを讀み書きする時に變換されます。檢索パターンに &lt;Nul&gt; をマッチさせるには、<kbd>CTRL-@</kbd> か &quot;CTRL-V 000&quot; を入力します。この動作はそれほど違和感がないはずです。
+</p>
+<p>檢索パターンの &lt;Nul&gt; 文字は內部で &lt;NL&gt; に變換されてゐます。<kbd>CTRL-V</kbd> <kbd>CTRL-J</kbd> をタイプした場合も &lt;NL&gt; が入力されるので、ファイル中の &lt;Nul&gt; を檢索するのに使へますが、この動作は不自然に感じるかもしれません。
+</p>
+<a name="CR_002dused_002dfor_002dNL"></a><a name="index-CR_002dused_002dfor_002dNL"></a>
+<p>&rsquo;<samp>fileformat</samp>&rsquo; が &quot;<var>mac</var>&quot; の場合、ファイル中の &lt;NL&gt; は內部では &lt;CR&gt; で保存され、テキストの中では &quot;^J&quot; として表示されます。他では、&lt;NL&gt; と &lt;Nul&gt; の場合と同じやうに扱はれます。
+</p>
+<p>スクリプトでは、パターン中の &lt;NL&gt; は、文字列中の &lt;NL&gt; とマッチします。&quot;\n&quot; (バックスラッシュと n) は &lt;NL&gt; とはマッチしません。バッファ中のテキストとのマッチの場合のみ、&quot;\n&quot; は改行とマッチします。
+</p>
+<a name="pattern_002dmulti_002dbyte"></a><a name="index-pattern_002dmulti_002dbyte"></a>
+<p>マルチバイト文字を使つたパターンは、たいていは、ユーザーが期待したとほりに機能します。しかし、不正なバイトでトラブルが起こることもあります。不正なバイトを含むパターンはおそらく、決してマッチしません。
+</p>
+<a name="patterns_002dcomposing"></a><a name="index-patterns_002dcomposing"></a>
+<a name="index-He-Cheng-WenZi-"></a>
+<a name="g_t8_002e-He-Cheng-WenZi-"></a>
+<h3 class="section">8. 合成文字</h3>
+
+<a name="g_t_002f_005cZ"></a><a name="index-_002f_005cZ"></a>
+<p>パターンに &quot;\Z&quot; が含まれてゐる場合、すべての合成文字は無視されます。そのため、どの合成文字が、いくつ結合されてゐても、基底文字とマッチするだけでマッチします。&rsquo;<samp>encoding</samp>&rsquo; が &quot;<var>utf-8</var>&quot; の場合だけ使用します。例外: パターンが 1 つか複數の合成文字で開始してゐる場合は、それらはマッチします。
+<a name="g_t_002f_005c_0025C"></a><a name="index-_002f_005c_0025C"></a>
+すべての合成文字をスキップするには &quot;\%C&quot; を使ひます。例へば、パターン &quot;a&quot; は &quot;càt&quot; (a に 0x0300 が合成されてゐる) にはマッチしませんが、&quot;a\%C&quot; にはマッチします。Note: これは &quot;cát&quot; (á は 0xe1 といふ文字で、合成文字を持つてゐない) にはマッチしません。&quot;cat&quot; (a のみ) にはマッチします。
+</p>
+<p>合成文字と合成されないアイテムの直後に合成文字がある場合、その合成文字を含んでゐるすべての文字がマッチします。
+</p>
+<p>{譯注: x が合成文字として /x/  /\(x\)/  /\zsx/ など}
+</p>
+<p>ドットと合成文字を使ふと、どの文字に合成されてゐても、その合成文字にマッチします。
+</p>
+<p>{譯注: x が合成文字として /.x/ と書く}
+</p>
+<p>合成文字の順番は關係ありません。また、指定した以上の合成文字がテキストにあつても、それはマッチします。ただし、パターンで指定したすべての合成文字がテキストに含まれてゐる必要があります。
+</p>
+<p>例へば B が基底文字で x と y が合成文字として:
+</p><table>
+<tr><td width="30%">パターン</td><td width="30%">テキスト</td><td width="40%">マッチ</td></tr>
+<tr><td width="30%">Bxy</td><td width="30%">Bxy</td><td width="40%">yes (完全マッチ)</td></tr>
+<tr><td width="30%">Bxy</td><td width="30%">Byx</td><td width="40%">yes (順番違ひ)</td></tr>
+<tr><td width="30%">Bxy</td><td width="30%">By</td><td width="40%">no (x がない)</td></tr>
+<tr><td width="30%">Bxy</td><td width="30%">Bx</td><td width="40%">no (y がない)</td></tr>
+<tr><td width="30%">Bx</td><td width="30%">Bx</td><td width="40%">yes (完全マッチ)</td></tr>
+<tr><td width="30%">Bx</td><td width="30%">By</td><td width="40%">no (x がない)</td></tr>
+<tr><td width="30%">Bx</td><td width="30%">Bxy</td><td width="40%">yes (餘計な y は無視される)</td></tr>
+<tr><td width="30%">Bx</td><td width="30%">Byx</td><td width="40%">yes (餘計な y は無視される)</td></tr>
+</table>
+
+<a name="perl_002dpatterns"></a><a name="index-perl_002dpatterns"></a>
+<a name="index-Perl-nopatantonoBi-Jiao-"></a>
+<a name="g_t9_002e-Perl-nopatantonoBi-Jiao-"></a>
+<h3 class="section">9. Perl のパターンとの比較</h3>
+
+<p>Vim と Perl の正規表現は、とても似てゐて、同じ事ができます。違ひは表記だけです。違ひの要約を示します:
+</p>
+<table>
+<thead><tr><th width="50%">效果</th><th width="25%">Vim の表記</th><th width="25%">Perl の表記</th></tr></thead>
+<tr><td width="50%">大文字と小文字を區別しない</td><td width="25%">\c</td><td width="25%">(?i)</td></tr>
+<tr><td width="50%">大文字と小文字を區別する</td><td width="25%">\C</td><td width="25%">(?-i)</td></tr>
+<tr><td width="50%">後方參照しないグループ</td><td width="25%">\%(atom\)</td><td width="25%">(?:atom)</td></tr>
+<tr><td width="50%">最短一致の量指定子</td><td width="25%">\{-n,m}</td><td width="25%">*?, +?, ??, {}?</td></tr>
+<tr><td width="50%">幅ゼロの肯定先讀み</td><td width="25%">atom\@=</td><td width="25%">(?=atom)</td></tr>
+<tr><td width="50%">幅ゼロの否定先讀み</td><td width="25%">atom\@!</td><td width="25%">(?!atom)</td></tr>
+<tr><td width="50%">幅ゼロの肯定後讀み</td><td width="25%">atom\@&lt;=</td><td width="25%">(?&lt;=atom)</td></tr>
+<tr><td width="50%">幅ゼロの否定後讀み</td><td width="25%">atom\@&lt;!</td><td width="25%">(?&lt;!atom)</td></tr>
+<tr><td width="50%">强慾な量指定子</td><td width="25%">atom\@&gt;</td><td width="25%">(?&gt;atom)</td></tr>
+</table>
+
+<p>Vim と Perl では文字列中の改行の扱ひが少し違ひます:
+</p>
+<p>Perl では、&rsquo;^&rsquo; と &rsquo;$&rsquo; はテキストの最先頭と最末尾にマッチしますが、&rsquo;m&rsquo; フラグを使ふと、テキストの中閒の改行にもマッチするやうになります。&rsquo;s&rsquo; フラグを使ふと、&rsquo;.&rsquo; が改行にもマッチするやうなります。&rsquo;m&rsquo; と &rsquo;s&rsquo; のフラグは、上記の (?i) フラグのやうに、パターン中で設定することもできます。
+</p>
+<p>Vim では、&rsquo;^&rsquo; と &rsquo;$&rsquo; は常に中閒の改行にもマッチします。最先頭と最末尾にはそれぞれ、&rsquo;\%^&rsquo; と &rsquo;\%$&rsquo; がマッチします。Perl の &rsquo;s&rsquo; フラグに對應するのは &rsquo;\_&rsquo; 修飾子です。&rsquo;.&rsquo; や文字クラスの前に &rsquo;\_&rsquo; を付けると、改行にもマッチするやうになります。
+</p>
+<p>次のものは Perl だけの機能です:
+</p><ul>
+<li> 正規表現中で任意のコードを實行する: (?{perl code})
+</li><li> 條件式: (?(condition)true-expr|false-expr)
+</li></ul>
+
+<p>次のものは Vim だけの機能です:
+</p><ul>
+<li> パターンのマジックを變更する: \v \V \m \M (バックスラッシュだらけになるのを防げます)
+</li><li> 任意にマッチするアトム列: \%[atoms]
+</li><li> \&amp; (&quot;\&amp;&quot; と &quot;\|&quot; は、&quot;and&quot; と &quot;or&quot; の關係です。複數のブランチを同じ場所でマッチさせることができます)
+</li><li> 行や列を指定してマッチングする: \%5l \%5c \%5v
+</li><li> 正規表現にマッチしたものとして返される範圍を設定する: \zs \ze
+</li></ul>
+
+<a name="match_002dhighlight"></a><a name="index-match_002dhighlight"></a>
+<a name="index-matutisitatekisutowoQiang-Diao-suru"></a>
+<a name="g_t10_002e-matutisitatekisutowoQiang-Diao-suru"></a>
+<h3 class="section">10. マッチしたテキストを强調する</h3>
+
+<a name="g_t_003amat"></a><a name="g_t_003amatch"></a><a name="index-_003amat"></a>
+<a name="index-_003amatch"></a>
+<dl compact="compact">
+<dt>:mat[ch] {group} /{pattern}/</dt>
+<dd><p>カレントウィンドウ內で强調表示するパターンを定義します。强調には {group} が使はれます。例:
+</p><div class="example">
+<pre class="example">:highlight MyGroup ctermbg=green guibg=green
+:match MyGroup /TODO/
+</pre></div>
+<p>{pattern} の區切りには // 以外の文字を使ふことができます。&rsquo;&quot;&rsquo; や &rsquo;|&rsquo; などの特別な文字を使ふときは注意してください。
+</p>
+<p>{group} は、コマンドを實行する前に定義しておく必要があります。
+</p>
+<p>{group} の强調は、&rsquo;<samp>hlsearch</samp>&rsquo; や構文强調 (&rsquo;<samp>syntax</samp>&rsquo; 參照) の强調よりも優先されます。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+&rsquo;<samp>hlsearch</samp>&rsquo; の强調はすべてのウィンドウに適用されますが、&quot;:match&quot; はカレントウィンドウだけです。ウィンドウのバッファを切り替へても、强調表示は維持されます。
+</p></blockquote>
+
+<p>&rsquo;<samp>ignorecase</samp>&rsquo; の設定は使はれません。大文字と小文字は區別されます。大文字と小文字の違ひを無視するには、|<a href="#g_t_002f_005cc">/\c</a>| を使ひます。
+</p>
+<p>&rsquo;<samp>redrawtime</samp>&rsquo; を設定すると、檢索に費やす時閒を制限できます。
+</p>
+<p>改行にマッチしてゐるときに、Vim がディスプレイの一部だけを再描畫すると、豫期しない結果になることがありますが、それは、Vim が再描畫した行からマッチの檢索を開始するからです。
+</p>
+<p>|<a href="eval_002etxt.html#matcharg_0028_0029">matcharg()</a>| は |<a href="#g_t_003amatch">:match</a>| コマンドで使用されたパターンと强調グループを返します。|<a href="eval_002etxt.html#getmatches_0028_0029">getmatches()</a>| は |<a href="eval_002etxt.html#matchadd_0028_0029">matchadd()</a>| と |<a href="#g_t_003amatch">:match</a>| で定義されたマッチのパターンと强調グループのリストを返します。
+</p>
+<p>|<a href="#g_t_003amatch">:match</a>| コマンドではマッチを 3 つまで定義できます (|<a href="#g_t_003amatch">:match</a>|, |<a href="#g_t_003a2match">:2match</a>|, |<a href="#g_t_003a3match">:3match</a>|)。|<a href="eval_002etxt.html#matchadd_0028_0029">matchadd()</a>| にはこのやうな制限はありません。加へて、優先順位を設定することもできます。
+</p>
+<p>次の例は、表示桁で 72 列目以降の文字をすべて强調表示します:
+</p><div class="example">
+<pre class="example">:highlight rightMargin term=bold ctermfg=blue guifg=blue
+:match rightMargin /.\%&gt;72v/
+</pre></div>
+<p>表示桁で 7 列目の文字をすべて强調表示するには次のやうにします:
+</p><div class="example">
+<pre class="example">:highlight col8 ctermbg=grey guibg=grey
+:match col8 /\%&lt;8v.\%&gt;7v/
+</pre></div>
+<blockquote>
+<p><strong>Note:</strong> <br>
+TAB のやうな文字は、1 桁を超えて表示されます。
+</p></blockquote>
+
+</dd>
+<dt>:mat[ch] または</dt>
+<dt>:mat[ch] none</dt>
+<dd><p>以前に定義したマッチパターンを消去します。
+</p>
+
+<a name="g_t_003a2match"></a><a name="index-_003a2match"></a>
+</dd>
+<dt>:2mat[ch] {group} /{pattern}/ または</dt>
+<dt>:2mat[ch] または</dt>
+<dt>:2mat[ch] none</dt>
+<dd><a name="g_t_003a3match"></a><a name="index-_003a3match"></a>
+</dd>
+<dt>:3mat[ch] {group} /{pattern}/ または</dt>
+<dt>:3mat[ch] または</dt>
+<dt>:3mat[ch] none</dt>
+<dd><p>上述の |<a href="#g_t_003amatch">:match</a>| と同じですが、別々のマッチを設定します。そのため、同時に 3 つのマッチを表示できます。同じ場所でマッチした場合は、數値の低いものが優先されます。
+</p>
+<p>&quot;<code>:3match</code>&quot; コマンドは |<a href="pi_005fparen_002etxt.html#matchparen">matchparen</a>| プラグインで使用されてゐます。あなたが手動でマッチを設定するときは &quot;<code>:match</code>&quot; を使つてください。他のプラグインでは &quot;<code>:2match</code>&quot; を使つてください。
+</p></dd>
+</dl>
+<p>{<strong>譯注:</strong> <br>
+譯語:
+</p><table>
+<tr><td width="50%">concat</td><td width="50%">連接</td></tr>
+<tr><td width="50%">multi</td><td width="50%">&gt;量指定子&lt; 量指定詞 數量子 數量詞</td></tr>
+<tr><td width="50%">ordinary atom</td><td width="50%">普通のアトム</td></tr>
+<tr><td width="50%">a sequence of optionally matched atoms</td><td width="50%">任意にマッチするアトム列</td></tr>
+<tr><td width="50%">last search pattern</td><td width="50%">最終檢索パターン</td></tr>
+</table>
+<p>}
+</p>
+
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

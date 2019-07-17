@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>autocmd.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="autocmd.txt (Vim Reference Manual)">
+<meta name="keywords" content="autocmd.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="eval_002etxt.html#eval_002etxt" rel="next" title="eval.txt">
+<link href="diff_002etxt.html#diff_002etxt" rel="prev" title="diff.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="autocmd_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="ibentoniYing-ziteZi-Dong-De-nikomandowoShi-Xing-suru"></a>
+<h2 class="unnumbered">イベントに應じて自動的にコマンドを實行する</h2>
+<pre class="verbatim">*autocmd.txt*   For Vim バージョン 8.1.  Last change: 2019 Jun 26
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+</pre>
+
+<a name="autocommand"></a><a name="autocommands"></a><a name="index-autocommand"></a>
+<a name="index-autocommands"></a>
+<a name="index-Zi-Dong-komando-1"></a>
+<a name="Zi-Dong-komando-1"></a>
+<h3 class="section">自動コマンド</h3>
+
+<p>基本的な說明については、ユーザーマニュアルの |<a href="usr_005f40_002etxt.html#g_t40_002e3">40.3</a>| 章を參照。
+</p>
+<table>
+<tr><td width="50%">1. はじめに</td><td width="50%">|<a href="#autocmd_002dintro">autocmd-intro</a>|</td></tr>
+<tr><td width="50%">2. 自動コマンドの定義</td><td width="50%">|<a href="#autocmd_002ddefine">autocmd-define</a>|</td></tr>
+<tr><td width="50%">3. 自動コマンドの削除</td><td width="50%">|<a href="#autocmd_002dremove">autocmd-remove</a>|</td></tr>
+<tr><td width="50%">4. 自動コマンドの列擧</td><td width="50%">|<a href="#autocmd_002dlist">autocmd-list</a>|</td></tr>
+<tr><td width="50%">5. イベント</td><td width="50%">|<a href="#autocmd_002devents">autocmd-events</a>|</td></tr>
+<tr><td width="50%">6. パターン</td><td width="50%">|<a href="#autocmd_002dpatterns">autocmd-patterns</a>|</td></tr>
+<tr><td width="50%">7. バッファローカルな自動コマンド</td><td width="50%">|<a href="#autocmd_002dbuflocal">autocmd-buflocal</a>|</td></tr>
+<tr><td width="50%">8. グループ</td><td width="50%">|<a href="#autocmd_002dgroups">autocmd-groups</a>|</td></tr>
+<tr><td width="50%">9. 自動コマンドの實行</td><td width="50%">|<a href="#autocmd_002dexecute">autocmd-execute</a>|</td></tr>
+<tr><td width="50%">10.自動コマンドの使用</td><td width="50%">|<a href="#autocmd_002duse">autocmd-use</a>|</td></tr>
+<tr><td width="50%">11.自動コマンドを無效にする</td><td width="50%">|<a href="#autocmd_002ddisable">autocmd-disable</a>|</td></tr>
+</table>
+
+
+<a name="autocmd_002dintro"></a><a name="index-autocmd_002dintro"></a>
+<a name="g_t1_002e-hazimeni-5"></a>
+<h3 class="section">1. はじめに</h3>
+
+<p>ファイルを讀み込んだり書き込むときや、バッファやウィンドウに入つたり出たりしたとき、あるいは Vim を終了させるときに、コマンドを自動的に實行するやうに指定できる。例へば &quot;*.c&quot; にマッチするファイルに對して、オプション &rsquo;<samp>cindent</samp>&rsquo; をオンにする自動コマンドを作ることができる。また自動コマンドでさらに高度な機能を實裝することができる。壓縮ファイルを編輯するといつたやうな機能だ (|<a href="#gzip_002dexample">gzip-example</a>| を參照)。かういつた自動コマンドはファイル <samp>.vimrc</samp> かファイル <samp>.exrc</samp> に書き込む。
+</p>
+<a name="E203"></a><a name="E204"></a><a name="E143"></a><a name="E855"></a><a name="E937"></a><a name="E952"></a><a name="index-E203"></a>
+<a name="index-E204"></a>
+<a name="index-E143"></a>
+<a name="index-E855"></a>
+<a name="index-E937"></a>
+<a name="index-E952"></a>
+<blockquote>
+<p><strong>警告:</strong> <br>
+自動コマンドは大變强力であるので、思ひも寄らない副作用をもたらすことがある。テキストを壞さないやうに注意しなければならない。
+</p></blockquote>
+<ul>
+<li> 捨ててもよいやうなファイルのコピーに對して、最初にテストしておくのがよい。例へば、ファイルの編輯開始時にファイルを解凍する自動コマンドを使ふときには、書き込みするときに壓縮を行ふ自動コマンドが正しく働くか確かめること。
+</li><li> 實行中のエラー (例へばディスクが滿杯になる) に對して、對處の準備をしておかなければならない。バッファへの變更に對しては大抵アンドゥができるが、他のファイルへの變更は、自分で處理しなければならないかもしれない (例へば、解凍されたファイルを壓縮する、等)。
+</li><li> もしイベント BufRead* の自動コマンドによつて壓縮ファイルを編輯できるなら、FileRead* でも同じ事ができるやうにするべきである (かうすることで復舊可能になる場合がたまにある)。可能であれば、イベント File* や Buf* には同じ自動コマンドを使ふのはよい考へだ。
+</li></ul>
+
+<a name="autocmd_002ddefine"></a><a name="index-autocmd_002ddefine"></a>
+<a name="index-Zi-Dong-komandonoDing-Yi-"></a>
+<a name="g_t2_002e-Zi-Dong-komandonoDing-Yi-"></a>
+<h3 class="section">2. 自動コマンドの定義</h3>
+
+<dl compact="compact">
+<dd><a name="g_t_003aau"></a><a name="g_t_003aautocmd"></a><a name="index-_003aau"></a>
+<a name="index-_003aautocmd"></a>
+</dd>
+<dt>:au[tocmd] [group] {event} {pat} [++once] [++nested] {cmd}</dt>
+<dd><p>{pat} |<a href="#autocmd_002dpatterns">autocmd-patterns</a>| に一致するファイルで、{event} のときに自動的に實行するコマンドのリストに、{cmd} を加へる。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+クォートは :autocmd への引數として見なされ、コメントを開始しないことに注意。
+</p></blockquote>
+<p>{cmd} は常に既存の自動コマンドの後に追加されるので、自動コマンドは指定された順に實行される。 [nested] については |<a href="#autocmd_002dnested">autocmd-nested</a>| を參照。後方互換性のために、&quot;nested&quot; (++ なし) も使用できる。
+</p></dd>
+</dl>
+<a name="autocmd_002donce"></a><a name="index-autocmd_002donce"></a>
+<p>[++once] が指定されてゐる場合、コマンドは 1 回實行されると削除される (&quot;one shot&quot;)。
+</p>
+<p>特殊なパターン &lt;buffer&gt; や &lt;buffer=N&gt; はバッファローカルな自動コマンドを定義する。|<a href="#autocmd_002dbuflocal">autocmd-buflocal</a>| を參照。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+&rsquo;|&rsquo; が {cmd} の前にある場合、&quot;<code>:autocmd</code>&quot; コマンドの後には別のコマンドを續けることができる。これは動作する:
+</p><div class="example">
+<pre class="example">:augroup mine | au! BufRead | augroup END
+</pre></div>
+<p>しかし、これは定義されたコマンドの一部として &quot;augroup&quot; を見る:
+</p><div class="example">
+<pre class="example">:augroup mine | au! BufRead * | augroup END
+:augroup mine | au BufRead * set tw=70 | augroup END
+</pre></div>
+</blockquote>
+<p>代はりにグループ名をコマンドの中に置くことができる:
+</p><div class="example">
+<pre class="example">:au! mine BufRead *
+:au mine BufRead * set tw=70
+</pre></div>
+<p>もしくは &lsquo;:execute&lsquo; を使用する:
+</p><div class="example">
+<pre class="example">:augroup mine | exe &quot;au! BufRead *&quot; | augroup END
+:augroup mine | exe &quot;au BufRead * set tw=70&quot; | augroup END
+</pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+&quot;<code>:autocmd</code>&quot; の引數の中の特別な文字 (例へば &quot;%&quot; や &quot;&lt;cword&gt;&quot; 等) は、自動コマンドが定義されたときに展開されるのではなく、イベントの發生が認識され、{cmd} が實行されるときに展開されることに注意せよ。唯一の例外は、&quot;&lt;sfile&gt;&quot; が自動コマンドが定義されたときに展開されることである。例:
+</p><div class="example">
+<pre class="example">:au BufNewFile,BufRead *.html so &lt;sfile&gt;:h/html.vim
+</pre></div>
+<p>ここで &lt;sfile&gt; は、この行を含むファイルの名前に展開される。
+</p></blockquote>
+
+<p>&lsquo;<code>:autocmd</code>&lsquo; は、すでに存在してゐるかどうかにかかはらず、自動コマンドのリストに追加する。<samp>.vimrc</samp> ファイルが 2 囘讀み込まれると、自動コマンドが 2 回表示される。これを避けるには、グループ內に自動コマンドを定義することで、簡單にクリアできる:
+</p>
+<pre class="verbatim">augroup vimrc
+  &quot; 「全ての」vimrcの自動コマンドを削除する
+  autocmd!
+  au BufNewFile,BufRead *.html so &lt;sfile&gt;:h/html.vim
+augroup END
+</pre>
+<p>もし全ての自動コマンドを消去したくなかつたら、代はりに變數を使つて自動コマンドを讀み込むのがただ1度だけにすることができる。
+</p>
+<pre class="verbatim">:if !exists(&quot;autocommands_loaded&quot;)
+:  let autocommands_loaded = 1
+:  au ...
+:endif
+</pre>
+<p>引數 [group] が指定されないと、現在のグループが使はれる (&quot;<code>:augroup</code>&quot; で定義されたもの)。さうでなければ、Vim は [group] で定義されたグループを使ふ。
+</p><blockquote>
+<p><strong>Note:</strong> <br> [group] はあらかじめ定義されてゐなければならないことに注意。
+</p></blockquote>
+<p>&quot;:au group ...&quot; で新しいグループを定義することはできない。それには &quot;<code>:augroup</code>&quot; を使ふこと。
+</p>
+<p>自動コマンドをテストするとき、オプション &rsquo;<samp>verbose</samp>&rsquo; が便利かもしれない。
+</p><div class="example">
+<pre class="example">:set verbose=9
+</pre></div>
+<p>この設定により、Vim は自動コマンドが實行されるとそれらを表示するやうになる。
+</p>
+<p>スクリプト內で自動コマンドを定義するときには、スクリプト內でのみ有效なローカル函數とローカルキーマップを利用できる。イベントが發生してコマンドが實行されるとき、コマンドは自分の定義されたスクリプト內での設定に從つて働く。これはコマンドに |<a href="map_002etxt.html#g_t_003cSID_003e">&lt;SID&gt;</a>| が使はれてゐるときに問題になる。
+</p>
+<p>コマンドを實行するとき、あるコマンドからのメッセージは前のメッセージを上書きしてしまふ。これはコマンドを手動で實行するときとは違ふ動作である。大抵、メッセージスクリーンはスクロールしないので、「續けるには」といふプロンプトは現れない。また 1 個のコマンドが 2 つのメッセージを出すときには、何にせよメッセージは上書きされてしまふ。
+</p>
+<a name="autocmd_002dremove"></a><a name="index-autocmd_002dremove"></a>
+<a name="index-Zi-Dong-komandonoChu-Qu-"></a>
+<a name="g_t3_002e-Zi-Dong-komandonoChu-Qu-"></a>
+<h3 class="section">3. 自動コマンドの除去</h3>
+
+<dl compact="compact">
+<dt>:au[tocmd]! [group] {event} {pat} [++once] [++nested] {cmd}</dt>
+<dd><p>{event} と {pat} に關聯づけられた全ての自動コマンドを除去し、コマンド {cmd} を加へる。 [nested] については |<a href="#autocmd_002dnested">autocmd-nested</a>| を參照。
+</p>
+</dd>
+<dt>:au[tocmd]! [group] {event} {pat}</dt>
+<dd><p>{event} と {pat} に關聯づけられた全ての自動コマンドを除去し、コマンド {cmd} を加へる。[++once] については |<a href="#autocmd_002donce">autocmd-once</a>| を參照。[++nested] については |<a href="#autocmd_002dnested">autocmd-nested</a>| を參照。
+</p>
+</dd>
+<dt>:au[tocmd]! [group] * {pat}</dt>
+<dd><p>{pat} に關聯づけられた、全てのイベントに關する自動コマンドを全て除去する。
+</p>
+</dd>
+<dt>:au[tocmd]! [group] {event}</dt>
+<dd><p>{event} に關聯づけられた「全ての」自動コマンドを除去する。
+</p><blockquote>
+<p><strong>警告:</strong> <br>
+|<a href="#BufRead">BufRead</a>| や他の一般的なイベントのためのグループなしでこれを行ふべきではない。プラグインや構文のハイライトなどを壞すことがある。
+</p></blockquote>
+
+</dd>
+<dt>:au[tocmd]! [group]</dt>
+<dd><p>「全ての」自動コマンドを除去する。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+クォートは :autocmd への引數と見なされ、コメントを開始しないことに注意。
+</p></blockquote>
+<blockquote>
+<p><strong>警告:</strong> <br>
+ 通常はグループなしでこれを行ふべきではない。プラグインや構文の强調表示などが壞れる。
+</p></blockquote>
+</dd>
+</dl>
+
+<p>引數 [group] が指定されないと、現在のグループが使はれる (&quot;<code>:augroup</code>&quot; で定義されたもの)。さうでなければ、[group] で定義されたグループが使はれる。
+</p>
+<a name="autocmd_002dlist"></a><a name="index-autocmd_002dlist"></a>
+<a name="index-Zi-Dong-komandonoLie-Ju-"></a>
+<a name="g_t4_002e-Zi-Dong-komandonoLie-Ju-"></a>
+<h3 class="section">4. 自動コマンドの列擧</h3>
+
+<dl compact="compact">
+<dt>:au[tocmd] [group] {event} {pat}</dt>
+<dd><p>{event} と {pat} に關聯づけられた全ての自動コマンドを表示する。
+</p>
+</dd>
+<dt>:au[tocmd] [group] * {pat}</dt>
+<dd><p>{pat} に關聯づけられた、全てのイベントに關する自動コマンドを表示する。
+</p>
+</dd>
+<dt>:au[tocmd] [group] {event}</dt>
+<dd><p>{event} に關聯づけられた全ての自動コマンドを表示する。
+</p>
+</dd>
+<dt>:au[tocmd] [group]</dt>
+<dd><p>全ての自動コマンドを表示する。
+</p></dd>
+</dl>
+
+<p>引數 [group] を指定すると、[group] に關する自動コマンドのみが列擧される。さうでなければ、「全ての」グループに關する自動コマンドが表示される。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+ここでの引數による動作の違ひは、自動コマンドを定義したり除去するときとは違ふことに注意。
+</p></blockquote>
+
+<p>バッファローカルな自動コマンドを列擧するには、&lt;buffer&gt; または &lt;buffer=N&gt; といふ形のパターンを使ふ。|<a href="#autocmd_002dbuflocal">autocmd-buflocal</a>| を參照。
+</p>
+<a name="g_t_003aautocmd_002dverbose"></a><a name="index-_003aautocmd_002dverbose"></a>
+<p>&rsquo;<samp>verbose</samp>&rsquo;がゼロでないならば、自動コマンドを列擧するときに、それが最後にどこで定義されたかも表示する。例:
+</p>
+<pre class="verbatim">:verbose autocmd BufEnter
+FileExplorer  BufEnter
+    *         call s:LocalBrowse(expand(&quot;&lt;amatch&gt;&quot;))
+        Last set from /usr/share/vim/vim-7.0/plugin/NetrwPlugin.vim
+</pre><p>より詳しい情報は |<a href="various_002etxt.html#g_t_003averbose_002dcmd">:verbose-cmd</a>| を參照。
+</p>
+<a name="autocmd_002devents"></a><a name="E215"></a><a name="E216"></a><a name="index-autocmd_002devents"></a>
+<a name="index-E215"></a>
+<a name="index-E216"></a>
+<a name="index-ibento"></a>
+<a name="g_t5_002e-ibento"></a>
+<h3 class="section">5. イベント</h3>
+
+<p>複數のイベントをコンマ (,) で區切つたリストにして指定することもできる。そのリストにはスペースを含めてはいけない。そのコマンドは指定したリストにある全てのイベントに適用される。
+</p>
+<p>「ファイル讀み込み」には次の 4 種類のイベントが發生しうる。
+</p><table>
+<tr><td width="30%">BufNewFile</td><td width="30%"></td><td width="40%">存在しないファイルの編輯を開始する。</td></tr>
+<tr><td width="30%">BufReadPre</td><td width="30%">BufReadPost</td><td width="40%">既存のファイルの編輯を開始する。</td></tr>
+<tr><td width="30%">FilterReadPre</td><td width="30%">FilterReadPost</td><td width="40%">フィルタの出力による一時ファイルを讀み込む。</td></tr>
+<tr><td width="30%">FileReadPre</td><td width="30%">FileReadPost</td><td width="40%">その他のファイルを讀み込む。</td></tr>
+</table>
+<p>Vim はファイルを讀み込むときにこの 4 種類のうちどれか1つを利用する。&quot;Pre&quot; と &quot;Post&quot; のイベントは、ファイル讀み込みの前後で兩方とも起動される。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+イベント *ReadPre や、全てのイベント Filter に關する自動コマンドは、カレントバッファを變更してはならないことに注意 (これが起きると、エラーメッセージが表示される)。これは、閒違つたバッファにファイルを讀み込むのを防ぐためである。
+</p></blockquote>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+オプション &rsquo;<samp>modified</samp>&rsquo; は、BufReadPost と BufNewFile の自動コマンドを實行した「後に」オフに設定されることに注意。しかし &rsquo;<samp>modified</samp>&rsquo; が自動コマンドからオンに設定されたときはさうならない。
+</p></blockquote>
+
+<p>&rsquo;<samp>eventignore</samp>&rsquo; は、いくつかあるいは全てのイベントを無視するために使へる。
+<a name="autocommand_002devents"></a><a name="g_t_007bevent_007d"></a><a name="index-autocommand_002devents"></a>
+<a name="index-_007bevent_007d"></a>
+Vim は以下のイベントを認識する。イベント名が大文字か小文字かは無視される (例へば &quot;BufRead&quot; の代はりに &quot;BUFread&quot; や &quot;bufread&quot; が使へる)。
+</p>
+<p>まず機能ごとに短い說明とともに槪要を解說する。それから完全な說明とともにアルファベット順のリストを載せる |<a href="#autocmd_002devents_002dabc">autocmd-events-abc</a>|。
+</p>
+<table>
+<thead><tr><th width="25%">名前</th><th width="75%">發生するとき</th></tr></thead>
+<tr><td width="25%"><strong>讀み込み</strong></td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#BufNewFile">BufNewFile</a>|</td><td width="75%">存在しないファイルの編輯を始めたとき</td></tr>
+<tr><td width="25%">|<a href="#BufReadPre">BufReadPre</a>|</td><td width="75%">新しいバッファの編輯を始めたとき。ファイルを讀み込む前</td></tr>
+<tr><td width="25%">|<a href="#BufRead">BufRead</a>|</td><td width="75%">新しいバッファの編輯を始めたとき。ファイルを讀み込んだ後</td></tr>
+<tr><td width="25%">|<a href="#BufReadPost">BufReadPost</a>|</td><td width="75%">新しいバッファの編輯を始めたとき。ファイルを讀み込んだ後</td></tr>
+<tr><td width="25%">|<a href="#BufReadCmd">BufReadCmd</a>|</td><td width="75%">新しいバッファの編輯を始める前 |<a href="#Cmd_002devent">Cmd-event</a>|</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#FileReadPre">FileReadPre</a>|</td><td width="75%">&quot;<code>:read</code>&quot; でファイルを讀み込む前</td></tr>
+<tr><td width="25%">|<a href="#FileReadPost">FileReadPost</a>|</td><td width="75%">&quot;<code>:read</code>&quot; でファイルを讀み込んだ後</td></tr>
+<tr><td width="25%">|<a href="#FileReadCmd">FileReadCmd</a>|</td><td width="75%">&quot;<code>:read</code>&quot; でファイルを讀み込む前 |<a href="#Cmd_002devent">Cmd-event</a>|</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#FilterReadPre">FilterReadPre</a>|</td><td width="75%">フィルタコマンドでファイルを讀み込む前</td></tr>
+<tr><td width="25%">|<a href="#FilterReadPost">FilterReadPost</a>|</td><td width="75%">フィルタコマンドでファイルを讀み込んだ後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#StdinReadPre">StdinReadPre</a>|</td><td width="75%">標準入力からバッファに讀み込む前</td></tr>
+<tr><td width="25%">|<a href="#StdinReadPost">StdinReadPost</a>|</td><td width="75%">標準入力からバッファに讀み込んだ後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%"><strong>書き込み</strong></td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#BufWrite">BufWrite</a>|</td><td width="75%">バッファ全體をファイルに書き込むとき</td></tr>
+<tr><td width="25%">|<a href="#BufWritePre">BufWritePre</a>|</td><td width="75%">バッファ全體をファイルに書き込むとき</td></tr>
+<tr><td width="25%">|<a href="#BufWritePost">BufWritePost</a>|</td><td width="75%">バッファ全體をファイルに書き込んだ後</td></tr>
+<tr><td width="25%">|<a href="#BufWriteCmd">BufWriteCmd</a>|</td><td width="75%">バッファ全體をファイルに書き込む前 |<a href="#Cmd_002devent">Cmd-event</a>|</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#FileWritePre">FileWritePre</a>|</td><td width="75%">バッファの一部をファイルに書き込むとき</td></tr>
+<tr><td width="25%">|<a href="#FileWritePost">FileWritePost</a>|</td><td width="75%">バッファの一部をファイルに書き込んだ後</td></tr>
+<tr><td width="25%">|<a href="#FileWriteCmd">FileWriteCmd</a>|</td><td width="75%">バッファの一部をファイルに書き込む前 |<a href="#Cmd_002devent">Cmd-event</a>|</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#FileAppendPre">FileAppendPre</a>|</td><td width="75%">ファイルに追加するとき</td></tr>
+<tr><td width="25%">|<a href="#FileAppendPost">FileAppendPost</a>|</td><td width="75%">ファイルに追加した後</td></tr>
+<tr><td width="25%">|<a href="#FileAppendCmd">FileAppendCmd</a>|</td><td width="75%">ファイルに追加する前 |<a href="#Cmd_002devent">Cmd-event</a>|</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#FilterWritePre">FilterWritePre</a>|</td><td width="75%">フィルタコマンドや diff 用にファイルを書き込むとき</td></tr>
+<tr><td width="25%">|<a href="#FilterWritePost">FilterWritePost</a>|</td><td width="75%">フィルタコマンドや diff 用にファイルを書き込んだ後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%"><strong>バッファ</strong></td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#BufAdd">BufAdd</a>|</td><td width="75%">バッファリストにバッファを追加した直後</td></tr>
+<tr><td width="25%">|<a href="#BufCreate">BufCreate</a>|</td><td width="75%">バッファリストにバッファを追加した直後</td></tr>
+<tr><td width="25%">|<a href="#BufDelete">BufDelete</a>|</td><td width="75%">バッファリストからバッファを削除する前</td></tr>
+<tr><td width="25%">|<a href="#BufWipeout">BufWipeout</a>|</td><td width="75%">完全にバッファを削除する前</td></tr>
+<tr><td width="25%">|<a href="#TerminalOpen">TerminalOpen</a>|</td><td width="75%">ターミナルバッファが作成された後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#BufFilePre">BufFilePre</a>|</td><td width="75%">カレントバッファの名前を變へる前</td></tr>
+<tr><td width="25%">|<a href="#BufFilePost">BufFilePost</a>|</td><td width="75%">カレントバッファの名前を變へた後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#BufEnter">BufEnter</a>|</td><td width="75%">バッファに入つた後</td></tr>
+<tr><td width="25%">|<a href="#BufLeave">BufLeave</a>|</td><td width="75%">別のバッファへ移る前</td></tr>
+<tr><td width="25%">|<a href="#BufWinEnter">BufWinEnter</a>|</td><td width="75%">バッファがウィンドウに表示された後</td></tr>
+<tr><td width="25%">|<a href="#BufWinLeave">BufWinLeave</a>|</td><td width="75%">バッファがウィンドウから削除される前</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#BufUnload">BufUnload</a>|</td><td width="75%">バッファをアンロードする前</td></tr>
+<tr><td width="25%">|<a href="#BufHidden">BufHidden</a>|</td><td width="75%">バッファが隱れバッファになつた直後</td></tr>
+<tr><td width="25%">|<a href="#BufNew">BufNew</a>|</td><td width="75%">新規バッファを作成した直後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#SwapExists">SwapExists</a>|</td><td width="75%">既存のスワップファイルを檢出したとき</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%"><strong>オプション</strong></td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#FileType">FileType</a>|</td><td width="75%">オプション &rsquo;<samp>filetype</samp>&rsquo; がセットされたとき</td></tr>
+<tr><td width="25%">|<a href="#Syntax">Syntax</a>|</td><td width="75%">オプション &rsquo;<samp>syntax</samp>&rsquo; がセットされたとき</td></tr>
+<tr><td width="25%">|<a href="#EncodingChanged">EncodingChanged</a>|</td><td width="75%">オプション &rsquo;<samp>encoding</samp>&rsquo; が變更された後</td></tr>
+<tr><td width="25%">|<a href="#TermChanged">TermChanged</a>|</td><td width="75%">オプション &rsquo;<samp>term</samp>&rsquo; が變更された後</td></tr>
+<tr><td width="25%">|<a href="#OptionSet">OptionSet</a>|</td><td width="75%">オプションが設定された後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%"><strong>起動と終了</strong></td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#VimEnter">VimEnter</a>|</td><td width="75%">全ての起動處理が終はつた後</td></tr>
+<tr><td width="25%">|<a href="#GUIEnter">GUIEnter</a>|</td><td width="75%">GUI の起動が成功した後</td></tr>
+<tr><td width="25%">|<a href="#GUIFailed">GUIFailed</a>|</td><td width="75%">GUI の起動が失敗した後</td></tr>
+<tr><td width="25%">|<a href="#TermResponse">TermResponse</a>|</td><td width="75%">|<a href="term_002etxt.html#t_005fRV">t_RV</a>| に對する端末の反應を受け取つた後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#QuitPre">QuitPre</a>|</td><td width="75%">&lsquo;<code>:quit</code>&lsquo; を使つたとき、本當に終了するか決定する前</td></tr>
+<tr><td width="25%">|<a href="#ExitPre">ExitPre</a>|</td><td width="75%">Vim を終了するコマンドを使つたとき</td></tr>
+<tr><td width="25%">|<a href="#VimLeavePre">VimLeavePre</a>|</td><td width="75%">Vim を終了する前、viminfo ファイルを書き出す前</td></tr>
+<tr><td width="25%">|<a href="#VimLeave">VimLeave</a>|</td><td width="75%">Vim を終了する前、viminfo ファイルを書き出した後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%"><strong>その他</strong></td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#FileChangedShell">FileChangedShell</a>|</td><td width="75%">編輯を始めた後にファイルが變更されたことを檢出したとき</td></tr>
+<tr><td width="25%">|<a href="#FileChangedShellPost">FileChangedShellPost</a>|</td><td width="75%">編輯を始めた後にファイルが變更されたことに對處した後</td></tr>
+<tr><td width="25%">|<a href="#FileChangedRO">FileChangedRO</a>|</td><td width="75%">讀み込み專用ファイルに對して最初に變更を加へる前</td></tr>
+<tr><td width="25%">|<a href="#DiffUpdated">DiffUpdated</a>|</td><td width="75%">diff が變更された後</td></tr>
+<tr><td width="25%">|<a href="#DirChanged">DirChanged</a>|</td><td width="75%">作業ディレクトリが變更された後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#ShellCmdPost">ShellCmdPost</a>|</td><td width="75%">シェルコマンドを實行した後</td></tr>
+<tr><td width="25%">|<a href="#ShellFilterPost">ShellFilterPost</a>|</td><td width="75%">シェルコマンドでフィルタをかけた後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#CmdUndefined">CmdUndefined</a>|</td><td width="75%">呼び出さうとしたユーザー定義コマンドが定義されてゐなかつたとき</td></tr>
+<tr><td width="25%">|<a href="#FuncUndefined">FuncUndefined</a>|</td><td width="75%">呼び出さうとしたユーザー定義函數が定義されてゐなかつたとき</td></tr>
+<tr><td width="25%">|<a href="#SpellFileMissing">SpellFileMissing</a>|</td><td width="75%">スペリングファイルを使はうとしたが見つからなかつたとき</td></tr>
+<tr><td width="25%">|<a href="#SourcePre">SourcePre</a>|</td><td width="75%">Vim script を讀み込む前</td></tr>
+<tr><td width="25%">|<a href="#SourcePost">SourcePost</a>|</td><td width="75%">Vim script を讀み込んだ後</td></tr>
+<tr><td width="25%">|<a href="#SourceCmd">SourceCmd</a>|</td><td width="75%">Vim script を讀み込む前 |<a href="#Cmd_002devent">Cmd-event</a>|</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#VimResized">VimResized</a>|</td><td width="75%">Vim のウィンドウサイズが變はつたとき</td></tr>
+<tr><td width="25%">|<a href="#FocusGained">FocusGained</a>|</td><td width="75%">Vim が入力フォーカスを得たとき</td></tr>
+<tr><td width="25%">|<a href="#FocusLost">FocusLost</a>|</td><td width="75%">Vim が入力フォーカスを失つたとき</td></tr>
+<tr><td width="25%">|<a href="#CursorHold">CursorHold</a>|</td><td width="75%">ユーザーが一定時閒キーを押さなかつたとき</td></tr>
+<tr><td width="25%">|<a href="#CursorHoldI">CursorHoldI</a>|</td><td width="75%">插入モードでユーザーが一定時閒キーを押さなかつたとき</td></tr>
+<tr><td width="25%">|<a href="#CursorMoved">CursorMoved</a>|</td><td width="75%">ノーマルモードでカーソルが移動したとき</td></tr>
+<tr><td width="25%">|<a href="#CursorMovedI">CursorMovedI</a>|</td><td width="75%">插入モードでカーソルが移動したとき</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#WinNew">WinNew</a>|</td><td width="75%">新しいウィンドウを作成した後</td></tr>
+<tr><td width="25%">|<a href="#TabNew">TabNew</a>|</td><td width="75%">新しいタブページを作成した後</td></tr>
+<tr><td width="25%">|<a href="#TabClosed">TabClosed</a>|</td><td width="75%">タブページを閉ぢた後</td></tr>
+<tr><td width="25%">|<a href="#WinEnter">WinEnter</a>|</td><td width="75%">別のウィンドウに入つた後</td></tr>
+<tr><td width="25%">|<a href="#WinLeave">WinLeave</a>|</td><td width="75%">ウィンドウから離れる前</td></tr>
+<tr><td width="25%">|<a href="#TabEnter">TabEnter</a>|</td><td width="75%">別のタブページに入つた後</td></tr>
+<tr><td width="25%">|<a href="#TabLeave">TabLeave</a>|</td><td width="75%">タブページから離れる前</td></tr>
+<tr><td width="25%">|<a href="#CmdwinEnter">CmdwinEnter</a>|</td><td width="75%">コマンドラインウィンドウに入つた後</td></tr>
+<tr><td width="25%">|<a href="#CmdwinLeave">CmdwinLeave</a>|</td><td width="75%">コマンドラインウィンドウから離れる前</td></tr>
+<tr><td width="25%">|<a href="#CmdlineChanged">CmdlineChanged</a>|</td><td width="75%">コマンドラインのテキストに變更が加へられた後</td></tr>
+<tr><td width="25%">|<a href="#CmdlineEnter">CmdlineEnter</a>|</td><td width="75%">カーソルがコマンドラインに移動した後</td></tr>
+<tr><td width="25%">|<a href="#CmdlineLeave">CmdlineLeave</a>|</td><td width="75%">カーソルがコマンドラインを離れる前</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#InsertEnter">InsertEnter</a>|</td><td width="75%">插入モードを開始したとき</td></tr>
+<tr><td width="25%">|<a href="#InsertChange">InsertChange</a>|</td><td width="75%">插入や置換モードで <code class="tt-key">&lt;Insert&gt;</code> をタイプしたとき</td></tr>
+<tr><td width="25%">|<a href="#InsertLeave">InsertLeave</a>|</td><td width="75%">插入モードを拔けるとき</td></tr>
+<tr><td width="25%">|<a href="#InsertCharPre">InsertCharPre</a>|</td><td width="75%">插入モードで文字が入力されたとき、その文字が插入される前</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#TextChanged">TextChanged</a>|</td><td width="75%">ノーマルモードでテキストが變更された後</td></tr>
+<tr><td width="25%">|<a href="#TextChangedI">TextChangedI</a>|</td><td width="75%">ポップアップメニューが表示されてゐないときに、插入モードでテキストが變更された後</td></tr>
+<tr><td width="25%">|<a href="#TextChangedP">TextChangedP</a>|</td><td width="75%">ポップアップメニューが表示されてゐるときに、插入モードでテキストが變更された後</td></tr>
+<tr><td width="25%">|<a href="#TextYankPost">TextYankPost</a>|</td><td width="75%">テキストがヤンクもしくは削除された後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#ColorSchemePre">ColorSchemePre</a>|</td><td width="75%">カラースキームを讀み込む前</td></tr>
+<tr><td width="25%">|<a href="#ColorScheme">ColorScheme</a>|</td><td width="75%">カラースキームを讀み込んだ後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#RemoteReply">RemoteReply</a>|</td><td width="75%">Vim サーバーからの返答を受け取つたとき</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#QuickFixCmdPre">QuickFixCmdPre</a>|</td><td width="75%">QuickFixコマンドを實行する前</td></tr>
+<tr><td width="25%">|<a href="#QuickFixCmdPost">QuickFixCmdPost</a>|</td><td width="75%">QuickFix コマンドを實行した後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#SessionLoadPost">SessionLoadPost</a>|</td><td width="75%">セッションファイルを讀み込んだ後</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#MenuPopup">MenuPopup</a>|</td><td width="75%">ポップアップメニューを表示する直前</td></tr>
+<tr><td width="25%">|<a href="#CompleteChanged">CompleteChanged</a>|</td><td width="75%">插入モード補完メニューが變更されたとき</td></tr>
+<tr><td width="25%">|<a href="#CompleteDone">CompleteDone</a>|</td><td width="75%">插入モード補完が完了したとき</td></tr>
+<tr><td width="25%">&nbsp;</td><td width="75%"></td></tr>
+<tr><td width="25%">|<a href="#User">User</a>|</td><td width="75%">&quot;<code>:doautocmd</code>&quot; との組合せで使はれる</td></tr>
+</table>
+
+
+<a name="autocmd_002devents_002dabc"></a><a name="index-autocmd_002devents_002dabc"></a>
+<a name="index-Zi-Dong-komandoibentonoaruhuabetutoShun-risuto"></a>
+<a name="Zi-Dong-komandoibentonoaruhuabetutoShun-risuto_003a"></a>
+<h4 class="unnumberedsubsec">自動コマンドイベントのアルファベット順リスト:</h4>
+
+<dl compact="compact">
+<dd><a name="BufCreate"></a><a name="BufAdd"></a><a name="index-BufCreate"></a>
+<a name="index-BufAdd"></a>
+</dd>
+<dt>BufAdd または</dt>
+<dt>BufCreate</dt>
+<dd><p>バッファリストに追加されるバッファを作つた直後か、バッファをバッファリストに追加した直後。バッファリスト內のバッファがリネームされた直後にも發生する。イベント BufCreate は歷史上の理由で存在してゐる。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+このイベントで自動コマンドが實行されたときは、&quot;%&quot; で表されるカレントバッファと &quot;&lt;afile&gt;&quot; で表される作成されたバッファは異なるかもしれないことに注意。
+</p></blockquote>
+<a name="BufDelete"></a><a name="index-BufDelete"></a>
+</dd>
+<dt>BufDelete</dt>
+<dd><p>バッファリストからバッファを削除する前。(バッファが讀み込まれてゐるなら) BufUnload が最初に呼び出されるだらう。また、バッファリスト內のバッファがリネームされた直前にも使はれる。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+このイベントで自動コマンドが實行されたときは、&quot;%&quot; で表されるカレントバッファと &quot;&lt;afile&gt;&quot; と &quot;&lt;abuf&gt;&quot; で表される削除されるバッファとは異なるかもしれないことに注意。他のバッファに切り替へないこと。もしすると問題が發生するだらう。
+</p></blockquote>
+<a name="BufEnter"></a><a name="index-BufEnter"></a>
+</dd>
+<dt>BufEnter</dt>
+<dd><p>バッファに入つた後。ファイルタイプに關するオプションの設定に便利である。バッファの編輯を始めるときにも、BufReadPost の自動コマンドの後に實行される。
+<a name="BufFilePost"></a><a name="index-BufFilePost"></a>
+</p></dd>
+<dt>BufFilePost</dt>
+<dd><p>現在のバッファの名前をコマンド &quot;<code>:file</code>&quot; または &quot;<code>:saveas</code>&quot; で變更した後。
+<a name="BufFilePre"></a><a name="index-BufFilePre"></a>
+</p></dd>
+<dt>BufFilePre</dt>
+<dd><p>現在のバッファの名前をコマンド &quot;<samp>:file</samp>&quot; または &quot;<samp>:saveas</samp>&quot; で變更する前。
+<a name="BufHidden"></a><a name="index-BufHidden"></a>
+</p></dd>
+<dt>BufHidden</dt>
+<dd><p>バッファが隱れ狀態 (hidden) になる直前。つまりそのバッファを表示するウィンドウがもう存在しないのに、バッファが解放されなかつたり、削除されないとき。&quot;<code>:qa</code>&quot; や &quot;<code>q</code>&quot; で Vim を終了するときには使はれない。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+このイベントで自動コマンドが實行されたときは、&quot;%&quot; で表されるカレントバッファと &quot;&lt;afile&gt;&quot; で表される解放されるバッファとは異なるかもしれないことに注意。
+</p></blockquote>
+<a name="BufLeave"></a><a name="index-BufLeave"></a>
+</dd>
+<dt>BufLeave</dt>
+<dd><p>他のバッファに移る前。カレントウィンドウを離れたり、閉ぢたりするときで、新しいカレントウィンドウが同じバッファを開いてゐないとき。&quot;<code>:qa</code>&quot; や &quot;<code>q</code>&quot; で Vim を閉ぢるときには使はれない。
+<a name="BufNew"></a><a name="index-BufNew"></a>
+</p></dd>
+<dt>BufNew</dt>
+<dd><p>新しいバッファを作つた直後。バッファがリネームされた直後にも發生する。バッファがバッファリストに追加されると、イベント BufAdd も發生する。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+このイベントで自動コマンドが實行されたときは、&quot;%&quot; で表されるカレントバッファと &quot;&lt;afile&gt;&quot; で表される作成されるバッファとは異なるかもしれないことに注意。
+</p></blockquote>
+<a name="BufNewFile"></a><a name="index-BufNewFile"></a>
+</dd>
+<dt>BufNewFile</dt>
+<dd><p>存在しないファイルの編輯を始めたとき。スケルトンファイル {譯注: テンプレートファイルともいふ} に讀み込むときに使へる。
+<a name="BufRead"></a><a name="BufReadPost"></a><a name="index-BufRead"></a>
+<a name="index-BufReadPost"></a>
+</p></dd>
+<dt>BufRead または</dt>
+<dt>BufReadPost</dt>
+<dd><p>新しいバッファの編輯を始めたときの、ファイルをバッファに讀み込んだ後で、モードラインを實行する前。モードラインを實行した後に何かするには |<a href="#BufWinEnter">BufWinEnter</a>| を參照すること。
+これは &quot;<code>:r file</code>&quot; には「動作しない」。ファイルが存在しないときも使へない。またファイルの復舊に成功したときにも使はれる。また、&quot;<code>:filetype detect</code>&quot; を實行したとき、あるいは無名バッファを保存してバッファに名前がついたとき、filetypedetect グループを對象として發行される。
+<a name="BufReadCmd"></a><a name="index-BufReadCmd"></a>
+</p></dd>
+<dt>BufReadCmd</dt>
+<dd><p>新しいバッファの編輯を始める前。ファイルをバッファ內に讀み込む役目を負ふ。|<a href="#Cmd_002devent">Cmd-event</a>|
+<a name="BufReadPre"></a><a name="E200"></a><a name="E201"></a><a name="index-BufReadPre"></a>
+<a name="index-E200"></a>
+<a name="index-E201"></a>
+</p></dd>
+<dt>BufReadPre</dt>
+<dd><p>新しいバッファの編輯を始めたときの、ファイルをバッファに讀み込む前。讀み込むファイルが存在しないときは使へない。
+<a name="BufUnload"></a><a name="index-BufUnload"></a>
+</p></dd>
+<dt>BufUnload</dt>
+<dd><p>バッファを解放する前。これは、バッファ內のテキストが解放されるときである。BufWritePost の後で、BufDelete の前かもしれない。Vim が終了しようとしてゐるとき、讀み込まれた全てのバッファについて發生する。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+このイベントで自動コマンドが實行されたときは、&quot;%&quot; で表されるカレントバッファと&quot;&lt;afile&gt;&quot; で表される解放されるバッファとは異なるかもしれないことに注意。他のバッファやウィンドウに切り替へないこと。問題が發生するだらう。終了時に v:dying が 2 以上のときはこのイベントは發生しない。
+</p></blockquote>
+<a name="BufWinEnter"></a><a name="index-BufWinEnter"></a>
+</dd>
+<dt>BufWinEnter</dt>
+<dd><p>バッファがウィンドウ內に表示された後。これはバッファが讀み込まれたとき (モードラインの處理後) か、隱れ (hidden) バッファがウィンドウ內に表示されたとき (もう隱れバッファでなくなつたとき)。
+引數なしで |<a href="windows_002etxt.html#g_t_003asplit">:split</a>| をしたときや、既にウィンドウに表示されてゐるバッファを指定して &quot;<code>:split</code>&quot; をしたときは、同じバッファを開いたままなので、このイベントは發生しない。既存のバッファがそのまま使はれるためである。しかし、カレントバッファの名前を指定して &quot;<code>:split</code>&quot; をすると、そのバッファを再讀み込みすることになるので、發生する。
+</p>
+<p>端末ウィンドウでは發生しない。何故なら Terminal-Job モードで開始され、Normal モードコマンドは機能しないからである。代はりに |<a href="#TerminalOpen">TerminalOpen</a>| を使用すること。
+<a name="BufWinLeave"></a><a name="index-BufWinLeave"></a>
+</p></dd>
+<dt>BufWinLeave</dt>
+<dd><p>バッファがウィンドウから取り除かれる前。そのバッファが別のウィンドウ內で表示中ならば發生しない。Vim の終了時にも發生する。イベント BufUnload や BufHidden よりも前に發生する。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+このイベントで自動コマンドが實行されたときは、&quot;%&quot; で表されるカレントバッファと&quot;&lt;afile&gt;&quot; で表される解放されるバッファとは異なるかもしれないことに注意。他のバッファに切り替へないこと。もしすると問題が發生するだらう。終了時に v:dying が 2 以上のときはこのイベントは發生しない。
+</p></blockquote>
+<a name="BufWipeout"></a><a name="index-BufWipeout"></a>
+</dd>
+<dt>BufWipeout</dt>
+<dd><p>バッファを完全に削除する前。イベント BufUnload と BufDelete が先に發生するかもしれない (バッファが讀み込まれてゐて、バッファリスト內に存在するなら)。バッファがリネームされる直前にも發生する (そのバッファがバッファリスト內になくとも)。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+このイベントで自動コマンドが實行されたときは、&quot;%&quot; で表されるカレントバッファと &quot;&lt;afile&gt;&quot; で表される削除されるバッファとは異なるかもしれないことに注意。
+</p></blockquote>
+<a name="BufWrite"></a><a name="BufWritePre"></a><a name="index-BufWrite"></a>
+<a name="index-BufWritePre"></a>
+</dd>
+<dt>BufWrite または</dt>
+<dt>BufWritePre</dt>
+<dd><p>バッファ全體をファイルに書き込む前。
+<a name="BufWriteCmd"></a><a name="index-BufWriteCmd"></a>
+</p></dd>
+<dt>BufWriteCmd</dt>
+<dd><p>バッファ全體をファイルに書き込む前。もしも成功するなら、ファイルへの書き込みを實行してオプション &rsquo;<samp>modified</samp>&rsquo; をオフにする。&rsquo;<samp>cpo</samp>&rsquo; に &rsquo;<var>+</var>&rsquo; が無いのであれば、他のファイルに書き込みをする |<a href="options_002etxt.html#cpo_002d_002b">cpo-+</a>|。バッファの內容を變更すべきではない。&rsquo;<samp>modified</samp>&rsquo; をオフにすると、以前の undo 狀態が &rsquo;<samp>modified</samp>&rsquo; (變更あり) になるやうに undo 情報が調整される (|<a href="editing_002etxt.html#g_t_003awrite">:write</a>| と同樣)。|<a href="#Cmd_002devent">Cmd-event</a>|
+<a name="BufWritePost"></a><a name="index-BufWritePost"></a>
+</p></dd>
+<dt>BufWritePost</dt>
+<dd><p>バッファ全體をファイルに書き込んだ後 (イベント BufWritePre によるコマンドをアンドゥする役目を果たす)。
+<a name="CmdUndefined"></a><a name="index-CmdUndefined"></a>
+</p></dd>
+<dt>CmdUndefined</dt>
+<dd><p>ユーザー定義コマンドが使はれたが、定義されてゐなかつたとき。必要なときのみコマンドを定義するのに便利である。パターンはコマンド名に對して照合される。&lt;amatch&gt; と &lt;afile&gt; の兩方ともコマンド名に設定される。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+未定義のコマンドに對して自動補完は機能しない。このイベントを使ふ代はりにユーザー定義コマンドを常に定義するやうにしてそのコマンドから autoload 函數を呼び出すやうにするといふ方法もある。|<a href="eval_002etxt.html#autoload">autoload</a>| 參照。
+</p></blockquote>
+<a name="CmdlineChanged"></a><a name="index-CmdlineChanged"></a>
+</dd>
+<dt>CmdlineChanged</dt>
+<dd><p>コマンドラインのテキストに變更が加へられた後。Vim が固まつてしまふ可能性があるので、コマンドラインで閒違ひを起こさないよう注意すること。&lt;afile&gt; はコマンドラインの種類を示す 1 文字に設定される。
+|<a href="cmdline_002etxt.html#cmdwin_002dchar">cmdwin-char</a>|
+<a name="CmdlineEnter"></a><a name="index-CmdlineEnter"></a>
+</p></dd>
+<dt>CmdlineEnter</dt>
+<dd><p>ユーザーがコマンドを入力もしくは文字列を檢索できるコマンドラインにカーソルが移動した後。&lt;afile&gt; はコマンドラインの種類を示す 1 文字に設定される。
+|<a href="cmdline_002etxt.html#cmdwin_002dchar">cmdwin-char</a>|
+<a name="CmdlineLeave"></a><a name="index-CmdlineLeave"></a>
+</p></dd>
+<dt>CmdlineLeave</dt>
+<dd><p>カーソルがコマンドラインを離れる前。<kbd>CTRL-C</kbd> もしくは <code class="tt-key">&lt;Esc&gt;</code> の入力によつてコマンドラインを抛棄する場合も同樣。
+</p>
+<p>コマンドの結果がエラーとなる場合は、コマンドラインは引き續き實行中となる。
+</p>
+<p>&lt;afile&gt; はコマンドラインの種類を示す 1 文字に設定される。|<a href="cmdline_002etxt.html#cmdwin_002dchar">cmdwin-char</a>|
+<a name="CmdwinEnter"></a><a name="index-CmdwinEnter"></a>
+</p></dd>
+<dt>CmdwinEnter</dt>
+<dd><p>Command-line ウィンドウに入つた後。この特殊なウィンドウに對してのみオプションを設定するのに便利である。このイベントは BufEnter や WinEnter の「代はりに」發生する。&lt;afile&gt; は、command-line の種類を示す 1 文字に設定される。|<a href="cmdline_002etxt.html#cmdwin_002dchar">cmdwin-char</a>|
+<a name="CmdwinLeave"></a><a name="index-CmdwinLeave"></a>
+</p></dd>
+<dt>CmdwinLeave</dt>
+<dd><p>Command-line ウィンドウから出る前。イベント CmdwinEnter で行つたグローバル設定を消去するのに便利である。このイベントは BufLeave や WinLeave の「代はりに」發生する。&lt;afile&gt; は、command-line の種類を示す 1 文字に設定される。|<a href="cmdline_002etxt.html#cmdwin_002dchar">cmdwin-char</a>|
+<a name="ColorScheme"></a><a name="index-ColorScheme"></a>
+</p></dd>
+<dt>ColorScheme</dt>
+<dd><p>カラースキームを讀み込んだ後。|<a href="syntax_002etxt.html#g_t_003acolorscheme">:colorscheme</a>| パターンはカラースキーム名にマッチする。&lt;afile&gt; はこのオプションを設定したファイルの名前になる。&lt;amatch&gt; はカラースキーム名になる。
+</p>
+<a name="ColorSchemePre"></a><a name="index-ColorSchemePre"></a>
+</dd>
+<dt>ColorSchemePre</dt>
+<dd><p>カラースキームを讀み込む前。|<a href="syntax_002etxt.html#g_t_003acolorscheme">:colorscheme</a>|
+</p>
+<p>あるカラースキームが讀み込まれる前に、それ以前に別のカラースキームによつて追加されたものを取り除くのに便利。
+<a name="CompleteChanged"></a><a name="index-CompleteChanged"></a>
+</p></dd>
+<dt>CompleteChanged</dt>
+<dd><p>插入モード補完メニューが變更される度。ポップアップメニューが非表示時には發生しない。そのためには |<a href="#CompleteDone">CompleteDone</a>| を使用すること。再歸的に發生することはない。
+</p>
+<p>これらの |<a href="eval_002etxt.html#v_003aevent">v:event</a>| キーを設定する:
+</p><table>
+<tr><td width="50%">completed_item</td><td width="50%">|<a href="insert_002etxt.html#complete_002ditems">complete-items</a>| 參照</td></tr>
+<tr><td width="50%">height</td><td width="50%">表示項目數</td></tr>
+<tr><td width="50%">width</td><td width="50%">畫面セル數</td></tr>
+<tr><td width="50%">row</td><td width="50%">畫面上端の行</td></tr>
+<tr><td width="50%">col</td><td width="50%">畫面最左の桁</td></tr>
+<tr><td width="50%">size</td><td width="50%">全項目數</td></tr>
+<tr><td width="50%">scrollbar</td><td width="50%">表示時 TRUE</td></tr>
+</table>
+
+<p>テキストの |<a href="eval_002etxt.html#textlock">textlock</a>| を變更することはできない。
+<a name="CompleteDone"></a><a name="index-CompleteDone"></a>
+</p></dd>
+<dt>CompleteDone</dt>
+<dd><p>插入モード補完が完了したとき。補完が實行されても中止されても發行される。|<a href="insert_002etxt.html#ins_002dcompletion">ins-completion</a>| 變數 |<a href="eval_002etxt.html#v_003acompleted_005fitem">v:completed_item</a>| には補完された候補についての情報が含まれてゐる。
+</p>
+<a name="CursorHold"></a><a name="index-CursorHold"></a>
+</dd>
+<dt>CursorHold</dt>
+<dd><p>&rsquo;<samp>updatetime</samp>&rsquo; の時閒の閒、ユーザーがキーを押さなかつたとき。ユーザーが何かキーを押すまで、再び發生することはない (例へば、もしあなたがコーヒーを入れるために Vim の前を離れても、その閒の &rsquo;<samp>updatetime</samp>&rsquo; ミリ秒ごと發生することはない :-)。タグをプレビューするためには、|<a href="windows_002etxt.html#CursorHold_002dexample">CursorHold-example</a>| を參照。
+このイベントはノーマルモードのときのみ呼ばれる。コマンドの引數の入力待ち狀態、またはオペレータの後の移動コマンド入力待ち狀態のときは發生しない。レコーディングの最中には CursorHold イベントは發生しない。|<a href="repeat_002etxt.html#q">q</a>|
+<a name="g_t_003cCursorHold_003e"></a><a name="index-_003cCursorHold_003e"></a>
+この自動コマンドは內部的に &lt;CursorHold&gt; キーが引き金になつてゐる。式による指定のマッピング內では |<a href="eval_002etxt.html#getchar_0028_0029">getchar()</a>| によつてこの文字が取得されることがある。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+このイベントには對話的なコマンドは使へないことに注意。「續けるには」プロンプトは現れず、スクリーンは必要に應じて直接更新される。
+</p></blockquote>
+<blockquote>
+<p><strong>Note:</strong> <br>
+</p></blockquote>
+<p>近いうちに、發生するまでの時閒を設定する別のオプションができるだらう。
+</p><blockquote>
+<p><strong>Hint:</strong> <br>
+ステータスラインの更新を强制的に行ふには、これを使ふこと:
+</p><div class="example">
+<pre class="example">:let &amp;ro = &amp;ro
+</pre></div>
+<p>{Vim の Amiga 版、Unix 版、Win32 版、MSDOS 版および全ての GUI 版でのみ有效}
+</p></blockquote>
+<a name="CursorHoldI"></a><a name="index-CursorHoldI"></a>
+</dd>
+<dt>CursorHoldI</dt>
+<dd><p>CursorHold と同樣だが、插入モードのとき發生する。例へば別のキーを待つてゐるとき、例へば <kbd>CTRL-V</kbd> の後で、<kbd>CTRL-X</kbd> モード |<a href="insert_002etxt.html#insert_005fexpand">insert_expand</a>| ではないときにはトリガーされない。
+</p>
+<a name="CursorMoved"></a><a name="index-CursorMoved"></a>
+</dd>
+<dt>CursorMoved</dt>
+<dd><p>ノーマルモードかビジュアルモードでカーソルが移動した後。カーソル行のテキストが變更されたときにも發生する(例: &quot;x&quot;, &quot;rx&quot;, &quot;p&quot;などで)。先行入力があつたりオペレータが實行待ちになつてゐる場合は發生しない。|<a href="tips_002etxt.html#match_002dparens">match-parens</a>| の例を參照。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+この自動イベントは &lsquo;<code>:noautocmd</code>&lsquo; を付けてもスキップできない。
+</p></blockquote>
+<blockquote>
+<p><strong>Careful:</strong> <br>
+このイベントは頻繁に發生するので、ユーザーが豫期しないことや時閒のかかる處理は行はないこと。
+</p></blockquote>
+<a name="CursorMovedI"></a><a name="index-CursorMovedI"></a>
+</dd>
+<dt>CursorMovedI</dt>
+<dd><p>插入モードでカーソルが移動した後。ポップアップメニューが表示されてゐるときは發行されない。それ以外は CursorMoved と同じ。
+<a name="EncodingChanged"></a><a name="index-EncodingChanged"></a>
+</p></dd>
+<dt>EncodingChanged</dt>
+<dd><p>オプション &rsquo;<samp>encoding</samp>&rsquo; が變更されたとき。例へば、フォント等の設定に便利である。
+<a name="FileAppendCmd"></a><a name="index-FileAppendCmd"></a>
+</p></dd>
+<dt>FileAppendCmd</dt>
+<dd><p>ファイルに追加する前。ファイルへの追加の役目を負ふ。|<a href="#Cmd_002devent">Cmd-event</a>|
+<a name="FileAppendPost"></a><a name="index-FileAppendPost"></a>
+</p></dd>
+<dt>FileAppendPost</dt>
+<dd><p>ファイルに追加した後。
+<a name="FileAppendPre"></a><a name="index-FileAppendPre"></a>
+</p></dd>
+<dt>FileAppendPre</dt>
+<dd><p>ファイルに追加する前。行範圍を指定するためには &rsquo;[ と &rsquo;] マークを使ふ
+<a name="FileChangedRO"></a><a name="index-FileChangedRO"></a>
+</p></dd>
+<dt>FileChangedRO</dt>
+<dd><p>讀み込み專用ファイルに最初の變更を加へる前。ソース管理システム {譯注: CVS や RCS} からファイルをチェックアウトするのに使はれる。變更が自動コマンドによるときには發生しない。このイベントが發生するのは、バッファに最初の變更を行ふときや、&rsquo;<samp>readonly</samp>&rsquo; がセットされた後に最初の變更を行ふときの、變更が適用される直前である。
+</p><blockquote>
+<p><strong>警告:</strong> <br>
+自動コマンドでカーソルが動かされるときの動作は、定義されてゐない。
+</p></blockquote>
+<a name="E788"></a><a name="index-E788"></a>
+<p>ここで他のバッファに變更をしてはならない。バッファを再讀み込みするとはよいが、他のバッファを編輯してはならない。
+<a name="E881"></a><a name="index-E881"></a>
+行數が變化した場合 undo のための保存は失敗し、その變更は中止されるだらう。
+<a name="DiffUpdated"></a><a name="index-DiffUpdated"></a>
+</p></dd>
+<dt>DiffUpdated</dt>
+<dd><p>diff が更新された後。どの diff (內藏もしくは外部) が使はれてゐるかに應じて、すべての變更もしくは最中に發動する |<a href="diff_002etxt.html#g_t_003adiffupdate">:diffupdate</a>|。
+<a name="DirChanged"></a><a name="index-DirChanged"></a>
+</p></dd>
+<dt>DirChanged</dt>
+<dd><p>|<a href="editing_002etxt.html#g_t_003acd">:cd</a>|, |<a href="editing_002etxt.html#g_t_003atcd">:tcd</a>| もしくは |<a href="editing_002etxt.html#g_t_003alcd">:lcd</a>| コマンドによつて、もしくは &rsquo;<samp>autochdir</samp>&rsquo; オプションの結果として作業ディレクトリが變更された後。
+</p>
+<p>パターンは以下のやうになる:
+</p><div class="example">
+<pre class="example">&quot;window&quot;  `:lcd` により發生する
+&quot;tabpage&quot; `:tcd` により發生する
+&quot;global&quot;  `:cd`により發生する
+&quot;auto&quot;    'autochdir' により發生する
+&quot;drop&quot;	  ファイルの編輯により發生する
+</pre></div>
+<p>&lt;afile&gt; は新ディレクトリ名に設定される。
+<a name="ExitPre"></a><a name="index-ExitPre"></a>
+</p></dd>
+<dt>ExitPre</dt>
+<dd><p>Vim を終了させる &lsquo;<code>:quit</code>&lsquo;, &lsquo;<code>:wq</code>&lsquo; もしくは &lsquo;<code>:qall</code>&lsquo; wo使用したときで、|<a href="#QuitPre">QuitPre</a>| の直後。不必要なウィンドウを閉ぢるのに使ふことができる。自動的に保存されない變更濟みのバッファがある場合には、終了はまだキャンセルされる可能性がある。本當に終了するときのためには |<a href="#VimLeavePre">VimLeavePre</a>| を使用すること。
+<a name="FileChangedShell"></a><a name="index-FileChangedShell"></a>
+</p></dd>
+<dt>FileChangedShell</dt>
+<dd><p>ファイルのタイムスタンプが、ファイルの編輯が始まつてから變更されたことを發見したとき。ファイルの屬性やファイルサイズが變更されたときにも使はれる。|<a href="editing_002etxt.html#timestamp">timestamp</a>|
+大抵はシェルコマンドの實行後に發生する。またコマンド |<a href="editing_002etxt.html#g_t_003achecktime">:checktime</a>| の實行後や、gvim が入力フォーカスを一度失ひ、再び得たときにも發生する。このイベントは變更されたファイルそれぞれに對して發生する。
+</p>
+<p>オプション &rsquo;<samp>autoread</samp>&rsquo; がオンであり、かつバッファが變更されてゐないときには使はれない。もし FileChangedShell の自動コマンドが存在しても、警告メッセージやプロンプトは現れない。
+</p>
+<p>變數 |<a href="eval_002etxt.html#v_003afcs_005freason">v:fcs_reason</a>| に何が起こつたのかが設定され、|<a href="eval_002etxt.html#v_003afcs_005fchoice">v:fcs_choice</a>| によつて Vim に次に何をすべきかを指示できる。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+このイベントで自動コマンドが實行されたときは、&quot;%&quot; で表されるカレントバッファと &quot;&lt;afile&gt;&quot; で表される變更されたバッファとは異なるかもしれないことに注意。
+</p></blockquote>
+<blockquote>
+<p><strong>Note:</strong> <br>
+この自動コマンドはカレントバッファを變更したり、別のバッファにジャンプしたり、バッファを消去してはいけない。
+<a name="E246"></a><a name="E811"></a><a name="index-E246"></a>
+<a name="index-E811"></a>
+</p></blockquote>
+<blockquote>
+<p><strong>Note:</strong> <br>
+このイベントは、無限ループを避けるために決してネストしてはいけない (入れ子にならない)。つまり、FielChangedShell イベントの處理中は他の FileChangedShell イベントは呼ばれない。
+</p></blockquote>
+<a name="FileChangedShellPost"></a><a name="index-FileChangedShellPost"></a>
+</dd>
+<dt>FileChangedShellPost</dt>
+<dd><p>Vim の外部でファイルが變更されたのを檢出・對處した後。ステータスラインを更新するのに使へる。
+<a name="FileEncoding"></a><a name="index-FileEncoding"></a>
+</p></dd>
+<dt>FileEncoding</dt>
+<dd><p>時代遲れである。まだ有效だがイベント |<a href="#EncodingChanged">EncodingChanged</a>| と同等である。
+<a name="FileReadCmd"></a><a name="index-FileReadCmd"></a>
+</p></dd>
+<dt>FileReadCmd</dt>
+<dd><p>コマンド &quot;<code>:read</code>&quot; でファイルを讀み込む前。ファイルを讀み込む役目を負ふ。|<a href="#Cmd_002devent">Cmd-event</a>|
+<a name="FileReadPost"></a><a name="index-FileReadPost"></a>
+</p></dd>
+<dt>FileReadPost</dt>
+<dd><p>コマンド &quot;<code>:read</code>&quot; でファイルを讀み込んだ後。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+讀み込んだテキストの先頭行と末尾行には、マーク &rsquo;[ と &rsquo;] が設定されることに注意。これは、讀み込まれた行に對して操作を行ふのに使はれる。
+</p></blockquote>
+<a name="FileReadPre"></a><a name="index-FileReadPre"></a>
+</dd>
+<dt>FileReadPre</dt>
+<dd><p>コマンド &quot;<code>:read</code>&quot; でファイルを讀み込む前。
+<a name="FileType"></a><a name="index-FileType"></a>
+</p></dd>
+<dt>FileType</dt>
+<dd><p>オプション &rsquo;<samp>filetype</samp>&rsquo; が設定されたとき。パターンはファイルタイプに對して照合される。&lt;afile&gt; は &rsquo;<samp>filetype</samp>&rsquo; が設定されたファイルの名前として使へる。&lt;amatch&gt; は &rsquo;<samp>filetype</samp>&rsquo; の新しい値として使へる。他のウィンドウもしくはバッファへの移動は許されてゐない。|<a href="filetype_002etxt.html#filetypes">filetypes</a>| を參照。
+<a name="FileWriteCmd"></a><a name="index-FileWriteCmd"></a>
+</p></dd>
+<dt>FileWriteCmd</dt>
+<dd><p>バッファ全體を書き込まない場合の、ファイルに書き込む前。ファイルへの書き込みの役目を負ふ。バッファを變更すべきではない。|<a href="#Cmd_002devent">Cmd-event</a>|
+<a name="FileWritePost"></a><a name="index-FileWritePost"></a>
+</p></dd>
+<dt>FileWritePost</dt>
+<dd><p>バッファ全體を書き込まない場合の、ファイルに書き込んだ後。
+<a name="FileWritePre"></a><a name="index-FileWritePre"></a>
+</p></dd>
+<dt>FileWritePre</dt>
+<dd><p>バッファ全體を書き込まない場合の、ファイルに書き込む前。
+<a name="FilterReadPost"></a><a name="index-FilterReadPost"></a>
+</p></dd>
+<dt>FilterReadPost</dt>
+<dd><p>フィルタコマンドからファイルを讀み込んだ後。Vim は FilterReadPre と同樣に、現在のバッファの名前に對してパターンを調べる。&rsquo;<samp>shelltemp</samp>&rsquo; がオフの時は發生しない。
+<a name="FilterReadPre"></a><a name="E135"></a><a name="index-FilterReadPre"></a>
+<a name="index-E135"></a>
+</p></dd>
+<dt>FilterReadPre</dt>
+<dd><p>フィルタコマンドからファイルを讀み込む前。Vim は、フィルタコマンドの出力である一時ファイルの名前ではなく、現在のバッファの名前に對してパターンを調べる。&rsquo;<samp>shelltemp</samp>&rsquo; がオフの時は發生しない。
+<a name="FilterWritePost"></a><a name="index-FilterWritePost"></a>
+</p></dd>
+<dt>FilterWritePost</dt>
+<dd><p>フィルタコマンド用のファイルを書き込んだり、外部 diff で差分表示用のファイルを作つた後 (內部 diff については |<a href="#DiffUpdated">DiffUpdated</a>| を參照)。Vimは FilterWritePre と同樣、現在のバッファの名前に對してパターンをチェックする。&rsquo;<samp>shelltemp</samp>&rsquo; がオフのときは發生しない。
+<a name="FilterWritePre"></a><a name="index-FilterWritePre"></a>
+</p></dd>
+<dt>FilterWritePre</dt>
+<dd><p>フィルタコマンド用のファイルを書き込んだり、外部 diff で差分表示用のファイルを作る前。Vim はフィルタコマンドの出力である一時ファイルの名前ではなく、現在のバッファの名前に對してパターンをチェックする。&rsquo;<samp>shelltemp</samp>&rsquo; がオフのときは發生しない。
+<a name="FocusGained"></a><a name="index-FocusGained"></a>
+</p></dd>
+<dt>FocusGained</dt>
+<dd><p>Vim が入力フォーカスを得たとき。GUI 版と、入力フォーカスを認識できるいくつかのコンソール版でのみ有效。
+<a name="FocusLost"></a><a name="index-FocusLost"></a>
+</p></dd>
+<dt>FocusLost</dt>
+<dd><p>Vim が入力フォーカスを失つたとき。GUI 版と、入力フォーカスを認識できるいくつかのコンソール版でのみ有效。ダイアログがポップアップした時に發生するかもしれない。
+<a name="FuncUndefined"></a><a name="index-FuncUndefined"></a>
+</p></dd>
+<dt>FuncUndefined</dt>
+<dd><p>ユーザー定義函數が使はれたが、定義されてゐなかつたとき。必要なときのみ函數を定義するのに便利である。パターンは函數名に對して照合される。&lt;amatch&gt; と &lt;afile&gt; の兩方とも函數名に設定される。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+Vim script を書くときには autoload 函數を使ふ方がよい。|<a href="eval_002etxt.html#autoload_002dfunctions">autoload-functions</a>| を參照。
+</p></blockquote>
+<a name="GUIEnter"></a><a name="index-GUIEnter"></a>
+</dd>
+<dt>GUIEnter</dt>
+<dd><p>GUI の開始に成功し、ウィンドウを開いた後。gvim を使つたときは、VimEnter の前に發生する。ファイル <samp>.gvimrc</samp> からウィンドウの配置場所を設定するために使ふことができる。
+</p><div class="example">
+<pre class="example">:autocmd GUIEnter * winpos 100 50
+</pre></div>
+<a name="GUIFailed"></a><a name="index-GUIFailed"></a>
+</dd>
+<dt>GUIFailed</dt>
+<dd><p>GUI の開始に失敗した後。可能ならば、Vim はターミナル內で實行を繼續する (Unix 系のみ。X サーバーへ接續が失敗したとき)。ここで Vim を終了させるには、次のやうにする:
+</p><div class="example">
+<pre class="example">:autocmd GUIFailed * qall
+</pre></div>
+<a name="InsertChange"></a><a name="index-InsertChange"></a>
+</dd>
+<dt>InsertChange</dt>
+<dd><p>插入・置換モードで <kbd>&lt;Insert&gt;</kbd> をタイプしたとき。變數 |<a href="eval_002etxt.html#v_003ainsertmode">v:insertmode</a>| が新しいモードを示す。カーソルを移動したりなどユーザーが豫期しないことは行はないやうに注意。
+<a name="InsertCharPre"></a><a name="index-InsertCharPre"></a>
+</p></dd>
+<dt>InsertCharPre</dt>
+<dd><p>插入モードで文字が入力されたとき、その文字が插入される前。|<a href="eval_002etxt.html#v_003achar">v:char</a>| 變數に入力された文字が入つてゐる。イベント內でそれを變更することで實際に插入される文字を變更できる。
+</p>
+<p>|<a href="eval_002etxt.html#v_003achar">v:char</a>| に 2 つ以上の文字を入れた場合はそのテキストはそのまま (literally) 插入される。
+テキストを變更することはできない |<a href="eval_002etxt.html#textlock">textlock</a>|。このイベントは &rsquo;<samp>paste</samp>&rsquo; がオンに設定されてゐるときは發行されない。
+</p>
+<p>{+eval 機能が有效な場合のみ}
+<a name="InsertEnter"></a><a name="index-InsertEnter"></a>
+</p></dd>
+<dt>InsertEnter</dt>
+<dd><p>插入モード・置換モード・假想置換モードを開始する直前。變數 |<a href="eval_002etxt.html#v_003ainsertmode">v:insertmode</a>| がモードを示す。ユーザーが豫期しないことは行はないやうに注意。
+</p>
+<p>カーソルはコマンド實行後に復元される。復元されたくない場合は |<a href="eval_002etxt.html#v_003achar">v:char</a>| に非空文字を設定する。
+<a name="InsertLeave"></a><a name="index-InsertLeave"></a>
+</p></dd>
+<dt>InsertLeave</dt>
+<dd><p>插入モードを拔けるとき。<kbd>CTRL-O</kbd> |<a href="insert_002etxt.html#i_005fCTRL_002dO">i_CTRL-O</a>| を使つたときにも發生する。|<a href="insert_002etxt.html#i_005fCTRL_002dC">i_CTRL-C</a>| のときは發生しない。
+<a name="MenuPopup"></a><a name="index-MenuPopup"></a>
+</p></dd>
+<dt>MenuPopup</dt>
+<dd><p>(マウス右ボタンで) ポップアップメニューを表示する直前。カーソル下やマウスポインタの下にあるものによつてメニューを調整するのに便利。
+パターンにはモードを表す 1 もしくは 2 文字を記述する:
+</p><table>
+<tr><td width="20%">n</td><td width="80%">ノーマル</td></tr>
+<tr><td width="20%">v</td><td width="80%">ビジュアル</td></tr>
+<tr><td width="20%">o</td><td width="80%">オペレータ實行待ち</td></tr>
+<tr><td width="20%">i</td><td width="80%">插入</td></tr>
+<tr><td width="20%">c</td><td width="80%">コマンドライン</td></tr>
+<tr><td width="20%">tl</td><td width="80%">Terminal</td></tr>
+</table>
+<a name="OptionSet"></a><a name="index-OptionSet"></a>
+</dd>
+<dt>OptionSet</dt>
+<dd><p>オプションが設定された後。パターンは長い (短縮しない) オプション名に對してマッチする。|<a href="cmdline_002etxt.html#g_t_003camatch_003e">&lt;amatch&gt;</a>| は對象のオプション名が設定される。
+</p>
+<p>|<a href="eval_002etxt.html#v_003aoption_005ftype">v:option_type</a>| はオプションの變更のスコープがグローバルかローカルかが格納される。
+</p>
+<p>|<a href="eval_002etxt.html#v_003aoption_005fcommand">v:option_command</a>| はどのコマンドで値が設定されたかが格納される。(タグのジャンプ先にある表を參照)
+</p>
+<p>|<a href="eval_002etxt.html#v_003aoption_005fnew">v:option_new</a>| は新しく設定された値が格納される。
+</p>
+<p>|<a href="eval_002etxt.html#v_003aoption_005foldlocal">v:option_oldlocal</a>| は變更前のローカルの値が格納される。
+</p>
+<p>|<a href="eval_002etxt.html#v_003aoption_005foldglobal">v:option_oldglobal</a>| は變更前のグローバルの値が格納される。
+</p>
+<p>|<a href="eval_002etxt.html#v_003aoption_005fold">v:option_old</a>| は變更前の値が格納される。
+</p>
+<p>|<a href="eval_002etxt.html#v_003aoption_005foldlocal">v:option_oldlocal</a>| には |<a href="options_002etxt.html#g_t_003aset">:set</a>| か |<a href="options_002etxt.html#g_t_003asetlocal">:setlocal</a>|、|<a href="options_002etxt.html#modeline">modeline</a>| のいづれかが使用された場合に値が格納される。同樣に |<a href="eval_002etxt.html#v_003aoption_005foldglobal">v:option_oldglobal</a>| には |<a href="options_002etxt.html#g_t_003aset">:set</a>| か |<a href="options_002etxt.html#g_t_003asetglobal">:setglobal</a>| が使用された場合に値が格納される。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+|<a href="options_002etxt.html#global_002dlocal">global-local</a>| なオプションと |<a href="options_002etxt.html#g_t_003aset">:set</a>| を利用して文字列をセットした場合、|<a href="eval_002etxt.html#v_003aoption_005fold">v:option_old</a>| には古いグローバルの値が格納されるが、それ以外の場合 (例へばローカルな文字列や |<a href="options_002etxt.html#global_002dlocal">global-local</a>| な數値等) は古いローカルの値が格納されるので注意。
+</p></blockquote>
+
+<p>OptionSet は起動時と &rsquo;key&rsquo; の變更の際にはあへてイベントが發生しないやうにしてゐる。
+</p>
+<p>使用例: &rsquo;<samp>backupdir</samp>&rsquo; や &rsquo;<samp>undodir</samp>&rsquo; で指定されたディレクトリが存在してゐるかチェックし、もしなければディレクトリを作成する。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+この自動コマンド中でオプションの値をリセットするのは、プラグインの擧動を破壞するため、良くない。この自動コマンドの實行は &lsquo;<code>:noa</code>&lsquo; を使ふことで抑制することができる。
+</p></blockquote>
+
+<p>自動コマンドで |<a href="options_002etxt.html#g_t_003aset">:set</a>| を使用するとき、イベントは再度引き起こされない。
+</p>
+<a name="QuickFixCmdPre"></a><a name="index-QuickFixCmdPre"></a>
+</dd>
+<dt>QuickFixCmdPre</dt>
+<dd><p>QuickFix コマンドが實行される前 (|<a href="quickfix_002etxt.html#g_t_003amake">:make</a>|, |<a href="quickfix_002etxt.html#g_t_003almake">:lmake</a>|, |<a href="quickfix_002etxt.html#g_t_003agrep">:grep</a>|, |<a href="quickfix_002etxt.html#g_t_003algrep">:lgrep</a>|, |<a href="quickfix_002etxt.html#g_t_003agrepadd">:grepadd</a>|, |<a href="quickfix_002etxt.html#g_t_003algrepadd">:lgrepadd</a>|, |<a href="quickfix_002etxt.html#g_t_003avimgrep">:vimgrep</a>|, |<a href="quickfix_002etxt.html#g_t_003alvimgrep">:lvimgrep</a>|, |<a href="quickfix_002etxt.html#g_t_003avimgrepadd">:vimgrepadd</a>|, |<a href="quickfix_002etxt.html#g_t_003alvimgrepadd">:lvimgrepadd</a>|, |<a href="if_005fcscop_002etxt.html#g_t_003acscope">:cscope</a>|, |<a href="quickfix_002etxt.html#g_t_003acfile">:cfile</a>|, |<a href="quickfix_002etxt.html#g_t_003acgetfile">:cgetfile</a>|, |<a href="quickfix_002etxt.html#g_t_003acaddfile">:caddfile</a>|, |<a href="quickfix_002etxt.html#g_t_003alfile">:lfile</a>|, |<a href="quickfix_002etxt.html#g_t_003algetfile">:lgetfile</a>|, |<a href="quickfix_002etxt.html#g_t_003aladdfile">:laddfile</a>|, |<a href="helphelp_002etxt.html#g_t_003ahelpgrep">:helpgrep</a>|, |<a href="helphelp_002etxt.html#g_t_003alhelpgrep">:lhelpgrep</a>|, |<a href="quickfix_002etxt.html#g_t_003acexpr">:cexpr</a>|, |<a href="quickfix_002etxt.html#g_t_003acgetexpr">:cgetexpr</a>|, |<a href="quickfix_002etxt.html#g_t_003acaddexpr">:caddexpr</a>|, |<a href="quickfix_002etxt.html#g_t_003acbuffer">:cbuffer</a>|, |<a href="quickfix_002etxt.html#g_t_003acgetbuffer">:cgetbuffer</a>|, |<a href="quickfix_002etxt.html#g_t_003acaddbuffer">:caddbuffer</a>|)。
+パターンには實行されるコマンドを記述する。|<a href="quickfix_002etxt.html#g_t_003agrep">:grep</a>| が書かれてゐると、&rsquo;<samp>grepprg</samp>&rsquo; が &quot;<var>internal</var>&quot; にセットされてゐても實行される。このコマンドを使つて變數 &rsquo;makeprg&rsquo; と&rsquo;grepprg&rsquo; を設定することはできない。このコマンドでエラーになると QuickFix コマンドは實行されない。
+<a name="QuickFixCmdPost"></a><a name="index-QuickFixCmdPost"></a>
+</p></dd>
+<dt>QuickFixCmdPost</dt>
+<dd><p>QuickFixCmdPre と同樣だが、QuickFix コマンドが實行された後、最初の位置にジャンプする前に發生する。|<a href="quickfix_002etxt.html#g_t_003acfile">:cfile</a>| コマンドと |<a href="quickfix_002etxt.html#g_t_003alfile">:lfile</a>| コマンドの場合はイベントはエラーファイルを讀み込んだ後、最初のエラーに移動する前に實行される。|<a href="quickfix_002etxt.html#QuickFixCmdPost_002dexample">QuickFixCmdPost-example</a>| を參照。
+<a name="QuitPre"></a><a name="index-QuitPre"></a>
+</p></dd>
+<dt>QuitPre</dt>
+<dd><p>&lsquo;<code>:quit</code>&lsquo;, &lsquo;<code>:wq</code>&lsquo;, &lsquo;<code>:qall</code>&lsquo; を使つたとき、カレントウィンドウを閉ぢるのか、Vim を終了するのかを決定する前に發行される。例へば、普通のウィンドウがカレントウィンドウだけだつたときに、他の餘分なウィンドウを閉ぢることができる。|<a href="#ExitPre">ExitPre</a>| も參照。
+<a name="RemoteReply"></a><a name="index-RemoteReply"></a>
+</p></dd>
+<dt>RemoteReply</dt>
+<dd><p>サーバーとして働く Vim からの應答を受け取つたとき |<a href="eval_002etxt.html#server2client_0028_0029">server2client()</a>|。パターンは {serverid} に對して照合される。&lt;amatch&gt; は應答が送られてきたサーバーの {serverid} になり、&lt;afile&gt; は應答の實際の內容になる。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+これに自動コマンドを定義したときも、應答を讀み込むのには、讀み込んだ應答を處理できるやうに函數 |<a href="eval_002etxt.html#remote_005fread_0028_0029">remote_read()</a>| を使ふべきであることに注意。
+</p></blockquote>
+<a name="SessionLoadPost"></a><a name="index-SessionLoadPost"></a>
+</dd>
+<dt>SessionLoadPost</dt>
+<dd><p>|<a href="starting_002etxt.html#g_t_003amksession">:mksession</a>| で作られたセッションファイルを讀み込んだ後。
+<a name="ShellCmdPost"></a><a name="index-ShellCmdPost"></a>
+</p></dd>
+<dt>ShellCmdPost</dt>
+<dd><p>|<a href="various_002etxt.html#g_t_003a_0021cmd">:!cmd</a>|, |<a href="various_002etxt.html#g_t_003ashell">:shell</a>|, |<a href="quickfix_002etxt.html#g_t_003amake">:make</a>|, |<a href="quickfix_002etxt.html#g_t_003agrep">:grep</a>| を使つてシェルコマンドを實行した後。變更されたファイルをチェックするのに使へる。
+<a name="ShellFilterPost"></a><a name="index-ShellFilterPost"></a>
+</p></dd>
+<dt>ShellFilterPost</dt>
+<dd><p>&quot;<code>:{range}!cmd</code>&quot;, &quot;<code>:w !cmd</code>&quot;, &quot;<code>:r !cmd</code>&quot; を使つてシェルコマンドを實行した後。變更されたファイルをチェックするのに使へる。
+<a name="SourcePre"></a><a name="index-SourcePre"></a>
+</p></dd>
+<dt>SourcePre</dt>
+<dd><p>Vim script を讀み込む前。|<a href="repeat_002etxt.html#g_t_003asource">:source</a>| &lt;afile&gt; は讀み込まれるファイルの名前となる。
+<a name="SourcePost"></a><a name="index-SourcePost"></a>
+</p></dd>
+<dt>SourcePost</dt>
+<dd><p>Vim script を讀み込んだ後。|<a href="repeat_002etxt.html#g_t_003asource">:source</a>| &lt;afile&gt; は讀み込んだファイルの名前となる。讀み込みが中斷された場合はトリガーされない。自動コマンド SourceCmd がトリガーされた後にもトリガーされる。
+<a name="SourceCmd"></a><a name="index-SourceCmd"></a>
+</p></dd>
+<dt>SourceCmd</dt>
+<dd><p>Vim script を讀み込むとき。|<a href="repeat_002etxt.html#g_t_003asource">:source</a>| &lt;afile&gt; は讀み込まれるファイルの名前となる。この自動コマンドはこのファイルを讀み込まねばならない。|<a href="#Cmd_002devent">Cmd-event</a>|
+<a name="SpellFileMissing"></a><a name="index-SpellFileMissing"></a>
+</p></dd>
+<dt>SpellFileMissing</dt>
+<dd><p>スペルチェックファイルを讀み込まうとしたが、見つからなかつたとき。パターンは言語に對して照合される。&lt;amatch&gt; は言語。&rsquo;<samp>encoding</samp>&rsquo; も關係する。|<a href="spell_002etxt.html#spell_002dSpellFileMissing">spell-SpellFileMissing</a>| を參照。
+<a name="StdinReadPost"></a><a name="index-StdinReadPost"></a>
+</p></dd>
+<dt>StdinReadPost</dt>
+<dd><p>標準入力からバッファへ讀み込んだ後で、モードラインを實行する前。Vim を開始したときに引數 &quot;-&quot; が使はれた場合のみ使はれる (|<a href="starting_002etxt.html#g_t_2212_2212">--</a>| 參照)。
+<a name="StdinReadPre"></a><a name="index-StdinReadPre"></a>
+</p></dd>
+<dt>StdinReadPre</dt>
+<dd><p>標準入力からバッファへ讀み込む前。Vim を開始したときに引數 &quot;-&quot; が指定された場合のみ使はれる (|<a href="starting_002etxt.html#g_t_2212_2212">--</a>| 參照)。
+<a name="SwapExists"></a><a name="index-SwapExists"></a>
+</p></dd>
+<dt>SwapExists</dt>
+<dd><p>ファイルの編輯を始めようとしてスワップファイルが存在することを檢出したとき。この狀況に對應する方法を選擇できるときだけユーザーにどうするか問ひ合はせる。
+變數 |<a href="eval_002etxt.html#v_003aswapname">v:swapname</a>| が見つかつたスワップファイルの名前を保持する。&lt;afile&gt; は編輯しようとしてゐるファイルである。|<a href="eval_002etxt.html#v_003aswapcommand">v:swapcommand</a>| が開かれたファイルで實行するコマンドを含んでゐるかもしれない。
+このコマンドは變數 |<a href="eval_002etxt.html#v_003aswapchoice">v:swapchoice</a>| を Vim が次にどうするべきかを示す 1 文字の文字列にセットしなければならない:
+</p><table>
+<tr><td width="20%">&rsquo;o&rsquo;</td><td width="80%">讀み込み專用で開く</td></tr>
+<tr><td width="20%">&rsquo;e&rsquo;</td><td width="80%">とにかくファイルを編輯する</td></tr>
+<tr><td width="20%">&rsquo;r&rsquo;</td><td width="80%">復元する</td></tr>
+<tr><td width="20%">&rsquo;d&rsquo;</td><td width="80%">スワップファイルを削除する</td></tr>
+<tr><td width="20%">&rsquo;q&rsquo;</td><td width="80%">ファイルを編輯せずに終了する</td></tr>
+<tr><td width="20%">&rsquo;a&rsquo;</td><td width="80%"><kbd>CTRL-C</kbd> を押したのと同樣に强制終了する</td></tr>
+</table>
+<p>これが空文字列にセットされると、自動コマンド SwapExists が存在しないときと同樣にユーザーに問ひ合はせをする。
+<a name="E812"></a><a name="index-E812"></a>
+ここでは他のバッファに切り替へること、バッファ名を變更すること、ディレクトリを變更することは許可されてゐない。
+</p>
+<p>{+eval 機能が有效な場合のみ}
+<a name="Syntax"></a><a name="index-Syntax"></a>
+</p></dd>
+<dt>Syntax</dt>
+<dd><p>オプション &rsquo;<samp>syntax</samp>&rsquo; が設定されたとき。パターンは構文名に對して照合される。&lt;afile&gt; は &rsquo;<samp>syntax</samp>&rsquo; が設定されたファイルの名前として使へる。&lt;amatch&gt; は &rsquo;<samp>syntax</samp>&rsquo; の新しい値として使へる。|<a href="syntax_002etxt.html#g_t_003asyn_002don">:syn-on</a>| を參照。
+<a name="TabClosed"></a><a name="index-TabClosed"></a>
+</p></dd>
+<dt>TabClosed</dt>
+<dd><p>タブページを閉ぢた後。
+<a name="TabEnter"></a><a name="index-TabEnter"></a>
+</p></dd>
+<dt>TabEnter</dt>
+<dd><p>タブページに入つた直後 |<a href="tabpage_002etxt.html#tab_002dpage">tab-page</a>|。WinEnter が發生した後、BufEnter が發生する前。
+<a name="TabLeave"></a><a name="index-TabLeave"></a>
+</p></dd>
+<dt>TabLeave</dt>
+<dd><p>タブページを離れる直前 |<a href="tabpage_002etxt.html#tab_002dpage">tab-page</a>|。最初に WinLeave が發生する。
+<a name="TabNew"></a><a name="index-TabNew"></a>
+</p></dd>
+<dt>TabNew</dt>
+<dd><p>タブページが作成されたとき。|<a href="tabpage_002etxt.html#tab_002dpage">tab-page</a>| WinEnter イベントが最初にトリガーされ、TabEnter が實行される。
+<a name="TermChanged"></a><a name="index-TermChanged"></a>
+</p></dd>
+<dt>TermChanged</dt>
+<dd><p>オプション &rsquo;<samp>term</samp>&rsquo; を變更した後。色やフォント等、ターミナル依存の設定を更新するために構文定義ファイルを再讀み込みするのに便利である。讀み込まれたバッファ全てで發生する。
+<a name="TerminalOpen"></a><a name="index-TerminalOpen"></a>
+</p></dd>
+<dt>TerminalOpen</dt>
+<dd><p>&lsquo;<code>:terminal</code>&lsquo; もしくは |<a href="terminal_002etxt.html#term_005fstart_0028_0029">term_start()</a>| により端末バッファが生成された直後。このイベントは、++hidden オプションによつてウィンドウなしにバッファが生成された場合でも發生する。
+<a name="TermResponse"></a><a name="index-TermResponse"></a>
+</p></dd>
+<dt>TermResponse</dt>
+<dd><p>|<a href="term_002etxt.html#t_005fRV">t_RV</a>| に對する應答をターミナルから受け取つたとき。Vim 變數 |<a href="eval_002etxt.html#v_003atermresponse">v:termresponse</a>| の値を使つて、ターミナルのバージョンに應じた處理ができる。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+このイベントは他のイベントの處理中にも發行されることがある。特に、ファイル入出力、シェルコマンドの實行、時閒の掛かる處理など。
+</p></blockquote>
+<a name="TextChanged"></a><a name="index-TextChanged"></a>
+</dd>
+<dt>TextChanged</dt>
+<dd><p>ノーマルモードでカレントバッファのテキストが變更されたとき。つまり |<a href="eval_002etxt.html#b_003achangedtick">b:changedtick</a>| が更新されるとき。つまり |<a href="eval_002etxt.html#b_003achangedtick">b:changedtick</a>| が更新された後 (自動コマンド TextChanged が定義される前にそれが起こつたときも同樣)。
+</p>
+<p>未處理のキー入力がまだあるとき、またはオペレータを待機してゐるときは、發生しない。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+この自動イベントは &lsquo;<code>:noautocmd</code>&lsquo; を付けてもスキップできない。
+</p></blockquote>
+<blockquote>
+<p><strong>Careful:</strong> <br>
+このイベントは頻繁に發生するので、ユーザーが豫期しないことや時閒のかかる處理は行はないこと。
+</p></blockquote>
+<a name="TextChangedI"></a><a name="index-TextChangedI"></a>
+</dd>
+<dt>TextChangedI</dt>
+<dd><p>插入モードでカレントバッファのテキストが變更されたとき。ポップアップメニューが表示されてゐるときは發生しない。他は TextChanged と同じ。
+<a name="TextChangedP"></a><a name="index-TextChangedP"></a>
+</p></dd>
+<dt>TextChangedP</dt>
+<dd><p>插入モードでカレントバッファのテキストに變更が加へられた後で、ポップアップメニューが表示されてゐる場合に限られる。さうでなければ TextChanged と同じ。
+<a name="TextYankPost"></a><a name="index-TextYankPost"></a>
+</p></dd>
+<dt>TextYankPost</dt>
+<dd><p>カレントバッファでテキストがヤンクもしくは削除された後。|<a href="eval_002etxt.html#v_003aevent">v:event</a>| の以下の値は、この autocmd を發生させた操作を特定するのに使用できる:
+</p><table>
+<tr><td width="30%">operator</td><td width="70%">オペレーションが實行された。</td></tr>
+<tr><td width="30%">regcontents</td><td width="70%">行のリストとしてレジスタに格納されたテキスト、例:
+<div class="example">
+<pre class="example">getreg(r, 1, 1)
+</pre></div></td></tr>
+<tr><td width="30%">regname</td><td width="70%">|<a href="sponsor_002etxt.html#register">register</a>| の名前、もしくは無名レジスタの場合は空文字列。</td></tr>
+<tr><td width="30%">regtype</td><td width="70%">レジスタの種類。|<a href="eval_002etxt.html#getregtype_0028_0029">getregtype()</a>| を參照</td></tr>
+</table>
+<p>|<a href="change_002etxt.html#quote_005f">quote_</a>| が使用された場合、もしくは再歸的に呼び出された場合には發生しない。バッファのテキストを變更することは許されてゐない、|<a href="eval_002etxt.html#textlock">textlock</a>| を參照。
+</p>
+<p>{+eval 機能付きでコンパイルされた場合のみ有效}
+</p>
+<a name="User"></a><a name="index-User"></a>
+</dd>
+<dt>User</dt>
+<dd><p>自動的に實行されることはない。コマンド &quot;<code>:doautocmd</code>&quot; によつてのみ實行される自動コマンドのために使用される。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+該當する自動コマンドが存在しないときに &lsquo;<code>:doautocmd User MyEvent</code>&lsquo; が使用された場合、エラーが發生する。これを囘避したい場合、ダミーの自動コマンドを自身で定義すること。
+</p></blockquote>
+<a name="UserGettingBored"></a><a name="index-UserGettingBored"></a>
+</dd>
+<dt>UserGettingBored</dt>
+<dd><p>ユーザーが同じキーを 42 回押したとき。ただの冗談！ :-)
+<a name="VimEnter"></a><a name="index-VimEnter"></a>
+</p></dd>
+<dt>VimEnter</dt>
+<dd><p>ファイル <samp>.vimrc</samp> の讀み込みを含む、全てのスタートアップ處理を行ひ、&quot;-c cmd&quot; の引數を實行し、全てのウィンドウを構築し、それらにバッファを讀み込んだ後。
+このイベントがトリガーされる直前に、|<a href="eval_002etxt.html#v_003avim_005fdid_005fenter">v:vim_did_enter</a>| 變數が設定されてゐるので、以下のことができる:
+</p><pre class="verbatim">if v:vim_did_enter
+  call s:init()
+else
+  au VimEnter * call s:init()
+endif
+</pre><a name="VimLeave"></a><a name="index-VimLeave"></a>
+</dd>
+<dt>VimLeave</dt>
+<dd><p>Vim を終了する前で、ファイル <samp>.viminfo</samp> を書き込んだ後。VimLeavePre のやうに、ただ 1 度だけ實行される。異常終了の檢出には |<a href="eval_002etxt.html#v_003adying">v:dying</a>| を使ふこと。終了時に v:dying が 2 以上のときはこのイベントは發生しない。
+<a name="VimLeavePre"></a><a name="index-VimLeavePre"></a>
+</p></dd>
+<dt>VimLeavePre</dt>
+<dd><p>Vim を終了する前で、ファイル <samp>.viminfo</samp> を書き込む直前。これは終了時にたまたまカレントバッファになつたバッファの名前とマッチしたときに、ただ 1 度だけ實行される。
+大抵、パターンには &quot;*&quot; を使ふと便利である。
+</p><div class="example">
+<pre class="example">:autocmd VimLeavePre * call CleanupStuff()
+</pre></div>
+<p>異常終了の檢出には |<a href="eval_002etxt.html#v_003adying">v:dying</a>| を使ふこと。終了時に v:dying が 2 以上のときはこのイベントは發生しない。
+<a name="VimResized"></a><a name="index-VimResized"></a>
+</p></dd>
+<dt>VimResized</dt>
+<dd><p>Vim ウィンドウのサイズが變はつたとき。よつて &rsquo;lines&rsquo; と &rsquo;columns&rsquo; が變更される。しかし開始時には發生しない。
+<a name="WinEnter"></a><a name="index-WinEnter"></a>
+</p></dd>
+<dt>WinEnter</dt>
+<dd><p>別のウィンドウに入つた後。Vim の開始直後、1 個目のウィンドウに入つたときは發生しない。ウィンドウの高さを設定するのに便利である。そのウィンドウで他のバッファを開いてゐたときは、イベント WinEnter の後に BufEnter が發生する。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+split と tabpage コマンドに關しては、WinEnter イベントが發生するのは分割もしくはタブコマンドの後だが、ファイルが讀み込まれる前であることに注意。
+</p></blockquote>
+
+<a name="WinLeave"></a><a name="index-WinLeave"></a>
+</dd>
+<dt>WinLeave</dt>
+<dd><p>ウィンドウを離れる前。次に入るウィンドウで他のバッファを開いてゐたときは、イベント WinLeave の前に BufLeave が發生する (ただし &quot;<code>:new</code>&quot; を使つたときはさうならない)。&quot;<code>:qa</code>&quot; や &quot;<code>q</code>&quot; で Vim を終了するときには發生しない。
+</p>
+<a name="WinNew"></a><a name="index-WinNew"></a>
+</dd>
+<dt>WinNew</dt>
+<dd><p>新しいウィンドウが作成されたとき。Vim がちやうど開始したとき、最初のウィンドウのためには行はれない。WinEnter イベントの前。
+</p></dd>
+</dl>
+
+<a name="autocmd_002dpatterns"></a><a name="g_t_007bpat_007d"></a><a name="index-autocmd_002dpatterns"></a>
+<a name="index-_007bpat_007d"></a>
+<a name="index-patan"></a>
+<a name="g_t6_002e-patan"></a>
+<h3 class="section">6. パターン</h3>
+
+<p>引數 {pat} にはコンマ區切りのリストを指定することができる。これによりコマンドは指定されたそれぞれのパターンについて實行される。例へばこのコマンド:
+</p><div class="example">
+<pre class="example">:autocmd BufRead *.txt,*.info set et
+</pre></div>
+<p>は下記と等しくなる:
+</p><div class="example">
+<pre class="example">:autocmd BufRead *.txt set et
+:autocmd BufRead *.info set et
+</pre></div>
+
+<p>ファイルパターン {pat} がファイル名とマッチするかどうかは、2 通りの方法で調べられる。
+</p><ol>
+<li> パターンに &rsquo;/&rsquo; が含まれないとき: Vim はファイル名の後ろの部分からのみマッチを調べる (ファイル名の前につくディレクトリパスは除く)。
+</li><li> パターンに &rsquo;/&rsquo; が含まれるとき: Vim は短いファイル名 (ユーザーが打ち込んだもの) と長いファイル名 (短いファイル名をフルパスに展開し、シンボリックリンクならその實體を探したもの) との兩方から一致を調べる。
+</li></ol>
+
+<p>特殊なパターン &lt;buffer&gt; または &lt;buffer=N&gt; はバッファローカルな自動コマンド |<a href="#autocmd_002dbuflocal">autocmd-buflocal</a>| で使はれる。このパターンはバッファの名前に對してはマッチしない。
+</p>
+<p>例:
+</p><div class="example">
+<pre class="example">:autocmd BufRead *.txt          set et
+</pre></div>
+<p>全てのテキストファイルに對しオプション &rsquo;<samp>expandtab</samp>&rsquo; をオンにする。
+</p><div class="example">
+<pre class="example">:autocmd BufRead /vim/src/*.c	set cindent
+</pre></div>
+<p>ディレクトリ /vim/src 內の C 言語ファイルに對しオプション &rsquo;<samp>cindent</samp>&rsquo; をオンにする。
+</p><div class="example">
+<pre class="example">:autocmd BufRead /tmp/*.c       set ts=5
+</pre></div>
+<p>&quot;/tmp/test.c&quot; から &quot;/home/nobody/vim/src/test.c&quot; にリンクを張つてゐると、&quot;/tmp/test.c&quot; の編輯を始めたとき、この自動コマンドは實行される。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+パスの途中だけにマッチさせ、ルートディレクトリにマッチさせたくないときは、最初の1文字目に &rsquo;*&rsquo; を使ふ。例:
+</p><div class="example">
+<pre class="example">:autocmd BufRead */doc/*.txt    set tw=78
+</pre></div>
+<p>この自動コマンドは、例へば &quot;/tmp/doc/xx.txt&quot; や &quot;/usr/home/piet/doc/yy.txt&quot; にマッチする。ここで、ディレクトリの深さは關係ない。
+</p></blockquote>
+
+
+<p>パターンがマッチするファイル名は、ワイルドカードを展開した後のものである。そのため、次のコマンドを實行すると
+</p><div class="example">
+<pre class="example">:e $ROOTDIR/main.$EXT
+</pre></div>
+<p>まずコマンドの引數は、ファイル名が自動コマンドのパターンにマッチする前に、次のやうに展開される。
+</p><div class="example">
+<pre class="example">/usr/root/main.py
+</pre></div>
+<p>イベント FileReadCmd 等を使ふときにはこれに注意すること。&lt;amatch&gt; の値が、ユーザーの豫期するものと違ふかもしれない。
+</p>
+
+<p>パターンの中で環境變數を使ふこともできる。
+</p><div class="example">
+<pre class="example">:autocmd BufRead $VIMRUNTIME/doc/*.txt  set expandtab
+</pre></div>
+<p>環境變數 $HOME が定義されてゐるなら、~ をホームディレクトリとして使ふこともできる。
+</p><div class="example">
+<pre class="example">:autocmd BufWritePost ~/.vimrc   so ~/.vimrc
+:autocmd BufRead ~archive/*      set readonly
+</pre></div>
+<p>環境變數は、自動コマンドが定義されるときに展開される。自動コマンドが實行されるときではない。これは command とは違つてゐる！
+</p>
+<a name="file_002dpattern"></a><a name="index-file_002dpattern"></a>
+<p>パターンの解釋方法は、ファイル名の解釋方法と大體同じである。
+</p><table>
+<tr><td width="20%">*</td><td width="80%">はあらゆる文字の列にマッチ。注意: パス區切り文字も含まれる。</td></tr>
+<tr><td width="20%">?</td><td width="80%">はあらゆる 1 文字にマッチ</td></tr>
+<tr><td width="20%">\?</td><td width="80%">は &rsquo;?&rsquo; にマッチ</td></tr>
+<tr><td width="20%">.</td><td width="80%">は&rsquo;.&rsquo; にマッチ</td></tr>
+<tr><td width="20%">~</td><td width="80%">は&rsquo;~&rsquo; にマッチ</td></tr>
+<tr><td width="20%">,</td><td width="80%">はパターンを分割する</td></tr>
+<tr><td width="20%">\,</td><td width="80%">は &rsquo;,&rsquo; にマッチ</td></tr>
+<tr><td width="20%">{ }</td><td width="80%">は |<a href="pattern_002etxt.html#pattern">pattern</a>| の \( \) と同樣</td></tr>
+<tr><td width="20%">,</td><td width="80%">(&rsquo;{&rsquo; &rsquo;}&rsquo; の內側では) |<a href="pattern_002etxt.html#pattern">pattern</a>| の \| と同樣</td></tr>
+<tr><td width="20%">\}</td><td width="80%">リテラルの }</td></tr>
+<tr><td width="20%">\{</td><td width="80%">リテラルの {</td></tr>
+<tr><td width="20%">\\\{n,m\}</td><td width="80%">|<a href="pattern_002etxt.html#pattern">pattern</a>| の \{n,m} と同樣</td></tr>
+<tr><td width="20%">\</td><td width="80%">は |<a href="pattern_002etxt.html#pattern">pattern</a>| で使はれるものと同樣の特別な意味を持つ</td></tr>
+<tr><td width="20%">[ch]</td><td width="80%">は &rsquo;c&rsquo; または &rsquo;h&rsquo; にマッチ</td></tr>
+<tr><td width="20%">[^ch]</td><td width="80%">は &rsquo;c&rsquo; と &rsquo;h&rsquo; 以外の文字にマッチ</td></tr>
+</table>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+&rsquo;/&rsquo; といふ文字は、全てのシステムでパスの區切り文字に使はれることに注意すること (MS-DOS と OS/2 でさへも)。これは、パターン內でバックスラッシュを使ふことが難しい上に、別々のシステムでも自動コマンドが動作するやうにするためである。
+</p></blockquote>
+
+<p>|<a href="pattern_002etxt.html#pattern">pattern</a>| を使ふことができる。上記の飜譯が行はれてゐるため、期待通りに機能しない可能性がある。
+</p>
+<a name="autocmd_002dchanges"></a><a name="index-autocmd_002dchanges"></a>
+<p>パターンマッチの檢索は、イベントの發生時に行はれる。自動コマンドのどれかでバッファ名を變更しても、それどころかバッファを削除しても、實行される 自動コマンドは變はらない。例:
+</p><div class="example">
+<pre class="example">au BufEnter *.foo  bdel
+au BufEnter *.foo  set modified
+</pre></div>
+
+<p>これはカレントバッファを削除し、代はりにカレントバッファになつたバッファ內でオプション &rsquo;<samp>modified</samp>&rsquo; をオンにする。Vim は &quot;*.foo&quot; が新しいカレントバッファのバッファ名にマッチしなくとも氣にしない。&quot;*.foo&quot; はイベントが發生した時點でのバッファ名にマッチする。
+</p>
+<p>しかし、|<a href="windows_002etxt.html#g_t_003abwipe">:bwipe</a>| でワイプアウトされたバッファに對しては、バッファローカルな自動コマンドは實行されない。|<a href="windows_002etxt.html#g_t_003abdel">:bdel</a>| で削除されたバッファは實際にはまだ存在してゐる (リストされなくなつただけ) なので、自動コマンドは實行される。
+</p>
+<a name="autocmd_002dbuflocal"></a><a name="autocmd_002dbuffer_002dlocal"></a><a name="g_t_003cbuffer_003dN_003e"></a><a name="g_t_003cbuffer_003dabuf_003e"></a><a name="E680"></a><a name="index-autocmd_002dbuflocal"></a>
+<a name="index-autocmd_002dbuffer_002dlocal"></a>
+<a name="index-_003cbuffer_003dN_003e"></a>
+<a name="index-_003cbuffer_003dabuf_003e"></a>
+<a name="index-E680"></a>
+<a name="index-batuhuarokarunaZi-Dong-komando"></a>
+<a name="g_t7_002e-batuhuarokarunaZi-Dong-komando"></a>
+<h3 class="section">7. バッファローカルな自動コマンド</h3>
+
+<p>バッファローカルな自動コマンドは特定のバッファに結びつけられてゐる。これは名前を持たないバッファや特定のパターンにマッチしない名前のバッファに使ふと便利である。しかしそれぞれのバッファに明示的に追加する必要がある。
+</p>
+<p>バッファローカルな自動コマンドはパターンの代はりに以下の形式のどれかを使ふ:
+</p><table>
+<tr><td width="30%">&lt;buffer&gt;</td><td width="70%">カレントバッファ</td></tr>
+<tr><td width="30%">&lt;buffer=99&gt;</td><td width="70%">バッファ番號99</td></tr>
+<tr><td width="30%">&lt;buffer=abuf&gt;</td><td width="70%">&lt;abuf&gt; の使用(自動コマンドを實行するときのみ) |<a href="cmdline_002etxt.html#g_t_003cabuf_003e">&lt;abuf&gt;</a>|</td></tr>
+</table>
+
+<p>例:
+</p><div class="example">
+<pre class="example">:au CursorHold &lt;buffer&gt;  echo 'hold'
+:au CursorHold &lt;buffer=33&gt;  echo 'hold'
+:au BufNewFile * au CursorHold &lt;buffer=abuf&gt;  echo 'hold'
+</pre></div>
+
+<p>自動コマンドに對するコマンドは全てバッファローカルな自動コマンドに對しても機能する。パターンの代はりに特別な文字列を使ふ。例:
+</p><table>
+<tr><td width="50%">:au! * &lt;buffer&gt;</td><td width="50%">カレントバッファのバッファローカル自動コマンドを削除する</td></tr>
+<tr><td width="50%">:au! * &lt;buffer=33&gt;</td><td width="50%">バッファ#33のバッファローカル自動コマンドを削除する。</td></tr>
+<tr><td width="50%">:bufdo :au! CursorHold &lt;buffer&gt;</td><td width="50%">全バッファから指定されたイベントに對する自動コマンドを削除する</td></tr>
+<tr><td width="50%">:au * &lt;buffer&gt;</td><td width="50%">カレントバッファのバッファローカル自動コマンドをリストする</td></tr>
+</table>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+カレントバッファに對して自動コマンドを定義するとき、それがバッファ番號とともに保存されることに注意。つまりカレントバッファ番號が 12 なら &quot;&lt;buffer=12&gt;&quot; といふ形になる。例へば自動コマンドをリストするときこの形式で表示される。
+</p></blockquote>
+
+<p>バッファローカル自動コマンドが存在するかを判定するには函數 |<a href="eval_002etxt.html#exists_0028_0029">exists()</a>| を次のやうに使ふ:
+</p><div class="example">
+<pre class="example">:if exists(&quot;#CursorHold#&lt;buffer=12&gt;&quot;) | ... | endif
+:if exists(&quot;#CursorHold#&lt;buffer&gt;&quot;) | ... | endif    &quot; for current buffer
+</pre></div>
+
+<p>バッファがワイプアウトされると當然バッファローカル自動コマンドも失はれる。&quot;:bdel&quot; などでバッファを削除するときは、それがリストからなくなるだけで、自動コマンドはまだ存在してゐることに注意。バッファローカル自動コマンドの削除を表示させるにはかうする:
+</p><div class="example">
+<pre class="example">:set verbose=6
+</pre></div>
+
+<p>存在しないバッファに對してバッファローカル自動コマンドを定義することはできない。
+</p>
+<a name="autocmd_002dgroups"></a><a name="index-autocmd_002dgroups"></a>
+<a name="index-gurupu"></a>
+<a name="g_t8_002e-gurupu"></a>
+<h3 class="section">8. グループ</h3>
+
+<p>自動コマンドはグループにまとめることができる。これは一聯の自動コマンドを取り除いたり實行したりする際に便利である。例へば、構文强調表示のための全ての自動コマンドはグループ &quot;highlight&quot; に入つてゐて、GUIの 開始時に &quot;<code>:doautoall highlight BufRead</code>&quot; で實行できる。
+</p>
+<p>特定のグループが選擇されないとき、既定のグループが使はれる。既定のグループには名前がない。既定のグループから個別に自動コマンドを實行することはできない。それらを實行できるのは、全てのグループに對する自動コマンドを實行するときのみである。
+</p>
+<p>普通、自動コマンドを自動的に實行するときは、全てのグループに對する 自動コマンドが使はれる。グループが問題になつてくるのは、&quot;<code>:doautocmd</code>&quot; や &quot;<code>:doautoall</code>&quot; によつて自動コマンドを實行するときと、自動コマンドを定義したり削除するときである。
+</p>
+<p>グループ名には空白を除く全ての文字が使へる。&quot;end&quot; といふグループ名は豫約語になつてゐる (大文字も)。
+</p>
+<p>グループ名では大文字と小文字を區別して扱ふ。イベントの名前とは違ふことに注意すること。
+</p>
+<dl compact="compact">
+<dd><a name="g_t_003aaug"></a><a name="g_t_003aaugroup"></a><a name="index-_003aaug"></a>
+<a name="index-_003aaugroup"></a>
+</dd>
+<dt>:aug[roup] {name}</dt>
+<dd><p>後に續くコマンド &quot;<code>:autocmd</code>&quot; のためのグループ名を定義する。{name} を &quot;end&quot; や &quot;END&quot; にすると既定のグループが選ばれる。混亂を避けるため、既存の {event} の名前とは違ふ名前をつけるべきである。これはたいてい意圖しない動作を引き起こす。
+</p>
+<a name="g_t_003aaugroup_002ddelete"></a><a name="E367"></a><a name="W19"></a><a name="E936"></a><a name="index-_003aaugroup_002ddelete"></a>
+<a name="index-E367"></a>
+<a name="index-W19"></a>
+<a name="index-E936"></a>
+</dd>
+<dt>:aug[roup]! {name}</dt>
+<dd><p>自動コマンドのグループ {name} を削除する。そのグループを使つてゐる自動コマンドがまだあるなら、これは使はないこと！その點はチェックされない。とにかくそれをしたら、警告が表示される。グループが現在のグループの場合、エラー E936 が表示される。
+</p></dd>
+</dl>
+
+<p>特定のグループとして自動コマンドを定義するには、次の手順に從ふこと。
+</p><ol>
+<li> &quot;<code>:augroup {name}</code>&quot; によつてグループを選擇する。
+</li><li> &quot;<code>:au!</code>&quot; によつて古い自動コマンドを全て消去する。
+</li><li> 自動コマンドを定義する。
+</li><li> &quot;<code>:augroup END</code>&quot; によつて既定のグループに戾る。
+</li></ol>
+
+<p>例:
+</p><div class="example">
+<pre class="example">:augroup uncompress
+:  au!
+:  au BufEnter *.gz     %!gunzip
+:augroup END
+</pre></div>
+
+<p>これで自動コマンドを (例へばファイル <samp>.vimrc</samp> を再び讀み込んだ後) 2 回定義することが防げる。
+</p>
+<a name="autocmd_002dexecute"></a><a name="index-autocmd_002dexecute"></a>
+<a name="index-Zi-Dong-komandonoShi-Xing-"></a>
+<a name="g_t9_002e-Zi-Dong-komandonoShi-Xing-"></a>
+<h3 class="section">9. 自動コマンドの實行</h3>
+
+<p>自動コマンドは「自動的」でなくとも實行できる。これはあなたが自動コマンドを變更したときや、閒違つた自動コマンドが實行されたとき (つまりファイルパターンのマッチングが閒違つてゐたとき) に便利である。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+オプション &rsquo;<samp>eventignore</samp>&rsquo; はここにも適用されることに注意。ここに列擧されたイベントでは、どんな自動コマンドも實行されない。
+</p></blockquote>
+
+<dl compact="compact">
+<dd><a name="g_t_003ado"></a><a name="g_t_003adoau"></a><a name="g_t_003adoaut"></a><a name="g_t_003adoautocmd"></a><a name="E217"></a><a name="index-_003ado"></a>
+<a name="index-_003adoau"></a>
+<a name="index-_003adoaut"></a>
+<a name="index-_003adoautocmd"></a>
+<a name="index-E217"></a>
+</dd>
+<dt>:do[autocmd] [&lt;nomodeline&gt;] [group] {event} [fname]</dt>
+<dd><p>[fname] (省略するとカレントファイルの名前) にマッチする、{event} のための自動コマンドをカレントバッファに適用する。カレントファイル名が正しいファイルパターンにマッチしないときや設定を變へた後、またはあるイベントのために自動コマンドを實行するために使用できる。
+これを自動コマンドの內部で實行することも可能である。だから、ある擴張子用の自動コマンドを元にして別の擴張子用のものを作ることができる。例:
+</p><div class="example">
+<pre class="example">:au BufEnter *.cpp so ~/.vimrc_cpp
+:au BufEnter *.cpp doau BufEnter x.c
+</pre></div>
+<p>無限の循環に陷らないよう注意すること。また |<a href="#autocmd_002dnested">autocmd-nested</a>| を參照すること。
+</p>
+<p>引數 [group] が省かれると、全てのグループの自動コマンドが實行される。[group] が指定されると、それにマッチするグループの自動コマンドのみが實行される。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+定義されてゐないグループ名を使ふと、エラーメッセージが表示される。
+</p></blockquote>
+<a name="g_t_003cnomodeline_003e"></a><a name="index-_003cnomodeline_003e"></a>
+<p>自動コマンドを適用した後にモードラインが處理される。ファイルを編輯するときと同じやうに、自動コマンドでなされた設定を上書きするためである。&lt;nomodeline&gt; が指定されてゐる場合はモードラインは處理されない。バッファのロード以外で使はれるイベント (例へば |<a href="#User">User</a>|) などは &lt;nomodeline&gt; を指定したはうがよいかもしれない。一致する自動コマンドが實行されなかつた場合も、モードラインの處理はスキップされる。
+</p>
+<a name="g_t_003adoautoa"></a><a name="g_t_003adoautoall"></a><a name="index-_003adoautoa"></a>
+<a name="index-_003adoautoall"></a>
+</dd>
+<dt>:doautoa[ll] [&lt;nomodeline&gt;] [group] {event} [fname]</dt>
+<dd><p>&quot;<code>:doautocmd</code>&quot; と似てゐるが、讀み込まれたバッファそれぞれに自動コマンドを適用する。[fname] は自動コマンドを選擇するのに使はれる。コマンドを適用するバッファではない。{譯注: |<a href="#g_t_003aautocmd">:autocmd</a>| の {pat} に使ふ？}
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+このコマンドで、バッファを削除したり、バッファを變へたり、バッファの內容を變へるやうな自動コマンドを實行しないこと。結果は豫期できない。このコマンドは、オプションを設定したり、構文强調表示を變へたりする自動コマンドのためのものである。
+</p></blockquote>
+</dd>
+</dl>
+
+<a name="autocmd_002duse"></a><a name="index-autocmd_002duse"></a>
+<a name="index-Zi-Dong-komandowoShi-u"></a>
+<a name="g_t10_002e-Zi-Dong-komandowoShi-u"></a>
+<h3 class="section">10. 自動コマンドを使ふ</h3>
+
+<p>「ファイルの書き込み」には、4 組のイベントが起こりうる。1 回の書き込みコマンドでは、これらのうち 1 組しか使はれない。
+</p>
+<table>
+<tr><td width="25%">BufWriteCmd</td><td width="25%">BufWritePre</td><td width="25%">BufWritePost</td><td width="25%">バッファ全體を書き込む</td></tr>
+<tr><td width="25%"></td><td width="25%">FilterWritePre</td><td width="25%">FilterWritePost</td><td width="25%">フィルタ用一時ファイルに書込む</td></tr>
+<tr><td width="25%">FileAppendCmd</td><td width="25%">FileAppendPre</td><td width="25%">FileAppendPost</td><td width="25%">ファイルに追加する</td></tr>
+<tr><td width="25%">FileWriteCmd</td><td width="25%">FileWritePre</td><td width="25%">FileWritePost</td><td width="25%">その他の書き込み</td></tr>
+</table>
+
+<p>&quot;*Cmd&quot; にマッチする自動コマンドがあるときは、それが書き込み作業を行ふものと想定される。書き込みはそれ以上行はれず、他のイベントも發生しない。|<a href="#Cmd_002devent">Cmd-event</a>|
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+イベント *WritePost による自動コマンドは、イベント *WritePre による自動コマンドの引き起こしたバッファに對する變化を、どのやうなものでもアンドゥすべきであることに注意。さもないと、ファイルの書き込みがバッファを變更するといふ副作用を持つてしまふ。
+</p></blockquote>
+
+<p>あるバッファの中の行をファイルに書き込むとき、自動コマンドを實行する前にそのバッファが一時的にカレントバッファになる。自動コマンドがカレントバッファを變更したり、元のカレントバッファを消去しない限り、カレントバッファは再び元に戾る。
+</p>
+<p>イベント *WritePre や *AppendPre による自動コマンドは、書き込み元のバッファを削除してはならない。
+</p>
+<p>マーク &rsquo;[ と &rsquo;] は特別な位置を記憶してゐる。
+</p><ul>
+<li> イベント *ReadPre の前に、新しい行が插入される所の上の行にマーク &rsquo;[ が設定される。
+</li><li> イベント *ReadPost の前に、讀み込まれた最初の行にマーク &rsquo;[ が、最後の行にマーク &rsquo;] が設定される。
+</li><li> イベント *WriteCmd, *WritePre と *AppendPre による自動コマンドが實行される前に、書き込まれる最初の行にマーク &rsquo;[ が、最後の行にマーク &rsquo;] が設定される。
+</li></ul>
+<blockquote>
+<p><strong>Careful:</strong> <br>
+バッファを變更するコマンドを使ふと、&rsquo;[ と &rsquo;] の場所も變更される。
+</p></blockquote>
+
+<p>ファイル名を必要とするコマンドでは、讀み込まれるファイル名に &quot;&lt;afile&gt;&quot; を使ふことができる (カレントファイル名に &quot;%&quot; を使ふこともできる) |<a href="cmdline_002etxt.html#g_t_003a_003cafile_003e">:&lt;afile&gt;</a>|。現在有效なバッファ番號には &quot;&lt;abuf&gt;&quot; を使ふことができる。これは名前を持たないバッファに對しても有效だが、バッファを持たないファイルには使へない (例へば、&quot;<code>:r file</code>&quot; で讀み込まれたファイル)。
+</p>
+<a name="gzip_002dexample"></a><a name="index-gzip_002dexample"></a>
+<p>壓縮されたファイルを讀み書きする例:
+</p><pre class="verbatim">:augroup gzip
+:  autocmd!
+:  autocmd BufReadPre,FileReadPre     *.gz set bin
+:  autocmd BufReadPost,FileReadPost   *.gz '[,']!gunzip
+:  autocmd BufReadPost,FileReadPost   *.gz set nobin
+:  autocmd BufReadPost,FileReadPost   *.gz execute &quot;:doautocmd BufReadPost &quot; . expand(&quot;%:r&quot;)
+:  autocmd BufWritePost,FileWritePost *.gz !mv &lt;afile&gt; &lt;afile&gt;:r
+:  autocmd BufWritePost,FileWritePost *.gz !gzip &lt;afile&gt;:r
+
+:  autocmd FileAppendPre              *.gz !gunzip &lt;afile&gt;
+:  autocmd FileAppendPre              *.gz !mv &lt;afile&gt;:r &lt;afile&gt;
+:  autocmd FileAppendPost             *.gz !mv &lt;afile&gt; &lt;afile&gt;:r
+:  autocmd FileAppendPost             *.gz !gzip &lt;afile&gt;:r
+:augroup END
+</pre>
+<p>グループ &quot;gzip&quot; は、&quot;<code>:autocmd!</code>&quot; で既存の自動コマンドを全て削除できるやうにするために使はれてゐる。これはスクリプトファイルが 2 囘讀み込まれたときのためである。
+</p>
+<p>(&quot;&lt;afile&gt;:r&quot; は擴張子のないファイル名である。|<a href="cmdline_002etxt.html#g_t_003a_005f_0025_003a">:_%:</a>| を參照)
+</p>
+<p>イベント BufNewFile, BufRead/BufReadPost, BufWritePost, FileAppendPost, VimLeave によつて實行された自動コマンドは、バッファの被修正フラグを切り替へない。BufReadPost による自動コマンドで、壓縮されてゐるバッファを解凍したときは、&quot;<code>:q</code>&quot; で Vim を終了することができる。BufWritePre による自動コマンドの起こした變更を戾すために BufWritePost で &quot;<code>:undo</code>&quot; を使つたときも、&quot;<code>:q</code>&quot; を使ふことができる (&quot;ZZ&quot; も可)。バッファが變更されたことにしたいなら、&quot;<code>:set modified</code>&quot; とすること。
+</p>
+<p>自動コマンドからノーマルモードのコマンドを實行したいときは、コマンド &quot;<code>:normal</code>&quot; を使ふこと。使ふときは注意！ノーマルモードのコマンドが完結してゐないと、ユーザーが文字を打ち込まないといけない (例へば、&quot;<code>:normal m</code>&quot; の後にはマーク名を打ち込まないといけない)。
+</p>
+<p>バッファの內容を變更した後に、變更されてゐないことにしたいなら、オプション &rsquo;<samp>modified</samp>&rsquo; をオフにすること。かうすると &quot;<code>:q!</code>&quot; ではなく &quot;<code>:q</code>&quot; でも Vim を終了できる。
+</p>
+<a name="autocmd_002dnested"></a><a name="E218"></a><a name="index-autocmd_002dnested"></a>
+<a name="index-E218"></a>
+<p>既定では、自動コマンドはネストしない (入れ子にならない)。例へば、自動コマンド內で &quot;<code>:e</code>&quot; や &quot;<code>:w</code>&quot; を使つても、これらに對してはイベント BufRead や BufWrite による自動コマンドは實行されない。もしこれを實行してほしいなら、ネストしてほしいコマンド內でフラグ &quot;nested&quot; を使ふこと。例:
+</p><div class="example">
+<pre class="example">:autocmd FileChangedShell *.c ++nested e!
+</pre></div>
+<p>再歸的ループを避けるために、ネストは 10 段階までに制限されてゐる。
+</p>
+<p>自動コマンドの中でコマンド &quot;<code>:au</code>&quot; を使ふこともできる。これは自己修正的 {譯注: 原文 &quot;self-modifying&quot;} なコマンドになりうる！これは 1 回だけ實行すべき自動コマンドに便利である。
+</p>
+<p>あるコマンドを實行するときだけ自動コマンドをスキップしたい場合は、修飾子 |<a href="#g_t_003anoautocmd">:noautocmd</a>| を使ふかオプション &rsquo;<samp>eventignore</samp>&rsquo; を使ふ。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+(&quot;<code>:read file</code>&quot; やフィルタコマンドで) 讀み込んだファイルの最後の行に &lt;EOL&gt; がないとき、Vim はこのことを記憶する。その次の (&quot;<code>:write file</code>&quot; やフィルタコマンドでの) 書き込みで、先ほどの最後の行が再び最後の行として書き込まれ、かつオプション &rsquo;<samp>binary</samp>&rsquo; がオンになつてゐると、&lt;EOL&gt; は付け足されない。
+</p>
+<p>これにより、讀み込まれた行に對するフィルタコマンドで、讀み込まれた通りに書き出すことができる。また、フィルタ處理された行に對する書き込みのコマンドで、フィルタが出力した通りに書き出すことができる。例へば、壓縮されたファイルを書き込むもう 1 つの例は以下のやうになる。
+</p><div class="example">
+<pre class="example">:autocmd FileWritePre *.gz   set bin|'[,']!gzip
+:autocmd FileWritePost *.gz  undo|set nobin
+</pre></div>
+</blockquote>
+<a name="autocommand_002dpattern"></a><a name="index-autocommand_002dpattern"></a>
+<p>コンマで區切られた複數のパターンを指定することもできる。以下にいくつか例を擧げる。
+</p>
+<pre class="verbatim">:autocmd BufRead   *          set tw=79 nocin ic infercase fo=2croq
+:autocmd BufRead   .letter    set tw=72 fo=2tcrq
+:autocmd BufEnter  .letter    set dict=/usr/lib/dict/words
+:autocmd BufLeave  .letter    set dict=
+:autocmd BufRead,BufNewFile   *.c,*.h set tw=0 cin noic
+:autocmd BufEnter  *.c,*.h    abbr FOR for (i = 0; i &lt; 3; ++i)&lt;CR&gt;{&lt;CR&gt;}&lt;Esc&gt;O
+:autocmd BufLeave  *.c,*.h    unabbr FOR
+</pre>
+<p>Makefile (makefile, Makefile, imakefile, makefile.unix 等) にマッチさせるにはかうする。
+</p><div class="example">
+<pre class="example">:autocmd BufEnter  ?akefile*	set include=^s\=include
+:autocmd BufLeave  ?akefile*	set include&amp;
+</pre></div>
+
+<p>C ソースファイルを編輯するとき、常に最初の函數から始めるにはかうする。
+</p><div class="example">
+<pre class="example">:autocmd BufRead   *.c,*.h      1;/^{
+</pre></div>
+
+<p>上の &quot;1;&quot; がないと、檢索が始まる場所はファイルの最初ではなく、ファイルの插入された場所になる。
+</p>
+<a name="skeleton"></a><a name="template"></a><a name="index-skeleton"></a>
+<a name="index-template"></a>
+<p>新しいファイルを作るときにスケルトン (テンプレート) ファイルを讀み込むにはかうする。
+</p><div class="example">
+<pre class="example">:autocmd BufNewFile  *.c      0r ~/vim/skeleton.c
+:autocmd BufNewFile  *.h      0r ~/vim/skeleton.h
+:autocmd BufNewFile  *.java   0r ~/vim/skeleton.java
+</pre></div>
+
+<p>HTML ファイルを書き込むときに現在の日附と時刻を插入したいならかうする {譯注: KoRoN 氏作成の autodate.vim を使つた方がよい}
+</p><pre class="verbatim">:autocmd BufWritePre,FileWritePre *.html   ks|call LastMod()|'s
+:fun LastMod()
+:  if line(&quot;$&quot;) &gt; 20
+:    let l = 20
+:  else
+:    let l = line(&quot;$&quot;)
+:  endif
+:  exe &quot;1,&quot; . l . &quot;g/Last modified: /s/Last modified: .*/Last modified: &quot; .
+:  \ strftime(&quot;%Y %b %d&quot;)
+:endfun
+</pre>
+<p>これを機能させるためには、ファイルの先頭から 20 行以內に &quot;Last modified: &lt;date time&gt;&quot; といふ行を入れる必要がある。Vim は &lt;date time&gt; (とその行內のそれ以後を) を現在の日附と時刻に置き換へる。說明:
+</p><table>
+<tr><td width="30%">ks</td><td width="70%">現在の位置をマーク &rsquo;s&rsquo; に設定する</td></tr>
+<tr><td width="30%">call LastMod()</td><td width="70%">函數 LastMod() を呼び出して實際の作業を行ふ</td></tr>
+<tr><td width="30%">&rsquo;s</td><td width="70%">カーソルを元の位置に戾す</td></tr>
+</table>
+<p>函數 LastMod() はファイルの長さが20行以下であるかを調べ、キーワード &quot;Last modified: &quot; の含まれる行を探すためにコマンド &quot;<code>:g</code>&quot; を實行する。キーワードの含まれる行に對しては &quot;<code>:s</code>&quot; が實行され、既存の日附を現在のものに置き換へる。&quot;<code>:execute</code>&quot; は &quot;<code>:g</code>&quot; や &quot;<code>:s</code>&quot; で expression を使へるやうにするためのものである。日附は函數 strftime() から得られる。strftime() の引數を變更して、別の形の日附を得ることもできる。
+</p>
+<p>コマンドラインから自動コマンドを入力すると、(<code class="tt-key">&lt;Tab&gt;</code> や <kbd>CTRL-D</kbd> などで) イベントとコマンド名が適切に補完される。
+</p>
+<p>Vim はマッチする全ての自動コマンドをユーザーの指定した順に實行する。ユーザーが實行させる最初の自動コマンドにはファイルパターンに &quot;*&quot; を使ひ、全てのファイルに適用されるやうにするとよい。これはつまり、あらゆる設定のための既定を好きなやうに定義することができ、もしマッチする自動コマンドが別にあれば、そちらの方が設定を上書きできるといふことである。しかしマッチする自動コマンドが他になければ、少なくともあなたの設定した既定は恢復される (もし自動コマンドがマッチした別のファイルから、マッチしなかつたファイルに移つても)。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+Unix のシェルと違ひ、&quot;*&quot; は &quot;.&quot; で始まるファイルにもマッチすることに注意。
+</p></blockquote>
+
+<a name="autocmd_002dsearchpat"></a><a name="index-autocmd_002dsearchpat"></a>
+<p>自動コマンドは現在の檢索パターンを變更しない。Vim は自動コマンドの實行前に現在の檢索パターンを保存し、自動コマンドが終了してから復元する。つまり自動コマンドはオプション &rsquo;<samp>hlsearch</samp>&rsquo; で强調表示されてゐる文字列に影響しないといふことである。自動コマンド內でも、例へばコマンド &quot;n&quot; 等で、檢索パターンは普通に使用できる。
+もし自動コマンドの中で終了後に使ふ檢索パターンを設定したいなら、&quot;:let  =&quot; とすること。自動コマンドの中で &quot;<code>:nohlsearch</code>&quot; を使つて、檢索語の强調表示を無效にすることはできない。Vim の開始時に檢索語の强調表示を行はないためには、&rsquo;<samp>viminfo</samp>&rsquo; のフラグ &rsquo;<var>h</var>&rsquo; を使ふこと。
+</p>
+<a name="Cmd_002devent"></a><a name="index-Cmd_002devent"></a>
+<p>イベント &quot;*Cmd&quot; のうちどれかを使ふと、それによる自動コマンドが讀み込み、書き込み、または source を行ふものと想定される。これは特殊なファイル、例へばリモートシステム上のファイルに作業をするときに使へる。
+</p><blockquote>
+<p><strong>Careful:</strong> <br>
+これらのイベントを誤つた方法で使ふと、そのイベントが發生するファイルの讀み書きが不可能になつてしまふ。自分の自動コマンドをしつかりテストすること。最良の方法は、普通のファイル名には決してマッチしないパターン (例へば &quot;ftp://*&quot;) を使ふことである。
+</p></blockquote>
+
+<p>BufReadCmd に對して自動コマンドを定義すると、クラッシュしたセッションの復舊が難しくなる。元のファイルから復舊するとき、Vim はスワップファイル內に見つからなかつた部分のみを讀み込む。それは BufReadCmd の自動コマンドを使つたときは不可能なので、コマンド |<a href="recover_002etxt.html#g_t_003apreserve">:preserve</a>| を使つて元のファイルが復舊に必要ないやうにすること。さうするのはファイルが變更を受けたと判斷したときのみでもよい。
+</p>
+<p>讀み込みと書き込みのコマンドの場合、Vim 變數 |<a href="eval_002etxt.html#v_003acmdarg">v:cmdarg</a>| は引數 &quot;++enc=&quot; と &quot;++ff=&quot; の、有效だつたものを保持してゐる。これらはファイルを讀み書きするコマンドで使はれるべきである。Vim 變數 |<a href="eval_002etxt.html#v_003acmdbang">v:cmdbang</a>| はコマンドに &quot;!&quot; が使はれたときに 1、さうでないときに 0 が設定される。
+</p>
+<p>例は標準プラグイン $VIMRUNTIME/plugin/netrwPlugin.vim を參照。
+</p>
+<a name="autocmd_002ddisable"></a><a name="index-autocmd_002ddisable"></a>
+<a name="index-Zi-Dong-komandowoWu-Xiao-nisuru"></a>
+<a name="g_t11_002e-Zi-Dong-komandowoWu-Xiao-nisuru"></a>
+<h3 class="section">11. 自動コマンドを無效にする</h3>
+
+<p>一時的に自動コマンドを無效にするにはオプション &rsquo;<samp>eventignore</samp>&rsquo; を使ふ。これは豫期しない振るまいを引き起こす可能性がある。|<a href="eval_002etxt.html#g_t_003afinally">:finally</a>| つきの |<a href="eval_002etxt.html#g_t_003atry">:try</a>| ブロックを使つて後で &rsquo;<samp>eventignore</samp>&rsquo; を元に戾すやうにすること。
+</p>
+<a name="g_t_003anoautocmd"></a><a name="g_t_003anoa"></a><a name="index-_003anoautocmd"></a>
+<a name="index-_003anoa"></a>
+<p>1 つのコマンドを實行する閒だけ自動コマンドを無效にするには修飾子 &quot;<code>:noautocmd</code>&quot; を使ふ。これは後に續くコマンドを實行する閒だけ、&rsquo;<samp>eventignore</samp>&rsquo; を &quot;<var>all</var>&quot; にセットする。例:
+</p><div class="example">
+<pre class="example">:noautocmd w fname.gz
+</pre></div>
+
+<p>これは gzip プラグインで定義された自動コマンドを發生させずにファイルを書き込む。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+處理の最中ではなく、終はつた後で呼び出される自動コマンドもある。特に |<a href="#CursorMoved">CursorMoved</a>| や |<a href="#TextChanged">TextChanged</a>| があてはまる。
+</p></blockquote>
+
+
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

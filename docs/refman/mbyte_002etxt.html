@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>mbyte.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="mbyte.txt (Vim Reference Manual)">
+<meta name="keywords" content="mbyte.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="mlang_002etxt.html#mlang_002etxt" rel="next" title="mlang.txt">
+<link href="digraph_002etxt.html#digraph_002etxt" rel="prev" title="digraph.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="mbyte_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="marutibaitotekisutonosapoto"></a>
+<h2 class="unnumbered">マルチバイトテキストのサポート</h2>
+<pre class="verbatim">*mbyte.txt*     For Vim バージョン 8.1.  Last change: 2019 Apr 28
+
+		  VIMリファレンスマニュアル	  by Bram Moolenaar et al.
+</pre>
+
+<a name="multibyte"></a><a name="multi_002dbyte"></a><a name="Chinese"></a><a name="Japanese"></a><a name="Korean"></a><a name="index-multibyte"></a>
+<a name="index-multi_002dbyte"></a>
+<a name="index-Chinese"></a>
+<a name="index-Japanese"></a>
+<a name="index-Korean"></a>
+<p>マルチバイトサポート
+このファイルでは、中國語、日本語、韓國語などの、1 バイト (オクテット) では表現することができないほど多くの文字を持つ言語の、テキストの編輯について說明する。Unicode についても說明する。
+</p>
+<p>ユーザーマニュアルの |<a href="usr_005f45_002etxt.html#usr_005f45_002etxt">usr_45.txt</a>| で、共通する事柄を簡單に紹介してゐる。メッセージやメニューの言語を變更するには |<a href="mlang_002etxt.html#mlang_002etxt">mlang.txt</a>| を參照。
+</p>
+<table>
+<tr><td width="50%">1. はじめに</td><td width="50%">|<a href="#mbyte_002dfirst">mbyte-first</a>|</td></tr>
+<tr><td width="50%">2. ロケール</td><td width="50%">|<a href="#mbyte_002dlocale">mbyte-locale</a>|</td></tr>
+<tr><td width="50%">3. エンコーディング</td><td width="50%">|<a href="#mbyte_002dencoding">mbyte-encoding</a>|</td></tr>
+<tr><td width="50%">4. 端末の使用</td><td width="50%">|<a href="#mbyte_002dterminal">mbyte-terminal</a>|</td></tr>
+<tr><td width="50%">5. X11 のフォント</td><td width="50%">|<a href="#mbyte_002dfonts_002dX11">mbyte-fonts-X11</a>|</td></tr>
+<tr><td width="50%">6. MS-Windows のフォント</td><td width="50%">|<a href="#mbyte_002dfonts_002dMSwin">mbyte-fonts-MSwin</a>|</td></tr>
+<tr><td width="50%">7.  X11 での入力</td><td width="50%">|<a href="#mbyte_002dXIM">mbyte-XIM</a>|</td></tr>
+<tr><td width="50%">8.  MS-Windows での入力</td><td width="50%">|<a href="#mbyte_002dIME">mbyte-IME</a>|</td></tr>
+<tr><td width="50%">9.  キーマップを使用した入力</td><td width="50%">|<a href="#mbyte_002dkeymap">mbyte-keymap</a>|</td></tr>
+<tr><td width="50%">10. imactivatefunc() を使用した入力</td><td width="50%">|<a href="#mbyte_002dfunc">mbyte-func</a>|</td></tr>
+<tr><td width="50%">11. UTF-8 を使ふ</td><td width="50%">|<a href="#mbyte_002dutf8">mbyte-utf8</a>|</td></tr>
+<tr><td width="50%">12. 主なオプション</td><td width="50%">|<a href="#mbyte_002doptions">mbyte-options</a>|</td></tr>
+</table>
+
+<blockquote>
+<p><strong>Note:</strong><br>
+このファイルには Unicode の文字が含まれてゐる。他のエンコーディングを使用してゐる場合は、變な文字、あるいは四角形として表示されるかもしれない。
+</p></blockquote>
+
+<a name="mbyte_002dfirst"></a><a name="index-mbyte_002dfirst"></a>
+<a name="g_t1_002e-hazimeni-_0028Getting-started_0029"></a>
+<h3 class="section">1. はじめに (Getting started)</h3>
+
+<p>Vim のマルチバイト機能を簡單に紹介する。運が良ければ、說明したことがそのまま機能して、なんのトラブルもなしに Vim を使ひ始めることができる。さうでない場合は、このファイルをさらに讀み進める必要がある。Vim のマルチバイト機能を使用できるやうにするために、多少の手閒や試行錯誤が必要であつても驚かないで欲しい。不幸なことに、すべてのシステムはそれぞれ獨自の方法でマルチバイト言語を扱つてゐて、それは實に複雜である。
+</p>
+
+<a name="rokeru"></a>
+<h4 class="unnumberedsubsec">ロケール</h4>
+
+<p>まづは、ロケールが正く設定されてゐることを確認する。システムの言語が正しく設定されてゐれば、マルチバイト機能をすぐに使用することができる。設定されてなくても、環境變數 <var>$LANG</var> をシェルから設定すれば、大抵は使用できるやうになる:
+</p>
+<div class="example">
+<pre class="example">setenv LANG ja_JP.EUC
+</pre></div>
+
+<p>不幸なことに、ロケールの名前はシステムごとに違ふ。日本語なら &quot;ja_JP.EUCjp&quot; や &quot;ja&quot; などがある。現在の設定を確認するには:
+</p><div class="example">
+<pre class="example">:language
+</pre></div>
+
+<p>Vim が內部で使用するロケールを變更するには:
+</p><div class="example">
+<pre class="example">:language ja_JP.EUC
+</pre></div>
+
+<p>その設定が機能しない場合はエラーメッセージが表示される。使用したい言語のロケール名を見附けるためにいくつか試してみると良い。しかし、Vim は起動時にシステムのロケールを適切に使用するので、シェルでロケールを設定するのが無難である。
+</p>
+<p>詳細は |<a href="#mbyte_002dlocale">mbyte-locale</a>| を參照。
+</p>
+
+<a name="enkodeingu-1"></a>
+<h4 class="unnumberedsubsec">エンコーディング</h4>
+
+<p>ロケールが適切に設定されてゐれば、オプション &rsquo;<samp>encoding</samp>&rsquo; はそれに應じた値に設定される。それが機能しないときは、自分で設定しなほすこともできる:
+</p><div class="example">
+<pre class="example">:set encoding=utf-8
+</pre></div>
+
+<p>設定できる値の一覽は |<a href="#encoding_002dvalues">encoding-values</a>| を參照。
+</p>
+<p>この設定は Vim 內部でテキストを保持するためのエンコーディングとして使用される。バッファのテキストだけでなく、レジスタや變數のエンコーディングとしても使用される。そのため、&rsquo;<samp>encoding</samp>&rsquo; の設定を變更すると、すでに內部にあるテキストは不正なテキストになつてしまふ。テキストは新しいエンコーディングに變換されず、閒違つた狀態で表示される。
+</p>
+<p>&rsquo;<samp>encoding</samp>&rsquo; に設定されたのとは違ふエンコーディングのファイルも編輯することができる。Vim はファイルを開くときにエンコーディングを變換し、保存するときに元に戾す。&rsquo;<samp>fileencoding</samp>&rsquo;, &rsquo;<samp>fileencodings</samp>&rsquo;, |<a href="editing_002etxt.html#g_t_002b_002benc">++enc</a>| を參照。
+</p>
+
+<a name="Biao-Shitohuonto"></a>
+<h4 class="unnumberedsubsec">表示とフォント</h4>
+
+<p>端末 (のエミュレータ) で作業してゐるなら、端末が、Vim と同じエンコーディングを使用することを確認する。違ふなら、オプション &rsquo;<samp>termencoding</samp>&rsquo; を設定して、テキストが自動的に變換されるやうにする。
+</p>
+<p>GUI で作業してゐるなら、&rsquo;<samp>encoding</samp>&rsquo; に設定されたエンコーディングに對應したフォントを選擇する必要がある。フォントの設定は難しい。使用してゐるシステムやロケールなどに依存してゐる。X-Window 環境なら |<a href="#mbyte_002dfonts_002dX11">mbyte-fonts-X11</a>|、MS-Windows なら |<a href="#mbyte_002dfonts_002dMSwin">mbyte-fonts-MSwin</a>| を參照。
+</p>
+<p>GTK+ 2 を使つてゐるなら、今讀んでゐるこの項目はほとんど讀まなくて良い。オプション &rsquo;<samp>guifontset</samp>&rsquo; はもう存在しない。&rsquo;<samp>guifont</samp>&rsquo; を設定するだけですべてうまく機能する。システムに Xft2 と fontconfig が用意されてゐるなら、選擇したフォントが何かのグリフを含んでゐないときは、自動的に他の利用可能なフォントが使用される。オプション &rsquo;<samp>guifontwide</samp>&rsquo; はまだサポートされてゐるが通常は必要ない。自動的に選擇されるフォントが適切でない場合のみ設定する必要がある。
+</p>
+<p>X11 ではオプション &rsquo;<samp>guifontset</samp>&rsquo; に複數のフォントを設定して、さまざまな文字を扱へるやうにする。韓國語での設定例:
+</p><div class="example">
+<pre class="example">:set guifontset=k12,r12
+</pre></div>
+
+<p>代はりに &rsquo;<samp>guifont</samp>&rsquo; と &rsquo;<samp>guifontwide</samp>&rsquo; を設定することもできる。&rsquo;<samp>guifont</samp>&rsquo; は半角文字、&rsquo;<samp>guifontwide</samp>&rsquo; は全角文字のためのフォントである。&rsquo;<samp>guifontwide</samp>&rsquo; のフォントは &rsquo;<samp>guifont</samp>&rsquo; のちやうど 2 倍の幅でなければならない。
+UTF-8 使用時の設定例:
+</p><div class="example">
+<pre class="example">:set guifont=-misc-fixed-medium-r-normal-*-18-120-100-100-c-90-iso10646-1
+:set guifontwide=-misc-fixed-medium-r-normal-*-18-120-100-100-c-180-iso10646-1
+</pre></div>
+
+<p>&rsquo;<samp>guifont</samp>&rsquo; だけを設定した場合、Vim は &rsquo;<samp>guifontwide</samp>&rsquo; として使用できるフォントを見附けようとする。
+</p>
+
+<a name="Ru-Li-"></a>
+<h4 class="unnumberedsubsec">入力</h4>
+
+<p>マルチバイト文字を入力するにはいくつかの方法がある:
+</p><ul>
+<li> X11 では XIM を使用できる。|<a href="#XIM">XIM</a>| を參照。
+</li><li> MS-Windows では IME を使用できる。|<a href="#IME">IME</a>| を參照。
+</li><li> すべてのシステムでキーマップを使用できる。|<a href="#mbyte_002dkeymap">mbyte-keymap</a>| を參照。
+</li></ul>
+
+<p>オプション &rsquo;<samp>iminsert</samp>&rsquo;, &rsquo;<samp>imsearch</samp>&rsquo;, &rsquo;<samp>imcmdline</samp>&rsquo; を使用して、別の入力方法に切り替へたり、インプットメソッドを一時的に無效にしたりできる。
+</p>
+<a name="mbyte_002dlocale"></a><a name="index-mbyte_002dlocale"></a>
+<a name="g_t2_002e-rokeru-_0028Locale_0029"></a>
+<h3 class="section">2. ロケール (Locale)</h3>
+
+<p>最も簡單なのは、システム全體のロケールを設定することである。しかし、作業してゐるシェルのみロケールを變更したり、Vim だけが特定のロケールを使用するやうにも設定できる。
+</p>
+
+<a name="locale"></a><a name="index-locale"></a>
+<a name="rokerututeHe-_003f"></a>
+<h4 class="unnumberedsubsec">ロケールって何？</h4>
+
+<p>世界にはたくさんの言語があり、少なくとも、それと同じ數だけ文化や環境がある。地域に對應した言語環境のことをロケール (locale) といふ。ロケールは、言語、文字セット、文字の整列順、日附の書式、通貨の書式、などの情報を含んでゐる。Vim にとつては言語と文字セットの情報だけが重要である。
+</p>
+<p>システムがサポートしてゐるロケールのみ使用することができる。(特にアメリカなどでは) ほんの少しのロケールしか持つてゐないシステムもある。そのため、望みの言語を使用することができないかもしれない。追加パッケージでロケールをインストールできることもあるので、システムのドキュメントを確認すること。
+</p>
+<p>ロケールがインストールされてゐる場所はシステムによりさまざまである。例へば &quot;/usr/share/locale&quot; や &quot;/usr/lib/locale&quot; などにある場合がある。システムのマニュアルの setlocale() を參照。
+</p>
+<p>ロケールがインストールされてゐるディレクトリを見ればロケールの正しい名前がわかる。ほとんどの場合、大文字と小文字は區別されるので、例へば &quot;ja_JP.EUC&quot; と &quot;ja_jp.euc&quot; は異なる。いくつかのシステムは locale.alias といふファイルを持つてゐて、&quot;nl&quot; のやうな短い名前を使つて &quot;nl_NL.ISO_8859-1&quot; といふ完全な名前を指定できる。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+X-Window は獨自のロケール機構を持つてゐる。そして不幸なことに、他で使用されてゐるものとは違ふロケール名を使用する。これは混亂の元である。Vim にとつては函數 setlocale() が使用するものが重要であり、それは通常、X-Window のものではない。何が實際に機能するのか、實驗してみる必要があるかもしれない。
+</p></blockquote>
+
+<a name="locale_002dname"></a><a name="index-locale_002dname"></a>
+<p>ロケール |<a href="#locale">locale</a>| の名前の (簡單な) 書式は:
+</p>
+<div class="example">
+<pre class="example">        言語                    (language)
+または  言語_地域               (language_territory)
+または  言語_地域.コードセット  (language_territory.codeset)
+</pre></div>
+
+<p>地域は國を意味する (あるいはその地方)。コードセットは |<a href="#charset">charset</a>| のこと。例へば、ロケール名 &quot;ja_JP.eucJP&quot; の意味は:
+</p><table>
+<tr><td width="30%">ja</td><td width="70%">言語は日本語 (Japanese)</td></tr>
+<tr><td width="30%">JP</td><td width="70%">國は日本 (Japan)</td></tr>
+<tr><td width="30%">eucJP</td><td width="70%">コードセットは EUC-JP</td></tr>
+</table>
+<p>同じ意味でも &quot;ja&quot;, &quot;ja_JP.EUC&quot;, &quot;ja_JP.ujis&quot; などの名前のこともある。不幸なことに、言語、地域、コードセット、を表す名前は統一されてをらず、システムによつて異なる。
+</p>
+<p>ロケール名の例:
+</p><table>
+<thead><tr><th width="20%">charset</th><th width="40%">language</th><th width="40%">ロケール名</th></tr></thead>
+<tr><td width="20%">GB2312</td><td width="40%">中國語 (簡體字)</td><td width="40%">zh_CN.EUC, zh_CN.GB2312</td></tr>
+<tr><td width="20%">Big5</td><td width="40%">中國語 (繁體字)</td><td width="40%">zh_TW.BIG5, zh_TW.Big5</td></tr>
+<tr><td width="20%">CNS-11643</td><td width="40%">中國語 (繁體字)</td><td width="40%">zh_TW</td></tr>
+<tr><td width="20%">EUC-JP</td><td width="40%">日本語</td><td width="40%">ja, ja_JP.EUC, ja_JP.ujis, ja_JP.eucJP</td></tr>
+<tr><td width="20%">Shift_JIS</td><td width="40%">日本語</td><td width="40%">ja_JP.SJIS, ja_JP.Shift_JIS</td></tr>
+<tr><td width="20%">EUC-KR</td><td width="40%">韓國語</td><td width="40%">ko, ko_KR.EUC</td></tr>
+</table>
+
+
+<a name="rokeruwoShi-Yong-suru"></a>
+<h4 class="unnumberedsubsubsec">ロケールを使用する</h4>
+
+<p>システム全體のロケールを設定するには、システムのドキュメントを參照。恐らく、&quot;/etc&quot; 內の設定ファイルを編輯する必要がある。
+</p>
+<p>シェルのロケールを設定するには、環境變數 <var>$LANG</var> を設定する。例へば、韓國語を使用するとき、ロケール |<a href="#locale">locale</a>| の名前が &quot;ko&quot; なら、このやうに設定する:
+</p><div class="example">
+<pre class="example">sh:    export LANG=ko
+csh:   setenv LANG ko
+</pre></div>
+
+<p>これを <samp>~/.profile</samp> や <samp>~/.cshrc</samp> に書いておけばいつでも設定された狀態にできる。
+</p>
+<p>Vim が使用するロケールだけ設定するには |<a href="mlang_002etxt.html#g_t_003alanguage">:language</a>| コマンドを使ふ:
+</p><div class="example">
+<pre class="example">:language ko
+</pre></div>
+
+<p>これを <samp>~/.vimrc</samp> に書いておけばいつでも設定された狀態にできる。
+</p>
+<p>あるいは、特定の <var>$LANG</var> を設定した狀態で Vim を起動するには:
+</p><div class="example">
+<pre class="example">sh:    LANG=ko vim {vim-arguments}
+csh:   env LANG=ko vim {vim-arguments}
+</pre></div>
+
+<p>このために、小さなシェルスクリプトを作成することもできる。
+</p>
+<a name="mbyte_002dencoding"></a><a name="index-mbyte_002dencoding"></a>
+<a name="g_t3_002e-enkodeingu-_0028Encoding_0029"></a>
+<h3 class="section">3. エンコーディング (Encoding)</h3>
+
+<p>Vim はオプション &rsquo;<samp>encoding</samp>&rsquo; を Vim 內部で使用するエンコーディングとして使用する。バッファ (メモリに讀み込まれたファイル) やレジスタ、變數など、すべてのテキストはこのエンコーディングでメモリに保存される。
+</p>
+<a name="charset"></a><a name="codeset"></a><a name="index-charset"></a>
+<a name="index-codeset"></a>
+<p>文字セット (Charset) とコードセット (codeset) は「エンコーディング」の別名である。正確には違ふのだが、Vim を使用する上でそれは重要ではない。
+</p>
+<p>文字は 1 バイト以上のバイトでエンコードされる。すべての文字が 1 バイトでエンコードされるものを私達はシングルバイトエンコーディングと呼ぶ。そのやうなエンコーディングとしては &quot;latin1&quot; がよく使用される。これは 256 文字を表現することができる。それには制禦文字も含むので、テキストとして使用できる文字はそれより少ない。
+</p>
+<p>2 バイト以上を使つて文字を表現するものを、私達はマルチバイトエンコーディングと呼ぶ。これは 256 文字よりもつと多くの文字を表現することができ、ほとんどの東アジアの言語はこれを必要とする。
+</p>
+<p>ほとんどのマルチバイトエンコーディングは 127 文字 (ASCII 文字の範圍) を 1 バイトで表現するため、使用する言語に關係なく、ASCII 文字だけのテキストをやり取りすることが簡單になつてゐる。したがつて、閒違つたエンコーディングが設定されてゐても、それを讀むことができるだらう。
+</p>
+<a name="encoding_002dnames"></a><a name="index-encoding_002dnames"></a>
+<p>多くのエンコーディングを使用することができる。大きく 3 つに分類すると:
+</p>
+<table>
+<tr><td width="10%">1</td><td width="20%">8bit</td><td width="70%">シングルバイトエンコーディング。256 文字を表現できる。アメリカやヨーロッパで使用される。例: ISO-8859-1 (Latin1)。すべての文字は 1 つ分の表示幅で表示される。(いはゆる半角)</td></tr>
+<tr><td width="10%">2</td><td width="20%">2byte</td><td width="70%">ダブルバイトエンコーディング。10000 以上の文字を表現できる。アジアの國々で使用される。例: euc-kr (韓國語)。文字のバイト數と同じ數の表示幅で表示される。(2 バイトならひはゆる全角) <br> (euc-jp の 1 バイト目が 0x8e の文字 (半角カナ) は例外)</td></tr>
+<tr><td width="10%">u</td><td width="20%">Unicode</td><td width="70%">ユニバーサルエンコーディング。他のエンコーディングを統合するもの。ISO 10646。100 萬以上の文字を表現できる。例: UTF-8。文字が使用するバイト數と表示幅の關係は複雜。</td></tr>
+</table>
+
+<p>他のエンコーディングは Vim 內部のエンコーディングとして使用することはできないが、そのやうなエンコーディングのファイルを編輯することはできる。&rsquo;<samp>fileencoding</samp>&rsquo; を參照。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+すべてのエンコーディングは 0 から 128 までの文字が ASCII 文字と同じでなければならない (EBCDIC 用にコンパイルした場合は除く)。
+</p></blockquote>
+
+<a name="encoding_002dvalues"></a><a name="index-encoding_002dvalues"></a>
+<p>&rsquo;<samp>encoding</samp>&rsquo; に設定できる値:
+</p><table>
+<tr><td width="10%">1</td><td width="30%">latin1</td><td width="60%">8 ビット文字 (ISO 8859-1 及び cp1252)</td></tr>
+<tr><td width="10%">1</td><td width="30%">iso-8859-n</td><td width="60%">ISO_8859 シリーズ (n = 2 to 15)</td></tr>
+<tr><td width="10%">1</td><td width="30%">koi8-r</td><td width="60%">ロシア語</td></tr>
+<tr><td width="10%">1</td><td width="30%">koi8-u</td><td width="60%">ウクライナ語</td></tr>
+<tr><td width="10%">1</td><td width="30%">macroman</td><td width="60%">MacRoman (Macintosh のエンコーディング)</td></tr>
+<tr><td width="10%">1</td><td width="30%">8bit-{name}</td><td width="60%">8ビットエンコーディングのどれか (Vim 特有の名前)</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp437</td><td width="60%">iso-8859-1 に類似</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp737</td><td width="60%">iso-8859-7 に類似</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp775</td><td width="60%">バルト語</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp850</td><td width="60%">iso-8859-4 に類似</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp852</td><td width="60%">iso-8859-1 に類似</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp855</td><td width="60%">iso-8859-2 に類似</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp857</td><td width="60%">iso-8859-5 に類似</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp860</td><td width="60%">iso-8859-9 に類似</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp861</td><td width="60%">iso-8859-1 に類似</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp862</td><td width="60%">iso-8859-1 に類似</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp863</td><td width="60%">iso-8859-8 に類似</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp865</td><td width="60%">iso-8859-1 に類似</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp866</td><td width="60%">iso-8859-5 に類似</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp869</td><td width="60%">iso-8859-7 に類似</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp874</td><td width="60%">タイ語</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp1250</td><td width="60%">チェコ語、ポーランド語など</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp1251</td><td width="60%">キリル語</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp1253</td><td width="60%">ギリシャ語</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp1254</td><td width="60%">トルコ語</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp1255</td><td width="60%">ヘブライ語</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp1256</td><td width="60%">アラビア語</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp1257</td><td width="60%">バルト語</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp1258</td><td width="60%">ベトナム語</td></tr>
+<tr><td width="10%">1</td><td width="30%">cp{number}</td><td width="60%">MS-Windows: インストールされてゐるシングルバイトのコードページ</td></tr>
+<tr><td width="10%">2</td><td width="30%">cp932</td><td width="60%">日本語 (Windows only)</td></tr>
+<tr><td width="10%">2</td><td width="30%">euc-jp</td><td width="60%">日本語 (Unix only)</td></tr>
+<tr><td width="10%">2</td><td width="30%">sjis</td><td width="60%">日本語 (Unix only)</td></tr>
+<tr><td width="10%">2</td><td width="30%">cp949</td><td width="60%">韓國語 (Unix and Windows)</td></tr>
+<tr><td width="10%">2</td><td width="30%">euc-kr</td><td width="60%">韓國語 (Unix only)</td></tr>
+<tr><td width="10%">2</td><td width="30%">cp936</td><td width="60%">簡體中國語 (Windows only)</td></tr>
+<tr><td width="10%">2</td><td width="30%">euc-cn</td><td width="60%">簡體中國語 (Unix only)</td></tr>
+<tr><td width="10%">2</td><td width="30%">cp950</td><td width="60%">繁體中國語 (on Unix alias for big5)</td></tr>
+<tr><td width="10%">2</td><td width="30%">big5</td><td width="60%">繁體中國語 (on Windows alias for cp950)</td></tr>
+<tr><td width="10%">2</td><td width="30%">euc-tw</td><td width="60%">繁體中國語 (Unix only)</td></tr>
+<tr><td width="10%">2</td><td width="30%">2byte-{name}</td><td width="60%">Unix: ダブルバイトエンコーディングのどれか (Vim特有の名前)</td></tr>
+<tr><td width="10%">2</td><td width="30%">cp{number}</td><td width="60%">MS-Windows: インストールされてゐるダブルバイトのコードページ</td></tr>
+<tr><td width="10%">u</td><td width="30%">utf-8</td><td width="60%">UTF-8 にエンコードされた 32 ビットの Unicode (ISO/IEC 10646-1)</td></tr>
+<tr><td width="10%">u</td><td width="30%">ucs-2</td><td width="60%">UCS-2 にエンコードされた 16 ビットの Unicode (ISO/IEC 10646-1)</td></tr>
+<tr><td width="10%">u</td><td width="30%">ucs-2le</td><td width="60%">リトルエンディアンの ucs-2</td></tr>
+<tr><td width="10%">u</td><td width="30%">utf-16</td><td width="60%">ucs-2 を擴張してさらに多くの文字を表現できるやうにしたもの</td></tr>
+<tr><td width="10%">u</td><td width="30%">utf-16le</td><td width="60%">リトルエンディアンの utf-16</td></tr>
+<tr><td width="10%">u</td><td width="30%">ucs-4</td><td width="60%">UCS-4 にエンコードされた 32 ビットの Unicode (ISO/IEC 10646-1)</td></tr>
+<tr><td width="10%">u</td><td width="30%">ucs-4le</td><td width="60%">リトルエンディアンの ucs-4</td></tr>
+</table>
+
+<p>{name} にはシステムがサポートしてゐるエンコーディングの名前を入れることができる。これらの名前はファイルのエンコーディングとロケールのエンコーディングを變換するときに iconv() に渡される。MS-Windows では &quot;cp{number}&quot; はコードページ番號である。
+</p>
+<p>例:
+</p><div class="example">
+<pre class="example">:set encoding=8bit-cp1252
+:set encoding=2byte-cp932
+</pre></div>
+
+<p>MS-Windows のコードページ 1252 は latin1 と良く似てゐる。實用的な理由から、2 つは同じエンコーディングとして扱はれ、latin1 と呼ばれる。0x80 - 0xA0 の文字を表示するかしないかは &rsquo;<samp>isprint</samp>&rsquo; で設定できる。
+</p>
+<p>いくつかの別名を使用できる。別名は上記の名前のどれかとして解釋される。完全ではないが一覽を示す:
+</p>
+<table>
+<tr><td width="10%">1</td><td width="30%">ansi</td><td width="60%">latin1 と同じ (廢止。後方互換性のために殘されてゐる)</td></tr>
+<tr><td width="10%">2</td><td width="30%">japan</td><td width="60%">日本語: Unix では euc-jp、MS-Windows では cp932</td></tr>
+<tr><td width="10%">2</td><td width="30%">korea</td><td width="60%">韓國語: Unix では euc-kr、MS-Windows では cp949</td></tr>
+<tr><td width="10%">2</td><td width="30%">prc</td><td width="60%">簡體中國語: Unix では euc-cn、MS-Windows では cp936</td></tr>
+<tr><td width="10%">2</td><td width="30%">chinese</td><td width="60%">prc と同じ</td></tr>
+<tr><td width="10%">2</td><td width="30%">taiwan</td><td width="60%">繁體中國語: Unix では euc-tw、MS-Windows では cp950</td></tr>
+<tr><td width="10%">u</td><td width="30%">utf8</td><td width="60%">utf-8 と同じ</td></tr>
+<tr><td width="10%">u</td><td width="30%">unicode</td><td width="60%">ucs-2 と同じ</td></tr>
+<tr><td width="10%">u</td><td width="30%">ucs2be</td><td width="60%">ucs-2 と同じ (ビッグエンディアン)</td></tr>
+<tr><td width="10%">u</td><td width="30%">ucs-2be</td><td width="60%">ucs-2 と同じ (ビッグエンディアン)</td></tr>
+<tr><td width="10%">u</td><td width="30%">ucs-4be</td><td width="60%">ucs-4 と同じ (ビッグエンディアン)</td></tr>
+<tr><td width="10%">u</td><td width="30%">utf-32</td><td width="60%">ucs-4 と同じ</td></tr>
+<tr><td width="10%">u</td><td width="30%">utf-32le</td><td width="60%">ucs-4le と同じ</td></tr>
+<tr><td width="10%"></td><td width="30%">default</td><td width="60%">&rsquo;<samp>encoding</samp>&rsquo; のデフォルト値を意味する。環境に依存する。</td></tr>
+</table>
+
+<p>UCS コードにはバイト順の問題がある。これは扱ひが難しいので、可能なときにはいつでも UTF-8 を使用した方が良い。指定がなければビッグエンディアンを使用する (最上位バイトが最初にくる):
+</p><table>
+<thead><tr><th width="30%">名前</th><th width="40%">バイト列</th><th width="30%">文字</th></tr></thead>
+<tr><td width="30%">ucs-2</td><td width="40%">11 22</td><td width="30%">1122</td></tr>
+<tr><td width="30%">ucs-2le</td><td width="40%">22 11</td><td width="30%">1122</td></tr>
+<tr><td width="30%">ucs-4</td><td width="40%">11 22 33 44</td><td width="30%">11223344</td></tr>
+<tr><td width="30%">ucs-4le</td><td width="40%">44 33 22 11</td><td width="30%">11223344</td></tr>
+</table>
+
+<p>MS-Windows はリトルエンディアンの UCS-2 を使用するので、MS-Windows では主に &quot;ucs-2le&quot; を使ふ。
+</p>
+<p>良く似てゐるが區別されてゐるエンコーディングがある。Vim はそれらを別のエンコーディングとして扱ふため、エンコーディングの變換が行はれる。エンコーディングの變換ができないときや、よけいな變換を防ぎたいときは、他の名前を使ふ必要があるかもしれない:
+</p>
+<div class="example">
+<pre class="example">cp932, shift-jis, sjis
+cp936, euc-cn
+</pre></div>
+
+<a name="encoding_002dtable"></a><a name="index-encoding_002dtable"></a>
+<p>通常、&rsquo;<samp>encoding</samp>&rsquo; はロケールと同じ設定で、&rsquo;<samp>termencoding</samp>&rsquo; は空になつてゐる。その場合、文字の入力と表示はそのロケールでエンコードされる。Vim 內部でも同じ文字表現を使ふ。
+</p>
+<p>オプション &rsquo;<samp>encoding</samp>&rsquo; を設定して、Vim 內部で使用するエンコーディングを變更することができるが、入力と表示にはロケールが使用されるので、エンコーディングの變換が必要になる。そのときは &rsquo;<samp>termencoding</samp>&rsquo; がロケールのエンコーディングとして使用される。Vim は &rsquo;<samp>encoding</samp>&rsquo; と &rsquo;<samp>termencoding</samp>&rsquo; の閒でエンコーディングを變換する。例:
+</p><div class="example">
+<pre class="example">:let &amp;termencoding = &amp;encoding
+:set encoding=utf-8
+</pre></div>
+
+<p>すべてのエンコーディングの組み合はせが利用できるわけではない。下記の表にどのやうなものが機能するか示す。すべての變換が可能なわけではなく、iconv() が常に使用できるとは限らないので、利用できないものもある。これはシステムに依存することなので細部まで說明することはできない。
+</p>
+<p>(&rsquo;<samp>tenc</samp>&rsquo; は &rsquo;<samp>termencoding</samp>&rsquo; の省略、&rsquo;<samp>enc</samp>&rsquo; は &rsquo;<samp>encoding</samp>&rsquo; の省略)
+</p>
+<table>
+<thead><tr><th width="15%">&rsquo;<samp>tenc</samp>&rsquo;</th><th width="15%">&rsquo;<samp>enc</samp>&rsquo;</th><th width="70%">說明</th></tr></thead>
+<tr><td width="15%">8bit</td><td width="15%">8bit</td><td width="70%">機能する。&rsquo;<samp>termencoding</samp>&rsquo; と &rsquo;<samp>encoding</samp>&rsquo; が違ふときは、變換することができないいくつかの文字は入力と表示が正しく行はれない。(そのやうな文字を得るには &rsquo;<samp>encoding</samp>&rsquo; を &quot;<var>utf-8</var>&quot; に設定する)</td></tr>
+<tr><td width="15%">8bit</td><td width="15%">2byte</td><td width="70%">MS-Windows: インストールされてゐるすべてのコードページで機能する。8 ビットの文字だけ入力することができる。<br> 他のシステム: 機能しない。</td></tr>
+<tr><td width="15%">8bit</td><td width="15%">Unicode</td><td width="70%">機能するが、8 ビット文字しか直接入力できない(他の文字は DIGRAPH、キーマップなどで入力できる)。端末には 8 ビット文字しか表示できない。GUI では &rsquo;<samp>guifont</samp>&rsquo; がサポートしてゐる文字であれば表示できる。</td></tr>
+<tr><td width="15%">2byte</td><td width="15%">8bit</td><td width="70%">機能するが、非 ASCII 文字を入力するには問題がある。</td></tr>
+<tr><td width="15%">2byte</td><td width="15%">2byte</td><td width="70%">MS-Windows: インストールされてゐるすべてのコードページで機能する。&rsquo;<samp>encoding</samp>&rsquo; をロケールと違ふ設定にすると入力に問題あり。<br> 他のシステム: &rsquo;<samp>termencoding</samp>&rsquo; と &rsquo;<samp>encoding</samp>&rsquo; が同じ場合のみ機能する。&rsquo;<samp>termencoding</samp>&rsquo; は空にしておいたはうが良い。</td></tr>
+<tr><td width="15%">2byte</td><td width="15%">Unicode</td><td width="70%">機能する。Vim は入力された文字を變換する。</td></tr>
+<tr><td width="15%">Unicode</td><td width="15%">8bit</td><td width="70%">機能する。(普通はこうしない)</td></tr>
+<tr><td width="15%">Unicode</td><td width="15%">2byte</td><td width="70%">機能しない。</td></tr>
+<tr><td width="15%">Unicode</td><td width="15%">Unicode</td><td width="70%">問題なく機能する。(Vim 內部では Unicode はすべて UTF-8 で扱はれるため、&rsquo;<samp>termencoding</samp>&rsquo; が空でも同じく機能する)</td></tr>
+</table>
+
+<a name="charset_002dconversion"></a><a name="index-charset_002dconversion"></a>
+<a name="enkodeingunoBian-Huan-"></a>
+<h4 class="unnumberedsubsec">エンコーディングの變換</h4>
+
+<p>Vim はいろいろな場面で自動的にエンコーディングを變換する:
+</p><ul>
+<li> ファイルを讀み込むとき、&rsquo;<samp>fileencoding</samp>&rsquo; と &rsquo;<samp>encoding</samp>&rsquo; が違ふ場合
+</li><li> ファイルを書き込むとき、&rsquo;<samp>fileencoding</samp>&rsquo; と &rsquo;<samp>encoding</samp>&rsquo; が違ふ場合
+</li><li> 文字を表示するとき、&rsquo;<samp>termencoding</samp>&rsquo; と &rsquo;<samp>encoding</samp>&rsquo; が違ふ場合
+</li><li> 入力を受け取るとき、&rsquo;<samp>termencoding</samp>&rsquo; と &rsquo;<samp>encoding</samp>&rsquo; が違ふ場合
+</li><li> メッセージを表示するとき、LC_MESSAGES のエンコーディングが &rsquo;<samp>encoding</samp>&rsquo; と違ふ場合 (gettext のサポートが必要)。
+</li><li> Vim script を讀み込むとき、|<a href="repeat_002etxt.html#g_t_003ascriptencoding">:scriptencoding</a>| が &rsquo;<samp>encoding</samp>&rsquo; と違ふ場合
+</li><li> |<a href="starting_002etxt.html#viminfo">viminfo</a>| ファイルを讀み書きするとき
+</li></ul>
+<p>ほとんどの變換は |<a href="various_002etxt.html#g_t_002biconv">+iconv</a>| の機能が必要である。ファイルを讀み書きするときの變換の動作はオプション &rsquo;<samp>charconvert</samp>&rsquo; での指定もできる。
+</p>
+<p>エンコーディングを變換するための便利なユーティリティ:
+</p><dl compact="compact">
+<dt>All: iconv</dt>
+<dd><p>GNU iconv はほぼすべてのエンコーディングを變換できる。變換の中閒層に Unicode を使用することで、多くの變換を可能にしてゐる。<br>
+<a href="http://www.gnu.org/directory/libiconv.html">http://www.gnu.org/directory/libiconv.html</a> を參照。
+</p>
+</dd>
+<dt>日本語: nkf</dt>
+<dd><p>&quot;Network Kanji code conversion Filter&quot;。最も特徵的な nkf の機能は漢字コードの自動認識である。そのため、ファイルのエンコーディング |<a href="#charset">charset</a>| を知る必要がない。ISO-2022-JP や Shift_JIS を EUC-JP に變換するには、Vim からこのやうなコマンドを單に實行すれば良い:
+</p><div class="example">
+<pre class="example">:%!nkf -e
+</pre></div>
+<p>Nkf はここから入手できる: <br>
+<a href="http://www.sfc.wide.ad.jp/~max/FreeBSD/ports/distfiles/nkf-1.62.tar.gz">http://www.sfc.wide.ad.jp/~max/FreeBSD/ports/distfiles/nkf-1.62.tar.gz</a> <br>
+{譯注: utf-8 對應などの機能が追加されてゐるもの <a href="https://ja.osdn.net/projects/nkf/">https://ja.osdn.net/projects/nkf/</a> }
+</p>
+</dd>
+<dt>中國語: hc</dt>
+<dd><p>&quot;Hanzi Converter&quot;。Hc は GB から Big5 へ、Big5 から GB へ、の變換をする。Hc はここから入手できる: <br>
+<a href="ftp://ftp.cuhk.hk/pub/chinese/ifcss/software/unix/convert/hc-30.tar.gz">ftp://ftp.cuhk.hk/pub/chinese/ifcss/software/unix/convert/hc-30.tar.gz</a>
+</p>
+</dd>
+<dt>韓國語: hmconv</dt>
+<dd><p>Hmconv は E-mail を扱ふことに特化した韓國語エンコーディング變換ユーティリティである。EUC-KR と ISO-2022-KR の閒の變換ができる。Hmconv はここから入手できる: <br>
+<a href="ftp://ftp.kaist.ac.kr/pub/hangul/code/hmconv/">ftp://ftp.kaist.ac.kr/pub/hangul/code/hmconv/</a>
+</p>
+</dd>
+<dt>多國語: lv</dt>
+<dd><p>Lv は高性能な多言語ファイルビューアである。そして、エンコーディングの變換もできる。サポートしてゐるエンコーディング |<a href="#charset">charset</a>| は: ISO-2022-CN, ISO-2022-JP, ISO-2022-KR, EUC-CN, EUC-JP, EUC-KR, EUC-TW, UTF-7, UTF-8, ISO-8859 シリーズ、Shift_JIS, Big5, HZ。Lv はここから入手できる:
+<a href="http://www.ff.iij4u.or.jp/~nrt/lv/index.html">http://www.ff.iij4u.or.jp/~nrt/lv/index.html</a>
+</p></dd>
+</dl>
+
+
+<a name="mbyte_002dconversion"></a><a name="index-mbyte_002dconversion"></a>
+<p>&rsquo;<samp>encoding</samp>&rsquo; の設定と違ふエンコーディングのファイルを讀み書きするときは、エンコーディングを變換する必要がある。次の變換がサポートされてゐる:
+</p><ul>
+<li> Latin-1 (ISO-8859-1), UTF-8, UCS-2, UCS-4 の閒の變換は Vim が自前で行ふ。
+</li><li> MS-Windows では、&rsquo;<samp>encoding</samp>&rsquo; が Unicode なら各コードページとの變換は機能する。
+</li><li> &rsquo;<samp>charconvert</samp>&rsquo; による變換。
+</li><li> 可能であれば、iconv ライブラリを使用して變換することができる。
+<blockquote>
+<p>古いバージョンの GNU iconv() では變換が失敗することがある (Vim が用意するバッファよりも、はるかに大きなバッファを要求するため)。その場合は他の iconv() 實裝を試すこと。
+</p></blockquote>
+</li></ul>
+
+<a name="iconv_002ddynamic"></a><a name="index-iconv_002ddynamic"></a>
+<p>MS-Windows では |<a href="various_002etxt.html#g_t_002biconv_002fdyn">+iconv/dyn</a>| 機能つきで Vim をコンパイルすることができる。さうすると Vim は &quot;iconv.dll&quot; と &quot;libiconv.dll&quot; を檢索するやうになる。どちらも見つからない場合でも Vim は動作するが、變換ができなくなる。
+</p>
+<a name="mbyte_002dterminal"></a><a name="index-mbyte_002dterminal"></a>
+<a name="g_t4_002e-Duan-Mo-noShi-Yong--_0028Using-a-terminal_0029"></a>
+<h3 class="section">4. 端末の使用 (Using a terminal)</h3>
+
+<p>GUI ではマルチバイト文字を完全にサポートしてゐる。端末を使ふ場合でも、Vim が使用するエンコーディングをサポートしてゐればマルチバイト文字を扱へるが、少し不便なこともある。
+</p>
+<p>マルチバイト (と |<a href="#XIM">XIM</a>|) をサポートしてゐる xterm で Vim を使用することができる。他にも kterm (Kanji term), hanterm (韓國語用), Eterm (Enlightened terminal), rxvt、などが使用できる。
+</p>
+<p>端末が適切なエンコーディングをサポートしてゐない場合はオプション &rsquo;<samp>termencoding</samp>&rsquo; を設定する。Vim は入力された文字を &rsquo;<samp>termencoding</samp>&rsquo; から &rsquo;<samp>encoding</samp>&rsquo; へと變換する。そして表示するときに &rsquo;<samp>encoding</samp>&rsquo; から &rsquo;<samp>termencoding</samp>&rsquo; へと變換する。端末のエンコーディングに、Vim が取り扱ふ文字がすべて含まれてゐない場合、文字の情報が失なわれてしまふ。下記で說明してゐる xterm のやうに、Unicode をサポートしてゐる端末なら問題はない。ほぼすべての文字セットは情報を失なわずに Unicode に變換できるからである。
+</p>
+
+<a name="UTF8_002dxterm"></a><a name="index-UTF8_002dxterm"></a>
+<a name="UTF_002d8woXFree86-xtermdeShi-u"></a>
+<h4 class="unnumberedsubsec">UTF-8をXFree86 xtermで使ふ</h4>
+<p>{譯注: 最近の環境なら標準で使へるやうになつてゐる。}
+</p>
+<p>これは Thomas Dickey によつて提供される XFree86 xterm で、どのやうにして UTF-8 エンコードされた文字を利用するかについての簡單な說明である (文: Markus Kuhn)。
+</p>
+<p>UTF-8 をサポートしてゐる最新の xterm を入手すること:
+</p>
+<p><a href="http://invisible-island.net/xterm/xterm.html">http://invisible-island.net/xterm/xterm.html</a>
+</p>
+<p>&quot;<code>./configure --enable-wide-chars ; make</code>&quot; としてコンパイルすること。
+</p>
+<p>また ISO 10646-1 バージョンのフォントを入手すること:
+</p>
+<p><a href="http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts.tar.gz">http://www.cl.cam.ac.uk/~mgk25/download/ucs-fonts.tar.gz</a>
+</p>
+<p>それから README ファイルの記述に從つてフォントをインストールすること。
+</p>
+<p>そして xterm を起動する。
+</p><pre class="verbatim">xterm -u8 -fn -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1
+</pre><p>大きな文字を使ふときは:
+</p><pre class="verbatim">xterm -u8 -fn -misc-fixed-medium-r-normal--15-140-75-75-c-90-iso10646-1
+</pre>
+<p>さうすると UTF-8 端末エミュレータが動作するだらう。ucs-fonts.tar.gz に含まれてゐる次の兩方のデモ・ファイルを試して:
+</p><pre class="verbatim">cat utf-8-demo.txt
+vim utf-8-demo.txt
+</pre><p>xterm で UTF-8 が問題なく動作してゐるかどうか確認すること。
+</p>
+<p>Vim の &rsquo;<samp>encoding</samp>&rsquo; を &quot;<var>utf-8</var>&quot; に設定する必要がある。
+</p>
+<a name="mbyte_002dfonts_002dX11"></a><a name="index-mbyte_002dfonts_002dX11"></a>
+<a name="g_t5_002e-X11nohuonto-_0028Fonts-on-X11_0029"></a>
+<h3 class="section">5. X11のフォント (Fonts on X11)</h3>
+
+<p>X11 でのフォントの取り扱ひは難しい。シングルバイトフォントの名前は長い文字列である。マルチバイトフォントを使ふにはさらにいくつか考慮することがある。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+この說明のほとんどは GTK+ 2 にとつては關係ない。XLFD を用いたフォントの指定はサポートされてゐない。フォントの設定例は &rsquo;<samp>guifont</samp>&rsquo; を參照。下記の項 |<a href="#XLFD">XLFD</a>| と |<a href="#xfontset">xfontset</a>| は讀んでも讀まなくても良い。
+</p></blockquote>
+
+<p>Vim は固定幅のフォントだけを扱ふことができる。プロポーショナルフォントを使用することはできない。そのため多くの(見た目の良い)フォントは使用できない。しかし、メニューやツールチップにはどのフォントでも使用することができる。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+表示と入力は獨立してゐる。入力したい言語のインプットメソッドがなくても、表示することはできる。
+</p></blockquote>
+
+<p>メニューやツールチップは標準設定のフォントでも機能するが、おそらくそれは、あまり見た目が良くない。より良いフォントを選ぶには下記の說明を參照。
+</p>
+
+<a name="XLFD"></a><a name="index-XLFD"></a>
+<a name="X-Lun-Li-huontoMing--_0028X-LOGICAL-FONT-DESCRIPTION-_0028XLFD_0029_0029"></a>
+<h4 class="unnumberedsubsec">X 論理フォント名 (X LOGICAL FONT DESCRIPTION (XLFD))</h4>
+<p>XLFD は X のフォント名であり、フォントサイズや文字セットなどの情報を含んでゐる。名前はこのやうな書式になつてゐる:
+</p><div class="example">
+<pre class="example">FOUNDRY-FAMILY-WEIGHT-SLANT-WIDTH-STYLE-PIXEL-POINT-X-Y-SPACE-AVE-CR-CE
+</pre></div>
+
+<p>各フィールドの意味:
+</p>
+<ul>
+<li> FOUNDRY: FOUNDRY フィールド。フォントを作成、提供した組纖名。
+</li><li> FAMILY: FAMILY_NAME フィールド。フォントファミリの名前(書體名)。(helvetica, gothic, times など)
+</li><li> WEIGHT: WEIGHT_NAME フィールド。文字の太さ。(light, medium, bold など)
+</li><li> SLANT: SLANT フィールド (文字の傾き)
+<table>
+<tr><td width="10%">r:</td><td width="90%">Roman (ローマン體。正字體。傾きなし)</td></tr>
+<tr><td width="10%">i:</td><td width="90%">Italic (イタリック體)</td></tr>
+<tr><td width="10%">o:</td><td width="90%">Oblique (斜體)</td></tr>
+<tr><td width="10%">ri:</td><td width="90%">Reverse Italic (逆傾きのイタリック體)</td></tr>
+<tr><td width="10%">ro:</td><td width="90%">Reverse Oblique (逆傾きの斜體)</td></tr>
+<tr><td width="10%">ot:</td><td width="90%">Other (その他)</td></tr>
+<tr><td width="10%">number:</td><td width="90%">Scaled font (傾きの角度)</td></tr>
+</table>
+</li><li> WIDTH: SETWIDTH_NAME フィールド。文字幅。(normal, condensed, narrow, double wide)
+</li><li> STYLE: ADD_STYLE_NAME フィールド。フォントの追加情報。(Serif, Sans Serif, Informal, Decorated など)
+</li><li> PIXEL: PIXEL_SIZE フィールド。ピクセル單位の文字の高さ。
+</li><li> POINT: POINT_SIZE フィールド。ポイント單位の文字の高さを 10 倍した値。
+</li><li> X: RESOLUTION_X フィールド。X 軸方向の解像度( 1 インチあたりのドット數)
+</li><li> Y: RESOLUTION_Y フィールド。Y 軸方向の解像度( 1 インチあたりのドット數)
+</li><li> SPACE: SPACING フィールド。(文字送り)
+<table>
+<tr><td width="10%">p:</td><td width="90%">Proportional (プロポーショナル、可變幅)</td></tr>
+<tr><td width="10%">m:</td><td width="90%">Monospaced (モノスペース、固定幅)</td></tr>
+<tr><td width="10%">c:</td><td width="90%">CharCell (文字セル)</td></tr>
+</table>
+</li><li> AVE: AVERAGE_WIDTH フィールド。ピクセル單位の文字幅の平均値を10倍した値。
+</li><li> CR: CHARSET_REGISTRY フィールド。文字セットの名前。
+</li><li> CE: CHARSET_ENCODING フィールド。文字セットの追加情報。JIS X 0208 のやうな文字セットは、このフィールドが 0 ならコードポイントは GL と同じ値を持つ。1 なら GR と同じ。<br>
+{譯注: jisx0208 の場合、CHARSET_ENCODING=0 なら 7 ビット JIS コード、1 なら EUC-JP の番號で、文字がフォントに收錄されてゐる。}
+</li></ul>
+
+<p>例へば、JIS X 0208 に對應する 16 ドットのフォントは次のやうに書く:
+</p><div class="example">
+<pre class="example">-misc-fixed-medium-r-normal--16-110-100-100-c-160-jisx0208.1990-0
+</pre></div>
+
+
+<a name="fontset"></a><a name="xfontset"></a><a name="index-fontset"></a>
+<a name="index-xfontset"></a>
+<a name="X-huontosetuto-_0028X-FONTSET_0029"></a>
+<h4 class="unnumberedsubsec">X フォントセット (X FONTSET)</h4>
+<p>シングルバイト文字セットは一般的に 1 つのフォントに關聯付けられてゐる。マルチバイト文字セットはほとんどの場合、複數のフォントの組合せを使用する。そして表示する文字に合つたフォントが選擇されて使用される。そのやうなフォントの集合をフォントセットと呼ぶ。
+</p>
+<p>ロケールによつて必要なフォントは異なる。X-Window はロケールに必要な文字セットの表を管理してゐる。ロケールが必要とする全てのフォントをオプション &rsquo;<samp>guifontset</samp>&rsquo; に設定しなければならない。
+</p>
+<p>&rsquo;<samp>guifontset</samp>&rsquo; オプションを設定すると、すべてのフォント名がフォントセット名として扱はれる。|<a href="syntax_002etxt.html#g_t_003ahighlight">:highlight</a>| コマンドの &quot;font&quot; 引數に使用されるものもある。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+&rsquo;<samp>guifont</samp>&rsquo; と &rsquo;<samp>guifontset</samp>&rsquo; の違ひに注意すること。&rsquo;<samp>guifont</samp>&rsquo; では、コンマ區切りの名前は代替名で、そのうちの 1 つが使用される。&rsquo;<samp>guifontset</samp>&rsquo; では、文字列全體が、コンマを含む1つのフォントセット名である。代替フォントセット名を指定することはできない。
+</p>
+<p>この例は多くの X11 システムで動作する:
+</p><div class="example">
+<pre class="example">:set guifontset=-*-*-medium-r-normal--16-*-*-*-c-*-*-*
+</pre></div>
+<p>フォントは現在のロケールと一致しなければならない。現在のロケールで使用されてゐる文字セットのフォントが含まれてゐない場合、&rsquo;<samp>guifontset</samp>&rsquo; の設定は失敗する。
+</p></blockquote>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+&rsquo;<samp>encoding</samp>&rsquo; が、ロケールとは違ふ文字セットに設定されてゐても、フォントセットは常にロケールを使用する。さういふ場合は &rsquo;<samp>guifontset</samp>&rsquo; ではなく &rsquo;<samp>guifont</samp>&rsquo; と &rsquo;<samp>guifontwide</samp>&rsquo; を使用する。
+</p></blockquote>
+
+<p>例:
+</p><table>
+<thead><tr><th width="30%">|<a href="#charset">charset</a>|</th><th width="30%">language</th><th width="40%">&quot;groups of characters&quot;</th></tr></thead>
+<tr><td width="30%">GB2312</td><td width="30%">簡體中國語</td><td width="40%">ISO-8859-1 and GB 2312</td></tr>
+<tr><td width="30%">Big5</td><td width="30%">繁體中國語</td><td width="40%">ISO-8859-1 and Big5</td></tr>
+<tr><td width="30%">CNS-11643</td><td width="30%">繁體中國語</td><td width="40%">ISO-8859-1, CNS 11643-1 and CNS 11643-2</td></tr>
+<tr><td width="30%">EUC-JP</td><td width="30%">日本語</td><td width="40%">JIS X 0201 and JIS X 0208</td></tr>
+<tr><td width="30%">EUC-KR</td><td width="30%">韓國語</td><td width="40%">ISO-8859-1 and KS C 5601 (KS X 1001)</td></tr>
+</table>
+
+<p>xlsfonts コマンドを使つてフォントを檢索できる。例へば、KS C 5601 のフォントを探すには:
+</p><div class="example">
+<pre class="example">xlsfonts | grep ksc5601
+</pre></div>
+
+<p>これは複雜で混亂しやすいことなので、分からないことは X-Window のドキュメントで調べること。
+</p>
+<a name="base_005ffont_005fname_005flist"></a><a name="index-base_005ffont_005fname_005flist"></a>
+<p>使用したいフォントの名前を見附けたらオプション &rsquo;<samp>guifontset</samp>&rsquo; を設定する。設定はフォントの名前をコンマで區切つて指定する。
+</p>
+<p>例へば、ja_JP.eucJP ロケールの場合、JIS X 0201 と JIS X 0208 が必要である。次のやうに文字セットを明示的に指定してフォントを設定する:
+</p><div class="example">
+<pre class="example">:set guifontset=-misc-fixed-medium-r-normal--14-130-75-75-c-140-jisx0208.1983-0,
+       \-misc-fixed-medium-r-normal--14-130-75-75-c-70-jisx0201.1976-0
+</pre></div>
+
+<p>文字セットの名前を省略した場合、X-Window が、ロケールに必要なフォントを選擇する。例:
+</p><div class="example">
+<pre class="example">:set guifontset=-misc-fixed-medium-r-normal--14-130-75-75-c-140,
+       \-misc-fixed-medium-r-normal--14-130-75-75-c-70
+</pre></div>
+
+<p>基本となるフォントの名前を 1 つだけ指定して、利用可能なすべてのフォントの中から選擇させることもできる。例:
+</p><div class="example">
+<pre class="example">:set guifontset=-misc-fixed-medium-r-normal--14-*
+</pre></div>
+
+<p>フォントの別名を指定することもできる。フォントディレクトリ (例へば /usr/X11R6/lib/X11/fonts/) のファイル fonts.alias を見ること。例:
+</p><div class="example">
+<pre class="example">:set guifontset=k14,r14
+</pre></div>
+<a name="E253"></a><a name="index-E253"></a>
+<blockquote>
+<p><strong>Note:</strong> <br>
+東アジアのフォントは、基本的には正四角形の範圍で表示される。ラテンフォントと東アジアのフォントを組み合はせた場合、東アジアのフォントはラテンフォントの 2 倍の幅で表示される。
+</p></blockquote>
+
+<p>&rsquo;<samp>guifontset</samp>&rsquo; が空の場合、コマンド |<a href="syntax_002etxt.html#g_t_003ahighlight">:highlight</a>| の &quot;font&quot; 引數はフォントセットとして解釋される。例へばこのやうに使用する:
+</p><div class="example">
+<pre class="example">:hi Comment font=english_font,your_font
+</pre></div>
+<p>閒違つた &quot;font&quot; 引數を使用するとエラーメッセージが表示される。事前に &rsquo;<samp>guifontset</samp>&rsquo; を設定して確認すること。
+</p>
+
+<a name="risosuhuairuwoShi-u-_0028USING-RESOURCE-FILES_0029"></a>
+<h4 class="unnumberedsubsec">リソースファイルを使ふ (USING RESOURCE FILES)</h4>
+
+<p>&rsquo;<samp>guifontset</samp>&rsquo; を設定する代はりに X11 のリソースを設定すれば、Vim はそれを使用する。これは X のリソースファイルの働きを知つてゐる人向けである。
+</p>
+<p>Motif と Athena ではファイル <samp>$HOME/.Xdefaults</samp> にこの 3 行を追加する:
+</p><div class="example">
+<pre class="example">Vim.font: |<a href="#base_005ffont_005fname_005flist">base_font_name_list</a>|
+Vim*fontSet: |<a href="#base_005ffont_005fname_005flist">base_font_name_list</a>|
+Vim*fontList: your_language_font
+</pre></div>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+Vim.font はテキストエリアの設定 <br>
+Vim*fontSet はメニューの設定 <br>
+Vim*fontList はメニューの設定 (Motif GUI用)
+</p></blockquote>
+
+<p>例へば、14 ドットの日本語フォントを使ふには:
+</p><div class="example">
+<pre class="example">Vim.font: -misc-fixed-medium-r-normal--14-*
+Vim*fontSet: -misc-fixed-medium-r-normal--14-*
+Vim*fontList: -misc-fixed-medium-r-normal--14-*
+</pre></div>
+<p>もしくは:
+</p><div class="example">
+<pre class="example">Vim*font: k14,r14
+Vim*fontSet: k14,r14
+Vim*fontList: k14,r14
+</pre></div>
+<p>この設定をすぐに反映させるには
+</p><pre class="verbatim">xrdb -merge ~/.Xdefaults
+</pre>
+<p>もしくは X サーバーを停止して再起動する。
+</p>
+
+<p>GTK+ 版の Vim は <samp>.Xdefaults</samp> を使はず <samp>~/.gtkrc</samp> の設定を使用する。初期設定は恐らくうまく機能するが、メニューのフォントは變更した方がいいかもしれない。例:
+</p>
+<div class="example">
+<pre class="example">style &quot;default&quot;
+{
+        fontset=&quot;-*-*-medium-r-normal--14-*-*-*-c-*-*-*&quot;
+}
+widget_class &quot;*&quot; style &quot;default&quot;
+</pre></div>
+
+<a name="mbyte_002dfonts_002dMSwin"></a><a name="index-mbyte_002dfonts_002dMSwin"></a>
+<a name="g_t6_002e-MS_002dWindows-nohuonto-_0028Fonts-on-MS_002dWindows_0029"></a>
+<h3 class="section">6. MS-Windows のフォント (Fonts on MS-Windows)</h3>
+
+<p>最も簡單なのは、フォント選擇ダイアロクを使つてフォントを選擇して、試してみることである。メニューの &quot;Edit/Select Font...&quot; (編輯/フォント設定) を使用する。ちやうどいいフォントを見附けたら、このコマンドでフォントの名前を確認する:
+</p><div class="example">
+<pre class="example">:set guifont
+</pre></div>
+
+<p>そして、&rsquo;<samp>guifont</samp>&rsquo; を設定するコマンドを |<a href="gui_002etxt.html#gvimrc">gvimrc</a>| に追加する:
+</p><div class="example">
+<pre class="example">:set guifont=courier_new:h12
+</pre></div>
+
+<a name="mbyte_002dXIM"></a><a name="index-mbyte_002dXIM"></a>
+<a name="g_t7_002e-X11-denoRu-Li--_0028Input-on-X11_0029"></a>
+<h3 class="section">7.  X11 での入力 (Input on X11)</h3>
+
+<a name="XIM"></a><a name="xim"></a><a name="x_002dinput_002dmethod"></a><a name="index-XIM"></a>
+<a name="index-xim"></a>
+<a name="index-x_002dinput_002dmethod"></a>
+<a name="X-INPUT-METHOD-_0028XIM_0029-noJi-Chu-Zhi-Shi-"></a>
+<h4 class="unnumberedsubsec">X INPUT METHOD (XIM) の基礎智識</h4>
+
+<p>XIM は X の國際化入力機構である。Xlib ユニット型と |<a href="#IM_002dserver">IM-server</a>| (Input-Method server) 型の 2 種類がある。|<a href="#IM_002dserver">IM-server</a>| 型は CJK (日中韓) で使はれるやうな複雜な入力方式に適してゐる。
+</p>
+<a name="IM_002dserver"></a><a name="index-IM_002dserver"></a>
+<a name="inpututomesotudosaba-_0028IM_002dserver_0029"></a>
+<h4 class="unnumberedsubsubsec">インプットメソッドサーバー (IM-server)</h4>
+<p>|<a href="#IM_002dserver">IM-server</a>| 型の入力方式では、FrontEnd システムか BackEnd システムのどちらかの方法で入力イベントを處理する。FrontEnd システムでは、まづ |<a href="#IM_002dserver">IM-server</a>| が入力イベントを取得し、そして入力の結果を |<a href="#IM_002dserver">IM-server</a>| からアプリケーションへ渡す。BackEnd システムではその逆の順番で處理される。
+</p>
+<p>MS Windows は BackEnd システムを採用してゐる。X では、ほとんどの |<a href="#IM_002dserver">IM-server</a>| が FrontEnd システムを採用してゐる。BackEnd システムには通信のオーバーヘッドが大きく掛かるといふデメリットはあるが、アプリケーションに制限を加へず、安全に同期することができる。
+</p>
+<p>たとへば xwnmo と kinput2 といふ日本語インプットメソッドサーバー |<a href="#IM_002dserver">IM-server</a>| があるが、兩方とも FrontEnd システムである。xwnmo は Wnn (下記參照) と一緖に提供されてゐる。kinput2 はここから入手できる: <a href="ftp://ftp.sra.co.jp/pub/x11/kinput2/">ftp://ftp.sra.co.jp/pub/x11/kinput2/</a>
+</p>
+<p>中國語用には、&quot;xcin&quot; といふよくできた XIM サーバーがあり、簡體中國語と繁體中國語の兩方を入力できる。適切な入力テーブルを作成すれば、他のロケールも受け付ける。Xcin はここから入手できる: <a href="http://cle.linux.org.tw/xcin/">http://cle.linux.org.tw/xcin/</a>。他には <a href="scim: http://scim.freedesktop.org/">scim: http://scim.freedesktop.org/</a> と fcitx: <a href="http://www.fcitx.org/">http://www.fcitx.org/</a> がある。
+</p>
+<a name="conversion_002dserver"></a><a name="index-conversion_002dserver"></a>
+<a name="Bian-Huan-saba-_0028Conversion-Server_0029"></a>
+<h4 class="unnumberedsubsubsec">變換サーバー (Conversion Server)</h4>
+<p>いくつかのシステムではさらに、變換サーバーが必要である。ほとんどの日本語インプットメソッドサーバー |<a href="#IM_002dserver">IM-server</a>| は假名漢字變換サーバーを必要とする。中國語の入力では、入力方式に依存する。いくつかの方式では、PinYin や ZhuYin から HanZi への變換サーバーが必要である。韓國語の入力では、Hanja を入力するには、Hangul-Hanja 變換サーバーが必要である。
+</p>
+<p>例へば、日本語の入力は 2 段階に分けられる。最初に平假名を入力し、次に漢字へ變換する。多くの漢字 (JIS X 0208 には 6349 文字が定義されてゐる) と 76 文字の平假名があるため、まづ平假名を入力し、必要なら、それを漢字や片假名に變換する。假名漢字變換サーバーには jserver (Wnn と一緖に提供されてゐる。下記參照) や canna などがある。Canna はここから入手できる: <a href="http://canna.sourceforge.jp/">http://canna.sourceforge.jp/</a>
+</p>
+<p>Wnn4.2 といふよくできた入力システムがある。Wnn4.2 は以下のものを含んでゐる。
+</p><ul>
+<li> xwnmo (|<a href="#IM_002dserver">IM-server</a>|)
+</li><li> jserver (日本語假名漢字變換サーバー)
+</li><li> cserver (中國語の PinYin、ZhuYin から簡體漢字への變換サーバー)
+</li><li> tserver (中國語の PinYin、ZhuYin から繁體漢字への變換サーバー)
+</li><li> kserver (Hangul-Hanja 變換サーバー)
+</li></ul>
+<p>Wnn4.2 は多くのシステムで動作し、インターネットのさまざまな場所で入手することができる。あなたのシステム用の RPM や port を使用すること。
+</p>
+
+<a name="xim_002dinput_002dstyle"></a><a name="index-xim_002dinput_002dstyle"></a>
+<a name="Ru-Li-sutairu-_0028Input-Style_0029"></a>
+<h4 class="unnumberedsubsubsec">入力スタイル (Input Style)</h4>
+<p>CJK (日中韓語) を入力するとき、4 つの表示領域がある:
+</p><ol>
+<li> 入力途中の文字を表示する領域
+</li><li> 現在の入力モードを表示する領域
+</li><li> 變換候補を表示する領域
+</li><li> その他のツールを表示する領域
+</li></ol>
+
+<p>3 番目の表示領域は變換をするときに必要である。たとへば、日本語の入力では、同じ撥音の漢字が複數あるので、同じ平假名が複數の漢字に對應する。
+</p>
+<p>1 番目と 2 番目の表示領域は X の國際化入力でそれぞれ &quot;Preedit Area&quot;, &quot;Status Area&quot; と定義されてゐる。3 番目と 4 番目の表示領域は定義されてをらず、|<a href="#IM_002dserver">IM-server</a>| に任されてゐる。國際化入力では Preedit Area と Status Area の組み合せで 4 つの入力スタイルが定義されてゐる: |<a href="#OnTheSpot">OnTheSpot</a>| |<a href="#OffTheSpot">OffTheSpot</a>| |<a href="#OverTheSpot">OverTheSpot</a>| |<a href="#Root">Root</a>|。
+</p>
+<p>現在、GUI Vim は |<a href="#OverTheSpot">OverTheSpot</a>|, |<a href="#OffTheSpot">OffTheSpot</a>|, |<a href="#Root">Root</a>| の 3 つのスタイルをサポートしてゐる。|<a href="various_002etxt.html#g_t_002bGUI_005fGTK">+GUI_GTK</a>| 機能付きでコンパイルされた場合は、GUI Vim は |<a href="#OnTheSpot">OnTheSpot</a>| と |<a href="#OverTheSpot">OverTheSpot</a>| の 2 つのスタイルをサーポートする。&rsquo;<samp>imstyle</samp>&rsquo; オプションでスタイルを選擇することができる。
+</p>
+<a name="OnTheSpot"></a><a name="index-OnTheSpot"></a>
+<dl compact="compact">
+<dt>on-the-spot</dt>
+<dd><p>Preedit Area と Status Area はアプリケーション領域にクライアントアプリケーションによつて表示される。クライアントアプリケーションはテキストを插入する位置に未確定文字をすべて表示するやうに |<a href="#IM_002dserver">IM-server</a>| から指示される。クライアントは、コールバック函數を登錄して、未確定文字の入力中にインプットメソッドから呼び出してもらふ。
+<a name="OverTheSpot"></a><a name="index-OverTheSpot"></a>
+</p></dd>
+<dt>over-the-spot</dt>
+<dd><p>Status Area はアプリケーション領域の固定位置に作成される。Vim の場合は、ステータスライン付近である。Preedit Area はアプリケーションの入力してゐる位置に作成される。インプットメソッドは、テキストが插入される位置にあるウィンドウに未確定文字を表示する。
+<a name="OffTheSpot"></a><a name="index-OffTheSpot"></a>
+</p></dd>
+<dt>off-the-spot</dt>
+<dd><p>Preedit Area と Status Area はアプリケーション領域に表示される。Vim の場合は、ステータスライン付近である。クライアントアプリケーションは表示ウィンドウを提供し、インプットメソッドが直接そこに未確定文字を表示する。
+<a name="Root"></a><a name="index-Root"></a>
+</p></dd>
+<dt>root-window</dt>
+<dd><p>Preedit Area と Status Area はアプリケーションの外側に表示される。インプットメソッドは別に用意した自分のウィンドウに未確定文字をすべて表示する。
+</p></dd>
+</dl>
+
+
+<a name="XIM-woShi-Yong-suru-_0028USING-XIM_0029"></a>
+<h4 class="unnumberedsubsec">XIM を使用する (USING XIM)</h4>
+<a name="multibyte_002dinput"></a><a name="E284"></a><a name="E286"></a><a name="E287"></a><a name="E288"></a><a name="E285"></a><a name="E289"></a><a name="index-multibyte_002dinput"></a>
+<a name="index-E284"></a>
+<a name="index-E286"></a>
+<a name="index-E287"></a>
+<a name="index-E288"></a>
+<a name="index-E285"></a>
+<a name="index-E289"></a>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+表示と入力は獨立してゐる。インプットメソッドがなくてもあなたの言語を見ることができる。しかし、表示方法とインプットメソッドが合はないと、テキストは閒違つて表示される。
+</p></blockquote>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+&rsquo;<samp>guifontset</samp>&rsquo; を設定しないとインプットメソッドを使用できない。從つて、ラテン語のユーザーも、インプットメソッドを使用するなら、&rsquo;<samp>guifontset</samp>&rsquo; を設定しなければならない。
+</p></blockquote>
+
+<p>あなたの言語を入力するには、その言語をサポートしてゐるインプットメソッドサーバー |<a href="#IM_002dserver">IM-server</a>| を實行する。必要なら變換サーバー |<a href="#conversion_002dserver">conversion-server</a>| も實行する。
+</p>
+<p>次の 3 行を <samp>~/.Xdefaults</samp> ファイルに書き込む。これは |<a href="#XIM">XIM</a>| を使用するすべての X アプリケーションに共通する設定である。すでに |<a href="#XIM">XIM</a>| を使用してゐる場合は、これを讀み飛ばすこと。
+</p><div class="example">
+<pre class="example">*international: True
+*.inputMethod: your_input_server_name
+*.preeditType: your_input_style
+</pre></div>
+<table>
+<tr><td width="30%">input_server_name</td><td width="70%">インプットサーバー |<a href="#IM_002dserver">IM-server</a>| の名前。(|<a href="#IM_002dserver">IM-server</a>| のマニュアルを確認すること)。</td></tr>
+<tr><td width="30%">your_input_style</td><td width="70%">|<a href="#OverTheSpot">OverTheSpot</a>|, |<a href="#OffTheSpot">OffTheSpot</a>|, |<a href="#Root">Root</a>| のどれか。|<a href="#xim_002dinput_002dstyle">xim-input-style</a>| を參照。</td></tr>
+</table>
+
+<p>X11R6 を使用してゐる場合、*international は必要ない。また、*.inputMethod と *.preeditType の指定は任意。
+</p>
+<p>kinput2 を |<a href="#IM_002dserver">IM-server</a>| として使ふ場合の例:
+</p><div class="example">
+<pre class="example">*international: True
+*.inputMethod: kinput2
+*.preeditType: OverTheSpot
+</pre></div>
+<p>|<a href="#OverTheSpot">OverTheSpot</a>| を使用する場合、GUI Vim はノーマルモードでも常にインプットメソッドサーバーに接續する。そのため &quot;f&quot; や &quot;r&quot; コマンドであなたの言語を入力することができる。しかし、他の入力スタイルの場合は、GUI Vim はノーマルモードのときにはインプットメソッドサーバーに接續しない。
+</p>
+<p>インプットメソッドサーバーが |<a href="#OverTheSpot">OverTheSpot</a>| をサポートしてゐない場合、&quot;f&quot; や &quot;r&quot; などのノーマルモードコマンドであなたの言語を使用するには、ローカライズされた xterm か、|<a href="#XIM">XIM</a>| をサポートした xterm を使用する。
+</p>
+<p>必要なら、環境變數 XMODIFIERS を設定する:
+</p><pre class="verbatim">sh:  export XMODIFIERS=&quot;@im=input_server_name&quot;
+csh: setenv XMODIFIERS &quot;@im=input_server_name&quot;
+</pre>
+<p>インプットメソッドサーバー |<a href="#IM_002dserver">IM-server</a>| に kinput2 を使用する場合の sh での設定例:
+</p><div class="example">
+<pre class="example">export XMODIFIERS=&quot;@im=kinput2&quot;
+</pre></div>
+
+<a name="XIM-noZhi-Yu--_0028FULLY-CONTROLLED-XIM_0029"></a>
+<h4 class="unnumberedsubsubsec">XIM の制禦 (FULLY CONTROLLED XIM)</h4>
+
+<p>MS-Windows の IME (|<a href="#multibyte_002dime">multibyte-ime</a>| 參照) のやうに、XIM を制禦することができる。この機能は現在 GTK GUI でのみ利用可能。
+</p>
+<p>XIM を制禦するには、使用してゐるインプットメソッドのトグルキーを、オプション &rsquo;<samp>imactivatekey</samp>&rsquo; に設定する必要がある。たとへば、インプットメソッドサーバーに kinput2 + canna の組み合せを使用してゐる場合、トグルキーは恐らく Shift+Space なので、このやうに設定する:
+</p><div class="example">
+<pre class="example">:set imactivatekey=S-space
+</pre></div>
+
+<p>設定の書式は &rsquo;<samp>imactivatekey</samp>&rsquo; を參照。
+</p>
+<a name="mbyte_002dIME"></a><a name="index-mbyte_002dIME"></a>
+<a name="g_t8_002e-MS_002dWindowsdenoRu-Li--_0028Input-on-MS_002dWindows_0029"></a>
+<h3 class="section">8. MS-Windowsでの入力 (Input on MS-Windows)</h3>
+
+<a name="multibyte_002dime"></a><a name="IME"></a><a name="index-multibyte_002dime"></a>
+<a name="index-IME"></a>
+<a name="Windows-IME-nosapoto-_0028Windows-IME-support_0029"></a>
+<h4 class="unnumberedsubsec">Windows IME のサポート (Windows IME support)</h4>
+
+<p>{Windows の GUI 環境で |<a href="various_002etxt.html#g_t_002bmulti_005fbyte_005fime">+multi_byte_ime</a>| が有效な場合のみ利用可能}
+</p>
+<p>Windows ではマルチバイト文字の入力に Input Method Editor (IME) を使ふことができる。IME を使つたテキストの入力では、IME の狀態をオンにしたりオフにしたり、何度も何度も切り替へなければならない。さうしないと、IME の狀態がオンのときには、キー入力はすべて IME に取られてしまふので、&rsquo;<code class="tt-key">j</code>&rsquo; や &rsquo;<code class="tt-key">k</code>&rsquo; などほぼすべてのキーを、直接 Vim に入力することができない。
+</p>
+<p>|<a href="various_002etxt.html#g_t_002bmulti_005fbyte_005fime">+multi_byte_ime</a>| 機能はそれを手助けし、IMEを手動で切り替へる手閒を減少させる。マルチバイトテキストを編輯してゐるときでも、ノーマルモードで IME を必要とすることはほとんどない。そこで、ESC で插入モードを拔けるときに、Vim は IME の狀態を記錄してから、IME を强制的にオフにする。そして、次に插入モードに入つたときに自動的に、記錄しておいた狀態に戾す。
+</p>
+<p>これは插入モードとノーマルモードの閒だけでなく、コマンドラインや檢索コマンドの入力時や置換モードでも同じである。
+</p>
+<p>オプション &rsquo;<samp>iminsert</samp>&rsquo;, &rsquo;<samp>imsearch</samp>&rsquo;, &rsquo;<samp>imcmdline</samp>&rsquo; を設定して、それぞれ別々に入力方法を選擇したり、無效にしたりできる。
+</p>
+<a name="IME-nituite-_0028WHAT-IS-IME_0029"></a>
+<h4 class="unnumberedsubsec">IME について (WHAT IS IME)</h4>
+<p>IME は東アジア向けの Windows の一部で、マルチバイト文字を入力するためのものである。英語などの言語用の Windows には IME は搭載されてゐない (普通は必要ない)。しかし、Microsoft Global IME といふものがある。これは Internet Explorer4.0 以上に含まれてゐる。詳しいことは下記のURLを參照。
+</p>
+<a name="global_002dime"></a><a name="index-global_002dime"></a>
+<a name="GLOBAL-IMEnituite-_0028WHAT-IS-GLOBAL-IME_0029"></a>
+<h4 class="unnumberedsubsec">GLOBAL IMEについて (WHAT IS GLOBAL IME)</h4>
+<p>Global IME は Windows 95, Windows 98, Windows NT 4.0 のどの言語用のバージョンでも利用可能で、中國語、日本語、韓國語のテキストを Vim に入力することができる。
+</p>
+<p>Windows 2000 や Xp でも問題なく使用できる (ダウンロードは必要ない)。Windows 2000 Professional には Global IME が組み込まれてをり、コントロールパネルの地域と言語のオプション/言語タブ/テキストサービスと入力言語の詳細ボタンから入力言語を追加できる。Global IME の詳細は下記のURLを參照。リンク先には Global IME の各國語用のバージョンもある。
+</p>
+<ul>
+<li> Global IME detailed information. <br>
+<a href="http://search.microsoft.com/results.aspx?q=global+ime">http://search.microsoft.com/results.aspx?q=global+ime</a>
+
+</li><li> Active Input Method Manager (Global IME) <br>
+<a href="http://msdn.microsoft.com/en-us/library/aa741221(v=VS.85).aspx">http://msdn.microsoft.com/en-us/library/aa741221(v=VS.85).aspx</a>
+</li></ul>
+
+<p>Global IME のサポートは實驗的な機能である。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+IME を使用するには入力したい言語をシステムに追加する必要がある。正確な設定方法は Windows のバージョンによつて違ふ。Windows XP の場合は:
+</p><ol>
+<li> コントロールパネルを開く
+</li><li> 地域と言語のオプションを開く
+</li><li> 言語タブを選擇
+</li><li> [テキストサービスと入力言語]エリアの詳細ボタンをクリック
+</li><li> 追加ボタンをクリック
+</li></ol>
+</blockquote>
+
+
+<a name="CursorIM"></a><a name="index-CursorIM"></a>
+<a name="IME-ya-XIM-gaonnotokinokasorunoSe-"></a>
+<h4 class="unnumberedsubsec">IME や XIM がオンのときのカーソルの色</h4>
+<p>IME の狀態に應じてカーソルの色を變へることができる。通常、IME の狀態はデスクトップの隅 (やタスクバー) に表示されてゐるが、これはあまり確認しやすくないので、この機能が役に立つ。これは XIM でも同じやうに機能する。
+</p>
+<p>强調グループの CursorIM を設定して、IME の狀態がオンのときの色を選べる。たとへば、次の行を |<a href="gui_002etxt.html#gvimrc">gvimrc</a>| に追加する:
+</p>
+<div class="example">
+<pre class="example">if has('multi_byte_ime')
+    highlight Cursor guifg=NONE guibg=Green
+    highlight CursorIM guifg=NONE guibg=Purple
+endif
+</pre></div>
+<p>これで、IME がオフならカーソルは綠、オンなら紫になる。
+</p>
+<a name="mbyte_002dkeymap"></a><a name="index-mbyte_002dkeymap"></a>
+<a name="g_t9_002e-kimatupudenoRu-Li--_0028Input-with-a-keymap_0029"></a>
+<h3 class="section">9. キーマップでの入力 (Input with a keymap)</h3>
+
+<p>キーボードから入力できない文字がある場合にはオプション &rsquo;<samp>keymap</samp>&rsquo; を使ふ。1 つ以上の (英語の) 文字を入力することで、別の (非英語の) 文字を入力することができる。この機能はテキストを入力するときだけ作用する。Vim コマンドを入力するときには作用しない。そのため、キーボードの設定を切り替へる手閒がない。
+</p>
+<p>{Vimが |<a href="various_002etxt.html#g_t_002bkeymap">+keymap</a>| 機能付きでコンパイルされたときにのみ利用可能}
+</p>
+<p>オプション &rsquo;<samp>keymap</samp>&rsquo; に、使用したいキーマップファイルを指定する。ファイルの名前は次の 2 つのうちのどちらか:
+</p>
+<div class="example">
+<pre class="example">keymap/{keymap}_{encoding}.vim
+keymap/{keymap}.vim
+</pre></div>
+
+<p>{keymap} はオプション &rsquo;<samp>keymap</samp>&rsquo; に設定する値、{encoding} はオプション &rsquo;<samp>encoding</samp>&rsquo; の値。{encoding} 付きのファイル名が優先して使はれる。
+</p>
+<p>キーマップファイルを探すために &rsquo;<samp>runtimepath</samp>&rsquo; が使はれる。利用可能なすべてのキーマップファイルを一覽するには、このやうにする:
+</p><div class="example">
+<pre class="example">:echo globpath(&amp;rtp, &quot;keymap/*.vim&quot;)
+</pre></div>
+
+<p>插入モードとコマンドラインモードでは、<kbd>CTRL-^</kbd> を使つてキーマップを使用するかどうかを切り換へることができる。|<a href="insert_002etxt.html#i_005fCTRL_002d_005e">i_CTRL-^</a>| |<a href="cmdline_002etxt.html#c_005fCTRL_002d_005e">c_CTRL-^</a>|
+</p>
+<p>插入モードでは、キーマップの狀態はオプション &rsquo;<samp>iminsert</samp>&rsquo; に記憶される。插入モードから拔けて、再び插入モードに入つたときに、以前の狀態が使はれる。|<a href="motion_002etxt.html#f">f</a>| や |<a href="change_002etxt.html#r">r</a>| などの 1 つの文字を引數に取るコマンドでも同じ値が使はれる。
+</p>
+<p>コマンドラインモードでは、キーマップの狀態は記憶されない。コマンドラインモードに入るとまづ、(ASCII 文字の) Ex コマンドを入力するはずだからである。
+</p>
+<p>檢索パターンの入力では、オプション &rsquo;<samp>imsearch</samp>&rsquo; が使はれる。&rsquo;<samp>iminsert</samp>&rsquo; と設定を共有するやうに設定することもできる。
+<a name="lCursor"></a><a name="index-lCursor"></a>
+キーマップ (言語マップ) を使用中に、GUI カーソルの色を變へることができる。もしも、非標準な背景色を使用してゐた場合にカーソルが見えなくなることがないやうに、初期狀態ではこの機能は無效になつてゐる。次の例では、カーソルの色が明るくなるやうにしてゐる:
+</p><div class="example">
+<pre class="example">:highlight Cursor guifg=NONE guibg=Green
+:highlight lCursor guifg=NONE guibg=Cyan
+</pre></div>
+<a name="keymap_002dfile_002dformat"></a><a name="g_t_003aloadk"></a><a name="g_t_003aloadkeymap"></a><a name="E105"></a><a name="E791"></a><a name="index-keymap_002dfile_002dformat"></a>
+<a name="index-_003aloadk"></a>
+<a name="index-_003aloadkeymap"></a>
+<a name="index-E105"></a>
+<a name="index-E791"></a>
+<p>キーマップファイルはこのやうな構成になつてゐる:
+</p>
+<pre class="verbatim">&quot; Maintainer:   name &lt;email@address&gt;
+&quot; Last Changed: 2001 Jan 1
+
+let b:keymap_name = &quot;short&quot;
+
+loadkeymap
+a       A
+b       B       comment
+</pre>
+<p>「&quot;」で始まる行はコメントなので無視される。空白行も無視される。マップを定義する行には役に立つコメントを書くことができる。
+</p>
+<p>&quot;b:keymap_name&quot; にはステータスラインに表示される短い名前を設定できる。&rsquo;<samp>keymap</samp>&rsquo; の値は、言語の違ひやキーボードやエンコーディングの違ひを區別するために長くなりがちだが、ステータスラインに表示できる文字には限りがあるので、この變數を使ふ。
+</p>
+<p>實際のマップは &quot;loadkeymap&quot; 以下に書く。上の例では、&quot;a&quot; は &quot;A&quot; に、&quot;b&quot; は &quot;B&quot; にマップされる。このやうに、一番目のものが二番目にマップされる。そして、ファイルの末尾まで同じやうに處理される。
+</p>
+<p>このやうに設定したマップは、|<a href="map_002etxt.html#g_t_003alnoremap">:lnoremap</a>| に &quot;&lt;buffer&gt;&quot; を指定したバッファローカルなマップとまつたく同じである。
+</p>
+<p>それはこのコマンドで確認できる:
+</p><div class="example">
+<pre class="example">:lmap
+</pre></div>
+
+<p>2 つの項目は空白で區切る。マップに空白を含めるには、&quot;&lt;Tab&gt;&quot;, &quot;&lt;Space&gt;&quot; といふ特別な表記を使ふ。2 つの項目の文字の長さは、合はせて 200 バイトを超えてはいけない。
+</p>
+<p>一番目の項目に複數の文字を指定することができる。これはデッドキーのやうな作用をする。例:
+</p><div class="example">
+<pre class="example">'a      á
+</pre></div>
+<p>クォートの入力があつたとき、次に &quot;a&quot; が入力されるかどうかわからないので、Vim は次の文字が入力されるまで待機する。シングルクォートを入力できるやうにするには、次の行も加へる:
+</p><div class="example">
+<pre class="example">''      '
+</pre></div>
+<p>マップは |<a href="map_002etxt.html#g_t_003alnoremap">:lnoremap</a>| で定義されるので、結果のクォート文字は、他のマップの開始文字としては扱はれない。<br>
+{譯注: シングルクォートを入力できるやうにするには... &rsquo;<samp>timeout</samp>&rsquo; も參照。}
+</p>
+<a name="keymap_002daccents"></a><a name="index-keymap_002daccents"></a>
+<p>&quot;accents&quot; キーマップはこれを使用する。
+</p>
+<p>最初の列は |<a href="intro_002etxt.html#g_t_003c_003e">&lt;&gt;</a>| 表記で書くこともできる:
+</p><div class="example">
+<pre class="example">&lt;C-c&gt;           Ctrl-C
+&lt;A-c&gt;           Alt-c
+&lt;A-C&gt;           Alt-C
+</pre></div>
+<blockquote>
+<p><strong>Note:</strong> <br>
+Alt マッピングは機能しないことがある。それはキーボードや端末に依存する。
+</p></blockquote>
+
+<p>二番目の項目に複數の文字を指定することもできるが、一般的ではない。しかし、文字を指定するのにいろいろな方法を使用して構はない:
+</p><div class="example">
+<pre class="example">A       a               literal character
+A       &lt;char-97&gt;       decimal value
+A       &lt;char-0x61&gt;     hexadecimal value
+A       &lt;char-0141&gt;     octal value
+x       &lt;Space&gt;         special key name
+</pre></div>
+
+<p>文字は現在の &rsquo;<samp>encoding</samp>&rsquo; と同じエンコーディングであるものとして扱はれる。&quot;:scriptencoding&quot; でリテラル文字のエンコーディングを指定することができるが、&lt;char-&gt; 表記の文字には影響しない。なぜなら、キーマップファイルのエンコーディングが變換されるのであつて、&lt;char-&gt; の結果の文字は變換されないからである。
+</p>
+<p>&quot;loadkeymap&quot; 以下の行は &rsquo;<samp>cpoptions</samp>&rsquo; に &quot;C&quot; を設定した狀態で解釋される。つまり、行の繼續は使用されない。バックスラッシュは特殊文字として扱はれる。例:
+</p>
+<div class="example">
+<pre class="example">&quot; a comment line
+\&quot;      x       &quot; を x へマップ
+\\      y       \ を y へマップ
+</pre></div>
+
+<p>他の人にも便利なキーマップファイルを作成したら、Vim の配布物に含めるために、Vim のメンテナーに提出することを檢討していただきたい: <br>
+<a href="mailto:&lt;maintainer@vim.org&gt;">&lt;maintainer@vim.org&gt;</a>
+</p>
+
+<a name="keymap_002dhebrew"></a><a name="index-keymap_002dhebrew"></a>
+<a name="heburaiYu--kimatupu-_0028HEBREW-KEYMAP_0029"></a>
+<h4 class="unnumberedsubsec">ヘブライ語 キーマップ (HEBREW KEYMAP)</h4>
+
+<p>このファイルは UTF-8 と CP1255 のエンコーディングで利用可能な文字と、その文字を入力するためのキーマップを說明してゐる:
+</p>
+<p>グリフ    エンコード    キーマップ
+</p><table>
+<thead><tr><th width="10%">Char</th><th width="20%">utf-8</th><th width="20%">cp1255h</th><th width="10%">ebrew</th><th width="10%">hebrewp</th><th width="30%">name</th></tr></thead>
+<tr><td width="10%">א</td><td width="20%">0x5d0</td><td width="20%">0xe0</td><td width="10%">t</td><td width="10%">a</td><td width="30%">&rsquo;alef</td></tr>
+<tr><td width="10%">ב</td><td width="20%">0x5d1</td><td width="20%">0xe1</td><td width="10%">c</td><td width="10%">b</td><td width="30%">bet</td></tr>
+<tr><td width="10%">ג</td><td width="20%">0x5d2</td><td width="20%">0xe2</td><td width="10%">d</td><td width="10%">g</td><td width="30%">gimel</td></tr>
+<tr><td width="10%">ד</td><td width="20%">0x5d3</td><td width="20%">0xe3</td><td width="10%">s</td><td width="10%">d</td><td width="30%">dalet</td></tr>
+<tr><td width="10%">ה</td><td width="20%">0x5d4</td><td width="20%">0xe4</td><td width="10%">v</td><td width="10%">h</td><td width="30%">he</td></tr>
+<tr><td width="10%">ו</td><td width="20%">0x5d5</td><td width="20%">0xe5</td><td width="10%">u</td><td width="10%">v</td><td width="30%">vav</td></tr>
+<tr><td width="10%">ז</td><td width="20%">0x5d6</td><td width="20%">0xe6</td><td width="10%">z</td><td width="10%">z</td><td width="30%">zayin</td></tr>
+<tr><td width="10%">ח</td><td width="20%">0x5d7</td><td width="20%">0xe7</td><td width="10%">j</td><td width="10%">j</td><td width="30%">het</td></tr>
+<tr><td width="10%">ט</td><td width="20%">0x5d8</td><td width="20%">0xe8</td><td width="10%">y</td><td width="10%">T</td><td width="30%">tet</td></tr>
+<tr><td width="10%">י</td><td width="20%">0x5d9</td><td width="20%">0xe9</td><td width="10%">h</td><td width="10%">y</td><td width="30%">yod</td></tr>
+<tr><td width="10%">ך</td><td width="20%">0x5da</td><td width="20%">0xea</td><td width="10%">l</td><td width="10%">K</td><td width="30%">kaf sofit</td></tr>
+<tr><td width="10%">כ</td><td width="20%">0x5db</td><td width="20%">0xeb</td><td width="10%">f</td><td width="10%">k</td><td width="30%">kaf</td></tr>
+<tr><td width="10%">ל</td><td width="20%">0x5dc</td><td width="20%">0xec</td><td width="10%">k</td><td width="10%">l</td><td width="30%">lamed</td></tr>
+<tr><td width="10%">ם</td><td width="20%">0x5dd</td><td width="20%">0xed</td><td width="10%">o</td><td width="10%">M</td><td width="30%">mem sofit</td></tr>
+<tr><td width="10%">מ</td><td width="20%">0x5de</td><td width="20%">0xee</td><td width="10%">n</td><td width="10%">m</td><td width="30%">mem</td></tr>
+<tr><td width="10%">ן</td><td width="20%">0x5df</td><td width="20%">0xef</td><td width="10%">i</td><td width="10%">N</td><td width="30%">nun sofit</td></tr>
+<tr><td width="10%">נ</td><td width="20%">0x5e0</td><td width="20%">0xf0</td><td width="10%">b</td><td width="10%">n</td><td width="30%">nun</td></tr>
+<tr><td width="10%">ס</td><td width="20%">0x5e1</td><td width="20%">0xf1</td><td width="10%">x</td><td width="10%">s</td><td width="30%">samech</td></tr>
+<tr><td width="10%">ע</td><td width="20%">0x5e2</td><td width="20%">0xf2</td><td width="10%">g</td><td width="10%">u</td><td width="30%">&lsquo;ayin</td></tr>
+<tr><td width="10%">ף</td><td width="20%">0x5e3</td><td width="20%">0xf3</td><td width="10%">;</td><td width="10%">P</td><td width="30%">pe sofit</td></tr>
+<tr><td width="10%">פ</td><td width="20%">0x5e4</td><td width="20%">0xf4</td><td width="10%">p</td><td width="10%">p</td><td width="30%">pe</td></tr>
+<tr><td width="10%">ץ</td><td width="20%">0x5e5</td><td width="20%">0xf5</td><td width="10%">.</td><td width="10%">X</td><td width="30%">tsadi sofit</td></tr>
+<tr><td width="10%">צ</td><td width="20%">0x5e6</td><td width="20%">0xf6</td><td width="10%">m</td><td width="10%">x</td><td width="30%">tsadi</td></tr>
+<tr><td width="10%">ק</td><td width="20%">0x5e7</td><td width="20%">0xf7</td><td width="10%">e</td><td width="10%">q</td><td width="30%">qof</td></tr>
+<tr><td width="10%">ר</td><td width="20%">0x5e8</td><td width="20%">0xf8</td><td width="10%">r</td><td width="10%">r</td><td width="30%">resh</td></tr>
+<tr><td width="10%">ש</td><td width="20%">0x5e9</td><td width="20%">0xf9</td><td width="10%">a</td><td width="10%">w</td><td width="30%">shin</td></tr>
+<tr><td width="10%">ת</td><td width="20%">0x5ea</td><td width="20%">0xfa</td><td width="10%">,</td><td width="10%">t</td><td width="30%">tav</td></tr>
+</table>
+
+<p>母音マークと特別な句讀點:
+</p><table>
+<thead><tr><th width="10%">Char</th><th width="20%">utf-8</th><th width="20%">cp1255h</th><th width="10%">ebrew</th><th width="10%">hebrewp</th><th width="30%">name</th></tr></thead>
+<tr><td width="10%">הְ</td><td width="20%">0x5b0</td><td width="20%">0xc0</td><td width="10%">A:</td><td width="10%">A:</td><td width="30%">sheva</td></tr>
+<tr><td width="10%">הֱ</td><td width="20%">0x5b1</td><td width="20%">0xc1</td><td width="10%">HE</td><td width="10%">HE</td><td width="30%">hataf segol</td></tr>
+<tr><td width="10%">הֲ</td><td width="20%">0x5b2</td><td width="20%">0xc2</td><td width="10%">HA</td><td width="10%">HA</td><td width="30%">hataf patah</td></tr>
+<tr><td width="10%">הֳ</td><td width="20%">0x5b3</td><td width="20%">0xc3</td><td width="10%">HO</td><td width="10%">HO</td><td width="30%">hataf qamats</td></tr>
+<tr><td width="10%">הִ</td><td width="20%">0x5b4</td><td width="20%">0xc4</td><td width="10%">I</td><td width="10%">I</td><td width="30%">hiriq</td></tr>
+<tr><td width="10%">הֵ</td><td width="20%">0x5b5</td><td width="20%">0xc5</td><td width="10%">AY</td><td width="10%">AY</td><td width="30%">tsere</td></tr>
+<tr><td width="10%">הֶ</td><td width="20%">0x5b6</td><td width="20%">0xc6</td><td width="10%">E</td><td width="10%">E</td><td width="30%">segol</td></tr>
+<tr><td width="10%">הַ</td><td width="20%">0x5b7</td><td width="20%">0xc7</td><td width="10%">AA</td><td width="10%">AA</td><td width="30%">patah</td></tr>
+<tr><td width="10%">הָ</td><td width="20%">0x5b8</td><td width="20%">0xc8</td><td width="10%">AO</td><td width="10%">AO</td><td width="30%">qamats</td></tr>
+<tr><td width="10%">הֹ</td><td width="20%">0x5b9</td><td width="20%">0xc9</td><td width="10%">O</td><td width="10%">O</td><td width="30%">holam</td></tr>
+<tr><td width="10%">הֻ</td><td width="20%">0x5bb</td><td width="20%">0xcb</td><td width="10%">U</td><td width="10%">U</td><td width="30%">qubuts</td></tr>
+<tr><td width="10%">כּ</td><td width="20%">0x5bc</td><td width="20%">0xcc</td><td width="10%">D</td><td width="10%">D</td><td width="30%">dagesh</td></tr>
+<tr><td width="10%">הֽ</td><td width="20%">0x5bd</td><td width="20%">0xcd</td><td width="10%">]T</td><td width="10%">]T</td><td width="30%">meteg</td></tr>
+<tr><td width="10%">ה־</td><td width="20%">0x5be</td><td width="20%">0xce</td><td width="10%">]Q</td><td width="10%">]Q</td><td width="30%">maqaf</td></tr>
+<tr><td width="10%">בֿ</td><td width="20%">0x5bf</td><td width="20%">0xcf</td><td width="10%">]R</td><td width="10%">]R</td><td width="30%">rafe</td></tr>
+<tr><td width="10%">ב׀</td><td width="20%">0x5c0</td><td width="20%">0xd0</td><td width="10%">]p</td><td width="10%">]p</td><td width="30%">paseq</td></tr>
+<tr><td width="10%">שׁ</td><td width="20%">0x5c1</td><td width="20%">0xd1</td><td width="10%">SR</td><td width="10%">SR</td><td width="30%">shin-dot</td></tr>
+<tr><td width="10%">שׂ</td><td width="20%">0x5c2</td><td width="20%">0xd2</td><td width="10%">SL</td><td width="10%">SL</td><td width="30%">sin-dot</td></tr>
+<tr><td width="10%">׃</td><td width="20%">0x5c3</td><td width="20%">0xd3</td><td width="10%">]P</td><td width="10%">]P</td><td width="30%">sof-pasuq</td></tr>
+<tr><td width="10%">װ</td><td width="20%">0x5f0</td><td width="20%">0xd4</td><td width="10%">VV</td><td width="10%">VV</td><td width="30%">double-vav</td></tr>
+<tr><td width="10%">ױ</td><td width="20%">0x5f1</td><td width="20%">0xd5</td><td width="10%">VY</td><td width="10%">VY</td><td width="30%">vav-yod</td></tr>
+<tr><td width="10%">ײ</td><td width="20%">0x5f2</td><td width="20%">0xd6</td><td width="10%">YY</td><td width="10%">YY</td><td width="30%">yod-yod</td></tr>
+</table>
+
+<p>以下は UTF-8 でのみ利用可能なもの
+</p>
+<p>朗唱マーク:
+</p>
+<p>グリフ
+</p><table>
+<thead><tr><th width="10%">Char</th><th width="20%">utf-8</th><th width="20%">hebrew</th><th width="50%">name</th></tr></thead>
+<tr><td width="10%">ב֑</td><td width="20%">0x591</td><td width="20%">C:</td><td width="50%">etnahta</td></tr>
+<tr><td width="10%">ב֒</td><td width="20%">0x592</td><td width="20%">Cs</td><td width="50%">segol</td></tr>
+<tr><td width="10%">ב֓</td><td width="20%">0x593</td><td width="20%">CS</td><td width="50%">shalshelet</td></tr>
+<tr><td width="10%">ב֔</td><td width="20%">0x594</td><td width="20%">Cz</td><td width="50%">zaqef qatan</td></tr>
+<tr><td width="10%">ב֕</td><td width="20%">0x595</td><td width="20%">CZ</td><td width="50%">zaqef gadol</td></tr>
+<tr><td width="10%">ב֖</td><td width="20%">0x596</td><td width="20%">Ct</td><td width="50%">tipeha</td></tr>
+<tr><td width="10%">ב֗</td><td width="20%">0x597</td><td width="20%">Cr</td><td width="50%">revia</td></tr>
+<tr><td width="10%">ב֘</td><td width="20%">0x598</td><td width="20%">Cq</td><td width="50%">zarqa</td></tr>
+<tr><td width="10%">ב֙</td><td width="20%">0x599</td><td width="20%">Cp</td><td width="50%">pashta</td></tr>
+<tr><td width="10%">ב֚</td><td width="20%">0x59a</td><td width="20%">C!</td><td width="50%">yetiv</td></tr>
+<tr><td width="10%">ב֛</td><td width="20%">0x59b</td><td width="20%">Cv</td><td width="50%">tevir</td></tr>
+<tr><td width="10%">ב֜</td><td width="20%">0x59c</td><td width="20%">Cg</td><td width="50%">geresh</td></tr>
+<tr><td width="10%">ב֝</td><td width="20%">0x59d</td><td width="20%">C*</td><td width="50%">geresh qadim</td></tr>
+<tr><td width="10%">ב֞</td><td width="20%">0x59e</td><td width="20%">CG</td><td width="50%">gershayim</td></tr>
+<tr><td width="10%">ב֟</td><td width="20%">0x59f</td><td width="20%">CP</td><td width="50%">qarnei-parah</td></tr>
+<tr><td width="10%">ב֪</td><td width="20%">0x5aa</td><td width="20%">Cy</td><td width="50%">yerach-ben-yomo</td></tr>
+<tr><td width="10%">ב֫</td><td width="20%">0x5ab</td><td width="20%">Co</td><td width="50%">ole</td></tr>
+<tr><td width="10%">ב֬</td><td width="20%">0x5ac</td><td width="20%">Ci</td><td width="50%">iluy</td></tr>
+<tr><td width="10%">ב֭</td><td width="20%">0x5ad</td><td width="20%">Cd</td><td width="50%">dehi</td></tr>
+<tr><td width="10%">ב֮</td><td width="20%">0x5ae</td><td width="20%">Cn</td><td width="50%">zinor</td></tr>
+<tr><td width="10%">ב֯</td><td width="20%">0x5af</td><td width="20%">CC</td><td width="50%">masora circle</td></tr>
+</table>
+
+<p>連結形:
+</p><table>
+<thead><tr><th width="10%">Char</th><th width="20%">utf-8</th><th width="20%">hebrew</th><th width="50%">name</th></tr></thead>
+<tr><td width="10%">ﬠ</td><td width="20%">0xfb20</td><td width="20%">X&lsquo;</td><td width="50%">Alternative &lsquo;ayin</td></tr>
+<tr><td width="10%">ﬡ</td><td width="20%">0xfb21</td><td width="20%">X&rsquo;</td><td width="50%">Alternative &rsquo;alef</td></tr>
+<tr><td width="10%">ﬢ</td><td width="20%">0xfb22</td><td width="20%">X-d</td><td width="50%">Alternative dalet</td></tr>
+<tr><td width="10%">ﬣ</td><td width="20%">0xfb23</td><td width="20%">X-h</td><td width="50%">Alternative he</td></tr>
+<tr><td width="10%">ﬤ</td><td width="20%">0xfb24</td><td width="20%">X-k</td><td width="50%">Alternative kaf</td></tr>
+<tr><td width="10%">ﬥ</td><td width="20%">0xfb25</td><td width="20%">X-l</td><td width="50%">Alternative lamed</td></tr>
+<tr><td width="10%">ﬦ</td><td width="20%">0xfb26</td><td width="20%">X-m</td><td width="50%">Alternative mem-sofit</td></tr>
+<tr><td width="10%">ﬧ</td><td width="20%">0xfb27</td><td width="20%">X-r</td><td width="50%">Alternative resh</td></tr>
+<tr><td width="10%">ﬨ</td><td width="20%">0xfb28</td><td width="20%">X-t</td><td width="50%">Alternative tav</td></tr>
+<tr><td width="10%">﬩</td><td width="20%">0xfb29</td><td width="20%">X-+</td><td width="50%">Alternative plus</td></tr>
+<tr><td width="10%">שׁ</td><td width="20%">0xfb2a</td><td width="20%">XW</td><td width="50%">shin+shin-dot</td></tr>
+<tr><td width="10%">שׂ</td><td width="20%">0xfb2b</td><td width="20%">Xw</td><td width="50%">shin+sin-dot</td></tr>
+<tr><td width="10%">שּׁ</td><td width="20%">0xfb2c</td><td width="20%">X..W</td><td width="50%">shin+shin-dot+dagesh</td></tr>
+<tr><td width="10%">שּׂ</td><td width="20%">0xfb2d</td><td width="20%">X..w</td><td width="50%">shin+sin-dot+dagesh</td></tr>
+<tr><td width="10%">אַ</td><td width="20%">0xfb2e</td><td width="20%">XA</td><td width="50%">alef+patah</td></tr>
+<tr><td width="10%">אָ</td><td width="20%">0xfb2f</td><td width="20%">XO</td><td width="50%">alef+qamats</td></tr>
+<tr><td width="10%">אּ</td><td width="20%">0xfb30</td><td width="20%">XI</td><td width="50%">alef+hiriq (mapiq)</td></tr>
+<tr><td width="10%">בּ</td><td width="20%">0xfb31</td><td width="20%">X.b</td><td width="50%">bet+dagesh</td></tr>
+<tr><td width="10%">גּ</td><td width="20%">0xfb32</td><td width="20%">X.g</td><td width="50%">gimel+dagesh</td></tr>
+<tr><td width="10%">דּ</td><td width="20%">0xfb33</td><td width="20%">X.d</td><td width="50%">dalet+dagesh</td></tr>
+<tr><td width="10%">הּ</td><td width="20%">0xfb34</td><td width="20%">X.h</td><td width="50%">he+dagesh</td></tr>
+<tr><td width="10%">וּ</td><td width="20%">0xfb35</td><td width="20%">Xu</td><td width="50%">vav+dagesh</td></tr>
+<tr><td width="10%">זּ</td><td width="20%">0xfb36</td><td width="20%">X.z</td><td width="50%">zayin+dagesh</td></tr>
+<tr><td width="10%">טּ</td><td width="20%">0xfb38</td><td width="20%">X.T</td><td width="50%">tet+dagesh</td></tr>
+<tr><td width="10%">יּ</td><td width="20%">0xfb39</td><td width="20%">X.y</td><td width="50%">yud+dagesh</td></tr>
+<tr><td width="10%">ךּ</td><td width="20%">0xfb3a</td><td width="20%">X.K</td><td width="50%">kaf sofit+dagesh</td></tr>
+<tr><td width="10%">כּ</td><td width="20%">0xfb3b</td><td width="20%">X.k</td><td width="50%">kaf+dagesh</td></tr>
+<tr><td width="10%">לּ</td><td width="20%">0xfb3c</td><td width="20%">X.l</td><td width="50%">lamed+dagesh</td></tr>
+<tr><td width="10%">מּ</td><td width="20%">0xfb3e</td><td width="20%">X.m</td><td width="50%">mem+dagesh</td></tr>
+<tr><td width="10%">נּ</td><td width="20%">0xfb40</td><td width="20%">X.n</td><td width="50%">nun+dagesh</td></tr>
+<tr><td width="10%">סּ</td><td width="20%">0xfb41</td><td width="20%">X.s</td><td width="50%">samech+dagesh</td></tr>
+<tr><td width="10%">ףּ</td><td width="20%">0xfb43</td><td width="20%">X.P</td><td width="50%">pe sofit+dagesh</td></tr>
+<tr><td width="10%">פּ</td><td width="20%">0xfb44</td><td width="20%">X.p</td><td width="50%">pe+dagesh</td></tr>
+<tr><td width="10%">צּ</td><td width="20%">0xfb46</td><td width="20%">X.x</td><td width="50%">tsadi+dagesh</td></tr>
+<tr><td width="10%">קּ</td><td width="20%">0xfb47</td><td width="20%">X.q</td><td width="50%">qof+dagesh</td></tr>
+<tr><td width="10%">רּ</td><td width="20%">0xfb48</td><td width="20%">X.r</td><td width="50%">resh+dagesh</td></tr>
+<tr><td width="10%">שּ</td><td width="20%">0xfb49</td><td width="20%">X.w</td><td width="50%">shin+dagesh</td></tr>
+<tr><td width="10%">תּ</td><td width="20%">0xfb4a</td><td width="20%">X.t</td><td width="50%">tav+dagesh</td></tr>
+<tr><td width="10%">וֹ</td><td width="20%">0xfb4b</td><td width="20%">Xo</td><td width="50%">vav+holam</td></tr>
+<tr><td width="10%">בֿ</td><td width="20%">0xfb4c</td><td width="20%">XRb</td><td width="50%">bet+rafe</td></tr>
+<tr><td width="10%">כֿ</td><td width="20%">0xfb4d</td><td width="20%">XRk</td><td width="50%">kaf+rafe</td></tr>
+<tr><td width="10%">פֿ</td><td width="20%">0xfb4e</td><td width="20%">XRp</td><td width="50%">pe+rafe</td></tr>
+<tr><td width="10%">ﭏ</td><td width="20%">0xfb4f</td><td width="20%">Xal</td><td width="50%">alef-lamed</td></tr>
+</table>
+
+<a name="mbyte_002dfunc"></a><a name="index-mbyte_002dfunc"></a>
+<a name="g_t10_002e-imactivatefunc_0028_0029-woShi-Yong-sitaRu-Li--_0028Input-with-imactivatefunc_0028_0029_0029"></a>
+<h3 class="section">10. imactivatefunc() を使用した入力 (Input with imactivatefunc())</h3>
+
+<p>Vim には &rsquo;<samp>imactivatefunc</samp>&rsquo; および &rsquo;<samp>imstatusfunc</samp>&rsquo; オプションがある。これらは外部コマンドやその他の方法によつて Vim からインプットメソッドを有效/無效するのに便利である。例として、fcitx は fcitx-remote コマンドを提供する:
+</p>
+<div class="example">
+<pre class="example">set iminsert=2
+set imsearch=2
+set imcmdline
+
+set imactivatefunc=ImActivate
+function! ImActivate(active)
+  if a:active
+    call system('fcitx-remote -o')
+  else
+    call system('fcitx-remote -c')
+  endif
+endfunction
+
+set imstatusfunc=ImStatus
+function! ImStatus()
+  return system('fcitx-remote')[0] is# '2'
+endfunction
+</pre></div>
+
+<p>このスクリプトを使ふことによつて、Vim が |<a href="various_002etxt.html#g_t_002bxim">+xim</a>| 付きでコンパイルされてゐない場合でも XIM を有效/無效にすることができる。
+</p>
+<a name="g_t11_002e-UTF_002d8-woShi-u"></a>
+<h3 class="section">11. UTF-8 を使ふ</h3>
+<a name="mbyte_002dutf8"></a><a name="UTF_002d8"></a><a name="utf_002d8"></a><a name="utf8"></a><a name="Unicode"></a><a name="unicode"></a><a name="index-mbyte_002dutf8"></a>
+<a name="index-UTF_002d8"></a>
+<a name="index-utf_002d8"></a>
+<a name="index-utf8"></a>
+<a name="index-Unicode"></a>
+<a name="index-unicode"></a>
+
+<p>Unicode は、他の文字セットをすべて含むやうに設計された。そのため、どんな言語のテキストでも Unicode を使つて書くことができる (稀少な言語を除く)。そして、他のエンコーディングでは混在させることが不可能な言語でも、1 つのファイルに混在させることが可能である。
+</p>
+<p>Unicode にはいくつかのエンコード法がある。もつとも一般的なのは、1 文字を 1 または複數バイトで表はす UTF-8 であり、ASCII と後方互換性がある。MS-Windows では UTF-16 も使はれる (以前は UCS-2 と呼ばれてゐた)。こちらは 16 ビットを基本單位とする。Vim はこれらのエンコーディングすべてをサポートしてゐるが、Vim で Unicode を使ふ場合、內部では常に UTF-8 が使はれてゐる。
+</p>
+<p>Vim は幅廣く UTF-8 をサポートしてをり、それは以下の環境で機能する:
+</p><ul>
+<li> utf-8 サポートが有效になつてゐる xterm
+</li><li> Athena, Motif, GTK の GUI
+</li><li> MS-Windows GUI
+</li><li> その他いくつかのプラットフォーム
+</li></ul>
+
+<p>全角文字は &rsquo;<samp>guifontwide</samp>&rsquo; や &rsquo;<samp>guifontset</samp>&rsquo; を使ふと最もうまく表示することができる。&rsquo;<samp>guifont</samp>&rsquo; だけを設定してゐる場合は、全角文字は通常の幅で描畫され、足りない幅が空白で埋められる。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+オプション &rsquo;<samp>guifontset</samp>&rsquo; は GTK+ 2 GUI では使用しない。
+</p></blockquote>
+
+<a name="bom_002dbytes"></a><a name="index-bom_002dbytes"></a>
+<p>ファイルを讀み込むとき、BOM (Byte Order Mark) があれば、その Unicode エンコーディングを判別するのに使はれる:
+</p><div class="example">
+<pre class="example">EF BB BF     utf-8
+FE FF        utf-16 big endian
+FF FE        utf-16 little endian
+00 00 FE FF  utf-32 big endian
+FF FE 00 00  utf-32 little endian
+</pre></div>
+
+<p>UTF-8 が推奬されてゐるエンコーディングである。UTF-16 と UTF-32 を區別するのは難しい。Windows では UTF-16 がしばしば使はれる。UTF-32 はファイルフォーマットとしては廣く使はれてゐない。
+</p>
+
+<a name="mbyte_002dcombining"></a><a name="mbyte_002dcomposing"></a><a name="index-mbyte_002dcombining"></a>
+<a name="index-mbyte_002dcomposing"></a>
+<p>合成文字や結合文字を使ふと、先行文字の意味を變へることができる。結合文字は先行文字に重ねて描畫される。
+</p>
+<p>デフォルトで2文字までの結合文字を扱ふことができる。この値はオプション &rsquo;<samp>maxcombine</samp>&rsquo; で變更できる。
+</p>
+<p>テキストの編輯中は、合成文字は先行文字の一部として扱はれる。例へば、初期設定で
+は、&quot;x&quot; は文字を削除するときに、連なる合成文字をいっぺんに削除する。
+オプション &rsquo;<samp>delcombine</samp>&rsquo; がオンのときには、&rsquo;x&rsquo; は 1 回に 1 文字の結合文字を削除して、最後に基底文字を削除する。入力するときには、まづ 1 文字目を入力して、そして合成文字を入力する。すると、文字が合成される。&quot;r&quot; コマンドを使つて結合文字を入力することはできない。結合文字がさらに入力されるかどうか知ることができないからである。代はりに &quot;R&quot; を使ふ。
+</p>
+<p>{譯注:
+</p><table>
+<tr><td width="60%">combining character</td><td width="40%">結合文字</td></tr>
+<tr><td width="60%">composing character</td><td width="40%">合成文字</td></tr>
+<tr><td width="60%">base character</td><td width="40%">基底文字</td></tr>
+<tr><td width="60%">preceding character</td><td width="40%">先行文字？</td></tr>
+</table>
+<p>}
+</p>
+<p>UTF-8 として不正なバイト列はそれぞれ 1 バイトの文字として扱はれ、&lt;xx&gt; と表示される。この &quot;xx&quot; はそのバイトの 16 進數である。
+</p>
+<p>Overlong sequence に對して特別な處理はされない。通常の文字と同じやうに表示される。Overlong sequence はどんな檢索パターンにもマッチしないかもしれない。
+</p>
+<p>(Overlong sequence とは、文字を表すために必要なバイトよりも多くのバイトでその文字を表現してゐるバイト列のこと。) &quot;&lt;00&gt;&quot; と表示されてゐる NUL(zero) は例外。
+</p>
+<p>{譯注: たぶん、&quot;&lt;00&gt;&quot; と表示されてる Overlong sequence だけはたとへ |<a href="pattern_002etxt.html#g_t_002f_005c_005f_002e">/\_.</a>| でもマッチしないといふこと。}
+</p>
+<p>ファイルやバッファには、Unicode で表現できる範圍 (31ビット) の文字をすべて書くことができる。ただし、それを表示できるのは使用フォントがその文字を提供してゐる場合のみ。
+</p>
+<p>便利なコマンド:
+</p><ul>
+<li> &quot;ga&quot; はカーソル位置の文字のコードを 10 進數、16 進數、8 進數で表示する。合成文字も表示される。(表示が途切れてしまつた場合は &quot;:messages&quot; を使ふ)。
+</li><li> &quot;g8&quot; は文字の UTF-8 コードを 16 進數で表示する。合成文字も表示される。
+</li><li> &quot;<code>:set encoding=utf-8 fileencodings=</code>&quot; とすると、すべてのファイルで UTF-8 を使ふやうに强制できる。&rsquo;<samp>encoding</samp>&rsquo; を現在のロケールに合はせて設定し、&rsquo;<samp>fileencodings</samp>&rsquo; によつて自動的にファイルのエンコーディングを判定するやうに設定するのがデフォルトである。
+</li></ul>
+
+
+<a name="Vim-wo-UTF_002d8-mododeQi-Dong-suru-_0028STARTING-VIM_0029"></a>
+<h4 class="unnumberedsubsec">Vim を UTF-8 モードで起動する (STARTING VIM)</h4>
+
+<p>ロケールが UTF-8 の場合、Vim は自動的に UTF-8 モードで起動する。
+</p>
+<p>UTF-8 以外のロケールを使つてゐる場合はこのやうにする:
+</p><div class="example">
+<pre class="example">set encoding=utf-8
+</pre></div>
+
+<p>メニューに使はれるフォントを變へる必要があるかもしれない。殘念ながら、これはいつもうまくいくとは限らない。システムに依存する說明は下記、または &rsquo;<samp>langmenu</samp>&rsquo; を參照。
+</p>
+
+<a name="utf_002d8_002din_002dxwindows"></a><a name="index-utf_002d8_002din_002dxwindows"></a>
+<a name="X_002dWindow-de-UTF_002d8-woShi-u-_0028USING-UTF_002d8-IN-X_002dWindows_0029"></a>
+<h4 class="unnumberedsubsec">X-Window で UTF-8 を使ふ (USING UTF-8 IN X-Windows)</h4>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+この項は GTK+ 2 GUI には當てはまらない。
+</p></blockquote>
+
+<p>使用するフォントを選擇する必要がある。全角文字を表示するにはさらに別のフォントが必要。設定するには次の 3 つの方法がある:
+</p>
+<ol>
+<li> &rsquo;<samp>guifont</samp>&rsquo; を設定して、&rsquo;<samp>guifontwide</samp>&rsquo; は Vim に設定させる
+</li><li> &rsquo;<samp>guifont</samp>&rsquo; と &rsquo;<samp>guifontwide</samp>&rsquo; を設定する
+</li><li> &rsquo;<samp>guifontset</samp>&rsquo; を設定する
+</li></ol>
+
+<p>詳細は各オプションの說明を參照。例:
+</p><div class="example">
+<pre class="example">:set guifont=-misc-fixed-medium-r-normal--15-140-75-75-c-90-iso10646-1
+</pre></div>
+
+<p>メニューで使用されるフォントも變更することができる。これは Motif でのみ機能する。&quot;<code>:hi Menu font={fontname}</code>&quot; コマンドを使つて設定する。|<a href="syntax_002etxt.html#g_t_003ahighlight">:highlight</a>|
+</p>
+
+<a name="utf_002d8_002dtyping"></a><a name="index-utf_002d8_002dtyping"></a>
+<a name="UTF_002d8woRu-Li-suru-_0028TYPING-UTF_002d8_0029"></a>
+<h4 class="unnumberedsubsec">UTF-8を入力する (TYPING UTF-8)</h4>
+
+<p>X-Window を使つてゐるなら、UTF-8 をサポートしてゐるインプットメソッド使用する。
+</p>
+<p>システムが UTF-8 の入力をサポートしてゐない場合でも、&rsquo;<samp>keymap</samp>&rsquo; を使つて入力することができる。ASCII 文字を複數入力することで UTF-8 の文字を入力するやうなキーマップファイルを作ることができる。|<a href="#mbyte_002dkeymap">mbyte-keymap</a>| を參照。
+</p>
+<p>他にも、XIM を利用することができる言語に、ロケールを設定する方法がある。その場合は、&rsquo;<samp>termencoding</samp>&rsquo; をその言語に設定する。Vim は入力された文字を &rsquo;<samp>termencoding</samp>&rsquo; から &rsquo;<samp>encoding</samp>&rsquo; へ變換する。
+</p>
+<p>すべての方法が使へなくても、4 文字の 16 進數で文字コードを直接入力することができる:
+</p><div class="example">
+<pre class="example">CTRL-V u 1234
+</pre></div>
+
+<p>&quot;1234&quot; は 16 進數として解釋される。正しく 4 文字を入力しなくてはいけない。必要であればゼロを前置する。
+</p>
+
+<a name="utf_002d8_002dchar_002darg"></a><a name="index-utf_002d8_002dchar_002darg"></a>
+<a name="komandoYin-Shu--_0028COMMAND-ARGUMENTS_0029"></a>
+<h4 class="unnumberedsubsec">コマンド引數 (COMMAND ARGUMENTS)</h4>
+
+<p>|<a href="motion_002etxt.html#f">f</a>|, |<a href="motion_002etxt.html#F">F</a>|, |<a href="motion_002etxt.html#t">t</a>|, |<a href="change_002etxt.html#r">r</a>| のやうなコマンドは 1 つの文字を引數に取る。UTF-8 では 1 文字か 2 文字の合成文字の場合がある。Vim は合成文字の入力かどうかを調べるために次の入力を待つたりはしないため、合成文字は基底文字と同時に入力する必要がある。そのやうな文字は &rsquo;<samp>keymap</samp>&rsquo; や |<a href="map_002etxt.html#g_t_003almap">:lmap</a>| を使ふと簡單に入力することができる。
+</p>
+<p>行內檢索をするコマンド {譯注: |<a href="motion_002etxt.html#f">f</a>| など} は合成文字を次のやうに處理する。非合成文字を檢索するときは、合成されてゐる文字とされてゐない文字の兩方がマッチする。合成文字を檢索するときは、合成文字だけがマッチする。すべての人が合成文字を入力できるわけではないので、このやうになつてゐる。
+</p>
+<p>{譯注: 例へば、か(U+304B) + 濁點(U+3099) といふ合成文字は &quot;fか&quot; でマッチする}
+</p>
+
+<a name="mbyte_002doptions"></a><a name="index-mbyte_002doptions"></a>
+<a name="g_t12_002e-Zhu-naopusiyon-_0028Overview-of-options_0029"></a>
+<h3 class="section">12. 主なオプション (Overview of options)</h3>
+
+<p>これらのオプションはマルチバイトテキストのファイルの編輯に關係する。詳細は <samp>options.txt</samp> の說明を參照。
+</p>
+<table>
+<tr><td width="30%">&rsquo;<samp>encoding</samp>&rsquo;</td><td width="70%">キーボード入力や表示に使はれるエンコーディング。これは新規ファイルのエンコーディングの初期設定でもある。</td></tr>
+<tr><td width="30%">&rsquo;<samp>fileencoding</samp>&rsquo;</td><td width="70%">ファイルのエンコーディング。&rsquo;<samp>encoding</samp>&rsquo; と違ふ場合、ファイルの讀み書き時にエンコーディングが變換される。</td></tr>
+<tr><td width="30%">&rsquo;<samp>fileencodings</samp>&rsquo;</td><td width="70%">ファイルに使ふことができるエンコーディングのリスト。ファイルを開くとき、リストの先頭から順番に變換を試して、エラーが起きなかつた最初のものが &rsquo;<samp>fileencoding</samp>&rsquo; として使はれる。</td></tr>
+<tr><td width="30%">&rsquo;<samp>charconvert</samp>&rsquo;</td><td width="70%">あるエンコーディングから別のエンコーディングへファイルを變換する式。</td></tr>
+<tr><td width="30%">&rsquo;<samp>formatoptions</samp>&rsquo;</td><td width="70%">このオプションにフラグ &rsquo;m&rsquo; を含めると、フォーマット時に、(文字のコードが 256 以上の) マルチバイト文字のところで改行することができる。これは、どこでも改行することができる言語を編輯するときに便利である。</td></tr>
+<tr><td width="30%">&rsquo;<samp>guifontset</samp>&rsquo;</td><td width="70%">マルチバイトエンコーディングの文字に使ふフォントのリスト。このオプションが設定されてゐれば &rsquo;<samp>guifont</samp>&rsquo; の代はりに使用される。</td></tr>
+<tr><td width="30%">&rsquo;<samp>keymap</samp>&rsquo;</td><td width="70%">キーボードマッピングの名前を指定する。</td></tr>
+</table>
+
+<p>マルチバイト機能は、特に以下の方々の貢獻による:
+</p><table>
+<tr><td width="5%"></td><td width="95%">Chi-Deok Hwang &lt;<a href="mailto:hwang@mizi.co.kr">hwang@mizi.co.kr</a>&gt;</td></tr>
+<tr><td width="5%"></td><td width="95%">SungHyun Nam &lt;<a href="mailto:goweol@gmail.com">goweol@gmail.com</a>&gt;</td></tr>
+<tr><td width="5%"></td><td width="95%">K.Nagano &lt;<a href="mailto:nagano@atese.advantest.co.jp">nagano@atese.advantest.co.jp</a>&gt;</td></tr>
+<tr><td width="5%"></td><td width="95%">Taro Muraoka &lt;<a href="mailto:koron@tka.att.ne.jp">koron@tka.att.ne.jp</a>&gt;</td></tr>
+<tr><td width="5%"></td><td width="95%">Yasuhiro Matsumoto &lt;<a href="mailto:mattn@mail.goo.ne.jp">mattn@mail.goo.ne.jp</a>&gt;</td></tr>
+</table>
+
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

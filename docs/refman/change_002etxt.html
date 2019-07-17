@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>change.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="change.txt (Vim Reference Manual)">
+<meta name="keywords" content="change.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="undo_002etxt.html#undo_002etxt" rel="next" title="undo.txt">
+<link href="insert_002etxt.html#insert_002etxt" rel="prev" title="insert.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="change_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="tekisutonoXue-Chu-toBian-Geng-"></a>
+<h2 class="unnumbered">テキストの削除と變更</h2>
+<pre class="verbatim">*change.txt*    For Vim バージョン 8.1.  Last change: 2019 May 07
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+</pre>
+
+<p>このファイルでは、テキストを削除したり變更するコマンドの說明をする。この文章の中では、「テキストを變更する」とは、1 つのコマンドでテキストを削除し、別のテキストに置き換へることを意味する。これらのコマンドは全てアンドゥできる。非 Ex コマンドはコマンド &quot;.&quot; で繰り返すことができる。
+</p>
+<table>
+<tr><td width="50%">1. テキストの削除</td><td width="50%">|<a href="#deleting">deleting</a>|</td></tr>
+<tr><td width="50%">2. 削除と插入</td><td width="50%">|<a href="#delete_002dinsert">delete-insert</a>|
+<a name="changing"></a><a name="index-changing"></a></td></tr>
+<tr><td width="50%">3. 單純な變更</td><td width="50%">|<a href="#simple_002dchange">simple-change</a>|</td></tr>
+<tr><td width="50%">4. 複雜な變更</td><td width="50%">|<a href="#complex_002dchange">complex-change</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;4.1 フィルタコマンド</td><td width="50%">|<a href="#filter">filter</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;4.2 置換</td><td width="50%">|<a href="#g_t_003asubstitute">:substitute</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;4.3 檢索と置換</td><td width="50%">|<a href="#search_002dreplace">search-replace</a>|</td></tr>
+<tr><td width="50%">&nbsp;&nbsp;&nbsp;&nbsp;4.4 タブの變換</td><td width="50%">|<a href="#change_002dtabs">change-tabs</a>|</td></tr>
+<tr><td width="50%">5. テキストのコピーと移動</td><td width="50%">|<a href="#copy_002dmove">copy-move</a>|</td></tr>
+<tr><td width="50%">6. テキストの整形</td><td width="50%">|<a href="#formatting">formatting</a>|</td></tr>
+<tr><td width="50%">7. テキストのソート</td><td width="50%">|<a href="#sorting">sorting</a>|</td></tr>
+</table>
+
+<p>テキストの插入に關しては |<a href="insert_002etxt.html#insert_002etxt">insert.txt</a>| を參照。
+</p>
+<a name="deleting"></a><a name="E470"></a><a name="index-deleting"></a>
+<a name="index-E470"></a>
+<a name="index-tekisutonoXue-Chu-"></a>
+<a name="g_t1_002e-tekisutonoXue-Chu-"></a>
+<h3 class="section">1. テキストの削除</h3>
+
+<a name="g_t_003cDel_003e"></a><a name="x"></a><a name="dl"></a><a name="index-_003cDel_003e"></a>
+<a name="index-x"></a>
+<a name="index-dl"></a>
+<dl compact="compact">
+<dt>[&quot;x]<code class="tt-key">&lt;Del&gt;</code> または</dt>
+<dt>[&quot;x]x</dt>
+<dd><p>カーソル下から後の [count] 文字を [レジスタ x に入れ] 削除する (行單位ではない |<a href="motion_002etxt.html#linewise">linewise</a>|)。&quot;dl&quot; と同じである。
+</p>
+<p><code class="tt-key">&lt;Del&gt;</code> キーには [count] が使へない。代はりに、[count] の最後の文字を削除する。{譯注: 123&lt;Del&gt; と押すと 3 が消え 12 になる}
+</p>
+<p><code class="tt-key">&lt;Del&gt;</code> キーが思つたやうに動作しないときは、|<a href="options_002etxt.html#g_t_003afixdel">:fixdel</a>| を參照。&lt;EOL&gt; の削除 (行の連結) については、&rsquo;<samp>whichwrap</samp>&rsquo; を參照。
+</p>
+<a name="X"></a><a name="dh"></a><a name="index-X"></a>
+<a name="index-dh"></a>
+</dd>
+<dt>[&quot;x]X</dt>
+<dd><p>カーソルから前の [count] 文字を [レジスタ x に入れ] 削除する (行單位ではない |<a href="motion_002etxt.html#linewise">linewise</a>|)。&quot;dh&quot; と同じである。|<a href="options_002etxt.html#g_t_0027whichwrap_0027">'whichwrap'</a>| も參照。
+</p>
+<a name="d"></a><a name="index-d"></a>
+</dd>
+<dt>[&quot;x]d{motion}</dt>
+<dd><p>{motion} でカーソルが動く範圍のテキストを [レジスタ x に入れ] 削除する。例外については以下を參照。
+</p>
+<a name="dd"></a><a name="index-dd"></a>
+</dd>
+<dt>[&quot;x]dd</dt>
+<dd><p>[count] 行を [レジスタ x に入れ] 削除する (行單位 |<a href="motion_002etxt.html#linewise">linewise</a>|)。
+</p>
+<a name="D"></a><a name="index-D"></a>
+</dd>
+<dt>[&quot;x]D</dt>
+<dd><p>カーソル下から行の最後までの文字と、[count]-1 行を、[レジスタ x に入れ] 削除する。&quot;d$&quot; と同義 (行單位ではない |<a href="motion_002etxt.html#linewise">linewise</a>|)。
+</p>
+<p>&rsquo;<samp>cpoptions</samp>&rsquo; にフラグ &rsquo;<var>#</var>&rsquo; が入つてゐるとカウントは無視される。
+</p>
+<a name="v_005fx"></a><a name="v_005fd"></a><a name="v_005f_003cDel_003e"></a><a name="index-v_005fx"></a>
+<a name="index-v_005fd"></a>
+<a name="index-v_005f_003cDel_003e"></a>
+</dd>
+<dt>{Visual}[&quot;x]x または</dt>
+<dt>{Visual}[&quot;x]d または</dt>
+<dt>{Visual}[&quot;x]<code class="tt-key">&lt;Del&gt;</code></dt>
+<dd><p>ビジュアル選擇されたテキストを [レジスタ x に入れ] 削除する ({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。
+</p>
+<a name="v_005fCTRL_002dH"></a><a name="v_005f_003cBS_003e"></a><a name="index-v_005fCTRL_002dH"></a>
+<a name="index-v_005f_003cBS_003e"></a>
+</dd>
+<dt>{Visual}[&quot;x]<kbd>CTRL-H</kbd> または</dt>
+<dt>{Visual}[&quot;x]<code class="tt-key">&lt;BS&gt;</code></dt>
+<dd><p>選擇モード內で: ビジュアル選擇されたテキストを [レジスタ x に入れ] 削除する。
+</p>
+<a name="v_005fX"></a><a name="v_005fD"></a><a name="v_005fb_005fD"></a><a name="index-v_005fX"></a>
+<a name="index-v_005fD"></a>
+<a name="index-v_005fb_005fD"></a>
+</dd>
+<dt>{Visual}[&quot;x]X または</dt>
+<dt>{Visual}[&quot;x]D</dt>
+<dd><p>ビジュアル選擇された行を [レジスタ x に入れ] 削除する ({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。矩形ビジュアルモードでは、&quot;D&quot; はビジュアル選擇されたテキストと行末までの全てのテキストを削除する。
+</p>
+<a name="g_t_003ad"></a><a name="g_t_003ade"></a><a name="g_t_003adel"></a><a name="g_t_003adelete"></a><a name="g_t_003adl"></a><a name="g_t_003adp"></a><a name="index-_003ad"></a>
+<a name="index-_003ade"></a>
+<a name="index-_003adel"></a>
+<a name="index-_003adelete"></a>
+<a name="index-_003adl"></a>
+<a name="index-_003adp"></a>
+</dd>
+<dt>:[range]d[elete] [x]</dt>
+<dd><p>[range] 行 (既定値: 現在行) を [レジスタ x に入れ] 削除する。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+これらの變な短縮入力:
+</p><table>
+<tr><td width="50%">:dl</td><td width="50%">delete と list</td></tr>
+<tr><td width="50%">:dell</td><td width="50%">同上</td></tr>
+<tr><td width="50%">:delel</td><td width="50%">同上</td></tr>
+<tr><td width="50%">:deletl</td><td width="50%">同上</td></tr>
+<tr><td width="50%">:deletel</td><td width="50%">同上</td></tr>
+<tr><td width="50%">:dp</td><td width="50%">delete と print</td></tr>
+<tr><td width="50%">:dep</td><td width="50%">同上</td></tr>
+<tr><td width="50%">:delp</td><td width="50%">同上</td></tr>
+<tr><td width="50%">:delep</td><td width="50%">同上</td></tr>
+<tr><td width="50%">:deletp</td><td width="50%">同上</td></tr>
+<tr><td width="50%">:deletep</td><td width="50%">同上</td></tr>
+</table>
+</blockquote>
+
+</dd>
+<dt>:[range]d[elete] [x] {count}</dt>
+<dd><p>[range] 行目 (既定: 現在行 |<a href="cmdline_002etxt.html#cmdline_002dranges">cmdline-ranges</a>|) から {count} 行を [レジスタ x に入れ] 削除する。
+</p></dd>
+</dl>
+
+<p>これらのコマンドはテキストを削除する。これらは (&lsquo;:d&lsquo; を除いて) コマンド &lsquo;.&lsquo; で繰り返したり、アンドゥできる。テキストのブロックを削除するには、ビジュアルモードを使ふ。レジスタの說明については、|<a href="#registers">registers</a>| を參照。
+</p>
+<p>コマンド &quot;<code>d{motion}</code>&quot; に關する例外: 移動が行單位でなく、移動の開始點と終了點が同じ行になく、移動の開始點の前に空白しかなく終了點の後に空行以外がない場合には、削除は行單位となる。このときユーザーは空白のみの行が殘ると期待するかもしれないが、共に削除される。削除を文字單位に强制したい場合は |<a href="motion_002etxt.html#o_005fv">o_v</a>| を使ふこと。
+</p>
+<p>オプション &rsquo;<samp>cpoptions</samp>&rsquo; がフラグ &rsquo;<var>E</var>&rsquo; を含んでゐるときは、テキストの空の範圍を削除しようとすると (例へば、1 列目での &quot;d0&quot;)、エラーになる。
+</p>
+<a name="J"></a><a name="index-J"></a>
+<dl compact="compact">
+<dt>J</dt>
+<dd><p>[count] 行を連結する (最低は 2 行)。インデントを削除し、空白を最大 2 個まで插入する (以下を參照)。バッファの最終行では失敗する。大きすぎる [count] は、有效な行數まで減少される。
+</p>
+<a name="v_005fJ"></a><a name="index-v_005fJ"></a>
+</dd>
+<dt>{Visual}J</dt>
+<dd><p>ビジュアル選擇された行を連結する (最低は 2 行)。インデントを削除し、空白を最大 2 個まで插入する (以下を參照)。
+</p>
+<a name="gJ"></a><a name="index-gJ"></a>
+</dd>
+<dt>gJ</dt>
+<dd><p>[count] 行を連結する (最低は 2 行)。空白の插入や削除を行はない。
+</p>
+<a name="v_005fgJ"></a><a name="index-v_005fgJ"></a>
+</dd>
+<dt>{Visual}gJ</dt>
+<dd><p>ビジュアル選擇された行を連結する (最低は 2 行)。空白の插入や削除を行はない。
+</p>
+<a name="g_t_003aj"></a><a name="g_t_003ajoin"></a><a name="index-_003aj"></a>
+<a name="index-_003ajoin"></a>
+</dd>
+<dt>:[range]j[oin][!] [flags]</dt>
+<dd><p>[range] 行を連結する。&quot;J&quot; と同樣だが、[!] と共に使ふと空白の插入や削除を行はない。[range] の開始點と終了點が同じときは、このコマンドは何もしない。既定の動作では、現在行を次行と連結する。
+</p>
+<p>[flags] については |<a href="cmdline_002etxt.html#ex_002dflags">ex-flags</a>| を參照。
+</p>
+</dd>
+<dt>:[range]j[oin][!] {count} [flags]</dt>
+<dd><p>[range] 行目 (既定では現在行 |<a href="cmdline_002etxt.html#cmdline_002dranges">cmdline-ranges</a>|) からの {count} 行を連結する。&quot;J&quot; と同樣だが、[!] と共に使ふと空白の插入や削除を行はない。
+</p>
+<p>[flags] については |<a href="cmdline_002etxt.html#ex_002dflags">ex-flags</a>| を參照。
+</p></dd>
+</dl>
+
+<p>これらのコマンドは、行の閒の &lt;EOL&gt; を削除する。この結果、複數行が 1 行に連結される。これらのコマンド (&lsquo;<code>:j</code>&lsquo; 以外) は、繰り返しやアンドゥができる。
+</p>
+<p>これらのコマンド (&quot;<code>gJ</code>&quot; 以外) は &lt;EOL&gt; の場所に空白を 1 個插入する。ただし行末に空白が付いてゐたり、次の行が &rsquo;)&rsquo; で始まるときは插入しない。これらのコマンド (&quot;<code>gJ</code>&quot; 以外) は次行の先頭あたりにある空白を全て削除する。オプション &rsquo;<samp>joinspaces</samp>&rsquo; がオンのときは、これらのコマンドは &rsquo;.&rsquo;, &rsquo;!&rsquo;, &rsquo;?&rsquo; の後に 2 個の空白を插入する (しかし &rsquo;<samp>cpoptions</samp>&rsquo; がフラグ &rsquo;<var>j</var>&rsquo; を含んでゐるときは、2 個の空白は &rsquo;.&rsquo; の後にしか插入しない)。
+</p>
+<p>&rsquo;<samp>formatoptions</samp>&rsquo; のフラグ &rsquo;<var>M</var>&rsquo; と &rsquo;<var>B</var>&rsquo; は、マルチバイト文字の前後に空白を插入するときの動作を變更する |<a href="#fo_002dtable">fo-table</a>|。
+</p>
+<p>&rsquo;[ マークは連結前の最初の行の末尾に設定される。&rsquo;] マークは連結後の行の末尾に設定される。
+</p>
+
+<a name="delete_002dinsert"></a><a name="replacing"></a><a name="index-delete_002dinsert"></a>
+<a name="index-replacing"></a>
+<a name="index-Xue-Chu-toCha-Ru-"></a>
+<a name="g_t2_002e-Xue-Chu-toCha-Ru-"></a>
+<h3 class="section">2. 削除と插入</h3>
+
+<a name="R"></a><a name="index-R"></a>
+<dl compact="compact">
+<dt>R</dt>
+<dd><p>置換モードに入る。打ち込んだ文字がカーソル下の既存の文字をどんどん置き換へていく。入力されたテキストを [count]-1 回繰り返す。詳細は |<a href="insert_002etxt.html#Replace_002dmode">Replace-mode</a>| を參照。
+</p>
+<a name="gR"></a><a name="index-gR"></a>
+</dd>
+<dt>gR</dt>
+<dd><p>假想置換モードに入る。打ち込んだ文字が畫面上の既存の文字をどんどん置き換へていく。そのため &lt;Tab&gt; は數文字を 1 回で置き換へることができる。入力されたテキストを [count]-1 回繰り返す。詳細は |<a href="insert_002etxt.html#Virtual_002dReplace_002dmode">Virtual-Replace-mode</a>| を參照。
+</p>
+<a name="c"></a><a name="index-c"></a>
+</dd>
+<dt>[&quot;x]c{motion}</dt>
+<dd><p>{motion} のテキストを [レジスタ x にいれ] 削除し、插入を始める。&rsquo;<samp>cpoptions</samp>&rsquo; がフラグ &rsquo;<var>E</var>&rsquo; を含むときは、削除すべきテキストがないと (例へば、&quot;cTx&quot; でカーソルが &rsquo;x&rsquo; の直後にあるとき)、エラーが發生し插入モードは始まらない (これは Vi 互換である)。
+</p>
+<p>&rsquo;<samp>cpoptions</samp>&rsquo; がフラグ &rsquo;<var>E</var>&rsquo; を含まないときは、コマンド &quot;<code>c</code>&quot; は削除すべきテキストがなくても、必ず插入モードを始める。
+</p>
+<a name="cc"></a><a name="index-cc"></a>
+</dd>
+<dt>[&quot;x]cc</dt>
+<dd><p>[count] 行を [レジスタ x に入れ] 削除し、插入を始める (行單位 |<a href="motion_002etxt.html#linewise">linewise</a>|)。&rsquo;<samp>autoindent</samp>&rsquo; がオンのとき、最初の行のインデントを保持する。
+</p>
+<a name="C"></a><a name="index-C"></a>
+</dd>
+<dt>[&quot;x]C</dt>
+<dd><p>カーソル位置から行の終はりまでと、[count]-1 行を [レジスタ x に入れ] 削除し、插入を始める。&quot;c$&quot; と同義である (行單位でない |<a href="motion_002etxt.html#linewise">linewise</a>|)。
+</p>
+<a name="s"></a><a name="index-s"></a>
+</dd>
+<dt>[&quot;x]s</dt>
+<dd><p>[count] 文字を [レジスタ x に入れ] 削除し、插入を始める (s は Substitute &ndash;置換 を意味する)。&quot;cl&quot; と同義である (行單位でない |<a href="motion_002etxt.html#linewise">linewise</a>|)。
+</p>
+<a name="S"></a><a name="index-S"></a>
+</dd>
+<dt>[&quot;x]S</dt>
+<dd><p>[count] 行を [レジスタ x に入れ] 削除し、插入を始める。&quot;cc&quot; と同義である (行單位 |<a href="motion_002etxt.html#linewise">linewise</a>|)。
+</p>
+<a name="v_005fc"></a><a name="v_005fs"></a><a name="index-v_005fc"></a>
+<a name="index-v_005fs"></a>
+</dd>
+<dt>{Visual}[&quot;x]c または</dt>
+<dt>{Visual}[&quot;x]s</dt>
+<dd><p>ビジュアル選擇されたテキストを [レジスタ x に入れ] 削除し、插入を始める ({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。
+</p>
+<a name="v_005fr"></a><a name="index-v_005fr"></a>
+</dd>
+<dt>{Visual}[&quot;x]r{char}</dt>
+<dd><p>ビジュアル選擇されたテキストを全て {char} に置き換へる。
+</p>
+<a name="v_005fC"></a><a name="index-v_005fC"></a>
+</dd>
+<dt>{Visual}[&quot;x]C</dt>
+<dd><p>ビジュアル選擇された行を [レジスタ x に入れ] 削除し、插入を始める。矩形ビジュアルモードでは少し動作が違ふ |<a href="visual_002etxt.html#v_005fb_005fC">v_b_C</a>|。
+<a name="v_005fS"></a><a name="index-v_005fS"></a>
+</p></dd>
+<dt>{Visual}[&quot;x]S</dt>
+<dd><p>ビジュアル選擇された行を [レジスタ x に入れ] 削除し、插入を始める ({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。
+<a name="v_005fR"></a><a name="index-v_005fR"></a>
+</p></dd>
+<dt>{Visual}[&quot;x]R</dt>
+<dd><p>現在のところ {Visual}[&quot;x]S と同じである。次のバージョンでは動作が變はるかもしれない。
+</p></dd>
+</dl>
+
+<blockquote>
+<p><strong>Notes:</strong>
+</p><ul>
+<li> 插入モード、置換モードは &lt;Esc&gt; で終了できる。
+</li><li> これらのモードでの他の特殊文字については、「テキストの插入と置換」の章 |<a href="insert_002etxt.html#mode_002dins_002drepl">mode-ins-repl</a>| を參照。
+</li><li> [count] の效果は、Vim が插入モードや置換モードを拔けた後で發生する。
+</li><li> &rsquo;<samp>cpoptions</samp>&rsquo; がフラグ &rsquo;<var>$</var>&rsquo; を含んでゐて、變更が 1 行以內である場合、Vim は削除されるテキストを表示しつづけ、最後に削除された文字の位置に &rsquo;$&rsquo; を置く。
+</li></ul>
+</blockquote>
+
+<p>レジスタに關する說明は |<a href="#registers">registers</a>| を參照。
+</p>
+<p>置換モードは插入モードと似てゐるが、文字を打ち込むたびに 1 文字ずつ削除される點が違ふ。行の最後に達すると、Vim はそれ以降は (插入モードと同樣に) 文字を追加する。置換モードでは、バックスペースキーは (もしあれば) 以前のテキストを復元する (「テキストの插入と置換」の章 |<a href="insert_002etxt.html#mode_002dins_002drepl">mode-ins-repl</a>| を參照すること)。
+</p>
+<a name="cw"></a><a name="cW"></a><a name="index-cw"></a>
+<a name="index-cW"></a>
+<p>特別な場合: &quot;cw&quot; と &quot;cW&quot; は、カーソルが單語の上にあるとき、單語のあとにつづく空白を含めず、單語の末尾までを變更する (&quot;ce&quot; と &quot;cE&quot; と同じ働きをする)。これは Vim が &quot;cw&quot; を單語の變更 (change-word) として解釋し、また「單語」にはあとに續く空白は含まれないからである。
+</p>
+<p>{Vi: あとに空白が續く空白上での &quot;cw&quot; は、最初の空白のみを變更する。これは多分バグである。&quot;dw&quot; は全ての空白を削除するからだ。とにかく、Vi 風に動作させるときには &rsquo;<samp>cpoptions</samp>&rsquo; にフラグ &rsquo;<var>w</var>&rsquo; を含めること}
+</p>
+<p>&quot;cw&quot; の變更範圍に單語の後の空白も含めたいときは、次のマップを使ふこと。
+</p><div class="example">
+<pre class="example">:map cw dwi
+</pre></div>
+<p>または &quot;caw&quot; を使ふ (|<a href="motion_002etxt.html#aw">aw</a>| を參照)。
+</p>
+<a name="g_t_003ac"></a><a name="g_t_003ach"></a><a name="g_t_003achange"></a><a name="index-_003ac"></a>
+<a name="index-_003ach"></a>
+<a name="index-_003achange"></a>
+<dl compact="compact">
+<dt>:{range}c[hange][!]</dt>
+<dd><p>テキストを行單位で別のテキストと置き換へる。&quot;.&quot; のみを含む行を打ち込むことで置換を終了する。{range} なしの場合、現在行のみを變更する。
+</p>
+<p>[!] をつけると、このコマンドを實行するときだけ &rsquo;<samp>autoindent</samp>&rsquo; をトグルする。
+</p></dd>
+</dl>
+
+<a name="simple_002dchange"></a><a name="index-simple_002dchange"></a>
+<a name="index-Dan-Chun-naBian-Geng-"></a>
+<a name="g_t3_002e-Dan-Chun-naBian-Geng-"></a>
+<h3 class="section">3. 單純な變更</h3>
+
+<a name="r"></a><a name="index-r"></a>
+<dl compact="compact">
+<dt>r{char}</dt>
+<dd><p>カーソル下の文字を {char} に置き換へる。{char} が &lt;CR&gt; か &lt;NL&gt; のとき、文字は改行に置き換はる。文字を本當の &lt;CR&gt; に置き換へるには、<kbd>CTRL-V</kbd> &lt;CR&gt; を使ふ。<kbd>CTRL-V</kbd> &lt;NL&gt; は文字を &lt;Nul&gt; に置き換へる。
+</p>
+<p>{char} が <kbd>CTRL-E</kbd> または <kbd>CTRL-Y</kbd> のとき、ちやうど |<a href="insert_002etxt.html#i_005fCTRL_002dE">i_CTRL-E</a>| と |<a href="insert_002etxt.html#i_005fCTRL_002dY">i_CTRL-Y</a>| と同じやうに、下の行または上の行の文字が使はれる。回數も指定することができるため、&lsquo;10r&lt;C-E&gt;&lsquo; は下の行から 10 文字をコピーすることになる。
+</p>
+<p>[count] を指定すると、[count] 文字が [count] 個の {char} に置き換はる。しかし {char} が &lt;CR&gt; か &lt;NL&gt; の場合、插入される &lt;CR&gt; はただ1個である。&quot;5r&lt;CR&gt;&quot; は 5 文字を 1 個の改行に置き換へる。
+</p>
+<p>{char} が &lt;CR&gt; か &lt;NL&gt; のとき、Vim は自動インデントを行ふ。これは置き換へるべき文字を削除した後 &quot;i&lt;CR&gt;&lt;Esc&gt;&quot; を實行したやうな動作になる。
+{char} はダイグラフでもよい |<a href="#digraph_002darg">digraph-arg</a>|。|<a href="map_002etxt.html#g_t_003almap">:lmap</a>| のマッピングは {char} に適用される。插入モードでは、コマンド <kbd>CTRL-^</kbd> を使つてマッピングを切り替へられる |<a href="insert_002etxt.html#i_005fCTRL_002d_005e">i_CTRL-^</a>|。オプション &rsquo;<samp>encoding</samp>&rsquo; が Unicode の一種のときに composing character を使ふことについては |<a href="mbyte_002etxt.html#utf_002d8_002dchar_002darg">utf-8-char-arg</a>| を參照。
+</p>
+<a name="gr"></a><a name="index-gr"></a>
+</dd>
+<dt>gr{char}</dt>
+<dd><p>カーソル下の假想文字を {char} に置き換へる。このコマンドはファイル上の文字單位ではなく、畫面上の文字幅單位で置き換へる。詳細は |<a href="#gR">gR</a>| と |<a href="insert_002etxt.html#Virtual_002dReplace_002dmode">Virtual-Replace-mode</a>| を參照。|<a href="#r">r</a>| と同樣、回數を指定できる。{char} の入力方法は |<a href="#r">r</a>| と同樣である。
+</p></dd>
+</dl>
+
+<a name="digraph_002darg"></a><a name="index-digraph_002darg"></a>
+<p>|<a href="#r">r</a>| や |<a href="motion_002etxt.html#t">t</a>| 等のノーマルモードコマンドの引數は、1 個の文字である。オプション &rsquo;<samp>cpoptions</samp>&rsquo; がフラグ &rsquo;<var>D</var>&rsquo; を含まないとき、この文字はダイグラフ |<a href="digraph_002etxt.html#digraphs">digraphs</a>| と同樣に入力できる。まづ <kbd>CTRL-K</kbd> を打ち込み、次にダイグラフの2文字を入力する。
+</p>
+<p>{Vim が |<a href="various_002etxt.html#g_t_002bdigraphs">+digraphs</a>| 機能付きでコンパイルされたときのみ有效}
+</p>
+<a name="case"></a><a name="index-case"></a>
+<p>以下のコマンドは、アルファベットの大文字／小文字を切り替へる。現在有效なロケール |<a href="mbyte_002etxt.html#locale">locale</a>| が使はれる。|<a href="mlang_002etxt.html#g_t_003alanguage">:language</a>| を參照。環境變數 <code>LC_CTYPE</code> の値に影響される。
+</p>
+<a name="g_t_007e"></a><a name="index-_007e"></a>
+<dl compact="compact">
+<dt>~</dt>
+<dd><p>オプション &rsquo;<samp>tildeop</samp>&rsquo; がオフのとき: カーソル下の文字の大文字／小文字を切り替へ、カーソルを右に移動させる。[count] が指定されたときは、[count] 文字に作用する。
+</p>
+</dd>
+<dt>~{motion}</dt>
+<dd><p>オプション &rsquo;<samp>tildeop</samp>&rsquo; がオンのとき: {motion} のテキストの大文字／小文字を切り替へる。
+</p>
+<a name="g_007e"></a><a name="index-g_007e"></a>
+</dd>
+<dt>g~{motion}</dt>
+<dd><p>{motion} のテキストの大文字／小文字を切り替へる。
+</p>
+<a name="g_007eg_007e"></a><a name="g_007e_007e"></a><a name="index-g_007eg_007e"></a>
+<a name="index-g_007e_007e"></a>
+</dd>
+<dt>g~g~</dt>
+<dt>g~~</dt>
+<dd><p>現在行の大文字／小文字を切り替へる。
+</p>
+<a name="v_005f_007e"></a><a name="index-v_005f_007e"></a>
+</dd>
+<dt>{Visual}~</dt>
+<dd><p>ビジュアル選擇されたテキストの大文字／小文字を切り替へる ({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。
+</p>
+<a name="v_005fU"></a><a name="index-v_005fU"></a>
+</dd>
+<dt>{Visual}U</dt>
+<dd><p>ビジュアル選擇されたテキストを大文字にする ({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。
+</p>
+<a name="gU"></a><a name="uppercase"></a><a name="index-gU"></a>
+<a name="index-uppercase"></a>
+</dd>
+<dt>gU{motion}</dt>
+<dd><p>{motion} のテキストを大文字にする。
+</p>
+<p>例:
+</p><div class="example">
+<pre class="example">:map! &lt;C-F&gt; &lt;Esc&gt;gUcw`]a
+</pre></div>
+<p>これは插入モードで機能する。カーソルの前の單語を大文字にするときに CTRL-F を打ち込めばよい。單語は小文字で入力し、後から大文字にする方が樂だ。
+</p>
+
+<a name="gUgU"></a><a name="gUU"></a><a name="index-gUgU"></a>
+<a name="index-gUU"></a>
+</dd>
+<dt>gUgU</dt>
+<dt>gUU</dt>
+<dd><p>現在行を大文字にする。
+</p>
+<a name="v_005fu"></a><a name="index-v_005fu"></a>
+</dd>
+<dt>{Visual}u</dt>
+<dd><p>ビジュアル選擇されたテキストを小文字にする ({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。
+</p>
+<a name="gu"></a><a name="lowercase"></a><a name="index-gu"></a>
+<a name="index-lowercase"></a>
+</dd>
+<dt>gu{motion}</dt>
+<dd><p>{motion} のテキストを小文字にする。
+</p>
+<a name="gugu"></a><a name="guu"></a><a name="index-gugu"></a>
+<a name="index-guu"></a>
+</dd>
+<dt>gugu</dt>
+<dt>guu</dt>
+<dd><p>現在行を小文字にする。
+</p>
+<a name="g_003f"></a><a name="rot13"></a><a name="index-g_003f"></a>
+<a name="index-rot13"></a>
+</dd>
+<dt>g?{motion}</dt>
+<dd><p>{motion} のテキストを Rot13 エンコードする。
+</p>
+<a name="v_005fg_003f"></a><a name="index-v_005fg_003f"></a>
+</dd>
+<dt>{Visual}g?</dt>
+<dd><p>ビジュアル選擇されたテキストを Rot13 エンコードする ({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。
+</p>
+<a name="g_003fg_003f"></a><a name="g_003f_003f"></a><a name="index-g_003fg_003f"></a>
+<a name="index-g_003f_003f"></a>
+</dd>
+<dt>g?g?</dt>
+<dt>g??</dt>
+<dd><p>現在行を Rot13 エンコードする。
+</p></dd>
+</dl>
+
+<p>各單語の最初の文字を大文字にする:
+</p><div class="example">
+<pre class="example">:s/\v&lt;(.)(\w*)/\u\1\L\2/g
+</pre></div>
+
+
+<a name="index-Jia-Suan-toJian-Suan--1"></a>
+<a name="Jia-Suan-toJian-Suan--2"></a>
+<h4 class="unnumberedsubsec">加算と減算</h4>
+<a name="CTRL_002dA"></a><a name="index-CTRL_002dA"></a>
+<dl compact="compact">
+<dt><kbd>CTRL-A</kbd></dt>
+<dd><p>カーソルの下または後の數字またはアルファベットに [count] を加へる。
+</p>
+<a name="v_005fCTRL_002dA"></a><a name="index-v_005fCTRL_002dA"></a>
+</dd>
+<dt>{Visual}<kbd>CTRL-A</kbd></dt>
+<dd><p>ビジュアル選擇されたテキスト中の數字またはアルファベットに [count] を加へる。
+</p>
+<a name="v_005fg_005fCTRL_002dA"></a><a name="index-v_005fg_005fCTRL_002dA"></a>
+</dd>
+<dt>{Visual}g <kbd>CTRL-A</kbd></dt>
+<dd><p>ビジュアル選擇されたテキスト中の數字またはアルファベットに [count] を加へる。複數行がビジュアル選擇されてゐる場合、各行は付加された [count] ごとに增やされる (そのため效果的に [count] ごとに增加する排列を作ることができる)。
+例へば、このやうな數字のリストがあるとする:
+</p><pre class="verbatim">1.
+1.
+1.
+1.
+</pre><p>2 番目の &quot;1.&quot; に移動し 3 行をビジュアル選擇してから g <kbd>CTRL-A</kbd> を押すと、このやうになる:
+</p><pre class="verbatim">1.
+2.
+3.
+4.
+</pre>
+<a name="CTRL_002dX"></a><a name="index-CTRL_002dX"></a>
+</dd>
+<dt><kbd>CTRL-X</kbd></dt>
+<dd><p>カーソルの下または後の數字またはアルファベットから [count] を減じる。
+</p>
+<a name="v_005fCTRL_002dX"></a><a name="index-v_005fCTRL_002dX"></a>
+</dd>
+<dt>{Visual}<kbd>CTRL-X</kbd></dt>
+<dd><p>ビジュアル選擇されたテキスト中の數字またはアルファベットから [count] を減じる。
+</p>
+<p>MS-Windows では、ビジュアルモードでのテキストの切り取りにマップされる |<a href="os_005fdos_002etxt.html#dos_002dstandard_002dmappings">dos-standard-mappings</a>|。このマッピングを無效にしたいなら、次のやうにする:
+</p><pre class="verbatim">silent! vunmap &lt;C-X&gt;
+</pre><a name="v_005fg_005fCTRL_002dX"></a><a name="index-v_005fg_005fCTRL_002dX"></a>
+</dd>
+<dt>{Visual}g <kbd>CTRL-X</kbd></dt>
+<dd><p>ビジュアル選擇されたテキスト中の數字またはアルファベットから [count] を減じる。複數行がビジュアル選擇されてゐる場合、各値は付加された [count] ごとに減らされる (そのため效果的に [count] ごとに減少する排列を作ることができる)。
+</p></dd>
+</dl>
+
+<p><kbd>CTRL-A</kbd> と <kbd>CTRL-X</kbd> が適用できるのは:
+</p><ul>
+<li> 符號付き及び符號なし 10 進數
+</li><li> 符號なし 2 進數、8 進數および 16 進數
+</li><li> アルファベット文字
+</li></ul>
+
+<p>&rsquo;<samp>nrformats</samp>&rsquo; オプションに依存してゐる:
+</p><ul>
+<li> &rsquo;<samp>nrformats</samp>&rsquo; に &quot;<var>bin</var>&quot; が含まれる時、Vim は &rsquo;0b&rsquo; または &rsquo;0B&rsquo; で始まる數値を 2 進數として扱ふ。
+</li><li> &rsquo;<samp>nrformats</samp>&rsquo; が &quot;<var>octal</var>&quot; を含むときは、Vim は &rsquo;0&rsquo; で始まり、&rsquo;8&rsquo; や &rsquo;9&rsquo; を含まない數字を 8 進數として取り扱ふ。他の數は 10 進數とみなされ、マイナス符號が付いてもよい。カーソルが數の上にあれば、コマンドはその數に適用される。さうでなければ、カーソルの右の數に適用される。
+</li><li> &rsquo;<samp>nrformats</samp>&rsquo; が &quot;<var>hex</var>&quot; を含むときは、Vim は &rsquo;0x&rsquo; か &rsquo;0X&rsquo; で始まる數を 16 進數として取り扱ふ。その數の最も右の文字が大文字であるか小文字であるかによつて、變更結果の 16 進數が大文字か小文字かが決定する。對象となつた數にアルファベットが含まれない場合、Vim は前囘の決定を使ふ。
+</li><li> &rsquo;<samp>nrformats</samp>&rsquo; が &quot;<var>alpha</var>&quot; を含むときは、Vim はカーソル下または後のアルファベットを變更する。これはアルファベットのインデックスつきのリストを作るときに便利である。
+</li></ul>
+
+<p>10 進數では先頭の負の符號は增加/減少に對して考慮される。しかし 2 進數、8 進數および 16 進數では考慮されない。符號を無視するには <kbd>CTRL-A</kbd> または <kbd>CTRL-X</kbd> を使ふ前に數字をビジュアル選擇する。
+</p>
+<p>ゼロから始まる數 (全ての 8 進數、16 進數を含む) に對して、Vim はできる限りその數の文字數を保たうとする。&quot;0077&quot; 上で <kbd>CTRL-A</kbd> を使ふと &quot;0100&quot; となり、&quot;0x100&quot; 上で <kbd>CTRL-X</kbd> を使ふと &quot;0x0ff&quot; となる。
+</p>
+<p>1 つだけ例外がある: ゼロで始まるが 8 進數でないとき (&rsquo;8&rsquo; や &rsquo;9&rsquo; を含んでゐるとき)、&rsquo;<samp>nrformats</samp>&rsquo; が &quot;<var>octal</var>&quot; を含んでゐるならば、結果が 8 進數とみなされないやうに、前方のゼロは削除される。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+&rsquo;<samp>nrformats</samp>&rsquo; が &quot;<var>octal</var>&quot; を含んでゐるとき、0 で始まる 10 進數は、8 進數と區別しづらいため、意圖しない結果になる可能性がある。
+</p></blockquote>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+&rsquo;<samp>nrformats</samp>&rsquo; が &quot;<var>bin</var>&quot; を含んでゐるとき、&rsquo;0x&rsquo; または &rsquo;0X&rsquo; で始まる 2 進數は 16 進數として解釋される。これは &rsquo;0b&rsquo; が 16 進數の桁として有效だからである。
+</p>
+<p>{譯注: 0x0b0011 のやうな値のこと。}
+</p></blockquote>
+
+<p>コマンド <kbd>CTRL-A</kbd> はマクロ內でたいへん便利である。例: 番號付きリストを作るには、次の方法を使ふ。
+</p>
+<table>
+<tr><td width="20%">1.</td><td width="80%">リストの最初の項目を作る。番號から始まるやうにすること。</td></tr>
+<tr><td width="20%">2. qa</td><td width="80%">- レジスタ &rsquo;a&rsquo; への記錄を始める</td></tr>
+<tr><td width="20%">3. Y</td><td width="80%">- 項目をコピーする</td></tr>
+<tr><td width="20%">4. p</td><td width="80%">- 項目のコピーを最初の項目の後に貼り付ける</td></tr>
+<tr><td width="20%">5. CTRL-A</td><td width="80%">- 番號を增やす</td></tr>
+<tr><td width="20%">6. q</td><td width="80%">- 記錄をストップする</td></tr>
+<tr><td width="20%">7. &lt;count&gt;@a</td><td width="80%">- コピー、貼り付け、番號增加を &lt;count&gt; 回繰り返す</td></tr>
+</table>
+
+
+<a name="shift_002dleft_002dright"></a><a name="index-shift_002dleft_002dright"></a>
+<a name="index-Xing-woZuo-You-nizurasu"></a>
+<a name="Xing-woZuo-You-nizurasu"></a>
+<h4 class="unnumberedsubsec">行を左右にずらす</h4>
+
+<a name="g_t_003c"></a><a name="index-_003c"></a>
+<dl compact="compact">
+<dt>&lt;{motion}</dt>
+<dd><p>{motion} の行を &rsquo;<samp>shiftwidth</samp>&rsquo; 1 個分左にずらす。
+</p>
+<p>もしも &rsquo;<samp>vartabstop</samp>&rsquo; 機能が有效で &rsquo;<samp>shiftwidth</samp>&rsquo; オプションが 0 に設定されてゐるなら、行中の最初の空白でない場所でインデントの總計が計算される。
+<a name="g_t_003c_003c"></a><a name="index-_003c_003c"></a>
+</p></dd>
+<dt>&lt;&lt;</dt>
+<dd><p>[count] 行を &rsquo;<samp>shiftwidth</samp>&rsquo; 1 個分左にずらす。
+</p>
+<a name="v_005f_003c"></a><a name="index-v_005f_003c"></a>
+</dd>
+<dt>{Visual}[count]&lt;</dt>
+<dd><p>ビジュアル選擇された行を、&rsquo;<samp>shiftwidth</samp>&rsquo; の [count] 個分左にずらす ({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。
+</p>
+<a name="g_t_003e"></a><a name="index-_003e"></a>
+</dd>
+<dt>&gt;{motion}</dt>
+<dd><p>{motion} の行を &rsquo;<samp>shiftwidth</samp>&rsquo; 1 個分右にずらす。
+</p>
+<p>もしも &rsquo;<samp>vartabstop</samp>&rsquo; 機能が有效で &rsquo;<samp>shiftwidth</samp>&rsquo; オプションが 0 に設定されてゐるなら、行中の最初の空白でない場所でインデントの總計が計算される。
+<a name="g_t_003e_003e"></a><a name="index-_003e_003e"></a>
+</p></dd>
+<dt>&gt;&gt;</dt>
+<dd><p>[count] 行を &rsquo;<samp>shiftwidth</samp>&rsquo; 1 個分右にずらす。
+</p>
+<a name="v_005f_003e"></a><a name="index-v_005f_003e"></a>
+</dd>
+<dt>{Visual}[count]&gt;</dt>
+<dd><p>ビジュアル選擇された行を、&rsquo;<samp>shiftwidth</samp>&rsquo; の [count] 個分右にずらす ({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。
+</p>
+<a name="g_t_003a_003c"></a><a name="index-_003a_003c"></a>
+</dd>
+<dt>:[range]&lt;</dt>
+<dd><p>[range] の行を、&rsquo;<samp>shiftwidth</samp>&rsquo; 1 個分左にずらす。&rsquo;<samp>shiftwidth</samp>&rsquo; の複數個分ずらすには、&rsquo;&lt;&rsquo; を繰り返す。
+</p>
+</dd>
+<dt>:[range]&lt; {count}</dt>
+<dd><p>[range] (既定は現在行 |<a href="cmdline_002etxt.html#cmdline_002dranges">cmdline-ranges</a>|) から始まる {count} 行を &rsquo;<samp>shiftwidth</samp>&rsquo; 1 個分左にずらす。&rsquo;<samp>shiftwidth</samp>&rsquo; の複數個分ずらすには、&rsquo;&lt;&rsquo; を繰り返す。
+</p>
+</dd>
+<dt>:[range]le[ft] [indent]</dt>
+<dd><p>[range] の行を左揃へする。行のインデントは [indent] (既定値は 0) に設定される。
+</p>
+<a name="g_t_003a_003e"></a><a name="index-_003a_003e"></a>
+</dd>
+<dt>:[range]&gt; [flags]</dt>
+<dd><p>[range] の行を、&rsquo;<samp>shiftwidth</samp>&rsquo; 1 個分右にずらす。&rsquo;<samp>shiftwidth</samp>&rsquo; の複數個分ずらすには、&rsquo;&gt;&rsquo; を繰り返す。[flags] については |<a href="cmdline_002etxt.html#ex_002dflags">ex-flags</a>| を參照。
+</p>
+</dd>
+<dt>:[range]&gt; {count} [flags]</dt>
+<dd><p>[range] (既定は現在の行 |<a href="cmdline_002etxt.html#cmdline_002dranges">cmdline-ranges</a>|) から始まる {count} 行を、&rsquo;<samp>shiftwidth</samp>&rsquo; 1 個分右にずらす。&rsquo;<samp>shiftwidth</samp>&rsquo; の複數個分ずらすには、&rsquo;&gt;&rsquo; を繰り返す。[flags] については |<a href="cmdline_002etxt.html#ex_002dflags">ex-flags</a>| を參照。
+</p></dd>
+</dl>
+
+<p>コマンド &quot;&gt;&quot; と &quot;&lt;&quot; は、プログラムに含まれるインデントを變更するのに便利である。オプション &rsquo;<samp>shiftwidth</samp>&rsquo; には、これらのコマンドが插入、削除する空白の幅を設定する。&rsquo;<samp>shiftwidth</samp>&rsquo; は既定では 8 だが、例へば 3 に設定して、インデントをもつと少なくすることもできる。左方向へのシフトは、インデントがなくなつたときに終了する。右方向へのシフトは、空行には適用されない。
+</p>
+<p>&rsquo;<samp>shiftround</samp>&rsquo; がオンのとき、インデントは &rsquo;<samp>shiftwidth</samp>&rsquo; の倍數に丸められる。
+</p>
+<p>&rsquo;<samp>shiftwidth</samp>&rsquo; がオンのとき、あるいは &rsquo;<samp>cindent</samp>&rsquo; がオンで &rsquo;<samp>cinkeys</samp>&rsquo; が値 0 の &rsquo;<var>#</var>&rsquo; を含むとき、右方向へのシフトは &rsquo;#&rsquo; で始まる行に適用されない (これらの行は、行の最初に位置すべき C プリプロセッサー指令であると考へられる)。これは &rsquo;<samp>cino</samp>&rsquo; オプションで變更することができる。|<a href="indent_002etxt.html#cino_002d_0023">cino-#</a>| を參照。
+</p>
+<p>&rsquo;<samp>expandtab</samp>&rsquo; がオフ (既定値) のとき、Vim はインデントにできる限り多くの &lt;Tab&gt; を使ふ。&quot;&gt;&gt;&lt;&lt;&quot; によつて、空白のみで構成されたインデントを、&lt;Tab&gt; (と必要ならばいくつかの空白) で構成されたインデントに置換できる。&rsquo;<samp>expandtab</samp>&rsquo; がオンのときは、Vim は空白のみを使ふ。&quot;&gt;&gt;&lt;&lt;&quot; によつて、インデント內の &lt;Tab&gt; を空白に置換できる (あるいは &lsquo;<code>:retab!</code>&lsquo; を使ふ)。
+</p>
+<p>行を &rsquo;<samp>shiftwidth</samp>&rsquo; の複數個分ずらすには、ビジュアルモードかコマンド &lsquo;<code>:</code>&lsquo; を使ふ。
+</p>
+<p>例:
+</p><pre class="verbatim">Vjj4&gt;       3 行をインデント 4 個分右に移動
+:&lt;&lt;&lt;        現在の行をインデント 3 個分左に移動
+:&gt;&gt; 5       5 行をインデント 2 個分右へ移動
+:5&gt;&gt;        5 行目をインデント 2 個分右に移動
+</pre>
+<a name="complex_002dchange"></a><a name="index-complex_002dchange"></a>
+<a name="index-Fu-Za-naBian-Geng-"></a>
+<a name="g_t4_002e-Fu-Za-naBian-Geng-"></a>
+<h3 class="section">4. 複雜な變更</h3>
+
+<a name="filter"></a><a name="index-filter"></a>
+<a name="index-huirutakomando"></a>
+<a name="g_t4_002e1-huirutakomando"></a>
+<h4 class="unnumberedsubsec">4.1 フィルタコマンド</h4>
+
+<p>フィルタとは、テキストを標準入力から受け取り、何らかの變更を加へ、標準出力に送るプログラムのことである。以下のコマンドにより、テキストの一部をフィルタにかけることができる。フィルタの例としては、行をアルファベット順にソートする &quot;sort&quot;、C のプログラムを整形する &quot;indent&quot; (ただし、フィルタ機能を持つたバージョンが必要。全てのバージョンでできるわけではない) などがある。
+</p>
+<p>オプション &rsquo;<samp>shell</samp>&rsquo; は、Vim がフィルタコマンドを實行するときに使ふシェルを指定する (&rsquo;<samp>shelltype</samp>&rsquo; も參照)。フィルタコマンドはコマンド &quot;<code>.</code>&quot; で繰り返せる。Vim は &lsquo;:!&lsquo; の後の (&rsquo;&quot;&rsquo; で始まる) コメントを認識しない。
+</p>
+<a name="g_t_0021"></a><a name="index-_0021"></a>
+<dl compact="compact">
+<dt>!{motion}{filter}</dt>
+<dd><p>{motion} のテキストを外部プログラム {filter} でフィルタ處理する。
+</p>
+<a name="g_t_0021_0021"></a><a name="index-_0021_0021"></a>
+</dd>
+<dt>!!{filter}</dt>
+<dd><p>[count] 行を外部プログラム {filter} でフィルタ處理する。
+</p>
+<a name="v_005f_0021"></a><a name="index-v_005f_0021"></a>
+</dd>
+<dt>{Visual}!{filter}</dt>
+<dd><p>ビジュアル選擇された行を外部プログラム {filter} でフィルタ處理する。({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。
+</p>
+<a name="g_t_003arange_0021"></a><a name="index-_003arange_0021"></a>
+</dd>
+<dt>:{range}![!]{filter} [!][arg]</dt>
+<dd><p>{range} 行を外部プログラム {filter} でフィルタ處理する。{filter} の後ろには &rsquo;!&rsquo; を付けてもよい。これは最後に實行されたコマンドに置き換へられる。さらに [arg] を付けると、それがコマンドに付け加へられる。Vim はフィルタコマンドの出力を一時ファイルに保存し、そのファイルをバッファに讀み込む |<a href="#tempfile">tempfile</a>|。フィルタの出力を一時ファイルにリダイレクトするときはオプション &rsquo;<samp>shellredir</samp>&rsquo; が使はれる。Unix では &rsquo;<samp>shellredir</samp>&rsquo; がオフのとき、可能ならばパイプが使はれる。
+</p>
+<p>&rsquo;<samp>cpoptions</samp>&rsquo; に &rsquo;<var>R</var>&rsquo; フラグが含まれるとき、フィルタ處理された行のマークは削除される。|<a href="motion_002etxt.html#g_t_003akeepmarks">:keepmarks</a>| コマンドを使ふと削除されない。例:
+</p><div class="example">
+<pre class="example">:keepmarks '&lt;,'&gt;!sort
+</pre></div>
+<p>フィルタ處理のあと行數が少なくなつてゐた場合、すでにな
+い行を指してゐるマークは削除される。
+</p>
+<a name="g_t_003d"></a><a name="index-_003d"></a>
+</dd>
+<dt>={motion}</dt>
+<dd><p>{motion} の行を、オプション &rsquo;<samp>equalprg</samp>&rsquo; で指定された外部プログラムでフィルタ處理する。&rsquo;<samp>equalprg</samp>&rsquo; が空のとき (これが既定) は、組み込みの整形機能の |<a href="indent_002etxt.html#C_002dindenting">C-indenting</a>| と |<a href="options_002etxt.html#g_t_0027lisp_0027">'lisp'</a>| を使ふ。しかし &rsquo;<samp>indentexpr</samp>&rsquo; が空でないときは、それが使はれる |<a href="indent_002etxt.html#indent_002dexpression">indent-expression</a>|。Vim が內部フォーマット機能なしでコンパイルされてゐるときは、最後の手段として &quot;indent&quot; プログラムが使はれる。
+</p>
+<a name="g_t_003d_003d"></a><a name="index-_003d_003d"></a>
+</dd>
+<dt>==</dt>
+<dd><p>[count] 行を ={motion} と同樣にフィルタ處理する。
+</p>
+<a name="v_005f_003d"></a><a name="index-v_005f_003d"></a>
+</dd>
+<dt>{Visual}=</dt>
+<dd><p>ビジュアル選擇されたテキストを ={motion} と同樣にフィルタ處理する。
+</p></dd>
+</dl>
+
+
+<a name="tempfile"></a><a name="setuid"></a><a name="index-tempfile"></a>
+<a name="index-setuid"></a>
+<p>フィルタリング、diff の生成、tempname() などを行ふときには、一時ファイルが作成される。Unix ではこのファイルはプライベートな (自分だけがアクセスできる) ディレクトリに置かれる。セキュリティ上の問題 (symlink attack や他の人があなたのファイルを讀むなど) を避けるためである。
+</p>
+<p>Vim が終了するとき、そのディレクトリと中にあるファイルは自動的に削除される。Vim に setuid ビットが立つてゐるとこれが問題を引き起こすことがある。一時ファイルは setuid されたユーザーが所有するのに對し、フィルタコマンドは元のユーザーとして動作するためである。
+MS-DOS と OS/2 では、以下のディレクトリのうち最初に利用可能なものが使はれる: $TMP, $TEMP, c:\TMP, c:\TEMP。
+</p>
+<p>Unix におけるディレクトリのリストは: $TMPDIR, /tmp, current-dir, $HOME。
+</p>
+<p>MS-Windows ではシステム函數 GetTempFileName() が使はれる。
+</p>
+<p>他のシステムではライブラリ函數 tmpnam() が使はれる。
+</p>
+
+
+<a name="g_t_003asubstitute"></a><a name="index-_003asubstitute"></a>
+<a name="index-Zhi-Huan--1"></a>
+<a name="g_t4_002e2-Zhi-Huan-"></a>
+<h4 class="unnumberedsubsec">4.2 置換</h4>
+<a name="g_t_003as"></a><a name="g_t_003asu"></a><a name="index-_003as"></a>
+<a name="index-_003asu"></a>
+<dl compact="compact">
+<dt>:[range]s[ubstitute]/{pattern}/{string}/[flags] [count]</dt>
+<dd><p>[range] の各行で {pattern} のマッチを {string} に置き換へる。{pattern} については |<a href="pattern_002etxt.html#pattern">pattern</a>| を參照すること。{string} は普通の文字列でもよいし、特別な指定方法を使つてもよい。|<a href="#sub_002dreplace_002dspecial">sub-replace-special</a>| を參照。
+[range] と [count] が指定されないと、現在行內でのみ置換を行ふ。[count] が指定されると、[range] の最終行から數へて[count] 行で置換を行ふ。[range] が指定されないと、現在行から開始する。
+<a name="E939"></a><a name="index-E939"></a>
+[count] は正の數でなければならない。|<a href="cmdline_002etxt.html#cmdline_002dranges">cmdline-ranges</a>| も參照。
+</p>
+<p>フラグについては |<a href="#g_t_003as_005fflags">:s_flags</a>| を參照。
+</p>
+<a name="g_t_003a_0026"></a><a name="index-_003a_0026"></a>
+</dd>
+<dt>:[range]s[ubstitute] [flags] [count] または</dt>
+<dt>:[range]&amp;[&amp;][flags] [count]</dt>
+<dd><p>最後の置換を同じパターンかつ同じ置換文字列で、フラグをつけずに繰り返す。フラグを追加することもできる (|<a href="#g_t_003as_005fflags">:s_flags</a>| を參照)。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+&lsquo;<code>:substitute</code>&lsquo; の後ではフラグ &rsquo;&amp;&rsquo; は使へないことに注意。パターンの區切り文字だと認識されてしまふ。&lsquo;<code>:substitute</code>&lsquo; とフラグ &rsquo;c&rsquo;, &rsquo;g&rsquo;, &rsquo;i&rsquo;, &rsquo;I&rsquo;, &rsquo;r&rsquo; の閒の空白は必要不可缺ではない。しかしスクリプト內では、混亂しないやうに空白を入れておくのはよい考へである。
+</p></blockquote>
+
+<a name="g_t_003a_007e"></a><a name="index-_003a_007e"></a>
+</dd>
+<dt>:[range]~[&amp;][flags] [count]</dt>
+<dd><p>最後の置換を同じ置換文字列で、最後の檢索パターン {譯注: &quot;/&quot; で使つたもの} に對して繰り返す。&lsquo;<code>:&amp;r</code>&lsquo; に似てゐる。フラグについては |<a href="#g_t_003as_005fflags">:s_flags</a>| を參照。
+</p>
+<a name="g_t_0026"></a><a name="index-_0026"></a>
+</dd>
+<dt>&amp;</dt>
+<dd><p>&lsquo;<code>:s</code>&lsquo; と同義 (最後の置換を繰り返す)。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+同じフラグが使はれるわけではないので注意。實際の動作は違ふかもしれない。フラグも同じにするには &lsquo;<code>:&amp;&amp;</code>&lsquo; を使ふこと。
+</p></blockquote>
+
+<a name="g_0026"></a><a name="index-g_0026"></a>
+</dd>
+<dt>g&amp;</dt>
+<dd><p>&lsquo;<code>:%s//~/&amp;</code>&lsquo; と同義 (全ての行に對し、最後の檢索パターンで、同じフラグで最後の置換を繰り返す)。例へば、&lsquo;<code>:s/pattern/repl/flags</code>&lsquo; と置換を實行し、次に &lsquo;<code>/search</code>&lsquo; と檢索を實行すると、&lsquo;<code>g&amp;</code>&lsquo; は &lsquo;<code>:%s/search/repl/flags</code>&lsquo; を實行する。
+</p>
+<p>覺え方: 「グローバル (global &ndash;全體的な) 置換」
+</p>
+<a name="g_t_003asnomagic"></a><a name="g_t_003asno"></a><a name="index-_003asnomagic"></a>
+<a name="index-_003asno"></a>
+</dd>
+<dt>:[range]sno[magic] ...</dt>
+<dd><p>&lsquo;<code>:substitute</code>&lsquo; と同じだが、常に &rsquo;<samp>nomagic</samp>&rsquo; を使ふ。
+</p>
+<a name="g_t_003asmagic"></a><a name="g_t_003asm"></a><a name="index-_003asmagic"></a>
+<a name="index-_003asm"></a>
+</dd>
+<dt>:[range]sm[agic] ...</dt>
+<dd><p>&lsquo;<code>:substitute</code>&lsquo; と同じだが、常に &rsquo;<samp>magic</samp>&rsquo; を使ふ。
+</p></dd>
+</dl>
+
+<a name="g_t_003as_005fflags"></a><a name="index-_003as_005fflags"></a>
+<a name="index-Zhi-Huan-komandodeShi-eruhuragu"></a>
+<a name="Zhi-Huan-komandodeShi-eruhuragu_003a"></a>
+<h4 class="unnumberedsubsubsec">置換コマンドで使へるフラグ:</h4>
+
+<a name="g_t_003a_0026_0026"></a><a name="index-_003a_0026_0026"></a>
+<dl compact="compact">
+<dt>[&amp;]</dt>
+<dd><p>先頭に指定しなければならない。前囘の置換コマンドと同じフラグを使ふ。例:
+</p><div class="example">
+<pre class="example">:&amp;&amp;
+:s/this/that/&amp;
+</pre></div>
+<blockquote>
+<p><strong>Note:</strong> <br>
+コマンド &lsquo;:s&lsquo; と &lsquo;:&amp;&lsquo; では、前囘と同じフラグは使はれない。
+</p></blockquote>
+
+<a name="g_t_003as_005fc"></a><a name="index-_003as_005fc"></a>
+</dd>
+<dt>[c]</dt>
+<dd><p>置換前に每囘確認する。マッチしてゐる文字列を (强調表示グループ |<a href="syntax_002etxt.html#hl_002dIncSearch">hl-IncSearch</a>| で) 强調表示する。確認を求められたら、ユーザーは以下のやうに應答する。
+</p><table>
+<tr><td width="20%">&rsquo;y&rsquo;</td><td width="80%">そのマッチを置換する (&quot;yes&quot;)</td></tr>
+<tr><td width="20%">&rsquo;l&rsquo;</td><td width="80%">そのマッチを置換し、置換を終了する (&quot;last&quot;)</td></tr>
+<tr><td width="20%">&rsquo;n&rsquo;</td><td width="80%">そのマッチを置換せず、次に移る (&quot;no&quot;)</td></tr>
+<tr><td width="20%">&lt;Esc&gt;</td><td width="80%">置換を終了する</td></tr>
+<tr><td width="20%">&rsquo;a&rsquo;</td><td width="80%">そのマッチと、以降の全てのマッチを置換する</td></tr>
+<tr><td width="20%">&rsquo;q&rsquo;</td><td width="80%">置換を終了する</td></tr>
+<tr><td width="20%">CTRL-E</td><td width="80%">畫面を上にスクロールする {Vim が |<a href="various_002etxt.html#g_t_002binsert_005fexpand">+insert_expand</a>| 機能付きでコンパイルされたときのみ有效}</td></tr>
+<tr><td width="20%">CTRL-Y</td><td width="80%">畫面を下にスクロールする {Vim が |<a href="various_002etxt.html#g_t_002binsert_005fexpand">+insert_expand</a>| 機能付きでコンパイルされたときのみ有效}</td></tr>
+</table>
+<p>オプション &rsquo;<samp>edcompatible</samp>&rsquo; がオンのとき、Vim はフラグ [c] を記憶し、それが指定される度にオン／オフを切り替へるが、新しい檢索パターンが使はれるとリセットする。
+</p>
+<a name="g_t_003as_005fe"></a><a name="index-_003as_005fe"></a>
+</dd>
+<dt>[e]</dt>
+<dd><p>檢索パターンが何もマッチしなかつたとき、エラーメッセージを表示しない。特にマッピング內ではエラーが發生しなかつたかのやうに續行される。これは「パターンは見つかりませんでした」のエラーによるマッピングの中斷を防ぐのに使へる。しかし以下のエラーの發生は抑制されない。
+</p><div class="display">
+<pre class="display">「正規表現は文字で區切ることができません」
+「\\ の後は / か ? か &amp; でなければなりません」
+「正規表現置換がまだ實行されてゐません」
+「餘分な文字が後ろにあります」
+「(割込まれました)」
+</pre></div>
+
+<a name="g_t_003as_005fg"></a><a name="index-_003as_005fg"></a>
+</dd>
+<dt>[g]</dt>
+<dd><p>行中の全てのマッチを置換する。このフラグなしだと、各行の 1 個目のマッチのみが置換される。オプション &rsquo;<samp>edcompatible</samp>&rsquo; がオンのとき、Vim はこのフラグを記憶し、指定される度にオン／オフを切り替へるが、新しい檢索パターンが使はれるとリセットする。&rsquo;<samp>gdefault</samp>&rsquo; がオンのときは、このフラグはオンが既定値になり、フラグ [g] を指定したときにはオフになる。
+</p>
+<a name="g_t_003as_005fi"></a><a name="index-_003as_005fi"></a>
+</dd>
+<dt>[i]</dt>
+<dd><p>パターンの大文字／小文字の區別をしない。オプション &rsquo;<samp>ignorecase</samp>&rsquo; と &rsquo;<samp>smartcase</samp>&rsquo; は使はれない。
+</p>
+<a name="g_t_003as_005fI"></a><a name="index-_003as_005fI"></a>
+</dd>
+<dt>[I]</dt>
+<dd><p>パターンの大文字／小文字を區別する。オプション &rsquo;<samp>ignorecase</samp>&rsquo; と &rsquo;<samp>smartcase</samp>&rsquo; は使はれない。
+</p>
+<a name="g_t_003as_005fn"></a><a name="index-_003as_005fn"></a>
+</dd>
+<dt>[n]</dt>
+<dd><p>マッチの個數を表示し、實際には置換を行はない。フラグ [c] は無視される。&rsquo;<samp>report</samp>&rsquo; が 0 のときと同じやうにマッチが表示される。何個あるか調べるときに便利。|<a href="tips_002etxt.html#count_002ditems">count-items</a>|
+</p>
+<p>\= |<a href="#sub_002dreplace_002dexpression">sub-replace-expression</a>| が使はれたときは、式はそれぞれのマッチに對してサンドボックス (|<a href="eval_002etxt.html#sandbox">sandbox</a>|) で實行される。
+</p>
+<a name="g_t_003as_005fp"></a><a name="index-_003as_005fp"></a>
+</dd>
+<dt>[p]</dt>
+<dd><p>最後に置換を行つた行を表示する。
+</p>
+<p>{Vi にはない}
+</p>
+<a name="g_t_003as_005f_0023"></a><a name="index-_003as_005f_0023"></a>
+</dd>
+<dt>[#]</dt>
+<dd><p>[p] と同樣。行番號をつける。
+</p>
+<a name="g_t_003as_005fl"></a><a name="index-_003as_005fl"></a>
+</dd>
+<dt>[l]</dt>
+<dd><p>[p] と同樣だが、|<a href="various_002etxt.html#g_t_003alist">:list</a>| のやうに表示する。
+</p>
+<a name="g_t_003as_005fr"></a><a name="index-_003as_005fr"></a>
+</dd>
+<dt>[r]</dt>
+<dd><p>引數のない &lsquo;<code>:&amp;</code>&lsquo; か &lsquo;<code>:s</code>&lsquo; との連携でのみ有效。&lsquo;<code>:&amp;r</code>&lsquo; は &lsquo;<code>:~</code>&lsquo; と同樣に動作する。檢索パターンが空のとき、最後の置換コマンドや &lsquo;:global&lsquo; でのパターンではなく、最後の檢索パターンを使用する。最後に檢索パターンを使用したコマンドが置換や &lsquo;<code>:global</code>&lsquo; だつたときは、何もしない。最後のコマンドが &quot;/&quot; のやうな檢索コマンドだつたときは、そのコマンドの檢索パターンを使ふ。
+引數付きの &lsquo;:s&lsquo; では、すでにさう動作するやうになつてゐた。
+</p><pre class="verbatim">:s/blue/red/
+/green
+:s//red/  または  :~  または  :&amp;r
+</pre><p>最後のコマンドは &quot;green&quot; を &quot;red&quot; に置き換へる。
+</p><pre class="verbatim">:s/blue/red/
+/green
+:&amp;
+</pre><p>最後のコマンドは &quot;blue&quot; を &quot;red&quot; に置き換へる。
+</p></dd>
+</dl>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+パターンに &rsquo;<samp>magic</samp>&rsquo; が適用されるかどうかを變更するフラグはないことに注意。代はりに違ふコマンド {譯注: |<a href="#g_t_003asnomagic">:snomagic</a>|} または |<a href="pattern_002etxt.html#g_t_002f_005cv">/\v</a>| などを使ふ。これは、パターン解釋を飛ばすことでのみフラグを認識できるが、その一方でパターン解釋を飛ばすには &rsquo;<samp>magic</samp>&rsquo; の適用狀態が知られてゐる必要があるためである。Catch 22! {譯注: どうにもならないといふ意味}
+</p></blockquote>
+
+<p>置換コマンドで {pattern} が空のときは、最後に使はれた置換コマンドまたはコマンド &lsquo;<code>:global</code>&lsquo; のパターンが使はれる。それが無い場合は、直前の檢索パターンがあればそれが使はれる。フラグ [r] を指定すると、最後の置換、&lsquo;<code>:global</code>&lsquo;、または檢索コマンドのパターンが使はれる。
+</p>
+<p>{string} を省略した場合は、空文字列を指定したのと同じ結果になる。すなはち、マッチしたパターンが削除される。{pattern} の後のセパレータも省略することができる。例:
+</p><div class="example">
+<pre class="example">:%s/TESTING
+</pre></div>
+<p>これは、全行から &quot;TESTING&quot; を削除する例である。ただし、1 つの行に 2 個以上あつても 1 個しか削除されない。
+</p>
+<p>Vi との互換性のため、これら 2 つの例外が許される。
+</p><ul>
+<li> &quot;\/{string}/&quot; と &quot;\?{string}?&quot; は &quot;//{string}/r&quot; と同樣の效果。
+</li><li> &quot;\&amp;{string}&amp;&quot; は &quot;//{string}/&quot; と同樣の效果。
+</li></ul>
+<a name="E146"></a><a name="index-E146"></a>
+<p>&rsquo;/&rsquo; でパターンと置換文字列を圍む代はりに、英數字や &rsquo;\&rsquo;, &rsquo;&quot;&rsquo;, &rsquo;|&rsquo; 以外であれば、他の 1 バイト文字を使ふことができる。これは檢索パターンや置換文字列に &rsquo;/&rsquo; を含む場合に有益である。例
+</p><div class="example">
+<pre class="example">:s+/+//+
+</pre></div>
+
+<p>パターンの定義については |<a href="pattern_002etxt.html#pattern">pattern</a>| を參照。矩形ビジュアルモードで、置換をその領域內だけで行ひたい場合は、パターンに |<a href="pattern_002etxt.html#g_t_002f_005c_0025V">/\%V</a>| を含める。これを使はない場合は、置換は常に行全體に對して行はれる。
+</p>
+<a name="sub_002dreplace_002dspecial"></a><a name="g_t_003as_005c_003d"></a><a name="index-sub_002dreplace_002dspecial"></a>
+<a name="index-_003as_005c_003d"></a>
+<p>{string} が &quot;\=&quot; で始まるときは、それは式として評價される。|<a href="#sub_002dreplace_002dexpression">sub-replace-expression</a>| を參照のこと。複雜な置換や特殊な文字を使ふことができる。
+</p>
+<p>さうでなければ、{string} の中のこれらの文字は特別な意味を持つ:
+<a name="g_t_003as_0025"></a><a name="index-_003as_0025"></a>
+&rsquo;<samp>cpoptions</samp>&rsquo; に &rsquo;<var>/</var>&rsquo; が含まれてゐる場合、{string} が &quot;%&quot; に等しいならば前の置換コマンドの {string} が使はれる。|<a href="options_002etxt.html#cpo_002d_002f">cpo-/</a>| 參照。
+</p>
+<table>
+<tr><td width="10%">magic</td><td width="8%"></td><td width="12%">nomagic</td><td width="70%">作用
+<a name="s_002f_005c_0026"></a><a name="index-s_002f_005c_0026"></a></td></tr>
+<tr><td width="10%">&amp;</td><td width="8%"></td><td width="12%">\&amp;</td><td width="70%">マッチしたパターン全體に置き換はる</td></tr>
+<tr><td width="10%">\&amp;</td><td width="8%"></td><td width="12%">&amp;</td><td width="70%">&rsquo;&amp;&rsquo; に置き換はる
+<a name="g_t_005c0"></a><a name="s_002f_005c0"></a><a name="index-_005c0"></a>
+<a name="index-s_002f_005c0"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\0</td><td width="12%"></td><td width="70%">マッチしたパターン全體に置き換はる
+<a name="s_002f_005c1"></a><a name="index-s_002f_005c1"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\1</td><td width="12%"></td><td width="70%">1 番目の () 內のマッチしたパターンに置き換はる
+<a name="s_002f_005c2"></a><a name="index-s_002f_005c2"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\2</td><td width="12%"></td><td width="70%">2 番目の () 內のマッチしたパターンに置き換はる
+<a name="s_002f_005c3"></a><a name="index-s_002f_005c3"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">..</td><td width="12%"></td><td width="70%">..
+<a name="s_002f_005c9"></a><a name="index-s_002f_005c9"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\9</td><td width="12%"></td><td width="70%">9 番目の () 內のマッチしたパターンに置き換はる
+<a name="s_007e"></a><a name="index-s_007e"></a></td></tr>
+<tr><td width="10%">~</td><td width="8%"></td><td width="12%">\~</td><td width="70%">前囘の置換の {string} に置き換はる
+<a name="s_002f_005c_007e"></a><a name="index-s_002f_005c_007e"></a></td></tr>
+<tr><td width="10%">\~</td><td width="8%"></td><td width="12%">~</td><td width="70%">&rsquo;~&rsquo; に置き換はる
+<a name="s_002f_005cu"></a><a name="index-s_002f_005cu"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\u</td><td width="12%"></td><td width="70%">次の文字が大文字になる
+<a name="s_002f_005cU"></a><a name="index-s_002f_005cU"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\U</td><td width="12%"></td><td width="70%">後に續く文字が (\E まで) 大文字になる
+<a name="s_002f_005cl"></a><a name="index-s_002f_005cl"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\l</td><td width="12%"></td><td width="70%">次の文字が小文字になる
+<a name="s_002f_005cL"></a><a name="index-s_002f_005cL"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\L</td><td width="12%"></td><td width="70%">後に續く文字が (\E まで) 小文字になる
+<a name="s_002f_005ce"></a><a name="index-s_002f_005ce"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\e</td><td width="12%"></td><td width="70%">\u, \U, \l, \L の終はり (NOTE: &lt;Esc&gt; の意味ではない！)
+<a name="s_002f_005cE"></a><a name="index-s_002f_005cE"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\E</td><td width="12%"></td><td width="70%">\u, \U, \l, \L の終はり
+<a name="s_003cCR_003e"></a><a name="index-s_003cCR_003e"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">&lt;CR&gt;</td><td width="12%"></td><td width="70%">ここで行を 2 つに分ける (&lt;CR&gt; は <kbd>CTRL-V</kbd> <code class="tt-key">&lt;Enter&gt;</code> と入力する)
+<a name="s_002f_005cr"></a><a name="index-s_002f_005cr"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\r</td><td width="12%"></td><td width="70%">同上
+<a name="s_002f_005c_003cCR_003e"></a><a name="index-s_002f_005c_003cCR_003e"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\&lt;CR&gt;</td><td width="12%"></td><td width="70%">キャリッジリターン (CTRL-M) の插入 (&lt;CR&gt; は <kbd>CTRL-V</kbd> <code class="tt-key">&lt;Enter&gt;</code> と入力する)
+<a name="s_002f_005cn"></a><a name="index-s_002f_005cn"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\n</td><td width="12%"></td><td width="70%">&lt;NL&gt; (ファイル內では &lt;NUL&gt;) の插入 (改行を「起こさない」)
+<a name="s_002f_005cb"></a><a name="index-s_002f_005cb"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\b</td><td width="12%"></td><td width="70%">&lt;BS&gt; の插入
+<a name="s_002f_005ct"></a><a name="index-s_002f_005ct"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\t</td><td width="12%"></td><td width="70%">&lt;Tab&gt; の插入
+<a name="s_002f_005c_005c"></a><a name="index-s_002f_005c_005c"></a></td></tr>
+<tr><td width="10%"></td><td width="8%">\\</td><td width="12%"></td><td width="70%">&rsquo;\&rsquo; の插入</td></tr>
+<tr><td width="10%"></td><td width="8%">\x</td><td width="12%"></td><td width="70%">(&rsquo;x&rsquo; は上で說明されてゐない文字) 將來の擴張用に豫約濟み</td></tr>
+</table>
+
+<p>特別な意味は |<a href="eval_002etxt.html#substitute_0028_0029">substitute()</a>| の 第 3 引數 {sub} でも使へるがいくつか例外がある:
+</p><ul>
+<li> % は &rsquo;<samp>cpoptions</samp>&rsquo; に關係なくパーセント文字を插入する。
+</li><li> &rsquo;<samp>magic</samp>&rsquo; に關係なく magic は常にオンである。
+</li><li> ~ はチルダをそのまま插入する。
+</li><li> &lt;CR&gt; と \r はキャリッジリターン (CTRL-M) を插入する。
+</li><li> \&lt;CR&gt; は特別な意味を持たない。單に \x の一種として扱はれる。
+</li></ul>
+
+<p>例:
+</p><pre class="verbatim">:s/a\|b/xxx\0xxx/g             &quot;a b&quot;      を &quot;xxxaxxx xxxbxxx&quot;  に置換
+:s/\([abc]\)\([efg]\)/\2\1/g   &quot;af fa bg&quot; を &quot;fa fa gb&quot;         に置換
+:s/abcde/abc^Mde/              &quot;abcde&quot;    を &quot;abc&quot;, &quot;de&quot; (2 行) に置換
+:s/$/^V^M/                     &quot;abcde&quot;    を &quot;abcde^M&quot;          に置換
+:s/\w\+/\u\0/g                 &quot;bla bla&quot;  を &quot;Bla Bla&quot;          に置換
+:s/\w\+/\L\u\0/g               &quot;BLA bla&quot;  を &quot;Bla Bla&quot;          に置換
+</pre>
+<blockquote>
+<p><strong>Note:</strong> <br>
+&quot;\L\u&quot; を使ふと單語の最初の文字をキャピタライズできる。これは Vi や古い Vim とは互換性がない。それらの古い環境では &quot;\u&quot; は &quot;\L&quot; をキャンセルする。&quot;\U\l&quot; も同樣。
+</p></blockquote>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+以前のバージョンでは <kbd>CTRL-V</kbd> が特別に扱はれてゐた。これは Vi 互換ではないので變更された。代はりに &rsquo;\&rsquo; を使ふこと。
+</p></blockquote>
+
+<table>
+<tr><td width="33%">コマンド</td><td width="33%">テキスト</td><td width="33%">置換結果</td></tr>
+<tr><td width="33%">:s/aa/a^Ma/</td><td width="33%">aa</td><td width="33%">a&lt;line-break&gt;a</td></tr>
+<tr><td width="33%">:s/aa/a\^Ma/</td><td width="33%">aa</td><td width="33%">a^Ma</td></tr>
+<tr><td width="33%">:s/aa/a\\^Ma/</td><td width="33%">aa</td><td width="33%">a\&lt;line-break&gt;a</td></tr>
+</table>
+
+<p>(ここで ^M を使ふには <kbd>CTRL-V</kbd> <code class="tt-key">&lt;CR&gt;</code> と打ち込むこと)
+</p>
+<p>&quot;\1&quot;, &quot;\2&quot; などの番號付けは、パターン內でどの &quot;\(&quot; が最初に來るかによつて決まる (左から右の順)。括弧でくくられたグループが複數回マッチするときは、最後のものが &quot;\1&quot;, &quot;\2&quot; 等に使はれる。例:
+</p><pre class="verbatim">:s/\(\(a[a-d] \)*\)/\2/      &quot;aa ab x&quot; を &quot;ab x&quot; に置換
+</pre><p>&quot;\2&quot; は、&quot;\(a[a-d] \)&quot; を參照する。このパターンはまず &quot;aa &quot; にマッチし、次に &quot;ab &quot; にマッチする。
+</p>
+<p>\([ab]\)\|\([cd]\) のやうに括弧を &rsquo;|&rsquo; と連携して使つてゐるとき、1 番目か 2 番目のどちらかの括弧內のパターンにはマッチしない、すなはち、\1 か \2 のどちらかは空になる。例:
+</p><pre class="verbatim">:s/\([ab]\)\|\([cd]\)/\1x/g   &quot;a b c d&quot; を &quot;ax bx x x&quot; に置換
+</pre>
+<a name="g_t_003asc"></a><a name="g_t_003asce"></a><a name="g_t_003ascg"></a><a name="g_t_003asci"></a><a name="g_t_003ascI"></a><a name="g_t_003ascl"></a><a name="g_t_003ascp"></a><a name="g_t_003asg"></a><a name="g_t_003asgc"></a><a name="g_t_003asge"></a><a name="g_t_003asgi"></a><a name="g_t_003asgI"></a><a name="g_t_003asgl"></a><a name="g_t_003asgn"></a><a name="g_t_003asgp"></a><a name="g_t_003asgr"></a><a name="g_t_003asI"></a><a name="g_t_003asi"></a><a name="g_t_003asic"></a><a name="g_t_003asIc"></a><a name="g_t_003asie"></a><a name="g_t_003asIe"></a><a name="g_t_003asIg"></a><a name="g_t_003asIl"></a><a name="g_t_003asin"></a><a name="g_t_003asIn"></a><a name="g_t_003asIp"></a><a name="g_t_003asip"></a><a name="g_t_003asIr"></a><a name="g_t_003asir"></a><a name="g_t_003asr"></a><a name="g_t_003asrc"></a><a name="g_t_003asrg"></a><a name="g_t_003asri"></a><a name="g_t_003asrI"></a><a name="g_t_003asrl"></a><a name="g_t_003asrn"></a><a name="g_t_003asrp"></a><a name="index-_003asc"></a>
+<a name="index-_003asce"></a>
+<a name="index-_003ascg"></a>
+<a name="index-_003asci"></a>
+<a name="index-_003ascI"></a>
+<a name="index-_003ascl"></a>
+<a name="index-_003ascp"></a>
+<a name="index-_003asg"></a>
+<a name="index-_003asgc"></a>
+<a name="index-_003asge"></a>
+<a name="index-_003asgi"></a>
+<a name="index-_003asgI"></a>
+<a name="index-_003asgl"></a>
+<a name="index-_003asgn"></a>
+<a name="index-_003asgp"></a>
+<a name="index-_003asgr"></a>
+<a name="index-_003asI"></a>
+<a name="index-_003asi"></a>
+<a name="index-_003asic"></a>
+<a name="index-_003asIc"></a>
+<a name="index-_003asie"></a>
+<a name="index-_003asIe"></a>
+<a name="index-_003asIg"></a>
+<a name="index-_003asIl"></a>
+<a name="index-_003asin"></a>
+<a name="index-_003asIn"></a>
+<a name="index-_003asIp"></a>
+<a name="index-_003asip"></a>
+<a name="index-_003asIr"></a>
+<a name="index-_003asir"></a>
+<a name="index-_003asr"></a>
+<a name="index-_003asrc"></a>
+<a name="index-_003asrg"></a>
+<a name="index-_003asri"></a>
+<a name="index-_003asrI"></a>
+<a name="index-_003asrl"></a>
+<a name="index-_003asrn"></a>
+<a name="index-_003asrp"></a>
+<a name="index-2-WenZi-mosikuha-3-WenZi-no-_003asubstitute-komando"></a>
+<a name="g_t2-WenZi-mosikuha-3-WenZi-no-_003asubstitute-komando"></a>
+<h4 class="unnumberedsubsubsec">2 文字もしくは 3 文字の :substitute コマンド</h4>
+
+<p>:substitute コマンド一覽
+</p><pre class="verbatim">|      c    e    g    i    I    n    p    l    r
+| c  :sc  :sce :scg :sci :scI :scn :scp :scl  ---
+| e
+| g  :sgc :sge :sg  :sgi :sgI :sgn :sgp :sgl :sgr
+| i  :sic :sie  --- :si  :siI :sin :sip  --- :sir
+| I  :sIc :sIe :sIg :sIi :sI  :sIn :sIp :sIl :sIr
+| n
+| p
+| l
+| r  :src  --- :srg :sri :srI :srn :srp :srl :sr
+</pre>
+<p>例外:
+</p><pre class="verbatim">:scr  is  `:scriptnames`
+:se   is  `:set`
+:sig  is  `:sign`
+:sil  is  `:silent`
+:sn   is  `:snext`
+:sp   is  `:split`
+:sl   is  `:sleep`
+:sre  is  `:srewind`
+</pre>
+
+<a name="sub_002dreplace_002dexpression"></a><a name="index-sub_002dreplace_002dexpression"></a>
+<a name="index-Shi-deZhi-Huan-suru"></a>
+<a name="Shi-deZhi-Huan-suru"></a>
+<h4 class="unnumberedsubsubsec">式で置換する</h4>
+<a name="sub_002dreplace_002d_005c_003d"></a><a name="s_002f_005c_003d"></a><a name="index-sub_002dreplace_002d_005c_003d"></a>
+<a name="index-s_002f_005c_003d"></a>
+<p>置換文字列が &quot;\=&quot; で始まるとき、それ以降の文字列は式として解釋される。これは再歸的に機能しない。
+</p>
+<p>&quot;&lt;CR&gt;&quot; 以外の文字の特別な意味 |<a href="#sub_002dreplace_002dspecial">sub-replace-special</a>| は無效になる。&lt;NL&gt; 文字は改行として使はれるのでダブルクォート文字列 &quot;\n&quot; で改行を入れることができる。實際の &lt;NL&gt; 文字 (ファイルにおける NUL 文字) を插入するにはバックスラッシュを前置する。
+</p>
+<p>&quot;\=&quot; 表記は |<a href="eval_002etxt.html#substitute_0028_0029">substitute()</a>| 函數の第 3 引數 {sub} でも使ふことができる。その場合、|<a href="#sub_002dreplace_002dspecial">sub-replace-special</a>| で說明されてゐる文字は特別な意味を持たなくなる。特に、&lt;CR&gt; と &lt;NL&gt; は改行として解釋されるのではなく、そのままキャリッジリターンとニューラインとして解釋される。
+</p>
+<p>結果が |<a href="eval_002etxt.html#List">List</a>| のときはその要素が改行を區切りとして連結される。よつて要素がそれぞれ行となる。ただし要素が改行を含んでゐる場合は除く。
+</p>
+<p>|<a href="eval_002etxt.html#submatch_0028_0029">submatch()</a>| 函數を使用して一致するテキストを取得できる。マッチしたテキストの全體は &quot;submatch(0)&quot; で參照できる。1 番目の () 內でマッチしたテキストは &quot;submatch(1)&quot; で參照できる。以降の () 內でマッチしたテキストも同樣に參照できる。
+</p>
+<blockquote>
+<p><strong>注意:</strong> <br>
+正規表現の區切り文字が expression 內に現れてはいけない！區切りには &quot;@&quot; や &quot;:&quot; を使ふよう檢討すること。Expression の結果に區切り文字が現れても問題はない。
+</p></blockquote>
+
+<p>例:
+</p><pre class="verbatim">:s@\n@\=&quot;\r&quot; . expand(&quot;$HOME&quot;) . &quot;\r&quot;@
+</pre><p>かうすると置換を行つた行の下に、環境變數 $HOME の値を含む新しい行が插入される。
+</p><pre class="verbatim">s/E/\=&quot;\&lt;Char-0x20ac&gt;&quot;/g
+</pre><p>これは文字 &rsquo;E&rsquo; をユーロ記號で置換する。詳しくは |<a href="map_002etxt.html#g_t_003cChar_002d_003e">&lt;Char-&gt;</a>| を參照。
+</p>
+
+<a name="search_002dreplace"></a><a name="index-search_002dreplace"></a>
+<a name="index-Jian-Suo-toZhi-Huan-"></a>
+<a name="g_t4_002e3-Jian-Suo-toZhi-Huan-"></a>
+<h4 class="unnumberedsubsec">4.3 檢索と置換</h4>
+
+<a name="g_t_003apro"></a><a name="g_t_003apromptfind"></a><a name="index-_003apro"></a>
+<a name="index-_003apromptfind"></a>
+<dl compact="compact">
+<dt>:promptf[ind] [string]</dt>
+<dd><p>檢索ダイアログを表示する。 [string] が與へられると、それが初期檢索文字列になる。
+</p>
+<p>{Vim の Win32 版、Motif 版、GTK の GUI 版、MacVim 版のみ}
+</p>
+<a name="g_t_003apromptr"></a><a name="g_t_003apromptrepl"></a><a name="index-_003apromptr"></a>
+<a name="index-_003apromptrepl"></a>
+</dd>
+<dt>:promptr[epl] [string]</dt>
+<dd><p>檢索／置換ダイアログを表示する。 [string] が與へられると、それが初期檢索文字列になる。
+</p>
+<p>{Vim の Win32 版、Motif 版、GTK の GUI 版、MacVim 版のみ}
+</p></dd>
+</dl>
+
+
+<a name="change_002dtabs"></a><a name="index-change_002dtabs"></a>
+<a name="index-tabunoBian-Huan-"></a>
+<a name="g_t4_002e4-tabunoBian-Huan-"></a>
+<h4 class="unnumberedsubsec">4.4 タブの變換</h4>
+<a name="g_t_003aret"></a><a name="g_t_003aretab"></a><a name="g_t_003aretab_0021"></a><a name="index-_003aret"></a>
+<a name="index-_003aretab"></a>
+<a name="index-_003aretab_0021"></a>
+<dl compact="compact">
+<dt>:[range]ret[ab][!] [new_tabstop]</dt>
+<dd><p>新たに指定されたタブストップ (タブ幅) に基づき、&lt;Tab&gt; を含む空白の連續を全て、新しい空白と &lt;Tab&gt; の列に置き換へる。新たなタブストップの指定がないか 0 が指定されたときは、Vim はオプション &rsquo;<samp>tabstop</samp>&rsquo; の現在の値を使用する。
+</p>
+<p>&rsquo;<samp>tabstop</samp>&rsquo; の現在の値は、既存のタブの幅を計るために常に使用される。&rsquo;!&rsquo; を付けると、Vim は通常の空白のみの列も、適切なタブに置き換へる。&rsquo;<samp>expandtab</samp>&rsquo; がオンのとき、Vim は全てのタブを適切な數の空白に置き換へる。
+</p>
+<p>このコマンドは &rsquo;<samp>tabstop</samp>&rsquo; を新たに指定された値に設定する {譯注: この事實は重要である}。ファイル全體に適用されたときは (それが既定の動作)、ファイルの見かけに變化が起こることはないはずだ。
+</p><blockquote>
+<p><strong>注意:</strong> <br>
+このコマンドは C プログラム中の文字列內部にある &lt;Tab&gt; 文字も修正する。これを避けるためには、プログラム內では &quot;\t&quot; を使ふとよい (さうでなくても、これはよい習慣である)。
+</p></blockquote>
+</dd>
+</dl>
+
+<p>&lsquo;<code>:retab!</code>&lsquo; も空白の連續を &lt;Tab&gt; 文字に變へてしまひ、printf() の出力をめちやくちやにするかもしれない。
+</p>
+<p>|<a href="various_002etxt.html#g_t_002bvartabs">+vartabs</a>| 機能が有效な場合、單一の tabstop の代はりにコンマで分けられたタブ幅のリストが使用されるだらう。リストのそれぞれの値は 1 つの tabstop の幅を意味するが、最後の値だけは後續するすべての tabstop に適用される。
+</p>
+<a name="retab_002dexample"></a><a name="index-retab_002dexample"></a>
+<p>タブストップが 8 で保存され、タブストップが 4 で編輯されたファイルを編輯するために autocommand と &quot;<code>:retab</code>&quot; を使ふ例。警告: 文字列內の空白は變はつてしまふことがある！オプション &rsquo;<samp>softtabstop</samp>&rsquo; も參照。
+</p>
+<pre class="verbatim">:auto BufReadPost   *.xx    retab! 4
+:auto BufWritePre   *.xx    retab! 8
+:auto BufWritePost  *.xx    retab! 4
+:auto BufNewFile    *.xx    set ts=4
+</pre>
+<a name="copy_002dmove"></a><a name="index-copy_002dmove"></a>
+<a name="index-tekisutonokopitoYi-Dong-"></a>
+<a name="g_t5_002e-tekisutonokopitoYi-Dong-"></a>
+<h3 class="section">5. テキストのコピーと移動</h3>
+
+<a name="quote"></a><a name="index-quote"></a>
+<dl compact="compact">
+<dt>&quot;{a-zA-Z0-9.%#:-&quot;}</dt>
+<dd><p>續く操作 (削除、コピー、貼り付け) にレジスタ {a-zA-Z0-9.%#:-&quot;} を使ふ (削除、コピーでは大文字を使ふことでレジスタに追記できる) ({.%#:} は貼り付けにのみ使用可能)。
+</p>
+<a name="g_t_003areg"></a><a name="g_t_003aregisters"></a><a name="index-_003areg"></a>
+<a name="index-_003aregisters"></a>
+</dd>
+<dt>:reg[isters]</dt>
+<dd><p>全ての名前付きレジスタおよび番號付きレジスタの內容を表示する。レジスタが |<a href="various_002etxt.html#g_t_003aredir">:redir</a>| の書き込み先になつてゐる場合はそのレジスタは表示されない。
+</p>
+
+</dd>
+<dt>:reg[isters] {arg}</dt>
+<dd><p>{arg} に指定された名前付きレジスタおよび番號付きレジスタを表示する。例:
+</p><div class="example">
+<pre class="example">:reg 1a
+</pre></div>
+<p>レジスタ &rsquo;1&rsquo; と &rsquo;a&rsquo; が表示される。{arg} の中では空白を用ゐてよい。
+</p>
+<a name="g_t_003adi"></a><a name="g_t_003adisplay"></a><a name="index-_003adi"></a>
+<a name="index-_003adisplay"></a>
+</dd>
+<dt>:di[splay] [arg]</dt>
+<dd><p>:registers と同じ。
+</p>
+<a name="y"></a><a name="yank"></a><a name="index-y"></a>
+<a name="index-yank"></a>
+</dd>
+<dt>[&quot;x]y{motion}</dt>
+<dd><p>{motion} のテキストを [レジスタ x に] コピーする。コピーされるテキストがないとき (例へば 1 桁目で &quot;y0&quot; を行ふ)、オプション &rsquo;<samp>cpoptions</samp>&rsquo; がフラグ &rsquo;<var>E</var>&rsquo; を含んでゐるならエラーになる。
+</p>
+<a name="yy"></a><a name="index-yy"></a>
+</dd>
+<dt>[&quot;x]yy</dt>
+<dd><p>[count] 行を [レジスタ x に] コピーする (行單位 |<a href="motion_002etxt.html#linewise">linewise</a>|)。
+</p>
+<a name="Y"></a><a name="index-Y"></a>
+</dd>
+<dt>[&quot;x]Y</dt>
+<dd><p>[count] 行を [レジスタ x に] コピーする (&quot;yy&quot; と同義、行單位 |<a href="motion_002etxt.html#linewise">linewise</a>|)。&quot;Y&quot; でカーソル位置から行の終はりまでコピーしたいときは (この方が論理的と言へるが、Vi 互換ではない) &quot;:map Y y$&quot; を使ふ。
+</p>
+<a name="v_005fy"></a><a name="index-v_005fy"></a>
+</dd>
+<dt>{Visual}[&quot;x]y</dt>
+<dd><p>ビジュアル選擇されたテキストを [レジスタ x に] コピーする ({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。
+</p>
+<a name="v_005fY"></a><a name="index-v_005fY"></a>
+</dd>
+<dt>{Visual}[&quot;x]Y</dt>
+<dd><p>ビジュアル選擇された行を [レジスタ x に] コピーする ({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。
+</p>
+<a name="g_t_003ay"></a><a name="g_t_003ayank"></a><a name="E850"></a><a name="index-_003ay"></a>
+<a name="index-_003ayank"></a>
+<a name="index-E850"></a>
+</dd>
+<dt>:[range]y[ank] [x]</dt>
+<dd><p>[range] の行を [レジスタ x に] コピーする。&quot;* レジスタと &quot;+ レジスタへのコピーは |<a href="various_002etxt.html#g_t_002bclipboard">+clipboard</a>| 機能が有效な場合のみ可能。
+</p>
+</dd>
+<dt>:[range]y[ank] [x] {count}</dt>
+<dd><p>[range] の最後の行 (省略時は現在行 |<a href="cmdline_002etxt.html#cmdline_002dranges">cmdline-ranges</a>|) から數へて {count} 行を [レジスタ x に] コピーする。
+</p>
+<a name="p"></a><a name="put"></a><a name="E353"></a><a name="index-p"></a>
+<a name="index-put"></a>
+<a name="index-E353"></a>
+</dd>
+<dt>[&quot;x]p</dt>
+<dd><p>カーソルの後に、テキストを [count] 回 [レジスタ x から] 貼り付ける。
+</p>
+<a name="P"></a><a name="index-P"></a>
+</dd>
+<dt>[&quot;x]P</dt>
+<dd><p>カーソルの前に、テキストを [count] 回 [レジスタ x から] 貼り付ける。
+</p>
+<a name="g_t_003cMiddleMouse_003e"></a><a name="index-_003cMiddleMouse_003e"></a>
+</dd>
+<dt>[&quot;x]&lt;MiddleMouse&gt;</dt>
+<dd><p>カーソルの前に、テキストを [count] 回 [レジスタ x から] 貼り付ける。レジスタ指定がない場合は &quot;* が使はれる。カーソルは插入したテキストの末尾に置かれる。マウスは &rsquo;mouse&rsquo; が &rsquo;n&rsquo; か &rsquo;a&rsquo; を含むときのみ使へる。
+もしあなたがスクロールホイールを持つてゐて意圖せずにテキストを貼り付けてしまふのなら、次のマッピングでマウスの眞ん中のボタンを無效化できる。
+</p><div class="example">
+<pre class="example">:map &lt;MiddleMouse&gt; &lt;Nop&gt;
+:imap &lt;MiddleMouse&gt; &lt;Nop&gt;
+</pre></div>
+<p>複數クリックも無效にしたいなら |<a href="term_002etxt.html#double_002dclick">double-click</a>| も參照のこと。
+</p>
+<a name="gp"></a><a name="index-gp"></a>
+</dd>
+<dt>[&quot;x]gp</dt>
+<dd><p>&quot;p&quot; と似てゐるが、カーソルは插入したテキストの直後に置かれる。
+</p>
+<a name="gP"></a><a name="index-gP"></a>
+</dd>
+<dt>[&quot;x]gP</dt>
+<dd><p>&quot;P&quot; と似てゐるが、カーソルは插入したテキストの直後に置かれる。
+</p>
+<a name="g_t_003apu"></a><a name="g_t_003aput"></a><a name="index-_003apu"></a>
+<a name="index-_003aput"></a>
+</dd>
+<dt>:[line]pu[t] [x]</dt>
+<dd><p>[line] 行目 (省略時は現在行) の後にテキストを [レジスタ x から] コピーする。このコマンドは常に行單位 |<a href="motion_002etxt.html#linewise">linewise</a>| の動作をするので、コピーされたブロックを新しい行として插入するときに使へる。
+</p>
+<p>レジスタが指定されてゐないときのレジスタは &rsquo;<samp>cb</samp>&rsquo; オプションに依存する。&rsquo;<samp>cb</samp>&rsquo; が &quot;<var>unnamedplus</var>&quot; を含むときは + レジスタ |<a href="gui_005fx11_002etxt.html#quoteplus">quoteplus</a>| からペーストする。さうではなく、&rsquo;<samp>cb</samp>&rsquo; が &quot;<var>unnamed</var>&quot; を含むときは * レジスタ |<a href="gui_002etxt.html#quotestar">quotestar</a>| からペーストする。さうでなければ、無名レジスタ |<a href="#quote_005fquote">quote_quote</a>| からペーストする。
+</p>
+<p>レジスタには &rsquo;=&rsquo; に續けて式を指定することもできる。コマンドの末尾までが式として評價される。文字 &rsquo;|&rsquo; と &rsquo;&quot;&rsquo; がコマンドの末尾として解釋されないやうにするには、それらをエスケープする {譯注: 前に &rsquo;\&rsquo; を置く} 必要がある。例:
+</p><div class="example">
+<pre class="example">:put ='path' . \&quot;,/test\&quot;
+</pre></div>
+<p>&rsquo;=&rsquo; の後に式がないときは前囘の式が使はれる。それはコマンド &quot;:dis =&quot; で見ることができる。
+</p>
+</dd>
+<dt>:[line]pu[t]! [x]</dt>
+<dd><p>[line] 行目 (省略時は現在行) の前にテキストを [レジスタ x から] コピーする。
+</p>
+<a name="g_t_005dp"></a><a name="g_t_005d_003cMiddleMouse_003e"></a><a name="index-_005dp"></a>
+<a name="index-_005d_003cMiddleMouse_003e"></a>
+</dd>
+<dt>[&quot;x]]p または</dt>
+<dt>[&quot;x]]&lt;MiddleMouse&gt;</dt>
+<dd><p>&quot;p&quot; と似てゐるが、現在行に合はせてインデントが調整される。マウスは、&rsquo;<samp>mouse</samp>&rsquo; が &rsquo;<var>n</var>&rsquo; か &rsquo;<var>a</var>&rsquo; を含むときだけ使へる。
+</p>
+<a name="g_t_005bP"></a><a name="g_t_005dP"></a><a name="g_t_005bp"></a><a name="g_t_005b_003cMiddleMouse_003e"></a><a name="index-_005bP"></a>
+<a name="index-_005dP"></a>
+<a name="index-_005bp"></a>
+<a name="index-_005b_003cMiddleMouse_003e"></a>
+</dd>
+<dt>[&quot;x][P または</dt>
+<dt>[&quot;x]]P または</dt>
+<dt>[&quot;x][p または</dt>
+<dt>[&quot;x][&lt;MiddleMouse&gt;</dt>
+<dd><p>&quot;P&quot; と似てゐるが、現在行に合はせてインデントが調整される。マウスは、&rsquo;<samp>mouse</samp>&rsquo; が &rsquo;<var>n</var>&rsquo; か &rsquo;<var>a</var>&rsquo; を含むときだけ使へる。
+</p></dd>
+</dl>
+
+<p>これらのコマンドを使つて、ある場所から別の場所へテキストをコピーできる。まづコピー、削除または變更コマンドを使つて、テキストをレジスタに蓄へる。そしてレジスタの內容を、貼り付けコマンドで文章中に插入する。これらのコマンドで、あるファイルから別のファイルへテキストを移動させることもできる。Vim はバッファを切り替へても、全てのレジスタの內容を保つてゐるからである (コマンド <kbd>CTRL-^</kbd> は、2 個のバッファを素早く切り替へられる)。
+</p>
+<a name="linewise_002dregister"></a><a name="characterwise_002dregister"></a><a name="index-linewise_002dregister"></a>
+<a name="index-characterwise_002dregister"></a>
+<p>貼り付けコマンド (&quot;:put&quot; 以外) は、&quot;.&quot; で繰り返したり、アンドゥできる。テキストをレジスタに蓄へるのに使はれたコマンドが行單位 |<a href="motion_002etxt.html#linewise">linewise</a>| のものだつたら、テキストはカーソルのある行の次の行 (&quot;p&quot; のとき) や前の行 (&quot;P&quot; のとき) に貼り付けられる。さうでなければ、テキストはカーソルの後 (&quot;p&quot; のとき) や前 (&quot;P&quot; のとき) に插入される。コマンド &quot;<code>:put</code>&quot; を使つたときは、テキストは常に次の行へ插入される。
+</p>
+<p>&quot;xp&quot; といふコマンド列で、カーソル上の文字と次の文字との入れ替へができる。現在行と次の行との入れ替へには、コマンド列 &quot;ddp&quot; を使ふ。(カーソルが單語の前の空白の上にあるとき) 次の單語とその次の單語との入れ替へには、コマンド列 &quot;deep&quot; を使ふ。貼り付けコマンドを使つた後には、コマンド &quot;&rsquo;]&quot; か &quot;&lsquo;]&quot; で插入された行の終はりに移動でき、コマンド &quot;&rsquo;[&quot; か &quot;&lsquo;[&quot; で插入された行の最初に移動できる。
+</p>
+<a name="put_002dVisual_002dmode"></a><a name="v_005fp"></a><a name="v_005fP"></a><a name="index-put_002dVisual_002dmode"></a>
+<a name="index-v_005fp"></a>
+<a name="index-v_005fP"></a>
+<p>ビジュアルモードで |<a href="#p">p</a>| や |<a href="#P">P</a>| 等の貼り付けコマンドを使つたとき、Vim は選擇されたテキストをレジスタの中身で置き換へようとする。これがうまく動作するかどうかは、選擇領域の種類とレジスタ內のテキストの種類による。矩形選擇では、ブロックのサイズと、選擇領域の角が既存の文字上にあるかどうかにもよる。(實裝上の詳細: 實際の動作は、まづレジスタの中身を選擇領域の後に貼り付け、その後で選擇領域を削除するやうになつてゐる)
+</p>
+<p>それまで選擇されてゐたテキストが無名レジスタに保存される。同じテキストを複數のビジュアル選擇領域にプットしたい場合は、ほかのレジスタを使ふ必要がある。例へば、コピーしたいテキストをヤンクして、選擇したテキストを &quot;0p で置き換へる。これを好きなだけ繰り返す。このとき、無名レジスタはプットするたびに變はる。
+</p>
+<p>矩形ビジュアルモードで一行のみをヤンクしたとき、それをビジュアル選擇した範圍に貼り付けると、選擇範圍にその一行が貼り付けされる (つまり貼り付けた行のブロックによつて矩形選擇範圍が置換される)。
+</p>
+<a name="blockwise_002dregister"></a><a name="index-blockwise_002dregister"></a>
+<p>矩形ビジュアルモードで、レジスタにテキストを蓄へるコマンドを使ふと、テキストのブロックはカーソルの前 (&quot;P&quot; のとき) または後 (&quot;p&quot; のとき) から、現在行と引き續く行にわたつて、插入される。テキストのブロック全體は同じ列から始まるやうに插入される。そのため插入されたテキストはコピーや削除されたときと同じ形を保つてゐる。
+</p>
+<p>Vim は、このやうにするために &lt;Tab&gt; を空白で置き換へることがある。しかし、テキストのブロックの幅が &lt;Tab&gt; の幅の整數倍でなく、さらに插入されたブロックの後のテキストが &lt;Tab&gt; を含むとき、列揃へがをかしくなることがある。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+文字單位のコピーコマンドの後、コピーされたテキストの中でバッファの先頭に一番近い文字の上にカーソルが置かれることに注意。つまり &quot;yl&quot; ではカーソルは動かないが、&quot;yh&quot; ではカーソルは 1 文字左に動く。
+</p>
+<p>理論的說明:	Viでは、後方移動を伴つたコマンド &quot;y&quot; ではコピーされたテキストの先頭にカーソルを移動させないことがあつた。これは再表示が省かれたためである。Vim では Posix に定められた通り、常に先頭の文字にカーソルを移動させる。
+</p>
+<p>行單位のコピーコマンドではカーソルは選擇の最初の行に置かれるが、カラムは變更されない。なのでその位置はコピーされた最初の文字の上ではないかもしれない。
+</p></blockquote>
+
+<a name="registers"></a><a name="E354"></a><a name="index-registers"></a>
+<a name="index-E354"></a>
+<a name="index-rezisutaniha-10-Zhong-Lei-aru"></a>
+<a name="rezisutaniha-10-Zhong-Lei-aru_003a"></a>
+<h4 class="unnumberedsubsec">レジスタには 10 種類ある:</h4>
+<ol>
+<li> 無名レジスタ &quot;&quot;
+</li><li> 10 個の番號付きレジスタ &quot;0 から &quot;9
+</li><li> 小削除用レジスタ &quot;-
+</li><li> 26 個の名前付きレジスタ &quot;a から &quot;z または &quot;A から &quot;Z
+</li><li> 3 個の讀み取り專用レジスタ &quot;: と &quot;. と &quot;%
+</li><li> 代替バッファ用レジスタ &quot;#
+</li><li> expression 用レジスタ &quot;=
+</li><li> 選擇領域用レジスタ &quot;* と &quot;+ と &quot;~
+</li><li> 消去專用レジスタ &quot;_
+</li><li> 最終檢索パターン用レジスタ &quot;/
+</li></ol>
+
+<a name="quote_005fquote"></a><a name="quotequote"></a><a name="index-quote_005fquote"></a>
+<a name="index-quotequote"></a>
+<a name="index-Wu-Ming-rezisuta-_0022_0022"></a>
+<a name="g_t1_002e-Wu-Ming-rezisuta-_0022_0022"></a>
+<h4 class="unnumberedsubsubsec">1. 無名レジスタ &quot;&quot;</h4>
+<p>このレジスタには、コマンド &quot;d&quot;, &quot;c&quot;, &quot;s&quot;, &quot;x&quot; 等で削除されたテキストや、&quot;y&quot; 等のコピーコマンドでコピーされたテキストが蓄へられる。特定のレジスタが指定されてゐてもゐなくても關係ない (例へば &quot;xdd でもこれが使はれる)。つまり無名レジスタは最後に使はれたレジスタを指してゐると考へられる。よつて、大文字レジスタを使つて名前つきレジスタにテキストを追加したときも、無名レジスタの中身は、その名前つきレジスタと同じになる。
+</p>
+<p>例外はレジスタ &rsquo;_&rsquo; である。&quot;_dd は、削除されたテキストをどのレジスタにも蓄へない。
+無名レジスタの中身は、レジスタを指定しない貼り付けコマンド (p や P) で使ふことができる。加へて、このレジスタは &rsquo;&quot;&rsquo; といふ名前で使ふことができる。これは、使ふときには二重引用符 &rsquo;&quot;&rsquo; を 2 個打ち込むといふことである。レジスタ &quot;&quot; に對する書き込みはレジスタ &quot;0 にも書き込むことになる。
+</p>
+<p>{Vi ではレジスタの內容はファイルを變更するときに失はれ、&rsquo;&quot;&rsquo; もない}
+</p>
+<a name="quote_005fnumber"></a><a name="quote0"></a><a name="quote1"></a><a name="quote2"></a><a name="quote3"></a><a name="quote4"></a><a name="quote9"></a><a name="index-quote_005fnumber"></a>
+<a name="index-quote0"></a>
+<a name="index-quote1"></a>
+<a name="index-quote2"></a>
+<a name="index-quote3"></a>
+<a name="index-quote4"></a>
+<a name="index-quote9"></a>
+<a name="index-Fan-Hao-Fu-kirezisuta-_00220-kara-_00229"></a>
+<a name="g_t2_002e-Fan-Hao-Fu-kirezisuta-_00220-kara-_00229"></a>
+<h4 class="unnumberedsubsubsec">2. 番號付きレジスタ &quot;0 から &quot;9</h4>
+<p>これらのレジスタには、コピーや削除コマンドによつてテキストが蓄へられる。番號付きレジスタの 0 には、一番最近にコピーしたテキストが蓄へられるが、コピーの際に [&quot;x] として別のレジスタ名を指定したときは、これには蓄へられない。
+番號付きレジスタ 1 には、一番最近に削除したり變更したテキストが蓄へられるが、コマンドに別のレジスタ名を指定したり、削除や變更したテキストが 1 行以下だつたりしたときは、これには蓄へられない (そのときは小削除用レジスタが使はれる)。例外は、以下の移動コマンドと削除コマンドを組み合はせたときである。|<a href="motion_002etxt.html#g_t_0025">%</a>|, |<a href="motion_002etxt.html#g_t_005c_0028">(</a>|, |<a href="motion_002etxt.html#g_t_005c_0029">)</a>|, |<a href="motion_002etxt.html#g_t_0060">`</a>|, |<a href="pattern_002etxt.html#g_t_002f">/</a>|, |<a href="pattern_002etxt.html#g_t_003f">?</a>|, |<a href="pattern_002etxt.html#n">n</a>|, |<a href="pattern_002etxt.html#N">N</a>|, |<a href="motion_002etxt.html#g_t_007b">{</a>|, |<a href="motion_002etxt.html#g_t_007d">}</a>|。このときは必ずレジスタ &quot;1 が使はれる (これは Vi 互換の動作である)。削除や變更したテキストが 1 行以下だつたときは、レジスタ &quot;- も使はれる。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+これらの文字はマップ可能である。例: |<a href="motion_002etxt.html#g_t_0025">%</a>| は matchit プラグインによつてマップされてゐる。
+</p></blockquote>
+<p>削除や變更が行はれるたびに、レジスタ 1 の內容はレジスタ 2 に、レジスタ 2 の內容はレジスタ 3 に、といふ風にずれていく。レジスタ 9 の內容は失はれる。
+</p>
+<p>{Vi では番號付きレジスタの內容はファイルを變更する際に失はれる。レジスタ 0 はない}
+</p>
+<a name="quote_005f_002d"></a><a name="quote_002d"></a><a name="index-quote_005f_002d"></a>
+<a name="index-quote_002d"></a>
+<a name="index-Xiao-Xue-Chu-Yong-rezisuta-_0022_002d"></a>
+<a name="g_t3_002e-Xiao-Xue-Chu-Yong-rezisuta-_0022_002d"></a>
+<h4 class="unnumberedsubsubsec">3. 小削除用レジスタ &quot;-</h4>
+<p>このレジスタには、範圍が 1 行以下の削除コマンドで削除されたテキストが蓄へられる。ただし、コマンドに [&quot;x] で別のレジスタ名を指定したときはこれには蓄へられない。
+</p>
+<a name="quote_005falpha"></a><a name="quotea"></a><a name="index-quote_005falpha"></a>
+<a name="index-quotea"></a>
+<a name="index-Ming-Qian-Fu-kirezisuta-_0022a-kara-_0022z-mataha-_0022A-kara-_0022Z"></a>
+<a name="g_t4_002e-Ming-Qian-Fu-kirezisuta-_0022a-kara-_0022z-mataha-_0022A-kara-_0022Z"></a>
+<h4 class="unnumberedsubsubsec">4. 名前付きレジスタ &quot;a から &quot;z または &quot;A から &quot;Z</h4>
+<p>これらのレジスタが使はれるのは、ユーザーに指定されたときのみである。コピーや削除の際にこれらのレジスタを小文字で指定すると、コピーや削除されたテキストが蓄へられ、元から入つてゐたテキストは消える。大文字で指定すると、元から入つてゐた內容の後ろに新しいテキストを付け加へる。&rsquo;<samp>cpoptions</samp>&rsquo; にフラグ &rsquo;<var>&gt;</var>&rsquo; が入つてゐると、新しいテキストの前に改行が插入される。
+</p>
+<a name="index-Du-mitoriZhuan-Yong-rezisuta-_0022_003a-to-_0022_002e-to-_0022_0025"></a>
+<a name="g_t5_002e-Du-mitoriZhuan-Yong-rezisuta-_0022_003a-to-_0022_002e-to-_0022_0025"></a>
+<h4 class="unnumberedsubsubsec">5. 讀みとり專用レジスタ &quot;: と &quot;. と &quot;%</h4>
+<p>讀みとり專用レジスタには &rsquo;%&rsquo; と &rsquo;#&rsquo; と &rsquo;:&rsquo; と &rsquo;.&rsquo; がある。コマンド &quot;p&quot;, &quot;P&quot;, &quot;:put&quot; および <kbd>CTRL-R</kbd> でのみ使ふことができる。
+<a name="quote_005f_002e"></a><a name="quote_002e"></a><a name="E29"></a><a name="index-quote_005f_002e"></a>
+<a name="index-quote_002e"></a>
+<a name="index-E29"></a>
+</p><dl compact="compact">
+<dt>&quot;.</dt>
+<dd><p>最後に插入されたテキストが蓄へられる (插入モードのコマンド <kbd>CTRL-A</kbd> や <kbd>CTRL-@</kbd> で插入されるものと同じテキストである)。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+これはコマンドライン上での <kbd>CTRL-R</kbd> では使へないことに注意。動作が少し異なり、テキストを貼り付けるといふより插入するやうな動作をする (插入されるテキストに &rsquo;<samp>textwidth</samp>&rsquo; 等のオプションが影響する)。
+</p></blockquote>
+<a name="quote_005f_0025"></a><a name="quote_0025"></a><a name="index-quote_005f_0025"></a>
+<a name="index-quote_0025"></a>
+</dd>
+<dt>&quot;%</dt>
+<dd><p>カレントファイルの名前が蓄へられる。
+<a name="quote_005f_003a"></a><a name="quote_003a"></a><a name="E30"></a><a name="index-quote_005f_003a"></a>
+<a name="index-quote_003a"></a>
+<a name="index-E30"></a>
+</p></dd>
+<dt>&quot;:</dt>
+<dd><p>一番最近に實行されたコマンドラインの內容が蓄へられる。例: 前囘のコマンドラインによるコマンドを實行するには、&quot;@:&quot; が使へる。コマンドラインがこのレジスタに蓄へられるのは、コマンドライン內にコマンドが最低でも1文字打ち込まれたときである。そのため、コマンドが完全にキーマッピングから實行されたときには、この內容に變化はない。
+</p>
+<p>{Vim が |<a href="various_002etxt.html#g_t_002bcmdline_005fhist">+cmdline_hist</a>| 機能付きでコンパイルされたときのみ有效}
+</p></dd>
+</dl>
+<a name="quote_005f_0023"></a><a name="quote_0023"></a><a name="index-quote_005f_0023"></a>
+<a name="index-quote_0023"></a>
+<a name="index-Dai-Ti-huairurezisuta-_0022_0023"></a>
+<a name="g_t6_002e-Dai-Ti-huairurezisuta-_0022_0023"></a>
+<h4 class="unnumberedsubsubsec">6. 代替ファイルレジスタ &quot;#</h4>
+<p>カレントウィンドウの代替ファイルの名前を含む。これは |<a href="editing_002etxt.html#CTRL_002d_005e">CTRL-^</a>| コマンドがどのやうに働くかを變更する。
+</p>
+<p>このレジスタは書き込み可能で、主にプラグインがこのレジスタを變更した後で元に戾すためである。バッファ番號を許容する:
+</p><pre class="verbatim">let altbuf = bufnr(@#)
+...
+let @# = altbuf
+</pre><p>バッファ番號が越えるあるいはそのバッファが存在しない場合はエラー |<a href="windows_002etxt.html#E86">E86</a>| を返す。
+また存在するバッファ名でのマッチングを許容する:
+</p><pre class="verbatim">let @# = 'buffer_name'
+</pre><p>與へられた名前にマッチしたバッファが 1 つより多い場合はエラー |<a href="windows_002etxt.html#E93">E93</a>| を、與へられた名前にマッチするバッファがない場合は |<a href="windows_002etxt.html#E94">E94</a>| を返す。
+</p>
+<a name="quote_005f_003d"></a><a name="quote_003d"></a><a name="g_t_0040_003d"></a><a name="index-quote_005f_003d"></a>
+<a name="index-quote_003d"></a>
+<a name="index-_0040_003d"></a>
+<a name="index-Expression-rezisuta-_0022_003d"></a>
+<a name="g_t7_002e-Expression-rezisuta-_0022_003d"></a>
+<h4 class="unnumberedsubsubsec">7. Expression レジスタ &quot;=</h4>
+<p>これは、本當はテキストを蓄へるレジスタではないが、レジスタを使ふコマンドで式を評價するために使へる。この expression レジスタは讀み取り/書き込み可能である。
+</p>
+<p>&quot; または <kbd>CTRL-R</kbd> の後に &rsquo;=&rsquo; を打ち込むと、カーソルはコマンド行に移動し、あらゆる式を入力することができる (|<a href="eval_002etxt.html#expression">expression</a>| を參照)。コマンドラインから入力できる普通の編輯用コマンドは、式用の特別履歷も含め、全て使用可能である。&lt;CR&gt; を打ち込んでコマンドライン入力を終了させると、式の結果が計算される。<code class="tt-key">&lt;Esc&gt;</code> を打ち込んで終了させると、式は破毀される。式が入力されないときは、(コマンド&quot;/&quot; と同樣) 前囘の式が使はれる。
+</p>
+<p>式を評價した結果は文字列でなければならない。評價した結果が數値なら、文字列に變換される。&quot;p&quot; と &quot;:put&quot; コマンドの場合、結果が浮動小數點數なら文字列に變換される。リストの場合、各要素が文字列に變換され、それぞれが 1 行として插入される。辭書または FuncRef はエラーメッセージが出る (string() を使つて變換する)。
+</p>
+<p>レジスタ &quot;= が &quot;p&quot; で使はれると、文字列は &lt;NL&gt; 文字 {譯注: New Line &ndash;改行} の所で分割される。文字列が &lt;NL&gt; で終はつてゐたら、これは行單位のレジスタと見なされる。
+</p>
+<a name="index-Xuan-Ze-Fan-Wei-rezisuta-_0022_002a-to-_0022_002b-to-_0022_007e"></a>
+<a name="g_t8_002e-Xuan-Ze-Fan-Wei-rezisuta-_0022_002a-to-_0022_002b-to-_0022_007e"></a>
+<h4 class="unnumberedsubsubsec">8. 選擇範圍レジスタ &quot;* と &quot;+ と &quot;~</h4>
+<p>これらのレジスタは、GUI で、選擇されたテキストを蓄へたり取り出すために使はれる。|<a href="gui_002etxt.html#quotestar">quotestar</a>| と |<a href="gui_005fx11_002etxt.html#quoteplus">quoteplus</a>| を參照。クリップボードが利用できないときは、無名レジスタが代はりに使はれる。Unix では |<a href="various_002etxt.html#g_t_002bxterm_005fclipboard">+xterm_clipboard</a>| が有效になつてゐるときだけクリップボードを利用できる。
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+&quot;* と &quot;+ に區別があるのは X11 システムのみであることに注意。違ひについては |<a href="gui_005fx11_002etxt.html#x11_002dselection">x11-selection</a>| を參照。MS-Windows では &quot;* と &quot;+ は實際には同義で、クリップボード |<a href="gui_005fw32_002etxt.html#gui_002dclipboard">gui-clipboard</a>| を使用する。
+</p></blockquote>
+
+<a name="quote_005f_007e"></a><a name="quote_007e"></a><a name="g_t_003cDrop_003e"></a><a name="index-quote_005f_007e"></a>
+<a name="index-quote_007e"></a>
+<a name="index-_003cDrop_003e"></a>
+<p>この讀み込み專用の &quot;~ レジスタは最後にドラッグアンドドロップされたテキストを提供する。何かが Vim にドロップされたとき、&quot;~ レジスタがそれで埋められ、&lt;Drop&gt; 假想キーが通知される。このキーをリマップして使ふことができる。デフォルトでは (全てのモードにおいて) &quot;~ レジスタの內容をカーソルの位置に插入する。
+</p>
+<p>{|<a href="various_002etxt.html#g_t_002bdnd">+dnd</a>| 付きでコンパイルされたときのみ有效。現在は GTK GUI でのみ使へる。}
+</p>
+<blockquote>
+<p><strong>Note:</strong> <br>
+&quot;~ レジスタはプレーンテキストを Vim にドロップしたときのみ使はれる。URI のリストは內部で扱はれる。
+</p></blockquote>
+
+<a name="quote_005f"></a><a name="index-quote_005f"></a>
+<a name="index-Xiao-Qu-Zhuan-Yong-rezisuta-_0022_005f"></a>
+<a name="g_t9_002e-Xiao-Qu-Zhuan-Yong-rezisuta-_0022_005f"></a>
+<h4 class="unnumberedsubsubsec">9. 消去專用レジスタ &quot;_</h4>
+<p>このレジスタを指定してテキストを削除しても、{譯注: レジスタには} 何も起こらない。そのため、普通のレジスタに影響を與へずに削除が行へる。このレジスタから貼り付けようとしても、何も出てこない。
+</p>
+<a name="quote_005f_002f"></a><a name="quote_002f"></a><a name="index-quote_005f_002f"></a>
+<a name="index-quote_002f"></a>
+<a name="index-Zui-Zhong-Jian-Suo-patanYong-rezisuta-_0022_002f"></a>
+<a name="g_t10_002e-Zui-Zhong-Jian-Suo-patanYong-rezisuta-_0022_002f"></a>
+<h4 class="unnumberedsubsubsec">10. 最終檢索パターン用レジスタ &quot;/</h4>
+<p>最後に使はれた檢索パターンが蓄へられる。これはコマンド &quot;n&quot; やオプション &rsquo;<samp>hlsearch</samp>&rsquo; による强調表示に使はれる。このレジスタは &lsquo;:let&lsquo; で變更できるので、&rsquo;<samp>hlsearch</samp>&rsquo; による强調表示を、實際に檢索を行はずに別のマッチに適用することができる。このレジスタを使つてコピーしたり削除することはできない。檢索の方向は |<a href="eval_002etxt.html#v_003asearchforward">v:searchforward</a>| で指示できる。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+函數から拔けると、この値は函數に入る前の値に復元される。|<a href="eval_002etxt.html#function_002dsearch_002dundo">function-search-undo</a>|
+</p></blockquote>
+
+<a name="g_t_0040_002f"></a><a name="index-_0040_002f"></a>
+<p>レジスタには、コマンド &lsquo;<code>:let</code>&lsquo; で書き込むことができる |<a href="eval_002etxt.html#g_t_003alet_002d_0040">:let-@</a>|。例:
+</p><div class="example">
+<pre class="example">:let @/ = &quot;the&quot;
+</pre></div>
+
+<p>レジスタを指定せずに貼り付けコマンドを使ふと、最後に書き込みが行はれたレジスタが使はれる (その內容は無名レジスタと同じである)。混亂したときは、コマンド &lsquo;:dis&lsquo; を使ふとレジスタの內容が分かる (このコマンドは、全てのレジスタの內容を表示する。無名レジスタは &rsquo;&quot;&rsquo; と示される)。
+</p>
+<p>以下の 3 個のコマンドは、必ず行全體に對して働く。
+</p>
+<a name="g_t_003aco"></a><a name="g_t_003acopy"></a><a name="index-_003aco"></a>
+<a name="index-_003acopy"></a>
+<dl compact="compact">
+<dt>:[range]co[py] {address}</dt>
+<dd><p>[range] 行を、{address} 行目の下にコピーする。
+</p>
+
+<a name="g_t_003at"></a><a name="index-_003at"></a>
+</dd>
+<dt>:t</dt>
+<dd><p>&quot;:copy&quot; と同義。
+</p>
+<a name="g_t_003am"></a><a name="g_t_003amo"></a><a name="g_t_003amove"></a><a name="E134"></a><a name="index-_003am"></a>
+<a name="index-_003amo"></a>
+<a name="index-_003amove"></a>
+<a name="index-E134"></a>
+</dd>
+<dt>:[range]m[ove] {address}</dt>
+<dd><p>[range] 行を、{address} 行目の下に移動する。
+</p></dd>
+</dl>
+
+<a name="formatting"></a><a name="index-formatting"></a>
+<a name="index-tekisutonoZheng-Xing--1"></a>
+<a name="g_t6_002e-tekisutonoZheng-Xing-"></a>
+<h3 class="section">6. テキストの整形</h3>
+
+<a name="g_t_003ace"></a><a name="g_t_003acenter"></a><a name="index-_003ace"></a>
+<a name="index-_003acenter"></a>
+<dl compact="compact">
+<dt>:[range]ce[nter] [width]</dt>
+<dd><p>[range] の行を、幅 [width] (既定値は &rsquo;<samp>textwidth</samp>&rsquo;, &rsquo;<samp>textwidth</samp>&rsquo; が 0 のときは 80) に基づいて中央揃へする。
+</p>
+<a name="g_t_003ari"></a><a name="g_t_003aright"></a><a name="index-_003ari"></a>
+<a name="index-_003aright"></a>
+</dd>
+<dt>:[range]ri[ght] [width]</dt>
+<dd><p>[range] の行を、幅 [width] (既定値は &rsquo;<samp>textwidth</samp>&rsquo;, &rsquo;<samp>textwidth</samp>&rsquo; が 0 のときは 80) に基づいて右揃へする。
+</p>
+<a name="g_t_003ale"></a><a name="g_t_003aleft"></a><a name="index-_003ale"></a>
+<a name="index-_003aleft"></a>
+</dd>
+<dt>:[range]le[ft] [indent]</dt>
+<dd><p>[range] の行を左揃へする。行中のインデントを [indent] (既定値 0) に設定する。
+</p>
+<a name="gq"></a><a name="index-gq"></a>
+</dd>
+<dt>gq{motion}</dt>
+<dd><p>{motion} の行を整形する。整形は3種類の方法のうちどれかで行はれる。
+</p><ol>
+<li> &rsquo;<samp>formatexpr</samp>&rsquo; が空でなければその expression が評價される。これはバッファごとに異なつてもよい。
+</li><li> &rsquo;<samp>formatprg</samp>&rsquo; が空でなければ外部プログラムが使はれる。
+</li><li> それ以外の場合は內部整形ルーチンが使はれる。
+</li></ol>
+
+<p>3 番目の場合は、オプション &rsquo;<samp>textwidth</samp>&rsquo; が整形された各行の長さを制禦する (後述)。&rsquo;<samp>textwidth</samp>&rsquo; が 0 なら、整形された行の長さは畫面の幅となる (ただし、最大で 79)。
+&rsquo;<samp>formatoptions</samp>&rsquo; は、整形の仕方を制禦する |<a href="#fo_002dtable">fo-table</a>|。カーソルは最後に整形された行の最初の非空白文字の上に置かれる。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+以前はコマンド &quot;Q&quot; でこの機能を行つてゐた。やはり整形に &quot;Q&quot; を使ひたいならば、次のマッピングを使ふこと。
+</p><div class="example">
+<pre class="example">:nnoremap Q gq
+</pre></div>
+</blockquote>
+
+<a name="gqgq"></a><a name="gqq"></a><a name="index-gqgq"></a>
+<a name="index-gqq"></a>
+</dd>
+<dt>gqgq</dt>
+<dt>gqq</dt>
+<dd><p>現在行を整形する。カウントを指定するとその行數だけ整形される。
+</p>
+<a name="v_005fgq"></a><a name="index-v_005fgq"></a>
+</dd>
+<dt>{Visual}gq</dt>
+<dd><p>ビジュアル選擇されたテキストを整形する。({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。
+</p>
+<a name="gw"></a><a name="index-gw"></a>
+</dd>
+<dt>gw{motion}</dt>
+<dd><p>{motion} で動いた範圍の行を整形する。|<a href="#gq">gq</a>| に似てゐるがカーソルは元の位置に戾る。&rsquo;<samp>formatprg</samp>&rsquo; と &rsquo;<samp>formatexpr</samp>&rsquo; は使はれない。
+</p>
+<a name="gwgw"></a><a name="gww"></a><a name="index-gwgw"></a>
+<a name="index-gww"></a>
+</dd>
+<dt>gwgw</dt>
+<dt>gww</dt>
+<dd><p>&quot;gw&quot; と同樣にして現在行を整形する。
+</p>
+<a name="v_005fgw"></a><a name="index-v_005fgw"></a>
+</dd>
+<dt>{Visual}gw</dt>
+<dd><p>選擇されたテキストを &quot;gw&quot; と同樣にして整形する。({Visual} については |<a href="visual_002etxt.html#Visual_002dmode">Visual-mode</a>| を參照)。
+</p></dd>
+</dl>
+
+<a name="gqap"></a><a name="index-gqap"></a>
+<p>例: 現在の段落を整形するには、次のやうにする。
+</p><div class="example">
+<pre class="example">gqap
+</pre></div>
+
+<p>コマンド &quot;gq&quot; は、移動コマンドによつてカーソルが動くはずの位置にカーソルを移動させる。このため、&quot;.&quot; で整形を繰り返すことができる。これは、&quot;gqj&quot; (現在行と次行を整形) と、&quot;gq}&quot; (段落の最後までを整形) で有用である。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+&rsquo;<samp>formatprg</samp>&rsquo; が設定されてゐるときは、&quot;gq&quot; を實行すると (フィルタコマンド使用時と同樣に) カーソルは整形された最初の行に移動する。
+</p></blockquote>
+
+<p>カーソルのある位置の段落をフォーマットし、その位置からさらに編輯を再開するにはかうする。
+</p><div class="example">
+<pre class="example">gwap
+</pre></div>
+<p>いつも段落をフォーマットしておきたいなら &rsquo;<samp>formatoptions</samp>&rsquo; に &rsquo;a&rsquo; フラグを追加すればよい。|<a href="#auto_002dformat">auto-format</a>| も參照のこと。
+</p>
+<p>オプション &rsquo;<samp>autoindent</samp>&rsquo; がオンのとき、Vim は最初の行のインデントを續く行に對して適用する。
+</p>
+<p>テキストの整形處理は空の行には變更を加へない (しかし、空白のみで構成された行には變更を行ふ！)。
+</p>
+<p>オプション &rsquo;<samp>joinspaces</samp>&rsquo; は、行が連結されるときに使はれる。
+</p>
+<p>オプション &rsquo;<samp>formatexpr</samp>&rsquo; でテキストの整形に使ふ expression を設定したり、&rsquo;<samp>formatprg</samp>&rsquo; で外部プログラムの名前を設定することができる。外部プログラムによる整形處理には、&rsquo;<samp>textwidth</samp>&rsquo; や他のオプションは何の影響も與へない。
+</p>
+<a name="format_002dformatexpr"></a><a name="index-format_002dformatexpr"></a>
+<p>&rsquo;<samp>formatexpr</samp>&rsquo; オプションには、バッファの再整形を行ふ Vim script 函數を設定することができる。整形はファイルの種類に强く依存するので、これは通常 |<a href="usr_005f41_002etxt.html#ftplugin">ftplugin</a>| で發生するべきである。對應するスクリプトは實際に必要とされるときにだけ讀み込まれ、かつそのスクリプト名は &lt;filetype&gt;format.vim とされるべきなので、|<a href="eval_002etxt.html#autoload">autoload</a>| スクリプトを使用することは理にかなつてゐる。
+</p>
+<p>例へば、Vim と共に配布され <code>$VIMRUNTIME</code> ディレクトリに配置されてゐる XML ファイルタイププラグインは、&rsquo;<samp>formatexpr</samp>&rsquo; オプションを以下のやうに設定する:
+</p><div class="example">
+<pre class="example">setlocal formatexpr=xmlformat#Format()
+</pre></div>
+
+<p>これは xmlformat#Format() 函數を定義してゐるスクリプトが以下のディレクトリで見つかることを意味してゐる:
+</p>
+<p>&lsquo;$VIMRUNTIME/autoload/xmlformat.vim&lsquo;
+</p>
+<p>以下は、選擇されたテキストから末尾の空白を取り除くスクリプトの例である。これを autoload ディレクトリに置くこと。例、~/.vim/autoload/format.vim:
+</p>
+<pre class="verbatim">func! format#Format()
+  &quot; 明示的な gq コマンドの場合だけ再整形する
+  if mode() != 'n'
+    &quot; Vim の內部再整形に立ち戾る
+    return 1
+  endif
+  let lines = getline(v:lnum, v:lnum + v:count - 1)
+  call map(lines, {key, val -&gt; substitute(val, '\s\+$', '', 'g')})
+  call setline('.', lines)
+
+  &quot; 內部の整形は實行させない！
+  return 0
+endfunc
+</pre>
+<p>その後以下のやうに整形を有效にすることができる:
+</p><div class="example">
+<pre class="example">setlocal formatexpr=format#Format()
+</pre></div>
+<blockquote>
+<p><strong>Note:</strong> <br>
+この函數は、插入モードから呼ばれた場合に明示的に非ゼロを返す (基本的に &rsquo;<samp>textwidth</samp>&rsquo; の制限を超えてテキストが插入されることを意味する)。これは Vim に內部の整形機能に立ち戾つて再整形させることになる。
+</p></blockquote>
+
+<p>しかしながら、テキストを再整形するために |<a href="#gq">gq</a>| コマンドが使用された場合、その函數は選擇された行を受け取り、それらの行から末尾の空白を取り除き、そして所定の位置にそのテキストを配置しなほす。もし 1 つの行を複數行に分割しようとしてゐる場合、何か上書きしてしまはないよう注意すること。
+</p>
+<p>插入もしくは置換モードからのテキストの再整形を可能にしたい場合、函數が再歸的に呼び出されることがあるため注意しなければならない。これをデバッグするためには、&rsquo;<samp>debug</samp>&rsquo; オプションを設定することが役に立つ。
+</p>
+<a name="right_002djustify"></a><a name="index-right_002djustify"></a>
+<p>テキストを右揃へするコマンドは、Vim には存在しない。&quot;par&quot; 等の外部コマンド (例: &quot;!}par&quot; で段落の最後までを整形する) を實行したり、&rsquo;<samp>formatprg</samp>&rsquo; に &quot;par&quot; を指定することで、これを行ふことができる。
+</p>
+<a name="format_002dcomments"></a><a name="index-format_002dcomments"></a>
+<p>コメント整形の槪要がユーザーマニュアルの |<a href="usr_005f30_002etxt.html#g_t30_002e6">30.6</a>| にある。
+</p>
+<p>Vim は特殊な方法で自動的にコメントを插入・整形できる。Vim は行の最初の特定の文字列 (空白を無視する) によつて、コメントを認識できる。コメントには 3 種類が使へる。
+</p>
+<ul>
+<li> 各行の最初で繰り返されるコメント文字列。例へば、&quot;#&quot; で始まるシェルスクリプトのコメントなど。
+</li><li> 最初の行にのみ現れ、續きの行には現れないコメント文字列。例へば、このリストにおけるダッシュ &rsquo;-&rsquo;。
+</li><li> 最初の文字列、最後の文字列、そしてその閒の行の 3 つの部分から成るコメント。開始部分、中閒部分、終了部分に使はれる文字列は異なる。例へば、C 言語形式のコメント。
+<pre class="verbatim">/*
+* これは C のコメント
+*/
+</pre></li></ul>
+
+<p>オプション &rsquo;<samp>comments</samp>&rsquo; は要素のコンマ區切りのリストである。各要素はコメント文字列の種類を定義してゐる。要素は次のやうに構成される。
+</p><pre class="verbatim">@{flags@}:@{string@}
+</pre>
+<p>{string} は普通のテキストで、これがなければならない。
+</p>
+<p>{flags}:
+</p><table>
+<tr><td width="20%">n</td><td width="80%">入れ子になつたコメント。混在した要素の入れ子も有效である。&rsquo;<samp>comments</samp>&rsquo; が &quot;n:),n:&gt;&quot; であれば、&quot;&gt; ) &gt;&quot; で始まる行はコメント。</td></tr>
+<tr><td width="20%">b</td><td width="80%">{string} の後に餘白 (&lt;Space&gt;、&lt;Tab&gt; または &lt;EOL&gt;) が必要。</td></tr>
+<tr><td width="20%">f</td><td width="80%">最初の行のみがコメント文字列を持つ。次の行にはコメントを繰り返さないが、インデントは保持する (例、bullet-list)。</td></tr>
+<tr><td width="20%">s</td><td width="80%">3 部コメントの開始部分。</td></tr>
+<tr><td width="20%">m</td><td width="80%">3 部コメントの中閒部分。</td></tr>
+<tr><td width="20%">e</td><td width="80%">3 部コメントの終了部分。</td></tr>
+<tr><td width="20%">l</td><td width="80%">左揃へ。&rsquo;s&rsquo; か &rsquo;e&rsquo; と共に指定された場合、それぞれ最初または最後の部分の一番左の文字が、眞ん中の一番左の文字に對して揃へられる。この動作はデフォルトであるが、省略もできる。詳しくは後述。</td></tr>
+<tr><td width="20%">r</td><td width="80%">右揃へ。一番左でなく一番右であること以外、l と同じ。詳しくは後述。</td></tr>
+<tr><td width="20%">O</td><td width="80%">コマンド &quot;O&quot; ではこのコメントを考慮しない。</td></tr>
+<tr><td width="20%">x</td><td width="80%">3 部コメントで、中閒部分のコメントがすでに自動で插入されてゐるとき、新しい行の最初のアクションとして、終了部分のコメント文字列の最後の文字を打ち込むだけで、コメントを終了させる。詳細は以下を參照。</td></tr>
+<tr><td width="20%">{digits}</td><td width="80%">&rsquo;s&rsquo; か &rsquo;e&rsquo; と共に指定された場合: 自動的に插入された、中閒または最後のコメントの最初の部分に對し、{digits} 分のオフセットを加へる。このオフセットは左端を基準とする。詳しくは後述。</td></tr>
+<tr><td width="20%">-{digits}</td><td width="80%">{digits} に似てゐるが、インデントを減らす。開始部分と終了部分に減らすべきインデントが存在してゐるときのみ機能する。</td></tr>
+</table>
+
+<p>コメント文字列にフラグ &rsquo;f&rsquo;, &rsquo;s&rsquo;, &rsquo;m&rsquo;, &rsquo;e&rsquo; のいづれも指定しないとき、Vim はコメント文字列を行の最初に繰り返すと假定する。フラグ欄は空になる。
+</p>
+<p>{string} の前や後にある餘白は、{string} の一部とされる。コメント文字列に必要でない限り、餘白を前や後に付けないこと。
+</p>
+<p>あるコメント開始文字列が他のコメントの一部であるときは、共通部分の後で特定の部分を指定すること。例へば、&quot;-&quot; と &quot;-&gt;&quot; の兩方を含みたいときは、次のやうにする。
+</p><div class="example">
+<pre class="example">:set comments=f:-&gt;,f:-
+</pre></div>
+
+<p>3 部コメントには常に開始部分、中閒部分、終了部分を指定しなければならない。そして、他の要素を閒に入れてはならない。C言語での3部コメントの例は次の通り。
+</p><div class="example">
+<pre class="example">sr:/*,mb:*,ex:*/
+</pre></div>
+<p>&quot;*ptr&quot; がコメントとして認識されないやうに、中閒部分の文字列がフラグ &rsquo;b&rsquo; を含んでゐる。3 部コメントでは、Vim は開始部分と中閒部分の文字列の後のテキスト內に、最後の文字列が含まれてゐないかを調べる。終了部分の文字列が見つかると、コメントは次の行には續かない。3 部コメントには、Vim が中閒の行を認識できるやうにするために、中閒部分の文字列を指定しなければならない。
+</p>
+<p>上記の 3 部コメントの定義における、フラグ &quot;x&quot; の使用について注意しておく。C コメントでリターンを打てば、Vim は新しい行に對して &quot; * &quot; のやうなコメントの中閒部分の開始文字列を插入する。このコメントを閉ぢるには、新しい行において何も打ち込む前に &quot;/&quot; と打ち込めばよい。これは中閒のコメント指示を最後のコメント指示に置き換へ、&quot; */&quot; とする。指定された桁揃へは適用される。その前にバックスペースを打ち込む必要はない。
+</p>
+<p>中閒部分がマッチしたとき、終了部分もマッチしてゐてそちらの方が長い場合は、終了部分が使はれる。これによつて C スタイルコメントが中閒部分の末尾にスペースを付けなくても機能するやうになる。
+</p>
+<p>桁揃へフラグを使つてコメントを目立たせる例を示す。&rsquo;<samp>comments</samp>&rsquo; が次のやうになつてゐる場合:
+</p><div class="example">
+<pre class="example">:set comments=sr:/***,m:**,ex-2:******/
+</pre></div>
+<pre class="verbatim">                                   /***
+                                     **&lt;--&quot;r&quot; フラグによつて右揃へされてゐる
+                                     **
+ &quot;-2&quot; フラグによつてスペース         **
+ 2 個分のオフセットがついてゐる  ---&gt;**
+                                   ******/
+</pre><p>これを入力する際、コメントの開始行を入力し、リターンを 4 回押す。そして &quot;/&quot; を押せばコメントが終了する。
+</p>
+<p>3 部コメントについて、より細かいことをいくつか說明する。桁揃へフラグとオフセットフラグが考慮される箇所は、次の 3 箇所ある。コメント開始行のあとの新規行を開くとき、コメント終了行の前の新規行を開くとき、自動的にコメントを終了させるときである。終了部分の桁揃へフラグは、上の行を參照する。これによつて、&quot;s&quot; と &quot;e&quot; に同じ桁揃へフラグを指定したとき、開始部分と終了部分のインデント量が同じになる。コメントの部分ごとに 1 個だけの桁揃へが使はれるやうになつてゐる。しかし、オフセットの數は &quot;r&quot; と &quot;l&quot; フラグより優先する。
+</p>
+<p>&rsquo;<samp>cindent</samp>&rsquo; をオンにしてゐると、多くの場合、桁揃へフラグより優先される。|<a href="#gq">gq</a>| や |<a href="#g_t_003d">=</a>| を使つて再インデントするときも、桁揃へフラグは適用されない。同じ擧動を定義するには、それらのコマンドのオプションを使ふ。1 つの考へとしては、&rsquo;<samp>cindent</samp>&rsquo; に文脈に應じてコメントをインデントさせるオプションを追加することであるが、3 部コメントの桁揃へを摸倣することはほとんどできない。しかし &rsquo;<samp>indentexpr</samp>&rsquo; は 3 部コメントをもつとうまく扱へる可能性を持つ。
+</p>
+<p>他の例:
+</p><table>
+<tr><td width="15%">&quot;b:*&quot;</td><td width="85%">&quot;*&quot; の後に非ブランク文字が付いてゐなければ、&quot;*&quot; で始まる行を含む。これはポインタの値への參照 &quot;*str&quot; が、コメントとして認識されるのを防ぐ。</td></tr>
+<tr><td width="15%">&quot;n:&gt;&quot;</td><td width="85%">&quot;&gt;&quot;, &quot;&gt;&gt;&quot;, &quot;&gt;&gt;&gt;&quot; などで始まる行を含む。</td></tr>
+<tr><td width="15%">&quot;fb:-&quot;</td><td width="85%">&quot;- &quot; で始まるリストを整形する。</td></tr>
+</table>
+
+<p>既定では &quot;b:#&quot; が含まれてゐる。これは &quot;#include&quot; で始まる行がコメントとならないことを意味する。しかし、&quot;# define&quot; で始まる行はコメントとなる。これは妥協的解決である。
+</p>
+<p>{Vimが |<a href="various_002etxt.html#g_t_002bcomments">+comments</a>| 機能付きでコンパイルされたときのみ有效}
+</p>
+<a name="fo_002dtable"></a><a name="index-fo_002dtable"></a>
+<p>テキストの整形方法はオプション &rsquo;<samp>formatoptions</samp>&rsquo; で調整できる。&rsquo;<samp>formatoptions</samp>&rsquo; は以下のフラグを含む文字列である。既定値は &quot;<var>tcq</var>&quot; である。讀みやすくするために、フラグをコンマで區切つてもよい。
+</p>
+<a name="index-huragu-_0027formatoptions_0027-niZhi-Ding-saretatokinoZuo-Yong-"></a>
+<a name="huragu-_0027formatoptions_0027-niZhi-Ding-saretatokinoZuo-Yong-"></a>
+<h4 class="unnumberedsubsec">フラグ &rsquo;formatoptions&rsquo; に指定されたときの作用</h4>
+
+<table>
+<tr><td width="10%">t</td><td width="90%">&rsquo;<samp>textwidth</samp>&rsquo; を使つてテキストを自動折返しする</td></tr>
+<tr><td width="10%">c</td><td width="90%">&rsquo;<samp>textwidth</samp>&rsquo; を使つてコメントを自動折返して、現在のコメント開始文字列を自動插入する。</td></tr>
+<tr><td width="10%">r</td><td width="90%">插入モードで <code class="tt-key">&lt;Enter&gt;</code> を打ち込んだ後に、現在のコメント開始文字列を自動插入する。</td></tr>
+<tr><td width="10%">o</td><td width="90%">ノーマルモードで &rsquo;o&rsquo;, &rsquo;O&rsquo; を打ち込んだ後に、現在のコメント開始文字列を自動的に插入する。</td></tr>
+<tr><td width="10%">q</td><td width="90%">&quot;gq&quot; でコメントを整形する。
+<blockquote>
+<p><strong>Note:</strong> <br>
+整形は空行やコメント開始文字列のみの行は變更しないことに注意。新しい段落はそのやうな行の次、またはコメント開始文字列が變はつた所から始まる。
+</p></blockquote></td></tr>
+<tr><td width="10%">w</td><td width="90%">行末に空白が付いてゐるとき、段落が次行に續いてゐると認識する。行末が空白以外の行で段落が終はるとする。</td></tr>
+<tr><td width="10%">a</td><td width="90%">段落を自動整形する。テキストが插入されたり削除されるたび、段落は再整形される。|<a href="#auto_002dformat">auto-format</a>| を參照。&rsquo;c&rsquo; フラグも設定されてゐるときはコメント插入時のみ機能する。</td></tr>
+<tr><td width="10%">n</td><td width="90%">テキストの整形時、番號付きリストを認識する。これは實際には &rsquo;<samp>formatlistpat</samp>&rsquo; を使ふ。それゆゑ、どんな種類のリストでも處理できる。
+
+<p>數字の後のテキストのインデントが次の行に使はれる。數字の後に &rsquo;.&rsquo;, &rsquo;:&rsquo;, &rsquo;)&rsquo;, &rsquo;]&rsquo; や &rsquo;}&rsquo; が付いてもよい。オプション &rsquo;<samp>autoindent</samp>&rsquo; がオンでなければならないことに注意。&quot;2&quot; と一緖には機能しない。例:
+</p><pre class="verbatim">1. 1 つ目の項目
+   折り返し
+2. 2 つ目の項目
+</pre></td></tr>
+<tr><td width="10%">2</td><td width="90%">テキストを整形するとき、段落の最初の行ではなく 2 番目の行のインデントを使つてそれ以降の行を整形する。これは最初の行のインデントが他の行と異なるやうな段落をサポートする。&rsquo;<samp>autoindent</samp>&rsquo; もオンである必要がある。例:
+<pre class="verbatim">        ここはある段落の 1 行目
+ここは上の行と同じ段落の 2 行目
+ここは 3 行目。
+</pre><p>これはコメントの中でも機能します (コメント文字がないかのやうに)。
+</p></td></tr>
+<tr><td width="10%">v</td><td width="90%">插入モードでVi互換の自動折返しを使ふ: 插入モードに入つて以來入力された空白でのみ折返しが行はれる。(<strong>Note:</strong> これは 100% の Vi 互換ではない。Vi にはこのあたりに「豫期できない機能」、といふかバグがあつた。Vi は實際のテキストの列の代はりに畫面上の列を使用する。)</td></tr>
+<tr><td width="10%">b</td><td width="90%">&rsquo;v&rsquo; と同樣だが、折返し餘白の中または前で、空白を入力したときのみ自動折返しをする。插入開始時に &rsquo;<samp>textwidth</samp>&rsquo; より行が長かつたり、&rsquo;<samp>textwidth</samp>&rsquo; に達するまで空白を入力しなかつたときは、Vim は自動折返しをしない。</td></tr>
+<tr><td width="10%">l</td><td width="90%">插入モードでは長い行は折り返されない: 插入開始時に行が &rsquo;<samp>textwidth</samp>&rsquo; より長い場合、Vim は自動で整形を行はない。</td></tr>
+<tr><td width="10%">m</td><td width="90%">文字コードが 255 より後のマルチバイト文字の閒でも改行する。これは文字全てがそれだけで單語であるやうな、アジア言語のテキストで便利である。</td></tr>
+<tr><td width="10%">M</td><td width="90%">行の連結時に、マルチバイト文字の前後に空白を插入しない。こちらの方がフラグ &rsquo;B&rsquo; より優先する。</td></tr>
+<tr><td width="10%">B</td><td width="90%">行の連結時に、マルチバイト文字同士の閒に空白を插入しない。こちらよりフラグ &rsquo;M&rsquo; の方が優先する。</td></tr>
+<tr><td width="10%">1</td><td width="90%">1 文字の單語の後では改行しない。代はりにその前で改行される (可能ならば)。</td></tr>
+<tr><td width="10%">j</td><td width="90%">可能ならば、行を連結する際にコメントリーダーを削除する。例へば、以下の行を連結する場合:
+<pre class="verbatim">int i;   // the index
+         // in the list
+</pre><p>以下のやうになる:
+</p><pre class="verbatim">int i;   // the index in the list
+</pre></td></tr>
+<tr><td width="10%">p</td><td width="90%">ピリオドに續く單一の空白で改行しない。これは、2 つの空白で區切られた文章を含む散文用に &rsquo;<samp>joinspaces</samp>&rsquo; と |<a href="options_002etxt.html#cpo_002dJ">cpo-J</a>| を補完するためのものである。例へば、&rsquo;<samp>textwidth</samp>&rsquo; を 28 に設定すると:
+<pre class="verbatim">Surely you're joking, Mr. Feynman!
+</pre><p>以下のやうになる:
+</p><pre class="verbatim">Surely you're joking,
+Mr. Feynman!
+</pre><p>以下のやうにはならない:
+</p><pre class="verbatim">Surely you're joking, Mr.
+Feynman!
+</pre></td></tr>
+</table>
+
+
+<p>&rsquo;t&rsquo; と &rsquo;c&rsquo; で Vim が自動折返しを行ふタイミングを指定できる。
+</p><table>
+<tr><td width="20%">フラグ</td><td width="80%">作用</td></tr>
+<tr><td width="20%">&quot;&quot;</td><td width="80%">自動整形しない (&quot;gq&quot; で手動の整形處理を行ふ)</td></tr>
+<tr><td width="20%">&quot;t&quot;</td><td width="80%">テキストを自動整形するが、コメントにはしない</td></tr>
+<tr><td width="20%">&quot;c&quot;</td><td width="80%">コメントを自動整形するが、テキストにはしない (C 言語コードに適してゐる)</td></tr>
+<tr><td width="20%">&quot;tc&quot;</td><td width="80%">テキストとコメントを自動整形する</td></tr>
+</table>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+&rsquo;<samp>textwidth</samp>&rsquo; が 0 のとき、Vim はいかなる自動整形も行はないので注意 (&rsquo;<samp>comments</samp>&rsquo; によるコメント開始文字列の插入はする)。例外はフラグ &rsquo;a&rsquo; が入つてゐる場合である。|<a href="#auto_002dformat">auto-format</a>|
+</p></blockquote>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+&rsquo;<samp>paste</samp>&rsquo; がオンのとき、Vim は全ての整形處理を行はないので注意。
+</p></blockquote>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+Vim に自動折返しをさせなくても、&rsquo;<samp>textwidth</samp>&rsquo; は非 0 であつてよいことに注意。&rsquo;<samp>textwidth</samp>&rsquo; は &quot;gq&quot; による整形處理でも便利だからである。
+</p></blockquote>
+
+<p>&rsquo;<samp>comments</samp>&rsquo; が &quot;/*&quot; と (&quot;*&quot; と) &quot;*/&quot; を含んでゐるときは、Vim 組み込みの機能によりこれらのタイプのコメントをもう少し巧く扱ふことができる。
+</p>
+<p>(&rsquo;<samp>formatoptions</samp>&rsquo; に &rsquo;r&rsquo; か &rsquo;o&rsquo; が含まれてゐるとき) &quot;/*&quot; または &quot;*/&quot; の前か後で新しい行を始めると、行の正しい開始位置が自動的に與へられる。同じことが整形處理と自動折返しでも行はれる。&quot;/*&quot; や &quot;*&quot; で始まり、かつ &quot;*/&quot; を含む行の後で行を始めるときは、コメント開始文字列が插入されず、新しい行のインデントはコメントの最初の行に合はせられる。
+</p>
+<p>例:
+</p><pre class="verbatim">/*
+ * 典型的なコメント。
+ */
+この行のインデントは、上のコメントの先頭行と同じになる。
+</pre>
+
+<p>これら全ては、特に異なるファイルタイプに對する異なる設定に對應する際、新しい autocommand と連携して、クールに振舞ふはずである。
+</p>
+<p>いくつかの例:
+</p>
+<p>C 言語コード用 (コメントの整形のみ):
+</p><div class="example">
+<pre class="example">:set fo=croq
+</pre></div>
+<p>メール／ネットニューズ用 (全て整形、コマンド &quot;o&quot; でコメントを始めない):
+</p><div class="example">
+<pre class="example">:set fo=tcrq
+</pre></div>
+
+<a name="auto_002dformat"></a><a name="autoformat"></a><a name="index-auto_002dformat"></a>
+<a name="index-autoformat"></a>
+<a name="index-Zi-Dong-Zheng-Xing-"></a>
+<a name="Zi-Dong-Zheng-Xing-"></a>
+<h4 class="unnumberedsubsec">自動整形</h4>
+
+<p>オプション &rsquo;<samp>formatoptions</samp>&rsquo; にフラグ &rsquo;<var>a</var>&rsquo; が含まれると、テキストを插入したり削除したときに自動整形が行はれる。これはテキストの段落分けを編輯するときに便利である。以下では使ひ方についてのヒントをいくつか。
+</p>
+<ul>
+<li> 段落を適切に定義する必要がある。もつとも單純なものは、空行が區切りになる場合である。區切りとなる空行がないときは、フラグ &rsquo;w&rsquo; を使ひ、段落の最終行以外の行末に空白を付けるやうにしてみること。
+
+</li><li> &rsquo;<samp>formatoptions</samp>&rsquo; をファイルタイプ |<a href="filetype_002etxt.html#filetype">filetype</a>| に基づいて設定することができる。またはモードライン |<a href="options_002etxt.html#modeline">modeline</a>| で特定のファイルに對して設定することもできる。
+
+</li><li> &rsquo;<samp>formatoptions</samp>&rsquo; を &quot;<var>aw2tcq</var>&quot; に設定し、テキストのインデントを次のやうにすることもできる。
+
+<pre class="verbatim">    bla bla foobar bla 
+bla foobar bla foobar bla
+    bla bla foobar bla 
+bla foobar bla bla foobar
+</pre>
+</li><li> コメントだけを自動整形するには &rsquo;c&rsquo; フラグを追加する。ソースコードの編輯向き。
+
+</li><li> 行の長さを望みどほりにするには &rsquo;<samp>textwidth</samp>&rsquo; を設定する。これが 0 ならば 79 になる。畫面の幅が 79 桁より小さい場合は畫面幅になる。
+</li></ul>
+
+<a name="index-Ci-niikutukanoJing-Gao-"></a>
+<a name="Ci-niikutukanoJing-Gao-_003a"></a>
+<h4 class="unnumberedsubsec">次にいくつかの警告:</h4>
+
+<ul>
+<li> テキストの部分部分が段落內で適切に分割されてゐないとき、そのテキスト內で變更を行ふと、有無をいわさず整形が始まつてしまふ。次のやうにしてみること。
+
+<div class="example">
+<pre class="example">:set fo-=a
+</pre></div>
+
+</li><li> フラグ &rsquo;w&rsquo; (行末の空白で段落が終はつてゐないことを判斷する) を使つてゐるときに |<a href="#dd">dd</a>| で段落の最終行を削除すると、その段落が次の段落とつながつてしまふ。
+
+</li><li> 變更されたテキストは、アンドゥのために記憶される。整形も變更の一種である。そのため、整形を行ふ度にテキストがアンドゥ用に記憶される。すると大量のメモリを消費するかもしれない。
+
+</li><li> 長い段落や、複雜なインデントの段落を整形するのには、時閒がかかることがある。
+</li></ul>
+
+<a name="sorting"></a><a name="index-sorting"></a>
+<a name="index-tekisutonosoto"></a>
+<a name="g_t7_002e-tekisutonosoto"></a>
+<h3 class="section">7. テキストのソート</h3>
+
+<p>Vimはソート函數とソートコマンドを備へてゐる。ソート函數については |<a href="eval_002etxt.html#sort_0028_0029">sort()</a>|, |<a href="eval_002etxt.html#uniq_0028_0029">uniq()</a>| を參照。
+</p>
+<a name="g_t_003asor"></a><a name="g_t_003asort"></a><a name="index-_003asor"></a>
+<a name="index-_003asort"></a>
+<dl compact="compact">
+<dt>:[range]sor[t][!] [b][f][i][n][o][r][u][x] [/{pattern}/]</dt>
+<dd><p>[range]の行をソートする。範圍が指定されない場合は全行をソートする。
+</p>
+<p>[!] をつけると順序が逆になる。
+</p>			
+<p>[i] をつけると大文字・小文字を區別しない。
+</p>
+<p>[n][f][x][o][b] オプションはどれかひとつのみ指定できる。
+</p>
+<p>[n] をつけると行の ({pattern} のマッチの後ろまたは內側の) 最初の 10 進數の數字でソートする。數字が &rsquo;-&rsquo; で始まる場合、マイナスとみなされる。
+</p>
+<p>[f] をつけると行の小數點數でソートする。小數點數の値は ({pattern} によるマッチの後ろまたは內側の) テキストを str2float() に渡すやうにして決定される。このオプションは Vim が小數點數サポートを有效にしてコンパイルされたときのみ使へる。
+</p>
+<p>[x] をつけると行の ({pattern} のマッチの後ろまたは內側の) 最初の 16 進數の數字でソートする。&quot;0x&quot; と &quot;0X&quot; は無視される。數字が &rsquo;-&rsquo; で始まる場合、マイナスとみなされる。
+</p>
+<p>[o] をつけると行の ({pattern} のマッチの後ろまたは內側の) 最初の 8 進數の數字でソートする。
+</p>
+<p>[b] をつけると ({pattern} によるマッチの後ろまたは內側の) 行の最初の 2 進數でソートする。
+</p>
+<p>[u] をつけると (u は unique=「一意の」といふ意味に基づく) 連續する同一行の最初の行だけを殘す。([i] がつくと大文字・小文字を無視する) このフラグがつかない場合、連續する同一行はそのままの順序で殘される。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+先頭と末尾の空白が原因で異なる行にみなされるかもしれない。
+</p></blockquote>
+
+<p>/pattern/ が指定され、フラグ [r] がない場合は {pattern} にマッチするテキストはスキップされる。これによつて、そのマッチの後に來るテキストでソートできる。スラッシュの代はりにどんな non-letter でも使ふことができる。
+例へば、コンマで區切られた2番目のフィールドでソートするには:
+</p><div class="example">
+<pre class="example">:sort /[^,]*,/
+</pre></div>
+<p>畫面上の10桁目でソートするには(そのためタブとスペースは同一視される):
+</p><div class="example">
+<pre class="example">:sort /.*\%10v/
+</pre></div>
+<p>行中の最初の數字でソートするには:
+</p><div class="example">
+<pre class="example">:sort /.\{-}\ze\d/
+</pre></div>
+<p>(解說: &quot;.\{-}&quot; は任意のテキストにマッチする。&quot;\ze&quot; はそのマッチの終はりをセットし、&quot;\d&quot; は數字にマッチする。)
+[r] がつくと、前述のやうに {pattern} をスキップするのでなく、{pattern} にマッチする部分でソートする。例へば、各行の最初の 3 文字だけでソートするには:
+</p><div class="example">
+<pre class="example">:sort /\a\a\a/ r
+</pre></div>
+
+<p>{pattern} が使はれると {pattern} を含まない行は現在の順序のままになる。逆順でソートすると、それらはソートされた行の後で逆順になる。逆順でなければ、ソートされた行の前でもとの順序のまま置かれる。
+</p>
+<p>{pattern} が空である場合 (例: // が指定されたとき)、最後に使はれた檢索パターンが使はれる。よつて、まづ檢索コマンドでパターンを確かめてみることができる。
+</p></dd>
+</dl>
+
+<blockquote>
+<p><strong>Note:</strong> <br>
+&lsquo;:global&lsquo; といつしよに &lsquo;:sort&lsquo; を使つてもマッチする行をソートすることにはならない。これはまつたく無意味である。
+</p></blockquote>
+
+<p>ソートの詳細は使つてゐるライブラリ函數による。ソートが現在のロケールに從ふといふ保證はない。それを調べるには實行してみるしかない。ソートは「安定」ソートである。
+</p>
+<p>ソートは中斷することができる。しかし中斷するのが遲いと行が重複してしまふかもしれない。これも使つてゐるシステムのライブラリ函數による。
+</p>
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>

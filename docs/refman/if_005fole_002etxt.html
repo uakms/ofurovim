@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.5, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>if_ole.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="if_ole.txt (Vim Reference Manual)">
+<meta name="keywords" content="if_ole.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="start" title="目次">
+<link href="Indexes-CP.html#Indexes-CP" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html#g_t_76ee_6b21" rel="up" title="目次">
+<link href="if_005fruby_002etxt.html#if_005fruby_002etxt" rel="next" title="if_ruby.txt">
+<link href="if_005ftcl_002etxt.html#if_005ftcl_002etxt" rel="prev" title="if_tcl.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+blockquote.smallindentedblock {margin-right: 0em; font-size: smaller}
+blockquote.smallquotation {font-size: smaller}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+div.smalldisplay {margin-left: 3.2em}
+div.smallexample {margin-left: 3.2em}
+div.smalllisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: inherit; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: inherit; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<a name="if_005fole_002etxt"></a>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<a name="Win32-no-OLE-otomesiyon"></a>
+<h2 class="unnumbered">Win32 の OLE オートメーション</h2>
+<pre class="verbatim">*if_ole.txt*    For Vim バージョン 8.1.  Last change: 2019 May 05
+
+
+                  VIMリファレンスマニュアル    by Paul Moore
+</pre>
+
+<a name="ole_002dinterface"></a><a name="index-ole_002dinterface"></a>
+<p>Vim への OLE インターフェイス
+</p>
+<table>
+<tr><td width="50%">1. アクティブにする</td><td width="50%">|<a href="#ole_002dactivation">ole-activation</a>|</td></tr>
+<tr><td width="50%">2. メソッド</td><td width="50%">|<a href="#ole_002dmethods">ole-methods</a>|</td></tr>
+<tr><td width="50%">3. &quot;normal&quot; コマンド</td><td width="50%">|<a href="#ole_002dnormal">ole-normal</a>|</td></tr>
+<tr><td width="50%">4. 登錄</td><td width="50%">|<a href="#ole_002dregistration">ole-registration</a>|</td></tr>
+<tr><td width="50%">5. MS Visual Studio との統合</td><td width="50%">|<a href="#MSVisualStudio">MSVisualStudio</a>|</td></tr>
+</table>
+
+<p>{Vim が |<a href="various_002etxt.html#g_t_002bole">+ole</a>| 機能付きでコンパイルされたときのみ利用できる。src/if_ole.INSTALL を參照}
+</p>
+<p>代はりにクライアント、サーバー型の通信を使ふこともできる |<a href="remote_002etxt.html#clientserver">clientserver</a>|。
+</p>
+<a name="ole_002dactivation"></a><a name="index-ole_002dactivation"></a>
+<a name="g_t1_002e-akuteibunisuru"></a>
+<h3 class="section">1. アクティブにする</h3>
+
+<p>Vim は、あらゆるオートメーションクライアント、例へば Visual Basic, Python, Perl などからアクセス可能な、OLE オートメーションサーバーとして振舞ふ。Vim アプリケーションの &quot;名前&quot; (これは OLE 用語で言ふところの &quot;ProgID&quot;) は、&quot;Vim.Application&quot; である。
+</p>
+<p>したがつて、Vim のインスタンスを起動する (あるいはすでに起動してゐるインスタンスに接續する) には、次のやうなコードが用ゐられることになる:
+</p>
+<dl compact="compact">
+<dt>[Visual Basic]</dt>
+<dd><div class="example">
+<pre class="example">Dim Vim As Object
+Set Vim = CreateObject(&quot;Vim.Application&quot;)
+</pre></div>
+
+</dd>
+<dt>[Python]</dt>
+<dd><div class="example">
+<pre class="example">from win32com.client.dynamic import Dispatch
+vim = Dispatch('Vim.Application')
+</pre></div>
+
+</dd>
+<dt>[Perl]</dt>
+<dd><div class="example">
+<pre class="example">use Win32::OLE;
+$vim = new Win32::OLE 'Vim.Application';
+</pre></div>
+
+</dd>
+<dt>[C#]</dt>
+<dd><div class="example">
+<pre class="example">// プロジェクトに VIM への參照を追加する。
+// COM タブを選擇する。
+// &quot;VIM Ole Interface 1.1 Type Library&quot; を選擇する。
+Vim.Vim vimobj = new Vim.Vim();
+</pre></div>
+</dd>
+</dl>
+
+<p>Vim は、他の一部の OLE サーバーがサポートしてゐるやうな、&quot;hidden&quot; な OLE サーバーとしての機能をサポートしてゐない。クライアントが Vim のインスタンスを起動する場合、そのインスタンスは卽座に可視化される。單に Vim インスタンスとの OLE 接續を閉ぢるだけでは、Vim インスタンスを終了するに十分ではない - 明確に終了コマンド (例へば、:qa!, :wqa) を實行する必要がある。
+</p>
+<a name="ole_002dmethods"></a><a name="index-ole_002dmethods"></a>
+<a name="g_t2_002e-mesotudo"></a>
+<h3 class="section">2. メソッド</h3>
+
+<p>Vim はクライアントに對して 4 つのメソッドを公開してゐる。
+</p>
+<dl compact="compact">
+<dd><a name="ole_002dsendkeys"></a><a name="index-ole_002dsendkeys"></a>
+</dd>
+<dt>SendKeys(keys)</dt>
+<dd><p>一聯のキー操作を實行する。
+</p>
+<p>このメソッドはひとつの引數、キーストロークの文字列、を取る。これらのキーストロークは、完全にキーボードから打ち込まれたもののやうに實行される。スペシャルキーは、マッピングの右側に書かれる、&lt;...&gt; 形式の名前で與へることができる。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+Ex &quot;normal&quot; コマンドの實行はサポートされてゐない - 以下の |<a href="#ole_002dnormal">ole-normal</a>| を見よ。
+</p></blockquote>
+
+<p>例 (Visual Basic の文法)
+</p><div class="example">
+<pre class="example">Vim.SendKeys &quot;ihello&lt;Esc&gt;&quot;
+Vim.SendKeys &quot;ma1GV4jy`a&quot;
+</pre></div>
+
+<p>これらの例は、Vim がノーマルモードで始まるものと假定してゐる。必ずノーマルモードにするには、一聯のキーを次のやうに CTRL-\ CTRL-N で始めるとよい
+</p><div class="example">
+<pre class="example">Vim.SendKeys &quot;&lt;C-\&gt;&lt;C-N&gt;ihello&lt;Esc&gt;&quot;
+</pre></div>
+
+<p>CTRL-\ CTRL-N は、插入モード、コマンドラインモードにゐるとき、Vim をノーマルモードに戾す。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+これらは Vim コマンドの途中に入れると機能しないことに注意せよ。
+</p></blockquote>
+
+<a name="ole_002deval"></a><a name="index-ole_002deval"></a>
+</dd>
+<dt>Eval(expr)</dt>
+<dd><p>式(expr)を實行する。
+</p>
+<p>このメソッドはひとつの引數、Vim 標準フォーマットの式、を取る (|<a href="eval_002etxt.html#expression">expression</a>| を參照)。戾り値は、その式を評價した結果の文字列である。リスト |<a href="eval_002etxt.html#List">List</a>| は文字列に變換される。そのとき各要素の閒に改行が插入され、連結される。
+</p>
+<p>例 (Visual Basic の文法で)
+</p><div class="example">
+<pre class="example">Line20 = Vim.Eval(&quot;getline(20)&quot;)
+Twelve = Vim.Eval(&quot;6 + 6&quot;)              ' これが文字列であることに注意
+Font = Vim.Eval(&quot;&amp;guifont&quot;)
+</pre></div>
+<a name="ole_002dsetforeground"></a><a name="index-ole_002dsetforeground"></a>
+</dd>
+<dt>SetForeground()</dt>
+<dd><p>Vim ウィンドウを最前面に持つてくる。
+</p>
+<p>このメソッドは引數を持たない。戾り値はない。
+</p>
+<p>例 (Visual Basic の文法で)
+</p><div class="example">
+<pre class="example">Vim.SetForeground
+</pre></div>
+
+<a name="ole_002dgethwnd"></a><a name="index-ole_002dgethwnd"></a>
+</dd>
+<dt>GetHwnd()</dt>
+<dd><p>Vim のウィンドウハンドルを得る。
+</p>
+<p>このメソッドは引數を持たない。戾り値は Vim ウィンドウのウィンドウハンドルである。これは Vim ウィンドウに對して何かの操作を行ひたい時に使ふ。
+</p>
+<p>例 (Visual Basic の文法で)
+</p><div class="example">
+<pre class="example">Vim_Hwnd = Vim.GetHwnd
+</pre></div>
+</dd>
+</dl>
+
+<a name="ole_002dnormal"></a><a name="index-ole_002dnormal"></a>
+<a name="g_t3_002e-_0022normal_0022-komando"></a>
+<h3 class="section">3. &quot;normal&quot; コマンド</h3>
+
+<p>Vim が OLE オートメーションコマンドを處理する方法は、ex コマンド :normal の實裝と統合されてゐるため、OLE オートメーションから :normal コマンドを實行することはできない。實際に實行しようとしても失敗する、たぶん害はないと思はれるが、豫期しない動作をする恐れはある。
+</p>
+<p>この狀況をトラップする現實的な方法は今のところ存在しないため、ユーザーはこの制限に單に氣をつけるやうにする他ない。
+<a name="ole_002dregistration"></a><a name="E243"></a><a name="index-ole_002dregistration"></a>
+<a name="index-E243"></a>
+</p><a name="g_t4_002e-Deng-Lu-"></a>
+<h3 class="section">4. 登錄</h3>
+
+<p>Vim を OLE サーバーとして動作させる前に、システムレジストリに登錄する必要がある。これを行ふには、Vim をひとつの引數 &quot;-register&quot; で實行すればよい。
+<a name="g_t_002dregister"></a><a name="index-_002dregister"></a>
+</p><div class="example">
+<pre class="example">gvim -register
+</pre></div>
+
+<p>OLE サーバーが登錄されてゐないとき、OLE をサポートした gvim を起動すると警告ダイアログが出る。&quot;Yes&quot; を選擇するとレジストリに登錄できる。
+</p>
+<p>レジストリが書き込み可能でないときには登錄はできない。もし登錄できないときは &quot;Administrator&quot; 權限で gvim を起動すること。
+</p>
+<p>いつたん Vim が登錄されると、アプリケーションへのパスはレジストリに保存される。Vim を移動、削除、更新する前に、レジストリの項目を &quot;-unregister&quot; スイッチを使つて削除する必要がある。
+<a name="g_t_002dunregister"></a><a name="index-_002dunregister"></a>
+</p><div class="example">
+<pre class="example">gvim -unregister
+</pre></div>
+
+<p>OLE メカニズムは、登錄された Vim の內、最初に見つけたものを使用する。Vim がすでに實行されてゐる場合は、その Vim が使用される。OLE コマンドに影響されないで、(いくつかの) Vim セッションを張らうとする場合は、非 OLE バージョンを違ふディレクトリに置いて使用するとよい。そして、OLE バージョンをパスに含まれないディレクトリに置けば、&quot;gvim&quot; とタイプしたとき非 OLE バージョンが起動するやうになる。
+</p>
+<a name="g_t_002dsilent"></a><a name="index-_002dsilent"></a>
+<p>結果を表示するメッセージボックスを表示したくないなら &quot;-silent&quot; を付けること。
+</p><div class="example">
+<pre class="example">gvim -silent -register
+gvim -silent -unregister
+</pre></div>
+
+<a name="MSVisualStudio"></a><a name="VisVim"></a><a name="index-MSVisualStudio"></a>
+<a name="index-VisVim"></a>
+<a name="g_t5_002e-MS-Visual-Studio-tonoTong-He-"></a>
+<h3 class="section">5. MS Visual Studio との統合</h3>
+
+<p>OLE バージョンにより、Microsoft Visual Studio のエディタとして Vim を實行することができる。これは &quot;VisVim&quot; と呼ばれる。これは OLE バージョンを含んだアーカイブに同梱されてゐる。ドキュメントは、ランタイムディレクトリに置かれてゐる README_VisVim.txt ファイルにある。
+</p>
+
+<a name="Vim-to-Visual-Studio_002eNet-woLian-Xi-saseru"></a>
+<h4 class="unnumberedsubsec">Vim と Visual Studio.Net を連携させる</h4>
+
+<p>.Net studio は外部エディタをサポートしてゐるので、.Net では VisVim は必要ない。次のやうにするとよい:
+</p>
+<p>.Net Studio でメニューから [ツール] → [外部ツール] を選擇する。
+</p>
+<p>次を追加する
+</p><table>
+<tr><td width="40%">タイトル</td><td width="60%">Vim</td></tr>
+<tr><td width="40%">コマンド</td><td width="60%">c:\vim\vim63\gvim.exe</td></tr>
+<tr><td width="40%">引數</td><td width="60%">&lsquo;<samp>--servername VS_NET</samp>&rsquo; &lsquo;<samp>--remote-silent</samp>&rsquo; &quot;+call cursor($(CurLine), $(CurCol))&quot; $(ItemPath)</td></tr>
+<tr><td width="40%">初期ディレクトリ</td><td width="60%">空</td></tr>
+</table>
+
+<p>かうしておくと .Net でファイルを開いたとき、.Net のメニューから [ツール] → [Vim] を選べるやうになる。
+</p>
+<p>それを選ぶとそのファイルが Vim で開かれる。
+</p>
+<p>この外部コマンドをアイコンにして好きなところに置くことができる。これをデフォルトのエディタに設定することもできる。
+</p>
+<p>もしこれをさらに改良できたら、それを留めておけるやうに Vim メーリングリストに投稿していただきたい。
+</p>
+<p>&lsquo;<samp>--servername VS_NET</samp>&rsquo;
+</p>
+<p>この引數をつけると、VS_NET といふ名前で新しい Vim インスタンスを作る。そのため、VS で複數のファイルを開いても、同じ Vim のインスタンスが使はれる。これによつて複數の Vim のインスタンスを起動し、かつどのインスタンスが VS のファイルを開いてゐるかを管理することができる。
+</p>
+<p>&lsquo;<samp>--remote-silent</samp>&rsquo; &quot;+call cursor(10, 27)&quot;
+</p>
+<p>カーソルを 10 行 27 桁に移動する
+</p>
+<p>より詳しくは Vim 內で
+</p><div class="example">
+<pre class="example">:h --remote-silent
+</pre></div>
+
+<p>[.Net の部分は Dave Fishburn と Brian Sturk によつて提供された]
+</p>
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>
