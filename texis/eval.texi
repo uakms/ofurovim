@@ -3,14 +3,14 @@
 @unnumbered 式の評価、条件式 (Vim script リファレンス)
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jul 04
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jul 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*eval.txt*	For Vim バージョン 8.1.  Last change: 2019 Jul 04
+*eval.txt*	For Vim バージョン 8.1.  Last change: 2019 Jul 13
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -207,16 +207,19 @@ List		An ordered sequence of items, see |List| for details.
 @ifset EN
 Dictionary	An associative, unordered array: Each entry has a key and a
 		value. |Dictionary|
-		Example: {'blue': "#0000ff", 'red': "#ff0000"}
+		Examples:
+			{'blue': "#0000ff", 'red': "#ff0000"}
+			#{blue: "#0000ff", red: "#ff0000"}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item 辞書
 順序を持たない連想配列: 各要素はキーと値を持つ。|@ref{Dictionary}|
 
 例:
-@example
-@{'blue': "#0000ff", 'red': "#ff0000"@}
-@end example
+@verbatim
+{'blue': "#0000ff", 'red': "#ff0000"}
+#{blue: "#0000ff", red: "#ff0000"}
+@end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1459,8 +1462,8 @@ only appear once.  Examples: >
 A key is always a String.  You can use a Number, it will be converted to a
 String automatically.  Thus the String '4' and the number 4 will find the same
 entry.  Note that the String '04' and the Number 04 are different, since the
-Number will be converted to the String '4'.  The empty string can be used as a
-key.
+Number will be converted to the String '4'.  The empty string can also be used
+as a key.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{E713}
@@ -1473,6 +1476,28 @@ key.
 @quotation
 @strong{Note:} @*
 文字列 '04' と数値 04 は異なることに注意。なぜなら数値 04 は文字列 '4' に変換されるからである。空文字列もキーとして使用できる。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*literal-Dict*
+To avoid having to put quotes around every key the #{} form can be used.  This
+does require the key to consist only of ASCII letters, digits, '-' and '_'.
+Example: >
+	let mydict = #{zero: 0, one_key: 1, two-key: 2, 333: 3}
+Note that 333 here is the string "333".  Empty keys are not possible with #{}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{literal-Dict}
+@cindex literal-Dict
+すべてのキーについてクォートを付けなければいけないことを回避するためには #@{@} を使うことができます。これは ASCII 文字、digit、'-' と '_' のみからなるキーについては @{訳注: キーにクォートを付けなければならないルールを@} 要求されません。
+
+例:
+@verbatim
+let mydict = #{zero: 0, one_key: 1, two-key: 2, 333: 3}
+@end verbatim
+@quotation
+@strong{Note:} @*
+ここでの 333 は文字列の "333" であることに注意してください。空のキーは #@{@} で使用できません。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -7444,15 +7469,17 @@ perleval({expr})		any	evaluate |Perl| expression
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 popup_atcursor({what}, {options}) Number create popup window near the cursor
+popup_beval({what}, {options}) 	Number 	create popup window for 'ballooneval'
 popup_clear()			none	close all popup windows
 popup_close({id} [, {result}])	none	close popup window {id}
 popup_create({what}, {options}) Number	create a popup window
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{popup_atcursor(), , popup_atcursor}(@{what@}, @{options@}) @tab 数値 @tab カーソル付近にポップアップウィンドウを作成する
+@item @ref{popup_beval(), ,popup_beval}(@{what@}, @{options@}) @tab 数値 @tab '@option{ballooneval}' 用にポップアップウィンドウを作成する
 @item @ref{popup_clear(), , popup_clear}() @tab なし @tab すべてのポップアップウィンドウを閉じる
 @item @ref{popup_close(), , popup_close}(@{id@} [, @{result@}]) @tab なし @tab @{id@} のポップアップウィンドウを閉じる
-@item @ref{popup_create(), , popup_create}(@{what@}, @{options@}) @tab 数値 @tab ポップアップウィンドウを生成する
+@item @ref{popup_create(), , popup_create}(@{what@}, @{options@}) @tab 数値 @tab ポップアップウィンドウを作成する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 popup_dialog({what}, {options}) Number	create a popup window used as a dialog
@@ -7649,6 +7676,7 @@ screenattr({row}, {col})	Number	attribute at screen position
 screenchar({row}, {col})	Number	character at screen position
 screenchars({row}, {col})	List	List of characters at screen position
 screencol()			Number	current cursor column
+screenpos({winid}, {lnum}, {col}) Dict	screen row and col of a text character
 screenrow()			Number	current cursor row
 screenstring({row}, {col})	String	characters at screen position
 @end ifset
@@ -7657,6 +7685,7 @@ screenstring({row}, {col})	String	characters at screen position
 @item @ref{screenchar(), , screenchar}(@{row@}, @{col@}) @tab 数値 @tab スクリーン位置の文字
 @item @ref{screenchars(), , screenchars}(@{row@}, @{col@}) @tab リスト @tab スクリーン位置の文字のリスト
 @item @ref{screencol(), , screencol}() @tab 数値 @tab 現在のカーソル列
+@item @ref{screenpos(), , screenpos}(@{winid@}, @{lnum@}, @{col@}) @tab 辞書 @tab テキスト文字のスクリーン位置 (列と行)
 @item @ref{screenrow(), , screenrow}() @tab 数値 @tab 現在のカーソル行
 @item @ref{screenstring(), , screenstring}(@{row@}, @{col@}) @tab 文字列 @tab スクリーン位置の文字列
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -7754,29 +7783,41 @@ shiftwidth([{col}])		Number	effective value of 'shiftwidth'
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 sign_define({name} [, {dict}])	Number	define or update a sign
+sign_define({list})		List	define or update a list of signs
 sign_getdefined([{name}])	List	get a list of defined signs
 sign_getplaced([{expr} [, {dict}]])
 				List	get a list of placed signs
-sign_jump({id}, {group}, {expr})
-				Number	jump to a sign
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{sign_define(), , sign_define}(@{name@} [, @{dict@}]) @tab 数値 @tab 目印を定義または更新する
+@item @ref{sign_define(), , sign_define}(@{list@}) @tab リスト @tab 目印のリストを定義または更新する
 @item @ref{sign_getdefined(), , sign_getdefined}([@{name@}]) @tab リスト @tab 定義されている目印のリストを取得する
 @item @ref{sign_getplaced(), , sign_getplaced}([@{expr@} [, @{dict@}]]) @tab リスト @tab 設置されている目印のリストを取得する
-@item @ref{sign_jump(), , sign_jump}(@{id@}, @{group@}, @{expr@}) @tab 数値 @tab 目印に移動する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+sign_jump({id}, {group}, {expr})
+				Number	jump to a sign
 sign_place({id}, {group}, {name}, {expr} [, {dict}])
 				Number	place a sign
-sign_undefine([{name}])		Number	undefine a sign
-sign_unplace({group} [, {dict}])
-				Number	unplace a sign
+sign_placelist({list})		List	place a list of signs
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ref{sign_jump(), , sign_jump}(@{id@}, @{group@}, @{expr@}) @tab 数値 @tab 目印に移動する
 @item @ref{sign_place(), , sign_place}(@{id@}, @{group@}, @{name@}, @{expr@} [, @{dict@}]) @tab 数値 @tab 目印を設置する
+@item @ref{sign_placelist(), , sign_placelist}(@{list@}) @tab リスト @tab 目印のリストを設置する
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+sign_undefine([{name}])		Number	undefine a sign
+sign_undefine({list})		List	undefine a list of signs
+sign_unplace({group} [, {dict}])
+				Number	unplace a sign
+sign_unplacelist({list})	List	unplace a list of signs
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ref{sign_undefine(), , sign_undefine}([@{name@}]) @tab 数値 @tab 目印を削除する
+@item @ref{sign_undefine(), , sign_undefine}(@{list@}) @tab リスト @tab 目印のリストを削除する
 @item @ref{sign_unplace(), , sign_unplace}(@{group@} [, @{dict@}]) @tab 数値 @tab 目印を解除する
+@item @ref{sign_unplacelist(), , sign_unplacelist}(@{list@}) @tab リスト @tab 目印のリストを解除する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 simplify({filename})		String	simplify filename as much as possible
@@ -17606,9 +17647,11 @@ listener_remove({id})					*listener_remove()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 		Remove a listener previously added with listener_add().
+		Returns zero when {id} could not be found, one when {id} was
+		removed.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-以前に listener_add() で追加されたリスナーを削除する。
+以前に listener_add() で追加されたリスナーを削除します。@{id@} が見つからないときはゼロを、@{id@} が削除されたときは 1 を返します。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -21423,6 +21466,52 @@ nnoremap <silent> GG :echom screencol()<CR>
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+screenpos({winid}, {lnum}, {col})				*screenpos()*
+		The result is a Dict with the screen position of the text
+		character in window {winid} at buffer line {lnum} and column
+		{col}.  {col} is a one-based byte index.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{screenpos()}
+@findex screenpos()
+@item screenpos(@{winid@}, @{lnum@}, @{col@})
+結果は辞書です。バッファの @{lnum@} 行 と @{col@} 桁における、@{winid@} ウィンドウ内のテキスト文字のスクリーンの位置です。@{col@} は 1 からはじまるバイトのインデックスです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The Dict has these members:
+			row	screen row
+			col	first screen column
+			endcol	last screen column
+			curscol	cursor screen column
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+辞書の内容は次のものです:
+@multitable @columnfractions .3 .7
+@item row @tab スクリーン行
+@item col @tab 最初のスクリーン桁
+@item endcol @tab 最後のスクリーン桁
+@item curscol @tab カーソルのスクリン桁
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		If the specified position is not visible, all values are zero.
+		The "endcol" value differs from "col" when the character
+		occupies more than one screen cell.  E.g. for a Tab "col" can
+		be 1 and "endcol" can be 8.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしも指定された位置が不可視なら、すべての値はゼロです。文字が 1 つのスクリーンセルよりも大きいときは、"@var{endcol}" の値は "@var{col}" とは異なります。例: 1 つのタブ "@var{col}" は 1 になり、"@var{endcol}" は 8 になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The "curscol" value is where the cursor would be placed.  For
+		a Tab it would be the same as "endcol", while for a double
+		width character it would be the same as "col".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"@var{curscol}" の値はカーソルが置かれる場所です。1 つのタブは "@var{endcol}" と同じになります。一方でダブル幅文字については "@var{col}" と同じになります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 screenrow()							*screenrow()*
 		The result is a Number, which is the current screen row of the
 		cursor.  The top line has number one.
@@ -23185,6 +23274,7 @@ shiftwidth([{col}])						*shiftwidth()*
 
 @ifset EN
 sign_define({name} [, {dict}])				*sign_define()*
+sign_define({list})
 		Define a new sign named {name} or modify the attributes of an
 		existing sign.  This is similar to the |:sign-define| command.
 @end ifset
@@ -23192,6 +23282,7 @@ sign_define({name} [, {dict}])				*sign_define()*
 @anchor{sign_define()}
 @findex sign_define()
 @item sign_define(@{name@} [, @{dict@}])
+@itemx sign_define(@{list@})
 @{name@} という名前の新しい目印を定義するか、既存の目印の属性を変更する。これは |@ref{:sign-define}| コマンドに似ている。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -23237,23 +23328,50 @@ sign_define({name} [, {dict}])				*sign_define()*
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-		Returns 0 on success and -1 on failure.
+		The one argument {list} can be used to define a list of signs.
+		Each list item is a dictionary with the above items in {dict}
+		and a 'name' item for the sign name.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-成功すると 0 を返し、失敗すると -1 を返す。
+1 つの引数 @{list@} は目印のリストを定義するのに使うことができます。リストの項目はそれぞれ上記 @{dict@} 内の項目をもつ辞書です。'name' 項目は目印の名前です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns 0 on success and -1 on failure.  When the one argument
+		{list} is used, then returns a List of values one for each
+		defined sign.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+成功のときは 0、失敗のときは -1 を返します。1 つの引数 @{list@} が使用されたときは、それぞれに定義された目印の値のリストを返します。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 		Examples: >
-			call sign_define("mySign", {"text" : "=>", "texthl" :
-					\ "Error", "linehl" : "Search"})
+			call sign_define("mySign", {
+				\ "text" : "=>",
+				\ "texthl" : "Error",
+				\ "linehl" : "Search"})
+			call sign_define([
+				\ {'name' : 'sign1',
+				\  'text' : '=>'},
+				\ {'name' : 'sign2',
+				\  'text' : '!!'}
+				\ ])
 <
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 例:
 @verbatim
-call sign_define("mySign", {"text" : "=>", "texthl" :
-                \ "Error", "linehl" : "Search"})
+call sign_define("mySign", {
+        \ "text" : "=>",
+        \ "texthl" : "Error",
+        \ "linehl" : "Search"})
+call sign_define([
+        \ {'name' : 'sign1',
+        \  'text' : '=>'},
+        \ {'name' : 'sign2',
+        \  'text' : '!!'}
+        \ ])
 @end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -23625,28 +23743,156 @@ sign_place({id}, {group}, {name}, {expr} [, {dict}])
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 例:
 @verbatim
-" バッファ json.c の20行目に識別子5で sign1 という名前
+" バッファ json.c の 20 行目に識別子 5 で sign1 という名前
 " の目印を設置する
 call sign_place(5, '', 'sign1', 'json.c',
                                 \ {'lnum' : 20})
 
-" バッファ json.c の識別子5が目印 sign2 を使用するよう
+" バッファ json.c の識別子 5 が目印 sign2 を使用するよう
 " に更新する
 call sign_place(5, '', 'sign2', 'json.c')
 
-" バッファ json.c の30行目に sign3 という名前の目印を
+" バッファ json.c の 30 行目に sign3 という名前の目印を
 " 新しい識別子で設置する
 let id = sign_place(0, '', 'sign3', 'json.c',
                                 \ {'lnum' : 30})
 
-" バッファ json.c の40行目に 'g3' グループで識別子10の
-" sign4 という名前の目印を優先順位90で設置する
+" バッファ json.c の 40 行目に 'g3' グループで識別子 10 の
+" sign4 という名前の目印を優先順位 90 で設置する
 call sign_place(10, 'g3', 'sign4', 'json.c',
                 \ {'lnum' : 40, 'priority' : 90})
 @end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+							*sign_placelist()*
+sign_placelist({list})
+		Place one or more signs.  This is similar to the
+		|sign_place()| function.  The {list} argument specifies the
+		List of signs to place. Each list item is a dict with the
+		following sign attributes:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign_placelist()}
+@pindex sign_placelist()
+@item sign_placelist(@{list@})
+1 つもしくはそれ以上の目印を置きます。これは |@ref{sign_place()}| 関数と似ています。@{list@} 引数は目印のリストの場所を指定します。それぞれのリスト項目は以下の目印特性をもつ辞書です:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		    buffer	buffer name or number. For the accepted
+				values, see |bufname()|.
+		    group	sign group. {group} functions as a namespace
+				for {id}, thus two groups can use the same
+				IDs. If not specified or set to an empty
+				string, then the global group is used.   See
+				|sign-group| for more information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item buffer @tab バッファ名もしくは番号。受け取ることのできる値については |@ref{bufname()} を参照してください。
+@item group @tab 目印のグループ。@{group@} は @{id@} の名前空間として機能します。そのため、2 つのグループは同じ ID に使うことができます。もしも指定されていないか空文字が設定されているのなら、グーローバルグープが使われます。より多くの情報は |@ref{sign-group}| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		    id		sign identifier. If not specified or zero,
+				then a new unique identifier is allocated.
+				Otherwise the specified number is used. See
+				|sign-identifier| for more information.
+		    lnum	line number in the buffer {expr} where the
+				sign is to be placed. For the accepted values,
+				see |line()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item id @tab 目印の識別子。もしも指定されていないかゼロなら、新しいユニークな識別子が割り当てられます。そうでなければ指定された番号が使われます。より多くの情報は |@ref{sign-identifier}| を参照してください。
+@item lnum @tab 目印を置くことのできるバッファ @{expr@} 内の 行番号。受け取ることのできる値については |@ref{line()}| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		    name	name of the sign to place. See |sign_define()|
+		    		for more information.
+		    priority	priority of the sign. When multiple signs are
+				placed on a line, the sign with the highest
+				priority is used. If not specified, the
+				default value of 10 is used. See
+				|sign-priority| for more information.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item name @tab 配置するための目印の名前。より多くの情報については |@ref{sign_define()}| を参照してください。
+@item priority @tab 目印の優先順位。複数の目印が 1 行に置かれたときに、もっとも高い優先順位をもつ目印が使われます。もしも指定されていなければ、既定の値 10 が使われます。より多くの情報については |@ref{sign-priority}| を参照してください。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If {id} refers to an existing sign, then the existing sign is
+		modified to use the specified {name} and/or {priority}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしも @{id@} が存在する目印を参照しているなら、その存在している目印は指定された @{name@} かつ/または @{priority@} を使うために変更されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns a List of sign identifiers. If failed to place a
+		sign, the corresponding list item is set to -1.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+目印の識別子のリストを返します。もしも目印を置くのに失敗したなら、対応するリスト項目は -1 に設定されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Examples: >
+			" Place sign s1 with id 5 at line 20 and id 10 at line
+			" 30 in buffer a.c
+			let [n1, n2] = sign_place([
+				\ {'id' : 5,
+				\  'name' : 's1',
+				\  'buffer' : 'a.c',
+				\  'lnum' : 20},
+				\ {'id' : 10,
+				\  'name' : 's1',
+				\  'buffer' : 'a.c',
+				\  'lnum' : 30}
+				\ ])
+
+			" Place sign s1 in buffer a.c at line 40 and 50
+			" with auto-generated identifiers
+			let [n1, n2] = sign_place([
+				\ {'name' : 's1',
+				\  'buffer' : 'a.c',
+				\  'lnum' : 40},
+				\ {'name' : 's1',
+				\  'buffer' : 'a.c',
+				\  'lnum' : 50}
+				\ ])
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+" バッファ a.c の 20 行目に id を 5 として、
+" また、30 行目に id を 10 として 目印 s1 を置きます
+let [n1, n2] = sign_place([
+        \ {'id' : 5,
+        \  'name' : 's1',
+        \  'buffer' : 'a.c',
+        \  'lnum' : 20},
+        \ {'id' : 10,
+        \  'name' : 's1',
+        \  'buffer' : 'a.c',
+        \  'lnum' : 30}
+        \ ])
+
+" バッファ a.c の 40 行目と 50 行目に、
+" 自動的に生成された識別子をつけて目印 s1 を置きます
+let [n1, n2] = sign_place([
+        \ {'name' : 's1',
+        \  'buffer' : 'a.c',
+        \  'lnum' : 40},
+        \ {'name' : 's1',
+        \  'buffer' : 'a.c',
+        \  'lnum' : 50}
+        \ ])
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 sign_undefine([{name}])					*sign_undefine()*
+sign_undefine({list})
 		Deletes a previously defined sign {name}. This is similar to
 		the |:sign-undefine| command. If {name} is not supplied, then
 		deletes all the defined signs.
@@ -23655,20 +23901,34 @@ sign_undefine([{name}])					*sign_undefine()*
 @anchor{sign_undefine()}
 @pindex sign_undefine()
 @item sign_undefine([@{name@}])
+@itemx sign_undefine(@{list@})
 定義済みの目印 @{name@} を削除する。これは |@ref{:sign-undefine}| コマンドに似ている。@{name@} が指定されていない場合は、定義されているすべての目印を削除する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-		Returns 0 on success and -1 on failure.
+		The one argument {list} can be used to undefine a list of
+		signs. Each list item is the name of a sign.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-成功すると 0 を返し、失敗すると -1 を返す。
+1 つの引数 @{list@} は目印のリストを未定義にするために使うことができます。リスト項目のそれぞれは、目印の番号です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns 0 on success and -1 on failure.  For the one argument
+		{list} call, returns a list of values one for each undefined
+		sign.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+成功すると 0 を返し、失敗すると -1 を返します。1 つの引数 @{list@} を呼ぶために、未定義にされた目印の値のリストを返します。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 		Examples: >
 			" Delete a sign named mySign
 			call sign_undefine("mySign")
+
+			" Delete signs 'sign1' and 'sign2'
+			call sign_undefine(["sign1", "sign2"])
 
 			" Delete all the signs
 			call sign_undefine()
@@ -23677,10 +23937,13 @@ sign_undefine([{name}])					*sign_undefine()*
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 例:
 @verbatim
-" mySign という名前の目印を削除する
+" mySign という名前の目印を削除します
 call sign_undefine("mySign")
 
-" すべての目印を削除する
+" 目印 'sign1' と 'sign2' を削除します
+call sign_undefine(["sign1", "sign2"])
+
+" すべての目印を削除します
 call sign_undefine()
 @end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -23793,6 +24056,70 @@ call sign_unplace('*', {'id' : 40})
 
 " すべてのバッファからすべての目印を解除する
 call sign_unplace('*')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+sign_unplacelist({list})				*sign_unplacelist()*
+		Remove previously placed signs from one or more buffers.  This
+		is similar to the |sign_unplace()| function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{sign_unplacelist()}
+@pindex sign_unplacelist()
+@item sign_unplacelist(@{list@})
+1 つもしくはそれ以上のバッファから以前に置かれた目印を削除します。これは |@ref{sign_unplace()}| 関数と似ています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The {list} argument specifies the List of signs to remove.
+		Each list item is a dict with the following sign attributes:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{list@} 引数は削除する目印のリスト指定します。それぞれのリスト項目は次の目印属性を持つ辞書です:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		    buffer	buffer name or number. For the accepted
+				values, see |bufname()|. If not specified,
+				then the specified sign is removed from all
+				the buffers.
+		    group	sign group name. If not specified or set to an
+				empty string, then the global sign group is
+				used. If set to '*', then all the groups
+				including the global group are used.
+		    id		sign identifier. If not specified, then all
+				the signs in the specified group are removed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item buffer @tab バッファ名もしくは番号。受け取ることのできる値については |@ref{bufname()}| を参照してください。もしも @{訳注: バッファ名もしくは番号が@} 指定されていなければ、指定された目印はすべてのバッファから削除されます。
+@item group @tab 目印のグループ名。もしも指定されていない、もしくは空文字の場合は、グローバルな目印グループが使われます。もしも '*' が設定されていなければ、グローバルグループを含むすべてのグループが使われます。
+@item id @tab 目印の識別子。もしも @{訳注: 目印の識別子が@} 指定されていなければ、指定されたグループのすべての目印が削除されます。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns a List where an entry is set to 0 if the corresponding
+		sign was successfully removed or -1 on failure.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+もしも対応する目印の削除が成功した場合は 0 を、失敗した場合は -1 を設定されたエントリのリストを返します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Example: >
+			" Remove sign with id 10 from buffer a.vim and sign
+			" with id 20 from buffer b.vim
+			call sign_unplace([{'id' : 10, 'buffer' : "a.vim"},
+					\ {'id' : 20, 'buffer' : 'b.vim'}])
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+" バッファ a.vim から id が 10 の目印を、
+" バッファ b.vim から id が 20 の目印を削除します
+call sign_unplace([{'id' : 10, 'buffer' : "a.vim"},
+                \ {'id' : 20, 'buffer' : 'b.vim'}])
 @end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -26602,8 +26929,8 @@ timer_stop({timer})					*timer_stop()*
 @ifset EN
 timer_stopall()						*timer_stopall()*
 		Stop all timers.  The timer callbacks will no longer be
-		invoked.  Useful if some timers is misbehaving.  If there are
-		no timers there is no error.
+		invoked.  Useful if a timer is misbehaving.  If there are no
+		timers there is no error.
 
 		{only available when compiled with the |+timers| feature}
 @end ifset

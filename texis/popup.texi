@@ -3,14 +3,14 @@
 @unnumbered テキストに適用されているプロパティを表示する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jul 04
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jul 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*popup.txt*    For Vim バージョン 8.1.  Last change: 2019 Jul 04
+*popup.txt*    For Vim バージョン 8.1.  Last change: 2019 Jul 14
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -49,18 +49,18 @@ Displaying text in a floating window.			*popup* *popup-window*
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .5 .5
 @item 1. 前書き @tab |@ref{popup-intro}|
-@item Window position and size @tab |@ref{popup-position}|
-@item Closing the popup window @tab |@ref{popup-close}|
-@item Popup buffer and window @tab |@ref{popup-buffer}|
+@item ウィンドウの位置とサイズ @tab |@ref{popup-position}|
+@item ポップアップウィンドウを閉じる @tab |@ref{popup-close}|
+@item ポップアップバッファとウィンドウ @tab |@ref{popup-buffer}|
 @item 2. 関数 @tab |@ref{popup-functions}|
-@item Details @tab |@ref{popup-function-details}|
-@item 3. Usage @tab |@ref{popup-usage}|
-@item popup_create() arguments @tab |@ref{popup_create-arguments}|
-@item Popup text properties @tab |@ref{popup-props}|
-@item Popup filter @tab |@ref{popup-filter}|
-@item Popup callback @tab |@ref{popup-callback}|
-@item Popup scrollbar @tab |@ref{popup-scrollbar}|
-@item Popup mask @tab |@ref{popup-mask}|
+@item 詳細 @tab |@ref{popup-function-details}|
+@item 3. 使用方法 @tab |@ref{popup-usage}|
+@item popup_create() の引数 @tab |@ref{popup_create-arguments}|
+@item ポップアップテキストプロパティ @tab |@ref{popup-props}|
+@item ポップアップフィルタ @tab |@ref{popup-filter}|
+@item ポップアップコールバック @tab |@ref{popup-callback}|
+@item ポップアップスクロールバー @tab |@ref{popup-scrollbar}|
+@item ポップアップマスク @tab |@ref{popup-mask}|
 @item 4. 例 @tab |@ref{popup-examples}|
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -407,11 +407,14 @@ Creating a popup window:
 	|popup_create()|	centered in the screen
 	|popup_atcursor()|	just above the cursor position, closes when
 				the cursor moves away
+	|popup_beval()|		at the position indicated by v:beval_
+				variables, closes when the mouse moves away
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .4 .6
 @item |@ref{popup_create()}| @tab 画面の中央に
 @item |@ref{popup_atcursor()}| @tab カーソル位置のすぐ上に。カーソルが移動すると閉じる
+@item |@ref{popup_beval()}| @tab v:beval_ 変数によって指示されたその位置。マウスが移動すると閉じる
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	|popup_notification()|	show a notification for three seconds
@@ -495,11 +498,13 @@ Other:
 @ifset EN
 	|popup_getoptions()|	get current options for a popup
 	|popup_getpos()|	get actual position and size of a popup
+	|popup_locate()|	find popup window at a screen position
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .4 .6
 @item |@ref{popup_getoptions()}| @tab ポップアップの現在のオプションを取得する
 @item |@ref{popup_getpos()}| @tab ポップアップの実際の位置とサイズを取得する
+@item |@ref{popup_locate()}| @tab スクリーン位置でポップアップウィンドウを検索する
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -530,11 +535,11 @@ popup_atcursor({what}, {options})			*popup_atcursor()*
 カーソルの上に @{what@} を表示し、カーソルが移動したら閉じる。これは次のように動作する:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			call popup_create({what}, {
-				\ 'pos': 'botleft',
-				\ 'line': 'cursor-1',
-				\ 'col': 'cursor',
-				\ 'moved': 'WORD',
+			call popup_create({what}, #{
+				\ pos: 'botleft',
+				\ line: 'cursor-1',
+				\ col: 'cursor',
+				\ moved: 'WORD',
 				\ })
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -552,6 +557,46 @@ call popup_create({what}, {
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 プロパティを変更するには @{options@} を使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+popup_beval({what}, {options})			*popup_beval()*
+		Show the {what} above the position from 'ballooneval' and
+		close it when the mouse moves.  This works like: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{popup_beval()}
+@pindex popup_beval()
+@item popup_beval(@{what@}, @{options@})
+'@option{ballooneval}' からの位置 @{what@} を表示し、マウスが移動した時に閉じます。これは次のように動作します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		  let pos = screenpos(v:beval_winnr, v:beval_lnum, v:beval_col)
+		  call popup_create({what}, #{
+			\ pos: 'botleft',
+			\ line: pos.row - 1,
+			\ col: pos.col,
+			\ mousemoved: 'WORD',
+			\ })
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+let pos = screenpos(v:beval_winnr, v:beval_lnum, v:beval_col)
+call popup_create({what}, #{
+      \ pos: 'botleft',
+      \ line: pos.row - 1,
+      \ col: pos.col,
+      \ mousemoved: 'WORD',
+      \ })
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		Use {options} to change the properties.
+		See |popup_beval_example| for an example use.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+特性を変更するには @{options@} を使います。使い方については |@ref{popup_beval_example}| を参照してください。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 
@@ -679,22 +724,22 @@ popup_dialog({what}, {options})				*popup_dialog()*
 |@ref{popup_create()}| と同じだが、これらのデフォルトのオプションになる:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			call popup_create({what}, {
-				\ 'pos': 'center',
-				\ 'zindex': 200,
-				\ 'drag': 1,
-				\ 'border': [],
-				\ 'padding': [],
+			call popup_create({what}, #{
+				\ pos: 'center',
+				\ zindex: 200,
+				\ drag: 1,
+				\ border: [],
+				\ padding: [],
 				\})
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-call popup_create({what}, {
-        \ 'pos': 'center',
-        \ 'zindex': 200,
-        \ 'drag': 1,
-        \ 'border': [],
-        \ 'padding': [],
+call popup_create({what}, #{
+        \ pos: 'center',
+        \ zindex: 200,
+        \ drag: 1,
+        \ border: [],
+        \ padding: [],
         \})
 @end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -706,16 +751,16 @@ call popup_create({what}, {
 プロパティを変更するには @{options@} を使用する。例: 値 '@var{popup_filter_yesno}' を持つ '@option{filter}' オプションを追加する。例:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			call popup_create('do you want to quit (Yes/no)?', {
-				\ 'filter': 'popup_filter_yesno',
-				\ 'callback': 'QuitCallback',
+			call popup_create('do you want to quit (Yes/no)?', #{
+				\ filter: 'popup_filter_yesno',
+				\ callback: 'QuitCallback',
 				\ })
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-call popup_create('do you want to quit (Yes/no)?', {
-        \ 'filter': 'popup_filter_yesno',
-        \ 'callback': 'QuitCallback',
+call popup_create('do you want to quit (Yes/no)?', #{
+        \ filter: 'popup_filter_yesno',
+        \ callback: 'QuitCallback',
         \ })
 @end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -833,11 +878,19 @@ popup @{id@} の @{options@} を辞書で返す。ゼロ値はオプションが
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-		The "moved" entry is a list with minimum and maximum column,
-		[0, 0] when not set.
+		The "moved" entry is a list with line number, minimum and
+		maximum column, [0, 0, 0] when not set.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-"moved" エントリは、最小桁と最大桁のリストで、未設定時は [0, 0] である。
+"moved" エントリは、行番号、最小桁と最大桁のリストで、未設定時は [0, 0, 0] です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The "mousemoved" entry is a list with screen row, minimum and
+		maximum screen column, [0, 0, 0] when not set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"mousemoved" エントリはスクリーン行、最小桁と最大桁のリストで、未設定時は [0, 0, 0] です。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -850,12 +903,11 @@ popup @{id@} の @{options@} を辞書で返す。ゼロ値はオプションが
 
 @ifset EN
 		"borderhighlight" is not included when all values are empty.
-		"scrollbarhighlight" and "thumbhighlight" are onlu included
+		"scrollbarhighlight" and "thumbhighlight" are only included
 		when set.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-すべての値が空の場合、"borderhighlight" は含まれない。
-"scrollbarhighlight" and "thumbhighlight" are onlu included when set.
+すべての値が空の場合、"borderhighlight" は含まれません。設定されているときのみ "scrollbarhighlight" と "thumbhighlight" が含まれます。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -921,9 +973,9 @@ popup_getpos({id})					*popup_getpos()*
 		    visible	one if the popup is displayed, zero if hidden
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item firstline @tab line of the buffer at top (1 unless scrolled)
-@item scrollbar @tab non-zero if a scrollbar is displayed
-@item visible ポップアップが表示されている場合は 1、非表示の場合は 0
+@item firstline @tab トップにおけるバッファの行 (スクロールされていなければ 1)
+@item scrollbar @tab スクロールバーが表示されているなら非ゼロ
+@item visible @tab ポップアップが表示されている場合は 1、非表示の場合は 0
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
@@ -981,6 +1033,21 @@ popup_hide({id})						*popup_hide()*
 
 
 @ifset EN
+popup_locate({row}, {col})				 *popup_locate()*
+		Return the |window-ID| of the popup at screen position {row}
+		and {col}.  If there are multiple popups the one with the
+		highest zindex is returned.  If there are no popups at this
+		position then zero is returned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{popup_locate()}
+@pindex popup_locate()
+@item popup_locate(@{row@}, @{col@})
+スクリーン位置 @{row@} と @{col@} におけるポップアップの |@ref{window-ID}| を返します。もしも複数のポップアップがあるなら、一番大きい zindex をもつものが返されます。もしもこの位置にポップアップがないのなら、ゼロが返されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
 popup_menu({what}, {options})				 *popup_menu()*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -998,26 +1065,28 @@ popup_menu({what}, {options})				 *popup_menu()*
 カーソルの近くに @{what@} を表示し、カーソルキーで項目の 1 つを選択して処理し、それを閉じるには、@key{Space} または @key{Enter} で項目を選択する。これを有効にするには、@{what@} に複数の行が必要である。これは次のように機能する:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			call popup_create({what}, {
-				\ 'pos': 'center',
-				\ 'zindex': 200,
-				\ 'drag': 1,
-				\ 'wrap': 0,
-				\ 'border': [],
-				\ 'padding': [],
-				\ 'filter': 'popup_filter_menu',
+			call popup_create({what}, #{
+				\ pos: 'center',
+				\ zindex: 200,
+				\ drag: 1,
+				\ wrap: 0,
+				\ border: [],
+				\ cursorline: 1,
+				\ padding: [0,1,0,1],
+				\ filter: 'popup_filter_menu',
 				\ })
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-call popup_create({what}, {
-        \ 'pos': 'center',
-        \ 'zindex': 200,
-        \ 'drag': 1,
-        \ 'wrap': 0,
-        \ 'border': [],
-        \ 'padding': [],
-        \ 'filter': 'popup_filter_menu',
+call popup_create({what}, #{
+        \ pos: 'center',
+        \ zindex: 200,
+        \ drag: 1,
+        \ wrap: 0,
+        \ border: [],
+        \ cursorline: 1,
+        \ padding: [0,1,0,1],
+        \ filter: 'popup_filter_menu',
         \ })
 @end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -1101,34 +1170,34 @@ popup_notification({what}, {options})			 *popup_notification()*
 Vim のウィンドウの上部に @{what@} を 3 秒間表示する。これは次のように動作する:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-			call popup_create({what}, {
-				\ 'line': 1,
-				\ 'col': 10,
-				\ 'minwidth': 20,
-				\ 'time': 3000,
-				\ 'tabpage': -1,
-				\ 'zindex': 300,
-				\ 'drag': 1,
-				\ 'highlight': 'WarningMsg',
-				\ 'border': [],
-				\ 'close': 'click',
-				\ 'padding': [0,1,0,1],
+			call popup_create({what}, #{
+				\ line: 1,
+				\ col: 10,
+				\ minwidth: 20,
+				\ time: 3000,
+				\ tabpage: -1,
+				\ zindex: 300,
+				\ drag: 1,
+				\ highlight: 'WarningMsg',
+				\ border: [],
+				\ close: 'click',
+				\ padding: [0,1,0,1],
 				\ })
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-call popup_create({what}, {
-        \ 'line': 1,
-        \ 'col': 10,
-        \ 'minwidth': 20,
-        \ 'time': 3000,
-        \ 'tabpage': -1,
-        \ 'zindex': 300,
-        \ 'drag': 1,
-        \ 'highlight': 'WarningMsg',
-        \ 'border': [],
-        \ 'close': 'click',
-        \ 'padding': [0,1,0,1],
+call popup_create({what}, #{
+        \ line: 1,
+        \ col: 10,
+        \ minwidth: 20,
+        \ time: 3000,
+        \ tabpage: -1,
+        \ zindex: 300,
+        \ drag: 1,
+        \ highlight: 'WarningMsg',
+        \ border: [],
+        \ close: 'click',
+        \ padding: [0,1,0,1],
         \ })
 @end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -1171,7 +1240,7 @@ popup_show({id})						*popup_show()*
 		For {id} see `popup_hide()`.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@{id@} が非表示のポップアップの場合は、それを表示する。@{id@} については `popup_hide()` を参照。
+@{id@} が非表示のポップアップの場合は、それを表示する。@{id@} については `@command{popup_hide()}` を参照。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 
@@ -1197,6 +1266,7 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 			callback
 			close
 			drag
+			cursorline
 			filter
 			firstline
 			flip
@@ -1220,6 +1290,7 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 @item callback @tab
 @item close @tab
 @item drag @tab
+@item cursorline @tab
 @item filter @tab
 @item firstline @tab
 @item flip @tab
@@ -1261,9 +1332,9 @@ popup_settext({id}, {text})				*popup_settext()*
 		by the different text.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-ポップアップウィンドウ @{id@} でバッファのテキストを設定する。@{text@} は |@ref{popup_create()}| に提供されるものと同じである。ただしバッファ番号は認められていない。
+ポップアップウィンドウ @{id@} でバッファのテキストを設定します。@{text@} は |@ref{popup_create()}| に提供されるものと同じです。ただしバッファ番号は認められていません。
 
-テキストの違いが生じる以外の、ウィンドウのサイズや位置は変わらない。
+テキストの違いが生じる以外ではウィンドウのサイズや位置を変更しません。
 @end table
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -1275,7 +1346,7 @@ popup_settext({id}, {text})				*popup_settext()*
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{popup-usage}
 @cindex popup-usage
-@section 3. Usage
+@section 3. 使用方法
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1571,11 +1642,11 @@ The second argument of |popup_create()| is a dictionary with options:
 			Also see |popup-scrollbar|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item scrollbar @tab non-zero: show a scrollbar when the text doesn't fit.
+@item scrollbar @tab
+非ゼロ: テキストがポップアップの大きさに適応していなければ、スクロールバーを表示します。 @*
+ゼロ: スクロールバーを表示しません @*
 
-zero: do not show a scrollbar.  Default is non-zero.
-
-Also see |popup-scrollbar|.
+既定は非ゼロです。|@ref{popup-scrollbar}| も参照してください。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	scrollbarhighlight  Highlight group name for the scrollbar. The
@@ -1583,7 +1654,7 @@ Also see |popup-scrollbar|.
 			PmenuSbar is used.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item scrollbarhighlight @tab Highlight group name for the scrollbar. The background color is what matters.  When not given then PmenuSbar is used.
+@item scrollbarhighlight @tab スクロールバーのためのハイライトグループ名。背景色は重要です。与えられていないときは PmenuSbar が使われます。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	thumbhighlight  Highlight group name for the scrollbar thumb. The
@@ -1591,7 +1662,7 @@ Also see |popup-scrollbar|.
 			PmenuThumb is used.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item thumbhighlight @tab Highlight group name for the scrollbar thumb. The background color is what matters.  When not given then PmenuThumb is used.
+@item thumbhighlight @tab スクロールバーのつまみのためのハイライトグループ名。背景色は重要です。与えられていないときは PmenuThumb が使われます。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	zindex		Priority for the popup, default 50.  Minimum value is
@@ -1605,7 +1676,7 @@ Also see |popup-scrollbar|.
 			the popup that are transparent.  See |popup-mask|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item mask @tab A list of lists with coordinates, defining parts of the popup that are transparent.  See |popup-mask|.
+@item mask @tab 透明なポップアップの一部を定義している座標リストのリスト。|@ref{popup-mask}| を参照してください。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	time		Time in milliseconds after which the popup will close.
@@ -1619,6 +1690,7 @@ Also see |popup-scrollbar|.
 			- "any": if the cursor moved at all
 			- "word": if the cursor moved outside |<cword>|
 			- "WORD": if the cursor moved outside |<cWORD>|
+			- "expr": if the cursor moved outside |<cexpr>|
 			- [{start}, {end}]: if the cursor moved before column
 			  {start} or after {end}
 			The popup also closes if the cursor moves to another
@@ -1630,9 +1702,23 @@ Also see |popup-scrollbar|.
 @item "any": 少しでもカーソルが移動した場合
 @item "word": カーソルが |<cword>| の外側に移動した場合
 @item "WORD": カーソルが |<cWORD>| の外側に移動した場合
+@item "expr": カーソルが |<cexpr>| の外側に移動した場合
 @item [@{start@}, @{end@}]: カーソルが桁 @{start@} の前、または @{end@} の後に移動した場合
 @end itemize
 カーソルが別の行または別のウィンドウに移動した場合もポップアップは閉じる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+	cursorline	non-zero: Highlight the cursor line. Also scrolls the
+				  text to show this line (only works properly
+				  when 'wrap' is off).
+			zero: 	  Do not highlight the cursor line.
+			Default is zero, except for |popup_menu()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item cursorline @tab
+ゼロ以外: カーソル行をハイライトします。またこの行を表示するためにテキストをスクロールします (たぶん '@option{wrap}' がオフの時のみに動作します)。@*
+ゼロ: カーソル行をハイライトしません。@*
+既定はゼロで、他のものについては |popup_menu()| を参照してください。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	filter		A callback that can filter typed characters, see
@@ -1892,7 +1978,7 @@ POPUP SCROLLBAR						*popup-scrollbar*
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{popup-scrollbar}
 @cindex popup-scrollbar
-@unnumberedsubsec POPUP SCROLLBAR
+@unnumberedsubsec ポップアップスクロールバー
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1900,12 +1986,12 @@ If the text does not fit in the popup a scrollbar is displayed on the right of
 the window.  This can be disabled by setting the "scrollbar" option to zero.
 When the scrollbar is displayed mouse scroll events, while the mouse pointer
 is on the popup, will cause the text to scroll up or down as you would expect.
-A click in the upper halve of the scrollbar will scroll the text one line
-down.  A click in the lower halve wil scroll the text one line up.  However,
+A click in the upper half of the scrollbar will scroll the text one line
+down.  A click in the lower half wil scroll the text one line up.  However,
 this is limited so that the popup does not get smaller.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-If the text does not fit in the popup a scrollbar is displayed on the right of the window.  This can be disabled by setting the "scrollbar" option to zero.  When the scrollbar is displayed mouse scroll events, while the mouse pointer is on the popup, will cause the text to scroll up or down as you would expect.  A click in the upper halve of the scrollbar will scroll the text one line down.  A click in the lower halve wil scroll the text one line up.  However, this is limited so that the popup does not get smaller.
+テキストがポップアップの大きさに適応していないなら、ウィンドウの右側にスクロールバーが表示されます。これは "scrollbar" オプションをゼロに設定することで表示することができます。スクロールバーが表示されているときに、マウスポインタがポップアップの上にある間は、マウススクロールのイベントはあなたが期待する通りに、テキストを上下にスクロールさせる動作になります。スクロールバーの上半分をクリックすると、テキストを 1 行下にスクロールします。スクロールバーの下半分をクリックすると、テキストを 1 行上にスクロールします。しかしながら、これは制限されていますので、ポップアップは小さくはなりません。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 
@@ -1915,7 +2001,7 @@ POPUP MASK						*popup-mask*
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{popup-mask}
 @cindex popup-mask
-@unnumberedsubsec POPUP MASK
+@unnumberedsubsec ポップアップマスク
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1924,7 +2010,7 @@ transparent.  This is defined by a "mask" which is a list of lists, where each
 list has four numbers:
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-To minimize the text that the popup covers, parts of it can be made transparent.  This is defined by a "mask" which is a list of lists, where each list has four numbers:
+ポップアップに被せるテキストを最小化するために、この一部分は透明化することができます。これは リストのリストである "mask" によって定義されています。それぞれのリストは 4 つの項目を持ちます:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
     col		start column, positive for counting from the left, 1 for
@@ -1934,17 +2020,17 @@ To minimize the text that the popup covers, parts of it can be made transparent.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .3 .7
-@item col @tab start column, positive for counting from the left, 1 for leftmost, negative for counting from the right, -1 for rightmost
-@item endcol @tab last column, like "col"
+@item col @tab 桁の開始。左から数える正の値で 1 が一番左。右から数える負の値で -1 が一番右。
+@item endcol @tab 桁の終り。"col" と同様。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-    line	start line, positive for conting from the top, 1 for top,
+    line	start line, positive for counting from the top, 1 for top,
 		negative for counting from the bottom, -1 for bottom
     endline	end line, like "line"
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item line @tab start line, positive for conting from the top, 1 for top, negative for counting from the bottom, -1 for bottom
-@item endline @tab end line, like "line"
+@item line @tab 行の開始。上から数える正の値で 1 が一番上。下から数える負の値で -1 が一番下。
+@item endline @tab 行の終り。"line" と同様。
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -1953,7 +2039,7 @@ For example, to make the last 10 columns of the last line transparent:
 	[[-10, -1, -1, -1]]
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-For example, to make the last 10 columns of the last line transparent:
+例えば、最終行のうしろ 10 桁を透明化するには:
 @example
 [[-10, -1, -1, -1]]
 @end example
@@ -1964,7 +2050,7 @@ To make the four corners transparent:
 	[[1, 1, 1, 1], [-1, -1, 1, 1], [1, 1, -1, -1], [-1, -1, -1, -1]]
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-To make the four corners transparent:
+4 つの角を透明化するには:
 @example
 [[1, 1, 1, 1], [-1, -1, 1, 1], [1, 1, -1, -1], [-1, -1, -1, -1]]
 @end example
@@ -2004,9 +2090,9 @@ Prompt the user to press y/Y or n/N: >
 	   endif
 	endfunc
 
-	call popup_dialog('Continue? y/n', {
-		\ 'filter': 'popup_filter_yesno',
-		\ 'callback': 'MyDialogHandler',
+	call popup_dialog('Continue? y/n', #{
+		\ filter: 'popup_filter_yesno',
+		\ callback: 'MyDialogHandler',
 		\ })
 <
 @end ifset
@@ -2018,9 +2104,9 @@ func MyDialogHandler(id, result)
    endif
 endfunc
 
-call popup_dialog('Continue? y/n', {
-        \ 'filter': 'popup_filter_yesno',
-        \ 'callback': 'MyDialogHandler',
+call popup_dialog('Continue? y/n', #{
+        \ filter: 'popup_filter_yesno',
+        \ callback: 'MyDialogHandler',
         \ })
 @end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -2035,9 +2121,9 @@ popup_filter_menu() をショートカットで拡張できるようにする:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
-	call popup_menu(['Save', 'Cancel', 'Discard'], {
-		\ 'filter': 'MyMenuFilter',
-		\ 'callback': 'MyMenuHandler',
+	call popup_menu(['Save', 'Cancel', 'Discard'], #{
+		\ filter: 'MyMenuFilter',
+		\ callback: 'MyMenuHandler',
 		\ })
 
 	func MyMenuFilter(id, key)
@@ -2062,9 +2148,9 @@ popup_filter_menu() をショートカットで拡張できるようにする:
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-call popup_menu(['Save', 'Cancel', 'Discard'], {
-        \ 'filter': 'MyMenuFilter',
-        \ 'callback': 'MyMenuHandler',
+call popup_menu(['Save', 'Cancel', 'Discard'], #{
+        \ filter: 'MyMenuFilter',
+        \ callback: 'MyMenuHandler',
         \ })
 
 func MyMenuFilter(id, key)
@@ -2084,6 +2170,123 @@ func MyMenuFilter(id, key)
 
   " No shortcut, pass to generic filter
   return popup_filter_menu(a:id, a:key)
+endfunc
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+					*popup_beval_example*
+Example for using a popup window for 'ballooneval': >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{popup_beval_example}
+@cindex popup_beval_example
+'@option{ballooneval}' のためのポップアップウィンドウの使用例:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	set ballooneval balloonevalterm
+	set balloonexpr=BalloonExpr()
+	let s:winid = 0
+	let s:last_text = ''
+
+	func BalloonExpr()
+	  if s:winid && popup_getpos(s:winid) != {}
+	    " previous popup window still shows
+	    if v:beval_text == s:last_text
+	      " Still the same text, keep the existing popup
+	      return ''
+	    endif
+	    call popup_close(s:winid)
+	  endif
+	  let s:winid = popup_beval(v:beval_text, #{mousemoved: 'word'})
+	  let s:last_text = v:beval_text
+	  return ''
+	endfunc
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+set ballooneval balloonevalterm
+set balloonexpr=BalloonExpr()
+let s:winid = 0
+let s:last_text = ''
+
+func BalloonExpr()
+  if s:winid && popup_getpos(s:winid) != {}
+    " previous popup window still shows
+    if v:beval_text == s:last_text
+      " Still the same text, keep the existing popup
+      return ''
+    endif
+    call popup_close(s:winid)
+  endif
+  let s:winid = popup_beval(v:beval_text, #{mousemoved: 'word'})
+  let s:last_text = v:beval_text
+  return ''
+endfunc
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+If the text has to be obtained asynchronously return an empty string from the
+expression function and call popup_beval() once the text is available.  In
+this example simulated with a timer callback: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ひとたびテキストが利用できるようにな、もしもテキストを非同期的に得られるなら、式関数から空の文字列を返し、popup_beval() を呼び出します。タイマーコールバックをシミュレートした例：
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	set ballooneval balloonevalterm
+	set balloonexpr=BalloonExpr()
+	let s:winid = 0
+	let s:balloonText = ''
+
+	func BalloonExpr()
+	  if s:winid && popup_getpos(s:winid) != {}
+	    " previous popup window still shows
+	    if  v:beval_text == s:balloonText
+	      " Still the same text, keep the existing popup
+	      return ''
+	    endif
+	    call popup_close(s:winid)
+	    let s:winid = 0
+	  endif
+	  " simulate an asynchronous loopup for the text to display
+	  let s:balloonText = v:beval_text
+	  call timer_start(100, 'ShowPopup')
+	  return ''
+	endfunc
+
+	func ShowPopup(id)
+	  let s:winid = popup_beval(s:balloonText, #{mousemoved: 'word'})
+	endfunc
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+set ballooneval balloonevalterm
+set balloonexpr=BalloonExpr()
+let s:winid = 0
+let s:balloonText = ''
+
+func BalloonExpr()
+  if s:winid && popup_getpos(s:winid) != {}
+    " 以前のポップアップウィンドウはまだ見えています
+    if  v:beval_text == s:balloonText
+      " テキストを黙らせて、ポップアップはそのまま
+      return ''
+    endif
+    call popup_close(s:winid)
+    let s:winid = 0
+  endif
+  " テキストを表示するために非同期的なループをシミュレート
+  let s:balloonText = v:beval_text
+  call timer_start(100, 'ShowPopup')
+  return ''
+endfunc
+
+func ShowPopup(id)
+  let s:winid = popup_beval(s:balloonText, #{mousemoved: 'word'})
 endfunc
 @end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
