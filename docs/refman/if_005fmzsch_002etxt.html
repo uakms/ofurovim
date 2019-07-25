@@ -127,24 +127,20 @@ Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp;
 <p>MzScheme インターフェイスは、exn から派生した例外 exn:vim を定義します。Vim の樣々なエラーを通知するために、この例外が投げられます。
 </p>
 <p>コンパイルの實行中に、その時點の MzScheme コレクションのパスが記錄されます。もし他にもパスを指定したい場合は、パラメーター &rsquo;current-library-collection-paths&rsquo; を使つてください。例: ユーザーごとのコレクションパスを追加するには:
-</p><div class="example">
-<pre class="example">:mz &lt;&lt; EOF
+</p><pre class="verbatim">:mz &lt;&lt; EOF
 (current-library-collection-paths
     (cons
         (build-path (find-system-path 'addon-dir) (version) &quot;collects&quot;)
         (current-library-collection-paths)))
 EOF
-</pre></div>
-
+</pre>
 <p>すべての機能は vimext モジュールを通して提供されます。
 </p>
 <p>exn:vim は明示的なインポートをしなくても利用可能です。
 </p>
 <p>モジュールを require するときは、MzScheme との衝突を避けるため、プリフィックスを使ふことも考へてください。例:
-</p><div class="example">
-<pre class="example">:mzscheme (require (prefix vim- vimext))
-</pre></div>
-<p>本マニュアル中、以降のすべての例は、このプリフィックスを使つてゐます。
+</p><pre class="verbatim">:mzscheme (require (prefix vim- vimext))
+</pre><p>本マニュアル中、以降のすべての例は、このプリフィックスを使つてゐます。
 </p>
 <a name="mzscheme_002dsandbox"></a><a name="index-mzscheme_002dsandbox"></a>
 <p>サンドボックス |<a href="eval_002etxt.html#sandbox">sandbox</a>| の中で實行されてゐるときは、ファイルシステムへのアクセスや Vim インターフェイスプロシージャの實行は制限されてゐます。
@@ -152,21 +148,16 @@ EOF
 <a name="mzscheme_002dexamples"></a><a name="index-mzscheme_002dexamples"></a>
 <a name="g_t2_002e-Li"></a>
 <h3 class="section">2. 例</h3>
-<div class="example">
-<pre class="example">:mzscheme (display &quot;Hello&quot;)
+<pre class="verbatim">:mzscheme (display &quot;Hello&quot;)
 :mz (display (string-append &quot;Using MzScheme version &quot; (version)))
 :mzscheme (require (prefix vim- vimext)) ; MzScheme &lt; 4.x 用
 :mzscheme (require (prefix-in vim- 'vimext)) ; MzScheme 4.x 用
 :mzscheme (vim-set-buff-line 10 &quot;This is line #10&quot;)
-</pre></div>
-
+</pre>
 <p>使つてゐる MzScheme のバージョンを見るには:
-</p><div class="example">
-<pre class="example">:mzscheme (display (version))
-</pre></div>
-<p>インラインスクリプトの例:
-</p><div class="example">
-<pre class="example">function! &lt;SID&gt;SetFirstLine()
+</p><pre class="verbatim">:mzscheme (display (version))
+</pre><p>インラインスクリプトの例:
+</p><pre class="verbatim">function! &lt;SID&gt;SetFirstLine()
     :mz &lt;&lt; EOF
     (display &quot;!!!&quot;)
     (require (prefix vim- vimext))
@@ -177,24 +168,18 @@ EOF
 endfunction
 
 nmap &lt;F9&gt; :call &lt;SID&gt;SetFirstLine() &lt;CR&gt;
-</pre></div>
-<p>ファイルの實行:
-</p><div class="example">
-<pre class="example">:mzfile supascript.scm
-</pre></div>
-<p>例外制禦:
-</p><div class="example">
-<pre class="example">:mz &lt;&lt; EOF
+</pre><p>ファイルの實行:
+</p><pre class="verbatim">:mzfile supascript.scm
+</pre><p>例外制禦:
+</p><pre class="verbatim">:mz &lt;&lt; EOF
 (require (prefix vim- vimext))
 ; ↑新しいバージョンでは (require (prefix-in vim- 'vimext))
 (with-handlers
   ([exn:vim? (lambda (e) (display (exn-message e)))])
   (vim-eval &quot;nonsense-string&quot;))
 EOF
-</pre></div>
-<p>vimext モジュールの自動インスタンス化 (|<a href="starting_002etxt.html#vimrc">vimrc</a>| に書くことができます):
-</p><div class="example">
-<pre class="example">function! MzRequire()
+</pre><p>vimext モジュールの自動インスタンス化 (|<a href="starting_002etxt.html#vimrc">vimrc</a>| に書くことができます):
+</p><pre class="verbatim">function! MzRequire()
     :redir =&gt; l:mzversion
     :mz (version)
     :redir END
@@ -210,8 +195,7 @@ endfunction
 if has(&quot;mzscheme&quot;)
     silent call MzRequire()
 endif
-</pre></div>
-<a name="mzscheme_002dthreads"></a><a name="index-mzscheme_002dthreads"></a>
+</pre><a name="mzscheme_002dthreads"></a><a name="index-mzscheme_002dthreads"></a>
 <a name="g_t3_002e-suretudo"></a>
 <h3 class="section">3. スレッド</h3>
 
@@ -374,20 +358,16 @@ MzScheme の eval と名前が衝突してゐるので、呼び出すにはモ�
 <h3 class="section">6. 函數參照を使ふ</h3>
 
 <p>MzScheme インターフェイスでは函數參照 (|<a href="eval_002etxt.html#Funcref">Funcref</a>|) が使へます。Vim の函數を Scheme から直接呼び出せます。例:
-</p><div class="example">
-<pre class="example">function! MyAdd2(arg)
+</p><pre class="verbatim">function! MyAdd2(arg)
     return a:arg + 2
 endfunction
 mz (define f2 (vim-eval &quot;function(\&quot;MyAdd2\&quot;)&quot;))
 mz (f2 7)
-</pre></div>
-<p>または:
-</p><div class="example">
-<pre class="example">:mz (define indent (vim-eval &quot;function('indent')&quot;))
+</pre><p>または:
+</p><pre class="verbatim">:mz (define indent (vim-eval &quot;function('indent')&quot;))
 &quot; return Vim indent for line 12
 :mz (indent 12)
-</pre></div>
-
+</pre>
 <a name="mzscheme_002ddynamic"></a><a name="E815"></a><a name="index-mzscheme_002ddynamic"></a>
 <a name="index-E815"></a>
 <a name="g_t7_002e-Dong-De-rodeingu"></a>
@@ -409,23 +389,19 @@ mz (f2 7)
 </p>
 <p>例へば、MzScheme (Racket) が C:\Racket63 にインストールされてゐる場合、次のやうに環境變數を設定する必要があるかもしれません:
 </p>
-<div class="example">
-<pre class="example">PATH=%PATH%;C:\Racket63\lib
+<pre class="verbatim">PATH=%PATH%;C:\Racket63\lib
 PLTCOLLECTS=C:\Racket63\collects
 PLTCONFIGDIR=C:\Racket63\etc
-</pre></div>
-<a name="mzscheme_002dsetup"></a><a name="E895"></a><a name="index-mzscheme_002dsetup"></a>
+</pre><a name="mzscheme_002dsetup"></a><a name="E895"></a><a name="index-mzscheme_002dsetup"></a>
 <a name="index-E895"></a>
 <a name="g_t8_002e-MzScheme-nosetutoatupu"></a>
 <h3 class="section">8. MzScheme のセットアップ</h3>
 
 <p>Vim は if_mzsch のコアモジュールとして &quot;racket/base&quot; (もし存在しなければ &quot;scheme/base&quot; にフォールバックします) を、テストのために &quot;r5rs&quot; モジュールを、そして Vim のビルド時に必要な &quot;raco ctool&quot; コマンドを要求します。MzScheme がそれらを持つてゐなかつた場合は MzScheme の raco コマンドで次のやうにインストールできます:
-</p><div class="example">
-<pre class="example">raco pkg install scheme-lib       # scheme/base module
+</p><pre class="verbatim">raco pkg install scheme-lib       # scheme/base module
 raco pkg install r5rs-lib         # r5rs module
 raco pkg install cext-lib         # raco ctool command
-</pre></div>
-<hr>
+</pre><hr>
 <div class="header">
 <p>
 Up: <a href="Mu-Ci-.html#g_t_76ee_6b21" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html#Indexes-CP" title="Index" rel="index">Index</a>]</p>
