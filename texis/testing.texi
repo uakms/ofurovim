@@ -1,0 +1,1224 @@
+@ifset JA  @c ----------- v -----------  JA  -*- tab-width: 8 -*-
+@node testing.txt, , , 目次
+@unnumbered Vim と Vim script のテスト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+*testing.txt*	For Vim version 8.1.  Last change: 2019 Sep 08
+
+
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+*testing.txt*	For Vim バージョン 8.1.  Last change: 2019 Sep 08
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+Testing Vim and Vim script			*testing-support*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{testing-support}
+@cindex testing-support
+Vim と Vim script のテスト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Expression evaluation is explained in |eval.txt|.  This file goes into details
+about writing tests in Vim script.  This can be used for testing Vim itself
+and for testing plugins.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Expression evaluation is explained in |eval.txt|.  This file goes into details about writing tests in Vim script.  This can be used for testing Vim itself and for testing plugins.
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+1. Testing Vim				|testing|
+2. Test functions			|test-functions-details|
+3. Assert functions			|assert-functions-details|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item 1. Vim のテスト @tab |@ref{testing}|
+@item 2. テスト関数 @tab |@ref{test-functions-details}|
+@item 3. Assert 関数 @tab |@ref{assert-functions-details}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+1. Testing Vim						*testing*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{testing}
+@cindex testing
+@section 1. Vim のテスト
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Vim can be tested after building it, usually with "make test".
+The tests are located in the directory "src/testdir".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim はビルドした後、通常 "make test" を使ってテストすることができます。テストはディレクトリ "src/testdir" にあります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+There are several types of tests added over time:
+	test33.in		oldest, don't add any of these
+	test_something.in	old style tests
+	test_something.vim	new style tests
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+時間の経過と共にいくつかのタイプのテストが追加されました:
+@multitable @columnfractions .5 .5
+@item test33.in @tab 最も古い、もう追加しない
+@item test_something.in @tab 古いスタイルのテスト
+@item test_something.vim @tab 新しいスタイルのテスト
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+						*new-style-testing*
+New tests should be added as new style tests.  These use functions such as
+|assert_equal()| to keep the test commands and the expected result in one
+place.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{new-style-testing}
+@cindex new-style-testing
+新しいテストは新しいスタイルのテストで追加すべきです。これらは |@ref{assert_equal()}| などの関数を使用して、テストコマンドと期待される結果を 1 か所に保持します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*old-style-testing*
+In some cases an old style test needs to be used.  E.g. when testing Vim
+without the |+eval| feature.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{old-style-testing}
+@cindex old-style-testing
+場合によっては、古いスタイルのテストを使用する必要があります。例えば、|@ref{+eval}| 機能なしで Vim をテストするとき。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+Find more information in the file src/testdir/README.txt.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+より多くの情報については src/testdir/README.txt ファイルにあります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+2. Test functions				*test-functions-details*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test-functions-details}
+@cindex test-functions-details
+@section 2. テスト関数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{test_alloc_fail()}
+@findex test_alloc_fail()
+@item test_alloc_fail(@{id@}, @{countdown@}, @{repeat@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		This is for testing: If the memory allocation with {id} is
+		called, then decrement {countdown}, and when it reaches zero
+		let memory allocation fail {repeat} times.  When {repeat} is
+		smaller than one it fails one time.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この関数はテストのために使われます: @{id@} のメモリ割り当てが行われた際に @{countdown@} はデクリメントされ、それが 0 になれば @{repeat@} 回のメモリの割り当ての失敗を発生させます。@{repeat@} が 1 未満の場合は、失敗を 1 回のみ発生させます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetAllocId()->test_alloc_fail()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetAllocId()->test_alloc_fail()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+test_autochdir()					*test_autochdir()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_autochdir()}
+@findex test_autochdir()
+@item test_autochdir()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Set a flag to enable the effect of 'autochdir' before Vim
+		startup has finished.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の起動が完了する前に '@option{autochdir}' の効果を有効にするためのフラグをセットします。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+test_feedinput({string})				*test_feedinput()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_feedinput()}
+@findex test_feedinput()
+@item test_feedinput(@{string@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Characters in {string} are queued for processing as if they
+		were typed by the user. This uses a low level input buffer.
+		This function works only when with |+unix| or GUI is running.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{string@} 中の文字は、まるでユーザーによって入力されたかのようにプロセスに渡されます。これは低レベルの入力バッファを使います。この関数は |@ref{+unix}| もしくは GUI の環境でのみ機能します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetText()->test_feedinput()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetText()->test_feedinput()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+test_garbagecollect_now()			 *test_garbagecollect_now()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_garbagecollect_now()}
+@findex test_garbagecollect_now()
+@item test_garbagecollect_now()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Like garbagecollect(), but executed right away.  This must
+		only be called directly to avoid any structure to exist
+		internally, and |v:testing| must have been set before calling
+		any function.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+garbagecollect() とほぼ同じですが、この関数はガーベッジコレクトを直ちに実行します。この関数を実行する場合は、構造体が内部に存在しないようにするために直接呼び出す必要があります。また、この関数を呼び出す前に |@ref{v:testing}| を設定する必要があります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+test_garbagecollect_soon()			 *test_garbagecollect_soon()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_garbagecollect_soon()}
+@findex test_garbagecollect_soon()
+@item test_garbagecollect_soon()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Set the flag to call the garbagecollector as if in the main
+		loop.  Only to be used in tests.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+あたかもメインループの中にいるように、ガーベッジコレクトを呼び出すためのフラグを設定します。テストでのみ使用されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+test_getvalue({name})					*test_getvalue()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_getvalue()}
+@findex test_getvalue()
+@item test_getvalue(@{name@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Get the value of an internal variable.  These values for
+		{name} are supported:
+			need_fileinfo
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+内部変数の値を取得します。@{name@} のこれらの値がサポートされています:
+@verbatim
+need_fileinfo
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetName()->test_getvalue()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetName()->test_getvalue()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+test_ignore_error({expr})			 *test_ignore_error()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_ignore_error()}
+@findex test_ignore_error()
+@item test_ignore_error(@{expr@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Ignore any error containing {expr}.  A normal message is given
+		instead.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{expr@} を含むすべてのエラーを無視します。代わりに通常メッセージが表示されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		This is only meant to be used in tests, where catching the
+		error with try/catch cannot be used (because it skips over
+		following code).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+これはテストにおいて、try/catch を用いてエラーを捕捉することができない (以降のコードをスキップするので) 場合にのみ、使うことを意図しています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		{expr} is used literally, not as a pattern.
+		When the {expr} is the string "RESET" then the list of ignored
+		errors is made empty.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+@{expr@} は文字通り用いられ、パターンとしてではありません。
+
+@{expr@} が文字列 "RESET" の場合、無視されるエラーのリストは空になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetErrorText()->test_ignore_error()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetErrorText()->test_ignore_error()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+test_null_blob()					*test_null_blob()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_null_blob()}
+@findex test_null_blob()
+@item test_null_blob()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Return a |Blob| that is null. Only useful for testing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+null の |@ref{Blob}| を返します。これはテストのみに使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+test_null_channel()					*test_null_channel()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item test_null_channel()
+@anchor{test_null_channel()}
+@findex test_null_channel()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Return a |Channel| that is null. Only useful for testing.
+		{only available when compiled with the +channel feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+null の |@ref{Channel}| を返します。これはテストのみに使われます。
+
+@{|@ref{+channel}| 機能つきでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+test_null_dict()					*test_null_dict()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item test_null_dict()
+@anchor{test_null_dict()}
+@findex test_null_dict()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Return a |Dict| that is null. Only useful for testing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+null の |@ref{Dict}| を返します。これはテストのみに使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+test_null_job()						*test_null_job()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item test_null_job()
+@anchor{test_null_job()}
+@findex test_null_job()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Return a |Job| that is null. Only useful for testing.
+		{only available when compiled with the +job feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+null の |@ref{Job}| を返します。これはテストのみに使われます。
+
+@{|@ref{+job}| 機能つきでコンパイルされたときのみ有効@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+test_null_list()					*test_null_list()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_null_list()}
+@findex test_null_list()
+@item test_null_list()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Return a |List| that is null. Only useful for testing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+null の |@ref{List}| を返します。これはテストのみに使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+test_null_partial()					*test_null_partial()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item test_null_partial()
+@anchor{test_null_partial()}
+@findex test_null_partial()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Return a |Partial| that is null. Only useful for testing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+null の |@ref{Partial}| を返します。これはテストのみに使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+test_null_string()					*test_null_string()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_null_string()}
+@findex test_null_string()
+@item test_null_string()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Return a |String| that is null. Only useful for testing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+null の |@ref{String}| を返します。これはテストのみに使われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+test_option_not_set({name})				*test_option_not_set()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_option_not_set()}
+@findex test_option_not_set()
+@item test_option_not_set(@{name@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Reset the flag that indicates option {name} was set.  Thus it
+		looks like it still has the default value. Use like this: >
+			set ambiwidth=double
+			call test_option_not_set('ambiwidth')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+オプション @{name@} が設定されていることを示すフラグをリセットします。そのため、既定値のままであるように見えます。次のように使います:
+@verbatim
+set ambiwidth=double
+call test_option_not_set('ambiwidth')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		Now the 'ambiwidth' option behaves like it was never changed,
+		even though the value is "double".
+		Only to be used for testing!
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在は、その値は "double" であるけれども、'@option{ambiwidth}' は決して変更されていないかのように振る舞います。
+
+テストのみで使われます！
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetOptionName()->test_option_not_set()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetOptionName()->test_option_not_set()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+test_override({name}, {val})				*test_override()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_override()}
+@findex test_override()
+@item test_override(@{name@}, @{val@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Overrides certain parts of Vim's internal processing to be able
+		to run tests. Only to be used for testing Vim!
+		The override is enabled when {val} is non-zero and removed
+		when {val} is zero.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テストを実行できるようにするため、Vim の内部処理の特定の部分を置き換えます。Vim をテストするためだけに使用してください！
+
+置き換えは、@{val@} が非 0 のときに有効化され、@{val@} が 0 のときに取り除かれます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Current supported values for name are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+現在 name に使える値は:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		name	     effect when {val} is non-zero ~
+		redraw       disable the redrawing() function
+		redraw_flag  ignore the RedrawingDisabled flag
+		char_avail   disable the char_avail() function
+		starting     reset the "starting" variable, see below
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@headitem name @tab @{val@} が非 0 のときの効果
+@item redraw @tab redrawing() 関数を無効化する
+@item redraw_flag @tab RedrawingDisabled フラグを無視する
+@item char_avail @tab char_avail() 関数を無効化する
+@item starting @tab "starting" の値をリセットする。以下を参照
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		nfa_fail     makes the NFA regexp engine fail to force a
+			     fallback to the old engine
+		no_query_mouse  do not query the mouse position for "dec"
+				terminals
+		no_wait_return	set the "no_wait_return" flag.  Not restored
+				with "ALL".
+		ALL	     clear all overrides ({val} is not used)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item nfa_fail @tab NFA 正規表現エンジンが失敗すると強制的に古いエンジンにフォールバックする
+@item no_query_mouse @tab "dec" 端末のマウス位置を問い合わせない
+@item no_wait_return @tab "no_wait_return" フラグを設定する。"ALL" では復元されない
+@item ALL @tab すべての置き換えをクリアする (@{val@} は使われない)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		"starting" is to be used when a test should behave like
+		startup was done.  Since the tests are run by sourcing a
+		script the "starting" variable is non-zero. This is usually a
+		good thing (tests run faster), but sometimes changes behavior
+		in a way that the test doesn't work properly.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim の起動が完了した時と同じ状況としてテストをしたい場合に "starting" は使われます。テストはスクリプトを読み込んで実行されるので、"starting" の値は非ゼロです。このことは多くの場合で良いこと (テストの実行が速い) なのですが、テストがうまく動かない場合に挙動が変化するときがあります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When using: >
+			call test_override('starting', 1)
+<		The value of "starting" is saved.  It is restored by: >
+			call test_override('starting', 0)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+使用時:
+@verbatim
+call test_override('starting', 1)
+@end verbatim
+"starting" の値は保存されます。この値は次のようにして復元できます:
+@verbatim
+call test_override('starting', 0)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<		Can also be used as a |method|: >
+			GetOverrideVal()-> test_override('starting')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetOverrideVal()-> test_override('starting')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+test_refcount({expr})					*test_refcount()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_refcount()}
+@findex test_refcount()
+@item test_refcount(@{expr@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Return the reference count of {expr}.  When {expr} is of a
+		type that does not have a reference count, returns -1.  Only
+		to be used for testing.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{expr@} の参照カウントを返します。@{expr@} が参照カウントを持たない型の場合は、-1 を返します。この関数はテスト用です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetVarname()->test_refcount()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetVarname()->test_refcount()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+test_scrollbar({which}, {value}, {dragging})		*test_scrollbar()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item test_scrollbar(@{which@}, @{value@}, @{dragging@})
+@anchor{test_scrollbar()}
+@findex test_scrollbar()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Pretend using scrollbar {which} to move it to position
+		{value}.  {which} can be:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{which@} のスクロールバーを使用し @{value@} 位置に移動しているかのように振る舞います。@{which@} の値は:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			left	Left scrollbar of the current window
+			right	Right scrollbar of the current window
+			hor	Horizontal scrollbar
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .2 .8
+@item left @tab 現在のウィンドウの左側のスクロールバー
+@item right @tab 現在のウィンドウの右側のスクロールバー
+@item hor @tab 水平のスクロールバー
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		For the vertical scrollbars {value} can be 1 to the
+		line-count of the buffer.  For the horizontal scrollbar the
+		{value} can be between 1 and the maximum line length, assuming
+		'wrap' is not set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+垂直スクロールバーのための @{value@} は、1 からバッファの行数になります。水平スクロールバーのための @{value@}は、1 と最大桁数となります。'@option{wrap}' は設定されていないと想定します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When {dragging} is non-zero it's like dragging the scrollbar,
+		otherwise it's like clicking in the scrollbar.
+		Only works when the {which} scrollbar actually exists,
+		obviously only when using the GUI.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{dragging@} が非ゼロの場合、スクロールバーをドラッグしているかのようになり、そうでなければ、スクロールバーをクリックしているかのようになります。@{which@} スクロールバーが確かに存在している時にのみ動作します。明らかに GUI を使用している時のみです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetValue()->test_scrollbar('right', 0)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetValue()->test_scrollbar('right', 0)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+test_setmouse({row}, {col})				*test_setmouse()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_setmouse()}
+@findex test_setmouse()
+@item test_setmouse(@{row@}, @{col@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Set the mouse position to be used for the next mouse action.
+		{row} and {col} are one based.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次のマウス操作に使用するマウス位置を設定します。@{row@} と @{col@} は 1 ベースです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		For example: >
+			call test_setmouse(4, 20)
+			call feedkeys("\<LeftMouse>", "xt")
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+call test_setmouse(4, 20)
+call feedkeys("\<LeftMouse>", "xt")
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+test_settime({expr})					*test_settime()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{test_settime()}
+@findex test_settime()
+@item test_settime(@{expr@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Set the time Vim uses internally.  Currently only used for
+		timestamps in the history, as they are used in viminfo, and
+		for undo.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Vim が内部的に用いる時間を設定します。現在は history のタイムスタンプ、viminfo のタイムスタンプ、undo に使用されています。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Using a value of 1 makes Vim not sleep after a warning or
+		error message.
+		{expr} must evaluate to a number.  When the value is zero the
+		normal behavior is restored.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+1 を渡すと、Vim は警告やエラーメッセージの後、スリープしなくなります。
+
+@{expr@} は、数値として評価されなければならなりません。0 を渡せば、Vim の内部時間は通常動作に戻ります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetTime()->test_settime()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetTime()->test_settime()
+@end verbatim
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+3. Assert functions				*assert-functions-details*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{assert-functions-details}
+@cindex assert-functions-details
+@section 3. Assert 関数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+assert_beeps({cmd})					*assert_beeps()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{assert_beeps()}
+@findex assert_beeps()
+@item assert_beeps(@{cmd@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Run {cmd} and add an error message to |v:errors| if it does
+		NOT produce a beep or visual bell.
+		Also see |assert_fails()| and |assert-return|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{cmd@} を実行し、それがビープもしくはビジュアルベルを@strong{発生させなかった}場合、|@ref{v:errors}| にエラーメッセージを追加します。
+
+|@ref{assert_fails()}| と |@ref{assert-return}| も参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetCmd()->assert_beeps()
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetCmd()->assert_beeps()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*assert_equal()*
+assert_equal({expected}, {actual} [, {msg}])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{assert_equal()}
+@findex assert_equal()
+@item assert_equal(@{expected@}, @{actual@} [, @{msg@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When {expected} and {actual} are not equal an error message is
+		added to |v:errors| and 1 is returned.  Otherwise zero is
+		returned |assert-return|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{expected@} と @{actual@} が等しくない場合、|@ref{v:errors}| にエラーメッセージを追加し、1 が返ります。そうでなければ 0 が返ります。|@ref{assert-return}|
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		There is no automatic conversion, the String "4" is different
+		from the Number 4.  And the number 4 is different from the
+		Float 4.0.  The value of 'ignorecase' is not used here, case
+		always matters.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+暗黙的な変換は行われないため、文字列 "4" は数値 4 とは異なります。同様に、数値 4 は浮動小数点数 4.0 と異なります。ここでは '@option{ignorecase}' の値は使われず、大文字小文字は常に区別されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When {msg} is omitted an error in the form "Expected
+		{expected} but got {actual}" is produced.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+@{msg@} が省略された場合、"Expected @{expected@} but got @{actual@}" という形式のメッセージが生成されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Example: >
+	assert_equal('foo', 'bar')
+<		Will result in a string to be added to |v:errors|:
+	test.vim line 12: Expected 'foo' but got 'bar' ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+assert_equal('foo', 'bar')
+@end verbatim
+以下の結果が |@ref{v:errors}| に追加されます:
+@display
+test.vim line 12: Expected 'foo' but got 'bar'
+@end display
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			mylist->assert_equal([1, 2, 3])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+mylist->assert_equal([1, 2, 3])
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+<							*assert_equalfile()*
+assert_equalfile({fname-one}, {fname-two})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{assert_equalfile()}
+@findex assert_equalfile()
+@item assert_equalfile(@{fname-one@}, @{fname-two@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When the files {fname-one} and {fname-two} do not contain
+		exactly the same text an error message is added to |v:errors|.
+		Also see |assert-return|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ファイル @{fname-one@} および @{fname-two@} がまったく同じテキストでない場合、|@ref{v:errors}| にエラーメッセージが追加されます。
+
+|@ref{assert-return}| も参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When {fname-one} or {fname-two} does not exist the error will
+		mention that.
+		Mainly useful with |terminal-diff|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+@{fname-one@} もしくは @{fname-two@} が存在しない場合、それに関連したエラーとなります。
+
+主に |@ref{terminal-diff}| で役立ちます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetLog()->assert_equalfile('expected.log')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetLog()->assert_equalfile('expected.log')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+assert_exception({error} [, {msg}])			*assert_exception()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{assert_exception()}
+@findex assert_exception()
+@item assert_exception(@{error@} [, @{msg@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When v:exception does not contain the string {error} an error
+		message is added to |v:errors|.  Also see |assert-return|.
+		This can be used to assert that a command throws an exception.
+		Using the error number, followed by a colon, avoids problems
+		with translations: >
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+v:exception に @{error@} が含まれていない時、|@ref{v:errors}| にエラーメッセージを追加します。|@ref{assert-return}| も参照してください。
+
+これは例外を投げるコマンドのテストを行う場合に使うことができます。コロンが続くエラー番号を使えば、翻訳の問題を回避することができます:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			try
+			  commandthatfails
+			  call assert_false(1, 'command should have failed')
+			catch
+			  call assert_exception('E492:')
+			endtry
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@verbatim
+try
+  失敗するコマンド
+  call assert_false(1, 'command should have failed')
+catch
+  call assert_exception('E492:')
+endtry
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+assert_fails({cmd} [, {error} [, {msg}]])			*assert_fails()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{assert_fails()}
+@findex assert_fails()
+@item assert_fails(@{cmd@} [, @{error@} [, @{msg@}]])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Run {cmd} and add an error message to |v:errors| if it does
+		NOT produce an error.  Also see |assert-return|.
+		When {error} is given it must match in |v:errmsg|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{cmd@} を実行しエラーを生成しなかった場合、|@ref{v:errors}| にエラーメッセージを追加します。|@ref{assert-return}| も参照してください。
+
+@{error@} が渡された場合、|@ref{v:errmsg}| の一部にマッチしなければなりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Note that beeping is not considered an error, and some failing
+		commands only beep.  Use |assert_beeps()| for those.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ビープ音の発生はエラーとは見なされず、いくつかのコマンドは失敗時にビープ音を鳴らすだけであることに注意してください。これらについては |@ref{assert_beeps()}| を使用してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetCmd()->assert_fails('E99:')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetCmd()->assert_fails('E99:')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+assert_false({actual} [, {msg}])				*assert_false()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{assert_false()}
+@findex assert_false()
+@item assert_false(@{actual@} [, @{msg@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When {actual} is not false an error message is added to
+		|v:errors|, like with |assert_equal()|.
+		Also see |assert-return|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{assert_equal()}| と同様に、@{actual@} が false でない場合、|@ref{v:errors}| にエラーメッセージを追加します。
+
+|@ref{assert-return}| も参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		A value is false when it is zero. When {actual} is not a
+		number the assert fails.
+		When {msg} is omitted an error in the form
+		"Expected False but got {actual}" is produced.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ゼロである時、その値は false です。@{actual@} が数値でない場合、テストが失敗します。
+
+@{msg@} が省略された場合、"Expected False but got @{actual@}" という形式のメッセージが生成されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetResult()->assert_false()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetResult()->assert_false()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+assert_inrange({lower}, {upper}, {actual} [, {msg}])	 *assert_inrange()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{assert_inrange()}
+@findex assert_inrange()
+@item assert_inrange(@{lower@}, @{upper@}, @{actual@} [, @{msg@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		This asserts number and |Float| values.  When {actual}  is lower
+		than {lower} or higher than {upper} an error message is added
+		to |v:errors|.  Also see |assert-return|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これは数値または |@ref{Float}| の値をテストします。@{actual@} が @{lower@} より低いか @{upper@} より大きい場合、|@ref{v:errors}| にエラーメッセージが追加されます。|@ref{assert-return}| も参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When {msg} is omitted an error in the form
+		"Expected range {lower} - {upper}, but got {actual}" is
+		produced.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{msg@} を省略すると、"Expected range @{lower@} - @{upper@}, but got @{actual@}" という形式のエラーが生成されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+								*assert_match()*
+assert_match({pattern}, {actual} [, {msg}])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{assert_match()}
+@findex assert_match()
+@item assert_match(@{pattern@}, @{actual@} [, @{msg@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When {pattern} does not match {actual} an error message is
+		added to |v:errors|.  Also see |assert-return|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{pattern@} が @{actual@} と一致しない場合、|@ref{v:errors}| にエラーメッセージが追加されます。|@ref{assert-return}| も参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{pattern} is used as with |=~|: The matching is always done
+		like 'magic' was set and 'cpoptions' is empty, no matter what
+		the actual value of 'magic' or 'cpoptions' is.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{expr-=~}| と同じように @{pattern@} が使われます: マッチングは '@option{magic}' や '@option{cpoptions}' の実際の値に関係なく、'@option{magic}' が設定され、'@option{cpoptions}' が空であるように常に行われます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{actual} is used as a string, automatic conversion applies.
+		Use "^" and "$" to match with the start and end of the text.
+		Use both to match the whole text.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{actual@} は文字列として使用され、自動変換が適用されます。テキストの先頭と最後に一致させるためには、"^" と "$" を使用してください。両方を使用してテキスト全体を一致させます。@{訳注: 使わなければ部分一致で判定が行われます@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When {msg} is omitted an error in the form
+		"Pattern {pattern} does not match {actual}" is produced.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{msg@} を省略すると、"Pattern @{pattern@} does not match @{actual@}" という形式のエラーが生成されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Example: >
+	assert_match('^f.*o$', 'foobar')
+<		Will result in a string to be added to |v:errors|:
+	test.vim line 12: Pattern '^f.*o$' does not match 'foobar' ~
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+例:
+@verbatim
+assert_match('^f.*o$', 'foobar')
+@end verbatim
+これは |@ref{v:errors}| に文字列が追加されることになります:
+@verbatim
+test.vim line 12: Pattern '^f.*o$' does not match 'foobar'
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			getFile()->assert_match('foo.*')
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+getFile()->assert_match('foo.*')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*assert_notequal()*
+assert_notequal({expected}, {actual} [, {msg}])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{assert_notequal()}
+@findex assert_notequal()
+@item assert_notequal(@{expected@}, @{actual@} [, @{msg@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The opposite of `assert_equal()`: add an error message to
+		|v:errors| when {expected} and {actual} are equal.
+		Also see |assert-return|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+`@command{assert_equal()}` の反対: @{expected@} と @{actual@} が等しいときにエラーメッセージを |@ref{v:errors}| に追加します。|@ref{assert-return}| も参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			mylist->assert_notequal([1, 2, 3])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+mylist->assert_notequal([1, 2, 3])
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<							*assert_notmatch()*
+assert_notmatch({pattern}, {actual} [, {msg}])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{assert_notmatch()}
+@findex assert_notmatch()
+@item assert_notmatch(@{pattern@}, @{actual@} [, @{msg@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The opposite of `assert_match()`: add an error message to
+		|v:errors| when {pattern} matches {actual}.
+		Also see |assert-return|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+`@command{assert_match()}` の反対: @{pattern@} が @{actual@} にマッチするときに |@ref{v:errors}| にエラーメッセージを追加します。|@ref{assert-return}| も参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			getFile()->assert_notmatch('bar.*')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+getFile()->assert_notmatch('bar.*')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+assert_report({msg})					*assert_report()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{assert_report()}
+@findex assert_report()
+@item assert_report(@{msg@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Report a test failure directly, using {msg}.
+		Always returns one.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テストの失敗を @{msg@} を使って直接報告します。常に 1 を返します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetMessage()->assert_report()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetMessage()->assert_report()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+assert_true({actual} [, {msg}])				*assert_true()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{assert_true()}
+@findex assert_true()
+@item assert_true(@{actual@} [, @{msg@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When {actual} is not true an error message is added to
+		|v:errors|, like with |assert_equal()|.
+		Also see |assert-return|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{assert_equal()}| と同様に、@{actual@} が true でない場合、|@ref{v:errors}| にエラーメッセージを追加します。|@ref{assert-return}| も参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		A value is TRUE when it is a non-zero number.  When {actual}
+		is not a number the assert fails.
+		When {msg} is omitted an error in the form "Expected True but
+		got {actual}" is produced.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+非ゼロである時、その値は TRUE です。@{actual@} が数値でない場合、テストが失敗します。
+
+@{msg@} が省略された場合、"Expected True but got @{actual@}" という形式のメッセージが生成されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetResult()->assert_true()
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+メソッド |@ref{method}| として使うこともできます:
+@verbatim
+GetResult()->assert_true()
+@end verbatim
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ vim:tw=78:ts=8:noet:ft=help:norl:
+@end ifset
