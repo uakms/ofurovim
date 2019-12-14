@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ja">
+<!-- Created by GNU Texinfo 6.7, http://www.gnu.org/software/texinfo/ -->
+<head>
+
+<title>testing.txt (Vim Reference Manual)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<meta name="description" content="testing.txt (Vim Reference Manual)">
+<meta name="keywords" content="testing.txt (Vim Reference Manual)">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2any">
+<link href="Mu-Ci-.html" rel="start" title="目次">
+<link href="Indexes-CP.html" rel="index" title="Indexes CP">
+<link href="Mu-Ci-.html" rel="up" title="目次">
+<link href="remote_002etxt.html" rel="next" title="remote.txt">
+<link href="print_002etxt.html" rel="prev" title="print.txt">
+<style>
+<!--
+a.summary-letter {text-decoration: none}
+blockquote.indentedblock {margin-right: 0em}
+div.display {margin-left: 3.2em}
+div.example {margin-left: 3.2em}
+div.lisp {margin-left: 3.2em}
+kbd {font-style: oblique}
+pre.display {font-family: inherit}
+pre.format {font-family: inherit}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+span.nolinebreak {white-space: nowrap}
+span.roman {font-family: initial; font-weight: normal}
+span.sansserif {font-family: sans-serif; font-weight: normal}
+ul.no-bullet {list-style: none}
+-->
+</style>
+<link rel="stylesheet" type="text/css" href="style.css">
+
+
+</head>
+
+<body lang="ja">
+<span id="testing_002etxt"></span><div class="header">
+<p>
+Up: <a href="Mu-Ci-.html" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html" title="Index" rel="index">Index</a>]</p>
+</div>
+<hr>
+<span id="Vim-to-Vim-script-notesuto"></span><h2 class="unnumbered">Vim と Vim script のテスト</h2>
+<pre class="verbatim">*testing.txt*	For Vim バージョン 8.1.  Last change: 2019 Sep 08
+
+
+		  VIMリファレンスマニュアル    by Bram Moolenaar
+</pre>
+
+<span id="testing_002dsupport"></span><span id="index-testing_002dsupport"></span>
+<p>Vim と Vim script のテスト
+</p>
+<p>Expression evaluation is explained in |eval.txt|.  This file goes into details about writing tests in Vim script.  This can be used for testing Vim itself and for testing plugins.
+</p>
+<table>
+<tr><td width="50%">1. Vim のテスト</td><td width="50%">|<a href="#testing">testing</a>|</td></tr>
+<tr><td width="50%">2. テスト函數</td><td width="50%">|<a href="#test_002dfunctions_002ddetails">test-functions-details</a>|</td></tr>
+<tr><td width="50%">3. Assert 函數</td><td width="50%">|<a href="#assert_002dfunctions_002ddetails">assert-functions-details</a>|</td></tr>
+</table>
+
+<span id="testing"></span><span id="index-testing"></span>
+<span id="g_t1_002e-Vim-notesuto"></span><h3 class="section">1. Vim のテスト</h3>
+
+<p>Vim はビルドした後、通常 &quot;make test&quot; を使つてテストすることができます。テストはディレクトリ &quot;src/testdir&quot; にあります。
+</p>
+<p>時閒の經過と共にいくつかのタイプのテストが追加されました:
+</p><table>
+<tr><td width="50%">test33.in</td><td width="50%">最も古い、もう追加しない</td></tr>
+<tr><td width="50%">test_something.in</td><td width="50%">古いスタイルのテスト</td></tr>
+<tr><td width="50%">test_something.vim</td><td width="50%">新しいスタイルのテスト</td></tr>
+</table>
+
+<span id="new_002dstyle_002dtesting"></span><span id="index-new_002dstyle_002dtesting"></span>
+<p>新しいテストは新しいスタイルのテストで追加すべきです。これらは |<a href="#assert_005fequal_0028_0029">assert_equal()</a>| などの函數を使用して、テストコマンドと期待される結果を 1 か所に保持します。
+<span id="old_002dstyle_002dtesting"></span><span id="index-old_002dstyle_002dtesting"></span>
+場合によつては、古いスタイルのテストを使用する必要があります。例へば、|<a href="various_002etxt.html#g_t_002beval">+eval</a>| 機能なしで Vim をテストするとき。
+</p>
+<p>より多くの情報については src/testdir/README.txt ファイルにあります。
+</p>
+<span id="test_002dfunctions_002ddetails"></span><span id="index-test_002dfunctions_002ddetails"></span>
+<span id="g_t2_002e-tesutoGuan-Shu-"></span><h3 class="section">2. テスト函數</h3>
+
+<dl compact="compact">
+<dd><span id="test_005falloc_005ffail_0028_0029"></span><span id="index-test_005falloc_005ffail_0028_0029"></span>
+</dd>
+<dt>test_alloc_fail({id}, {countdown}, {repeat})</dt>
+<dd><p>この函數はテストのために使はれます: {id} のメモリ割り當てが行はれた際に {countdown} はデクリメントされ、それが 0 になれば {repeat} 回のメモリの割り當ての失敗を發生させます。{repeat} が 1 未滿の場合は、失敗を 1 回のみ發生させます。
+</p>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetAllocId()-&gt;test_alloc_fail()
+</pre>
+<span id="test_005fautochdir_0028_0029"></span><span id="index-test_005fautochdir_0028_0029"></span>
+</dd>
+<dt>test_autochdir()</dt>
+<dd><p>Vim の起動が完了する前に &rsquo;<samp>autochdir</samp>&rsquo; の效果を有效にするためのフラグをセットします。
+</p>
+
+<span id="test_005ffeedinput_0028_0029"></span><span id="index-test_005ffeedinput_0028_0029"></span>
+</dd>
+<dt>test_feedinput({string})</dt>
+<dd><p>{string} 中の文字は、まるでユーザーによつて入力されたかのやうにプロセスに渡されます。これは低レベルの入力バッファを使ひます。この函數は |<a href="eval_002etxt.html#g_t_002bunix">+unix</a>| もしくは GUI の環境でのみ機能します。
+</p>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetText()-&gt;test_feedinput()
+</pre>
+<span id="test_005fgarbagecollect_005fnow_0028_0029"></span><span id="index-test_005fgarbagecollect_005fnow_0028_0029"></span>
+</dd>
+<dt>test_garbagecollect_now()</dt>
+<dd><p>garbagecollect() とほぼ同じですが、この函數はガーベッジコレクトを直ちに實行します。この函數を實行する場合は、構造體が內部に存在しないやうにするために直接呼び出す必要があります。また、この函數を呼び出す前に |<a href="eval_002etxt.html#v_003atesting">v:testing</a>| を設定する必要があります。
+</p>
+
+<span id="test_005fgarbagecollect_005fsoon_0028_0029"></span><span id="index-test_005fgarbagecollect_005fsoon_0028_0029"></span>
+</dd>
+<dt>test_garbagecollect_soon()</dt>
+<dd><p>あたかもメインループの中にゐるやうに、ガーベッジコレクトを呼び出すためのフラグを設定します。テストでのみ使用されます。
+</p>
+
+<span id="test_005fgetvalue_0028_0029"></span><span id="index-test_005fgetvalue_0028_0029"></span>
+</dd>
+<dt>test_getvalue({name})</dt>
+<dd><p>內部變數の値を取得します。{name} のこれらの値がサポートされてゐます:
+</p><pre class="verbatim">need_fileinfo
+</pre>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetName()-&gt;test_getvalue()
+</pre>
+<span id="test_005fignore_005ferror_0028_0029"></span><span id="index-test_005fignore_005ferror_0028_0029"></span>
+</dd>
+<dt>test_ignore_error({expr})</dt>
+<dd><p>{expr} を含むすべてのエラーを無視します。代はりに通常メッセージが表示されます。
+</p>
+<p>これはテストにおいて、try/catch を用ゐてエラーを捕捉することができない (以降のコードをスキップするので) 場合にのみ、使ふことを意圖してゐます。
+</p>
+<p>{expr} は文字通り用ゐられ、パターンとしてではありません。
+</p>
+<p>{expr} が文字列 &quot;RESET&quot; の場合、無視されるエラーのリストは空になります。
+</p>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetErrorText()-&gt;test_ignore_error()
+</pre>
+<span id="test_005fnull_005fblob_0028_0029"></span><span id="index-test_005fnull_005fblob_0028_0029"></span>
+</dd>
+<dt>test_null_blob()</dt>
+<dd><p>null の |<a href="eval_002etxt.html#Blob">Blob</a>| を返します。これはテストのみに使はれます。
+</p>
+
+</dd>
+<dt>test_null_channel()</dt>
+<dd><span id="test_005fnull_005fchannel_0028_0029"></span><span id="index-test_005fnull_005fchannel_0028_0029"></span>
+<p>null の |<a href="eval_002etxt.html#Channel">Channel</a>| を返します。これはテストのみに使はれます。
+</p>
+<p>{|<a href="various_002etxt.html#g_t_002bchannel">+channel</a>| 機能つきでコンパイルされたときのみ有效}
+</p>
+
+</dd>
+<dt>test_null_dict()</dt>
+<dd><span id="test_005fnull_005fdict_0028_0029"></span><span id="index-test_005fnull_005fdict_0028_0029"></span>
+<p>null の |<a href="eval_002etxt.html#Dict">Dict</a>| を返します。これはテストのみに使はれます。
+</p>
+
+</dd>
+<dt>test_null_job()</dt>
+<dd><span id="test_005fnull_005fjob_0028_0029"></span><span id="index-test_005fnull_005fjob_0028_0029"></span>
+<p>null の |<a href="eval_002etxt.html#Job">Job</a>| を返します。これはテストのみに使はれます。
+</p>
+<p>{|<a href="various_002etxt.html#g_t_002bjob">+job</a>| 機能つきでコンパイルされたときのみ有效}
+</p>
+
+<span id="test_005fnull_005flist_0028_0029"></span><span id="index-test_005fnull_005flist_0028_0029"></span>
+</dd>
+<dt>test_null_list()</dt>
+<dd><p>null の |<a href="eval_002etxt.html#List">List</a>| を返します。これはテストのみに使はれます。
+</p>
+
+</dd>
+<dt>test_null_partial()</dt>
+<dd><span id="test_005fnull_005fpartial_0028_0029"></span><span id="index-test_005fnull_005fpartial_0028_0029"></span>
+<p>null の |<a href="eval_002etxt.html#Partial">Partial</a>| を返します。これはテストのみに使はれます。
+</p>
+
+<span id="test_005fnull_005fstring_0028_0029"></span><span id="index-test_005fnull_005fstring_0028_0029"></span>
+</dd>
+<dt>test_null_string()</dt>
+<dd><p>null の |<a href="eval_002etxt.html#String">String</a>| を返します。これはテストのみに使はれます。
+</p>
+
+<span id="test_005foption_005fnot_005fset_0028_0029"></span><span id="index-test_005foption_005fnot_005fset_0028_0029"></span>
+</dd>
+<dt>test_option_not_set({name})</dt>
+<dd><p>オプション {name} が設定されてゐることを示すフラグをリセットします。そのため、既定値のままであるやうに見えます。次のやうに使ひます:
+</p><pre class="verbatim">set ambiwidth=double
+call test_option_not_set('ambiwidth')
+</pre><p>現在は、その値は &quot;double&quot; であるけれども、&rsquo;<samp>ambiwidth</samp>&rsquo; は決して變更されてゐないかのやうに振る舞ひます。
+</p>
+<p>テストのみで使はれます！
+</p>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetOptionName()-&gt;test_option_not_set()
+</pre>
+
+<span id="test_005foverride_0028_0029"></span><span id="index-test_005foverride_0028_0029"></span>
+</dd>
+<dt>test_override({name}, {val})</dt>
+<dd><p>テストを實行できるやうにするため、Vim の內部處理の特定の部分を置き換へます。Vim をテストするためだけに使用してください！
+</p>
+<p>置き換へは、{val} が非 0 のときに有效化され、{val} が 0 のときに取り除かれます。
+現在 name に使へる値は:
+</p>
+<table>
+<thead><tr><th width="30%">name</th><th width="70%">{val} が非 0 のときの效果</th></tr></thead>
+<tr><td width="30%">redraw</td><td width="70%">redrawing() 函數を無效化する</td></tr>
+<tr><td width="30%">redraw_flag</td><td width="70%">RedrawingDisabled フラグを無視する</td></tr>
+<tr><td width="30%">char_avail</td><td width="70%">char_avail() 函數を無效化する</td></tr>
+<tr><td width="30%">starting</td><td width="70%">&quot;starting&quot; の値をリセットする。以下を參照</td></tr>
+<tr><td width="30%">nfa_fail</td><td width="70%">NFA 正規表現エンジンが失敗すると强制的に古いエンジンにフォールバックする</td></tr>
+<tr><td width="30%">no_query_mouse</td><td width="70%">&quot;dec&quot; 端末のマウス位置を問ひ合はせない</td></tr>
+<tr><td width="30%">no_wait_return</td><td width="70%">&quot;no_wait_return&quot; フラグを設定する。&quot;ALL&quot; では復元されない</td></tr>
+<tr><td width="30%">ALL</td><td width="70%">すべての置き換へをクリアする ({val} は使はれない)</td></tr>
+</table>
+
+<p>Vim の起動が完了した時と同じ狀況としてテストをしたい場合に &quot;starting&quot; は使はれます。テストはスクリプトを讀み込んで實行されるので、&quot;starting&quot; の値は非ゼロです。このことは多くの場合で良いこと (テストの實行が速い) なのですが、テストがうまく動かない場合に擧動が變化するときがあります。
+</p>
+<p>使用時:
+</p><pre class="verbatim">call test_override('starting', 1)
+</pre><p>&quot;starting&quot; の値は保存されます。この値は次のやうにして復元できます:
+</p><pre class="verbatim">call test_override('starting', 0)
+</pre>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetOverrideVal()-&gt; test_override('starting')
+</pre>
+<span id="test_005frefcount_0028_0029"></span><span id="index-test_005frefcount_0028_0029"></span>
+</dd>
+<dt>test_refcount({expr})</dt>
+<dd><p>{expr} の參照カウントを返します。{expr} が參照カウントを持たない型の場合は、-1 を返します。この函數はテスト用です。
+</p>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetVarname()-&gt;test_refcount()
+</pre>
+
+</dd>
+<dt>test_scrollbar({which}, {value}, {dragging})</dt>
+<dd><span id="test_005fscrollbar_0028_0029"></span><span id="index-test_005fscrollbar_0028_0029"></span>
+<p>{which} のスクロールバーを使用し {value} 位置に移動してゐるかのやうに振る舞ひます。{which} の値は:
+</p><table>
+<tr><td width="20%">left</td><td width="80%">現在のウィンドウの左側のスクロールバー</td></tr>
+<tr><td width="20%">right</td><td width="80%">現在のウィンドウの右側のスクロールバー</td></tr>
+<tr><td width="20%">hor</td><td width="80%">水平のスクロールバー</td></tr>
+</table>
+
+<p>垂直スクロールバーのための {value} は、1 からバッファの行數になります。水平スクロールバーのための {value}は、1 と最大桁數となります。&rsquo;<samp>wrap</samp>&rsquo; は設定されてゐないと想定します。
+</p>
+<p>{dragging} が非ゼロの場合、スクロールバーをドラッグしてゐるかのやうになり、さうでなければ、スクロールバーをクリックしてゐるかのやうになります。{which} スクロールバーが確かに存在してゐる時にのみ動作します。明らかに GUI を使用してゐる時のみです。
+</p>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetValue()-&gt;test_scrollbar('right', 0)
+</pre>
+<span id="test_005fsetmouse_0028_0029"></span><span id="index-test_005fsetmouse_0028_0029"></span>
+</dd>
+<dt>test_setmouse({row}, {col})</dt>
+<dd><p>次のマウス操作に使用するマウス位置を設定します。{row} と {col} は 1 ベースです。
+例:
+</p><pre class="verbatim">call test_setmouse(4, 20)
+call feedkeys(&quot;\&lt;LeftMouse&gt;&quot;, &quot;xt&quot;)
+</pre>
+
+<span id="test_005fsettime_0028_0029"></span><span id="index-test_005fsettime_0028_0029"></span>
+</dd>
+<dt>test_settime({expr})</dt>
+<dd><p>Vim が內部的に用ゐる時閒を設定します。現在は history のタイムスタンプ、viminfo のタイムスタンプ、undo に使用されてゐます。
+</p>
+<p>1 を渡すと、Vim は警告やエラーメッセージの後、スリープしなくなります。
+</p>
+<p>{expr} は、數値として評價されなければならなりません。0 を渡せば、Vim の內部時閒は通常動作に戾ります。
+</p>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetTime()-&gt;test_settime()
+</pre></dd>
+</dl>
+
+<span id="assert_002dfunctions_002ddetails"></span><span id="index-assert_002dfunctions_002ddetails"></span>
+<span id="g_t3_002e-Assert-Guan-Shu-"></span><h3 class="section">3. Assert 函數</h3>
+
+
+<dl compact="compact">
+<dd><span id="assert_005fbeeps_0028_0029"></span><span id="index-assert_005fbeeps_0028_0029"></span>
+</dd>
+<dt>assert_beeps({cmd})</dt>
+<dd><p>{cmd} を實行し、それがビープもしくはビジュアルベルを<strong>發生させなかつた</strong>場合、|<a href="eval_002etxt.html#v_003aerrors">v:errors</a>| にエラーメッセージを追加します。
+</p>
+<p>|<a href="#assert_005ffails_0028_0029">assert_fails()</a>| と |<a href="eval_002etxt.html#assert_002dreturn">assert-return</a>| も參照してください。
+</p>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetCmd()-&gt;assert_beeps()
+</pre><span id="assert_005fequal_0028_0029"></span><span id="index-assert_005fequal_0028_0029"></span>
+</dd>
+<dt>assert_equal({expected}, {actual} [, {msg}])</dt>
+<dd><p>{expected} と {actual} が等しくない場合、|<a href="eval_002etxt.html#v_003aerrors">v:errors</a>| にエラーメッセージを追加し、1 が返ります。さうでなければ 0 が返ります。|<a href="eval_002etxt.html#assert_002dreturn">assert-return</a>|
+</p>
+<p>暗默的な變換は行はれないため、文字列 &quot;4&quot; は數値 4 とは異なります。同樣に、數値 4 は浮動小數點數 4.0 と異なります。ここでは &rsquo;<samp>ignorecase</samp>&rsquo; の値は使はれず、大文字小文字は常に區別されます。
+</p>
+<p>{msg} が省略された場合、&quot;Expected {expected} but got {actual}&quot; といふ形式のメッセージが生成されます。
+例:
+</p><pre class="verbatim">assert_equal('foo', 'bar')
+</pre><p>以下の結果が |<a href="eval_002etxt.html#v_003aerrors">v:errors</a>| に追加されます:
+</p><div class="display">
+<pre class="display">test.vim line 12: Expected &rsquo;foo&rsquo; but got &rsquo;bar&rsquo;
+</pre></div>
+
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">mylist-&gt;assert_equal([1, 2, 3])
+</pre>
+
+<span id="assert_005fequalfile_0028_0029"></span><span id="index-assert_005fequalfile_0028_0029"></span>
+</dd>
+<dt>assert_equalfile({fname-one}, {fname-two})</dt>
+<dd><p>ファイル {fname-one} および {fname-two} がまつたく同じテキストでない場合、|<a href="eval_002etxt.html#v_003aerrors">v:errors</a>| にエラーメッセージが追加されます。
+</p>
+<p>|<a href="eval_002etxt.html#assert_002dreturn">assert-return</a>| も參照してください。
+</p>
+<p>{fname-one} もしくは {fname-two} が存在しない場合、それに關聯したエラーとなります。
+</p>
+<p>主に |<a href="terminal_002etxt.html#terminal_002ddiff">terminal-diff</a>| で役立ちます。
+</p>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetLog()-&gt;assert_equalfile('expected.log')
+</pre>
+
+<span id="assert_005fexception_0028_0029"></span><span id="index-assert_005fexception_0028_0029"></span>
+</dd>
+<dt>assert_exception({error} [, {msg}])</dt>
+<dd><p>v:exception に {error} が含まれてゐない時、|<a href="eval_002etxt.html#v_003aerrors">v:errors</a>| にエラーメッセージを追加します。|<a href="eval_002etxt.html#assert_002dreturn">assert-return</a>| も參照してください。
+</p>
+<p>これは例外を投げるコマンドのテストを行ふ場合に使ふことができます。コロンが續くエラー番號を使へば、飜譯の問題を囘避することができます:
+</p><pre class="verbatim">try
+  失敗するコマンド
+  call assert_false(1, 'command should have failed')
+catch
+  call assert_exception('E492:')
+endtry
+</pre>
+<span id="assert_005ffails_0028_0029"></span><span id="index-assert_005ffails_0028_0029"></span>
+</dd>
+<dt>assert_fails({cmd} [, {error} [, {msg}]])</dt>
+<dd><p>{cmd} を實行しエラーを生成しなかつた場合、|<a href="eval_002etxt.html#v_003aerrors">v:errors</a>| にエラーメッセージを追加します。|<a href="eval_002etxt.html#assert_002dreturn">assert-return</a>| も參照してください。
+</p>
+<p>{error} が渡された場合、|<a href="eval_002etxt.html#v_003aerrmsg">v:errmsg</a>| の一部にマッチしなければなりません。
+</p><blockquote>
+<p><strong>Note:</strong> <br>
+ビープ音の發生はエラーとは見なされず、いくつかのコマンドは失敗時にビープ音を鳴らすだけであることに注意してください。これらについては |<a href="#assert_005fbeeps_0028_0029">assert_beeps()</a>| を使用してください。
+</p></blockquote>
+
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetCmd()-&gt;assert_fails('E99:')
+</pre>
+<span id="assert_005ffalse_0028_0029"></span><span id="index-assert_005ffalse_0028_0029"></span>
+</dd>
+<dt>assert_false({actual} [, {msg}])</dt>
+<dd><p>|<a href="#assert_005fequal_0028_0029">assert_equal()</a>| と同樣に、{actual} が false でない場合、|<a href="eval_002etxt.html#v_003aerrors">v:errors</a>| にエラーメッセージを追加します。
+</p>
+<p>|<a href="eval_002etxt.html#assert_002dreturn">assert-return</a>| も參照してください。
+ゼロである時、その値は false です。{actual} が數値でない場合、テストが失敗します。
+</p>
+<p>{msg} が省略された場合、&quot;Expected False but got {actual}&quot; といふ形式のメッセージが生成されます。
+</p>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetResult()-&gt;assert_false()
+</pre>
+<span id="assert_005finrange_0028_0029"></span><span id="index-assert_005finrange_0028_0029"></span>
+</dd>
+<dt>assert_inrange({lower}, {upper}, {actual} [, {msg}])</dt>
+<dd><p>これは數値または |<a href="eval_002etxt.html#Float">Float</a>| の値をテストします。{actual} が {lower} より低いか {upper} より大きい場合、|<a href="eval_002etxt.html#v_003aerrors">v:errors</a>| にエラーメッセージが追加されます。|<a href="eval_002etxt.html#assert_002dreturn">assert-return</a>| も參照してください。
+{msg} を省略すると、&quot;Expected range {lower} - {upper}, but got {actual}&quot; といふ形式のエラーが生成されます。
+</p>
+<span id="assert_005fmatch_0028_0029"></span><span id="index-assert_005fmatch_0028_0029"></span>
+</dd>
+<dt>assert_match({pattern}, {actual} [, {msg}])</dt>
+<dd><p>{pattern} が {actual} と一致しない場合、|<a href="eval_002etxt.html#v_003aerrors">v:errors</a>| にエラーメッセージが追加されます。|<a href="eval_002etxt.html#assert_002dreturn">assert-return</a>| も參照してください。
+</p>
+<p>|<a href="eval_002etxt.html#expr_002d_003d_007e">expr-=~</a>| と同じやうに {pattern} が使はれます: マッチングは &rsquo;<samp>magic</samp>&rsquo; や &rsquo;<samp>cpoptions</samp>&rsquo; の實際の値に關係なく、&rsquo;<samp>magic</samp>&rsquo; が設定され、&rsquo;<samp>cpoptions</samp>&rsquo; が空であるやうに常に行はれます。
+</p>
+<p>{actual} は文字列として使用され、自動變換が適用されます。テキストの先頭と最後に一致させるためには、&quot;^&quot; と &quot;$&quot; を使用してください。兩方を使用してテキスト全體を一致させます。{譯注: 使はなければ部分一致で判定が行はれます}
+</p>
+<p>{msg} を省略すると、&quot;Pattern {pattern} does not match {actual}&quot; といふ形式のエラーが生成されます。
+例:
+</p><pre class="verbatim">assert_match('^f.*o$', 'foobar')
+</pre><p>これは |<a href="eval_002etxt.html#v_003aerrors">v:errors</a>| に文字列が追加されることになります:
+</p><pre class="verbatim">test.vim line 12: Pattern '^f.*o$' does not match 'foobar'
+</pre>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">getFile()-&gt;assert_match('foo.*')
+</pre><span id="assert_005fnotequal_0028_0029"></span><span id="index-assert_005fnotequal_0028_0029"></span>
+</dd>
+<dt>assert_notequal({expected}, {actual} [, {msg}])</dt>
+<dd><p>&lsquo;<code>assert_equal()</code>&lsquo; の反對: {expected} と {actual} が等しいときにエラーメッセージを |<a href="eval_002etxt.html#v_003aerrors">v:errors</a>| に追加します。|<a href="eval_002etxt.html#assert_002dreturn">assert-return</a>| も參照してください。
+</p>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">mylist-&gt;assert_notequal([1, 2, 3])
+</pre>
+<span id="assert_005fnotmatch_0028_0029"></span><span id="index-assert_005fnotmatch_0028_0029"></span>
+</dd>
+<dt>assert_notmatch({pattern}, {actual} [, {msg}])</dt>
+<dd><p>&lsquo;<code>assert_match()</code>&lsquo; の反對: {pattern} が {actual} にマッチするときに |<a href="eval_002etxt.html#v_003aerrors">v:errors</a>| にエラーメッセージを追加します。|<a href="eval_002etxt.html#assert_002dreturn">assert-return</a>| も參照してください。
+</p>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">getFile()-&gt;assert_notmatch('bar.*')
+</pre>
+
+<span id="assert_005freport_0028_0029"></span><span id="index-assert_005freport_0028_0029"></span>
+</dd>
+<dt>assert_report({msg})</dt>
+<dd><p>テストの失敗を {msg} を使つて直接報告します。常に 1 を返します。
+</p>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetMessage()-&gt;assert_report()
+</pre>
+
+<span id="assert_005ftrue_0028_0029"></span><span id="index-assert_005ftrue_0028_0029"></span>
+</dd>
+<dt>assert_true({actual} [, {msg}])</dt>
+<dd><p>|<a href="#assert_005fequal_0028_0029">assert_equal()</a>| と同樣に、{actual} が true でない場合、|<a href="eval_002etxt.html#v_003aerrors">v:errors</a>| にエラーメッセージを追加します。|<a href="eval_002etxt.html#assert_002dreturn">assert-return</a>| も參照してください。
+非ゼロである時、その値は TRUE です。{actual} が數値でない場合、テストが失敗します。
+</p>
+<p>{msg} が省略された場合、&quot;Expected True but got {actual}&quot; といふ形式のメッセージが生成されます。
+</p>
+<p>メソッド |<a href="eval_002etxt.html#method">method</a>| として使ふこともできます:
+</p><pre class="verbatim">GetResult()-&gt;assert_true()
+</pre></dd>
+</dl>
+
+<hr>
+<div class="header">
+<p>
+Up: <a href="Mu-Ci-.html" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Indexes-CP.html" title="Index" rel="index">Index</a>]</p>
+</div>
+
+
+
+</body>
+</html>
