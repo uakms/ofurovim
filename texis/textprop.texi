@@ -3,14 +3,14 @@
 @unnumbered テキストに適用されているプロパティを表示する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*textprop.txt*  For Vim version 8.1.  Last change: 2019 Jun 13
+*textprop.txt*  For Vim version 8.1.  Last change: 2019 Nov 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*textprop.txt*  For Vim バージョン 8.1.  Last change: 2019 Jun 13
+*textprop.txt*  For Vim バージョン 8.1.  Last change: 2019 Nov 12
 
 
                 VIMリファレンスマニュアル    by Bram Moolenaar
@@ -21,7 +21,7 @@
 @ifset EN
 Displaying text with properties attached.	*textprop* *text-properties*
 
-THIS IS UNDER DEVELOPMENT - ANYTHING MAY STILL CHANGE  *E967*
+
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{textprop}
@@ -29,27 +29,6 @@ THIS IS UNDER DEVELOPMENT - ANYTHING MAY STILL CHANGE  *E967*
 @cindex textprop
 @cindex text-properties
 プロパティが付加されたテキストを表示します。
-
-@anchor{E967}
-@erindex E967
-THIS IS UNDER DEVELOPMENT - ANYTHING MAY STILL CHANGE
-
-@{これは開発中です - 何かがまだ変更されるかもしれません@}
-@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
-
-@ifset EN
-What is not working yet:
-- Adjusting column/length when inserting text
-- Text properties spanning more than one line
-- prop_find()
-@end ifset
-@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-まだ動作していないもの:
-@itemize
-@item テキストを挿入するときの桁/長さの調整
-@item 複数の行にまたがるテキストプロパティ
-@item prop_find()
-@end itemize
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 
@@ -157,8 +136,8 @@ how to highlight the text.  The property type can have these entries:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 	"highlight"	name of the highlight group to use
-	"combine"	when TRUE the text property highlighting is combined
-			with any syntax highlighting, when omitted or FALSE the
+	"combine"	when omitted or TRUE the text property highlighting is
+			combined with any syntax highlighting; when FALSE the
 			text property highlighting replaces the syntax
 			highlighting
 	"priority"	when properties overlap, the one with the highest
@@ -171,7 +150,7 @@ how to highlight the text.  The property type can have these entries:
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .3 .7
 @item "highlight" @tab 使用するハイライトグループ名
-@item "combine" @tab TRUE の場合はテキストプロパティのハイライトが構文ハイライトと組み合わされ、省略されるかFALSEの場合はテキストプロパティのハイライトが構文ハイライトに置き換わります。
+@item "combine" @tab 省略されるか TRUE の場合はテキストプロパティのハイライトが既存の構文ハイライトと組み合わされ、FALSE の場合はテキストプロパティのハイライトが既存の構文ハイライトを置き換えます。
 @item "priority" @tab プロパティが重なるする場合は、優先度の高いものが使用されます。
 @item "start_incl" @tab TRUE の場合、開始位置の挿入はテキストプロパティに含まれます。
 @item "end_incl" @tab TRUE の場合、終了位置の挿入はテキストプロパティに含まれます。
@@ -255,6 +234,26 @@ and the text properties updated.  But this can be done asynchronously.
 しかしながら、テキストが挿入または削除されると、テキストを解析してテキストプロパティを更新する必要があります。しかし、これは非同期で行うことができます。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+
+@ifset EN
+Internal error *E967*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E967}
+@erindex E967
+@unnumberedsubsec 内部エラー
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+If you see E967, please report the bug.  You can do this at Github:
+https://github.com/vim/vim/issues/new
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+E967 が表示された場合は、バグを報告してください。Githubでできます:
+
+@url{https://github.com/vim/vim/issues/new}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
 ==============================================================================
 2. Functions						*text-prop-functions*
@@ -317,6 +316,661 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+						*prop_add()* *E965*
+prop_add({lnum}, {col}, {props})
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_add()}
+@anchor{E965}
+@findex prop_add()
+@erindex E965
+@item prop_add(@{lnum@}, @{col@}, @{props@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Attach a text property at position {lnum}, {col}.  {col} is
+		counted in bytes, use one for the first column.
+		If {lnum} is invalid an error is given. *E966*
+		If {col} is invalid an error is given. *E964*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{lnum@} 行 @{col@} 桁の位置にテキストプロパティを付加する。@{col@} はバイト数でカウントされる。最初の桁は 1 を使用する。
+
+@anchor{E966}
+@erindex E966
+@{lnum@} が無効な場合、エラーが発生する。
+
+@anchor{E964}
+@erindex E964
+@{col@} が無効な場合、エラーが発生する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{props} is a dictionary with these fields:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} は次のフィールドを持つ辞書である:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   length	length of text in bytes, can only be used
+				for a property that does not continue in
+				another line; can be zero
+		   end_lnum	line number for the end of text
+		   end_col	column just after the text; not used when
+				"length" is present; when {col} and "end_col"
+				are equal, and "end_lnum" is omitted or equal
+				to {lnum}, this is a zero-width text property
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item length @tab テキストの長さ(バイト)。別の行に続かないプロパティに対してのみ使用できる。0 指定可能。
+@item end_lnum @tab テキスト終端の行番号
+@item end_col @tab テキストの直後の桁。"length" が与えられた場合は使用されない。@{col@} と "end_col" が等しい場合、および "end_lnum" が省略されるか @{lnum@} と等しい場合、これは幅ゼロのテキストプロパティである。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   bufnr	buffer to add the property to; when omitted
+				the current buffer is used
+		   id		user defined ID for the property; when omitted
+				zero is used
+		   type		name of the text property type
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item bufnr @tab プロパティを追加するバッファ。省略された場合、カレントバッファが使用される
+@item id @tab プロパティのユーザー定義 ID。省略時は 0 が使われる
+@item type @tab テキストプロパティ名
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		All fields except "type" are optional.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"type" を除くすべてのフィールドは任意である。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		It is an error when both "length" and "end_lnum" or "end_col"
+		are given.  Either use "length" or "end_col" for a property
+		within one line, or use "end_lnum" and "end_col" for a
+		property that spans more than one line.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"length" と "end_lnum" または "end_col" の両方が与えられるとエラーになる。1 行内のプロパティに "length" または "end_col" を使用するか、複数の行にまたがるプロパティに対して "end_lnum" と"end_col" を使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When neither "length" nor "end_col" are given the property
+		will be zero-width.  That means it will not be highlighted but
+		will move with the text, as a kind of mark.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+
+"length" または "end_col" のどちらも与えられない場合、プロパティは幅ゼロになる。これは、強調表示されないが、テキストと共にマークのように移動することを意味する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The property can end exactly at the last character of the
+		text, or just after it.  In the last case, if text is appended
+		to the line, the text property size will increase, also when
+		the property type does not have "end_incl" set.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロパティは、テキストの最後の文字、またはその直後で終わらせることができる。最後のケースでは、テキストが行に追加されると、プロパティタイプに "end_incl" が設定されていない場合にも、テキストプロパティのサイズが増える。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		"type" will first be looked up in the buffer the property is
+		added to. When not found, the global property types are used.
+		If not found an error is given.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロパティが追加されたバッファで、"type" が最初に検索される。見つからない場合は、グローバルプロパティタイプが使用される。見つからなければエラーになる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetLnum()->prop_add(col, props)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetLnum()->prop_add(col, props)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_clear()}
+@pindex prop_clear()
+@item prop_clear(@{lnum@} [, @{lnum-end@} [, @{props@}]])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Remove all text properties from line {lnum}.
+		When {lnum-end} is given, remove all text properties from line
+		{lnum} to {lnum-end} (inclusive).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{lnum@} 行からすべてのテキストプロパティを削除する。@{lnum-end@} が指定された場合、@{lnum@} 行から @{lnum-end@} (その行を含む) 行までのすべてのテキストプロパティを削除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When {props} contains a "bufnr" item use this buffer,
+		otherwise use the current buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} に "bufnr" 項目が含まれている場合はこのバッファを使用し、そうでない場合はカレントバッファを使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetLnum()->prop_clear()
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetLnum()->prop_clear()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*prop_find()*
+prop_find({props} [, {direction}])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_find()}
+@pindex prop_find()
+@item prop_find(@{props@} [, @{direction@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		{not implemented yet}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@display
+@{まだ実装されていません@}
+@end display
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Search for a text property as specified with {props}:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} で指定されたテキストプロパティを検索する:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   id		property with this ID
+		   type		property with this type name
+		   bufnr	buffer to search in; when present a
+				start position with "lnum" and "col"
+				must be given; when omitted the
+				current buffer is used
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item id @tab プロパティ ID
+@item type @tab プロパティタイプ名
+@item bufnr @tab 検索するバッファ。指定時は "lnum" と"col" を指定して開始位置を指定する必要がある。省略された場合、カレントバッファが使用される
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   lnum		start in this line (when omitted start
+				at the cursor)
+		   col		start at this column (when omitted
+				and "lnum" is given: use column 1,
+				otherwise start at the cursor)
+		   skipstart	do not look for a match at the start
+				position
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item lnum @tab この行から開始する (省略時はカーソル位置で開始)
+@item col @tab この桁から開始する (省略され "lnum" が指定された場合: 列 1 を使用する。そうでない場合はカーソル位置で開始する)
+@item skipstart @tab 開始位置の一致を見ない
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{direction} can be "f" for forward and "b" for backward.  When
+		omitted forward search is performed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{direction@} は、前方の場合は "f"、後方の場合は "b" となる。省略すると前方検索が行われる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If a match is found then a Dict is returned with the entries
+		as with prop_list(), and additionally an "lnum" entry.
+		If no match is found then an empty Dict is returned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+一致するものが見つかった場合は、prop_list() と同様のエントリと "lnum" エントリを併せた辞書が返される。一致するものが見つからなければ、空の辞書が返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+prop_list({lnum} [, {props}])				*prop_list()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_list()}
+@pindex prop_list()
+@item prop_list(@{lnum@} [, @{props@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Return a List with all text properties in line {lnum}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{lnum@} 行のすべてのテキストプロパティを持つリストを返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When {props} contains a "bufnr" item, use this buffer instead
+		of the current buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} に "bufnr" 項目が含まれている場合は、カレントバッファの代わりにこのバッファを使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The properties are ordered by starting column and priority.
+		Each property is a Dict with these entries:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロパティは、開始桁と優先順位によって順序付けられる。各プロパティは、次のエントリを持つ辞書である:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   col		starting column
+		   length	length in bytes, one more if line break is
+				included
+		   id		property ID
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item col @tab 開始桁
+@item length @tab バイト長。改行が含まれる場合は 1 以上。
+@item id @tab プロパティ ID
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   type		name of the property type, omitted if
+				the type was deleted
+		   start	when TRUE property starts in this line
+		   end		when TRUE property ends in this line
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item type @tab プロパティタイプ名。タイプが削除された場合は省略される
+@item start @tab TRUE の時はプロパティはこの行から始まる
+@item end @tab TRUE の時はプロパティはこの行で終わる
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When "start" is zero the property started in a previous line,
+		the current one is a continuation.
+		When "end" is zero the property continues in the next line.
+		The line break after this line is included.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"start" が 0 の場合、プロパティは以前の行で開始され、現在行は続きである。
+
+"end" が 0 の場合、プロパティは次の行に続く。この行の後に改行が含まれる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetLnum()->prop_list()
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetLnum()->prop_list()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+						*prop_remove()* *E968*
+prop_remove({props} [, {lnum} [, {lnum-end}]])
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_remove()}
+@anchor{E968}
+@pindex prop_remove()
+@erindex E968
+@item prop_remove(@{props@} [, @{lnum@} [, @{lnum-end@}]])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Remove a matching text property from line {lnum}.  When
+		{lnum-end} is given, remove matching text properties from line
+		{lnum} to {lnum-end} (inclusive).
+		When {lnum} is omitted remove matching text properties from
+		all lines.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{lnum@} 行から一致するテキストプロパティを削除する。@{lnum-end@} が指定された場合、@{lnum@} 行から @{lnum-end@} (その行を含む) までの一致するテキストプロパティを削除する。@{lnum@} を省略した場合、一致するテキストプロパティをすべての行から削除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{props} is a dictionary with these fields:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} は次のフィールドを持つ辞書である:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   id		remove text properties with this ID
+		   type		remove text properties with this type name
+		   bufnr	use this buffer instead of the current one
+		   all		when TRUE remove all matching text properties,
+				not just the first one
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item id @tab この ID を持つテキストプロパティを削除する
+@item type @tab このタイプ名を持つテキストプロパティを削除する
+@item bufnr @tab カレントバッファの代わりにこのバッファを使う
+@item all @tab TRUE の場合、最初のテキストプロパティだけでなく、一致するテキストプロパティをすべて削除する。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		A property matches when either "id" or "type" matches.
+		If buffer "bufnr" does not exist you get an error message.
+		If buffer "bufnr" is not loaded then nothing happens.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"id" または "type" のどちらかが一致するとプロパティが一致する。バッファ "bufnr" が存在しない場合はエラーメッセージが表示される。バッファ "bufnr" がロードされていなければ、何も起こらない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Returns the number of properties that were removed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+削除されたプロパティの数を返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetProps()->prop_remove()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetProps()->prop_remove()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_type_add()}
+@anchor{E969}
+@anchor{E970}
+@pindex prop_type_add()
+@erindex E969
+@erindex E970
+@item prop_type_add(@{name@}, @{props@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Add a text property type {name}.  If a property type with this
+		name already exists an error is given.  Nothing is returned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティタイプ @{name@} を追加する。この名前のプロパティタイプがすでに存在する場合、エラーが発生する。何も返しません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		{props} is a dictionary with these optional fields:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} は、次のオプションフィールドを持つ辞書である:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   bufnr	define the property only for this buffer; this
+				avoids name collisions and automatically
+				clears the property types when the buffer is
+				deleted.
+		   highlight	name of highlight group to use
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item bufnr @tab このバッファに対してのみプロパティを定義する。バッファが削除されたときに、名前の衝突を防ぎ、かつ、自動的にプロパティタイプをクリアする
+@item highlight @tab 使用するハイライトグループ名
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   priority	when a character has multiple text
+				properties the one with the highest priority
+				will be used; negative values can be used, the
+				default priority is zero
+		   combine	when TRUE combine the highlight with any
+				syntax highlight; when omitted or FALSE syntax
+				highlight will not be used
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item priority @tab 文字に複数のテキストプロパティがある場合は、優先度が最も高いものが使用される。負の値を使用できる。デフォルトの優先順位は 0 である
+@item combine @tab TRUE の場合、ハイライトを任意の構文ハイライトと結び付ける。省略するか FALSE の場合は構文ハイライトは使用されない
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   start_incl	when TRUE inserts at the start position will
+				be included in the text property
+		   end_incl	when TRUE inserts at the end position will be
+				included in the text property
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item start_incl @tab TRUE の場合、開始位置の挿入はテキストプロパティに含まれる
+@item end_incl @tab TRUE の場合、終了位置の挿入はテキストプロパティに含まれる
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetPropName()->prop_type_add(props)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetPropName()->prop_type_add(props)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+prop_type_change({name}, {props})			*prop_type_change()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_type_change()}
+@pindex prop_type_change()
+@item prop_type_change(@{name@}, @{props@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Change properties of an existing text property type.  If a
+		property with this name does not exist an error is given.
+		The {props} argument is just like |prop_type_add()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+既存のテキストプロパティタイプのプロパティを変更する。この名前のプロパティが存在しない場合、エラーが発生する。@{props@} 引数は |@ref{prop_type_add()}| と似ている。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetPropName()->prop_type_change(props)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetPropName()->prop_type_change(props)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+prop_type_delete({name} [, {props}])			*prop_type_delete()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_type_delete()}
+@pindex prop_type_delete()
+@item prop_type_delete(@{name@} [, @{props@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Remove the text property type {name}.  When text properties
+		using the type {name} are still in place, they will not have
+		an effect and can no longer be removed by name.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティタイプ @{name@} を削除する。@{name@} 型を使用するテキストプロパティがまだ存在する場合、それらは効果を持たず、もはや名前で削除できなくなる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{props} can contain a "bufnr" item.  When it is given, delete
+		a property type from this buffer instead of from the global
+		property types.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} には "bufnr" 項目を含めることができる。指定すると、グローバルプロパティタイプではなく、このバッファからプロパティタイプを削除する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When text property type {name} is not found there is no error.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティタイプ @{name@} が見つからなくてもエラーにならない。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetPropName()->prop_type_delete()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetPropName()->prop_type_delete()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+prop_type_get([{name} [, {props}])			*prop_type_get()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_type_get()}
+@pindex prop_type_get()
+@item prop_type_get([@{name@} [, @{props@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Returns the properties of property type {name}.  This is a
+		dictionary with the same fields as was given to
+		prop_type_add().
+		When the property type {name} does not exist, an empty
+		dictionary is returned.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+プロパティタイプ @{name@} のプロパティを返す。これは、prop_type_add() に与えられたものと同じフィールドを持つ辞書である。
+
+プロパティタイプ @{name@} が存在しない場合、空の辞書が返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{props} can contain a "bufnr" item.  When it is given, use
+		this buffer instead of the global property types.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} には "bufnr" 項目を含めることができる。指定すると、グローバルプロパティタイプの代わりにこのバッファを使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetPropName()->prop_type_get()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetPropName()->prop_type_get()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+prop_type_list([{props}])				*prop_type_list()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{prop_type_list()}
+@pindex prop_type_list()
+@item prop_type_list([@{props@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Returns a list with all property type names.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+すべてのプロパティタイプ名のリストを返す。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{props} can contain a "bufnr" item.  When it is given, use
+		this buffer instead of the global property types.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{props@} には "bufnr" 項目を含めることができる。指定すると、グローバルプロパティタイプの代わりにこのバッファを使用する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		See |text-properties| for information about text properties.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+テキストプロパティについては、|@ref{text-properties}| を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
 ==============================================================================
 3. When text changes				*text-prop-changes*
 @end ifset
@@ -342,6 +996,18 @@ unless the whole line is deleted.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 テキストが削除され、テキストプロパティにテキストが含まれなくなった場合は削除されます。 ただし、行全体が削除されない限り、幅ゼロとして定義されたテキストプロパティは残ります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*E275*
+When a buffer is unloaded, all the text properties are gone.  There is no way
+to store the properties in a file.  You can only re-create them.  When a
+buffer is hidden the text is preserved and so are the text properties.  It is
+not possible to add text properties to an unloaded buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E275}
+@erindex E275
+バッファがアンロードされると、すべてのテキストプロパティがなくなります。プロパティをファイルに保存する方法はありません。再作成することしかできません。バッファが非表示 (hidden) の場合、テキストは保持され、テキストプロパティも保持されます。アンロードされたバッファにテキストプロパティを追加することはできません。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN

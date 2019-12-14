@@ -3,14 +3,14 @@
 @unnumbered ジョブ、チャネル、プロセス間通信
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*channel.txt*      For Vim version 8.1.  Last change: 2019 May 12
+*channel.txt*      For Vim version 8.1.  Last change: 2019 Sep 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*channel.txt*      For Vim バージョン 8.1.  Last change: 2019 May 12
+*channel.txt*      For Vim バージョン 8.1.  Last change: 2019 Sep 11
 
 
 		     VIMリファレンスマニュアル    by Bram Moolenaar
@@ -53,11 +53,13 @@ Netbeans インターフェイスもチャネルを使っています。|@ref{ne
 5. Channel commands			|channel-commands|
 6. Using a RAW or NL channel		|channel-raw|
 7. More channel functions		|channel-more|
-8. Starting a job with a channel	|job-start|
-9. Starting a job without a channel	|job-start-nochannel|
-10. Job options				|job-options|
-11. Controlling a job			|job-control|
-12. Using a prompt buffer		|prompt-buffer|
+8. Channel functions details		|channel-functions-details|
+9. Starting a job with a channel	|job-start|
+10. Starting a job without a channel	|job-start-nochannel|
+11. Job functions			|job-functions-details|
+12. Job options				|job-options|
+13. Controlling a job			|job-control|
+14. Using a prompt buffer		|prompt-buffer|
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .6 .4
@@ -68,11 +70,13 @@ Netbeans インターフェイスもチャネルを使っています。|@ref{ne
 @item 5. チャネルコマンド @tab |@ref{channel-commands}|
 @item 6. RAW, NL チャネルを使う @tab |@ref{channel-raw}|
 @item 7. その他のチャネル機能 @tab |@ref{channel-more}|
-@item 8. チャネルでジョブを開始する @tab |@ref{job-start}|
-@item 9. チャネルなしでジョブを開始する @tab |@ref{job-start-nochannel}|
-@item 10. ジョブオプション @tab |@ref{job-options}|
-@item 11. ジョブを制御する @tab |@ref{job-control}|
-@item 12. プロンプトバッファを使う @tab |@ref{prompt-buffer}|
+@item 8. チャネル関数の詳細 @tab |@ref{channel-functions-details}|
+@item 9. チャネルでジョブを開始する @tab |@ref{job-start}|
+@item 10. チャネルなしでジョブを開始する @tab |@ref{job-start-nochannel}|
+@item 11. ジョブ関数 @tab |@ref{job-functions-details}|
+@item 12. ジョブオプション @tab |@ref{job-options}|
+@item 13. ジョブを制御する @tab |@ref{job-control}|
+@item 14. プロンプトバッファを使う @tab |@ref{prompt-buffer}|
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -1336,7 +1340,826 @@ JS または JSON チャネルの場合、これは 1 つのデコードされ�
 
 @ifset EN
 ==============================================================================
-8. Starting a job with a channel			*job-start* *job*
+8. Channel functions details			*channel-functions-details*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{channel-functions-details}
+@cindex channel-functions-details
+@section 8. チャネル関数の詳細
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ch_canread({handle})						*ch_canread()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{ch_canread()}
+@findex ch_canread()
+@item ch_canread(@{handle@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Return non-zero when there is something to read from {handle}.
+		{handle} can be a Channel or a Job that has a Channel.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{handle@} から何か読むものがあれば非ゼロを返します。@{handle@} はチャネルもしくはチャネルを持つジョブであっても良い。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		This is useful to read from a channel at a convenient time,
+		e.g. from a timer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+これはチャネルから、都合のよいときに読むのに便利です。例えば、タイマーから。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Note that messages are dropped when the channel does not have
+		a callback.  Add a close callback to avoid that.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+チャンルがコールバックを持っていない場合、メッセージはドロップされることに注意してください。それを防ぐには close コールバックを追加してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_canread()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetChannel()->ch_canread()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ch_close({handle})						*ch_close()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_close()}
+@findex ch_close()
+@item ch_close(@{handle@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Close {handle}.  See |channel-close|.
+		{handle} can be a Channel or a Job that has a Channel.
+		A close callback is not invoked.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{handle@} を閉じます。|@ref{channel-close}| を参照してください。@{handle@} はチャネルもしくはチャネルを持つジョブであっても良い。閉じられたコールバックは呼び出されません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_close()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetChannel()->ch_close()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ch_close_in({handle})						*ch_close_in()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_close_in()}
+@findex ch_close_in()
+@item ch_close_in(@{handle@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Close the "in" part of {handle}.  See |channel-close-in|.
+		{handle} can be a Channel or a Job that has a Channel.
+		A close callback is not invoked.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{handle@} の "入力" を閉じる。|@ref{channel-close-in}| を参照してください。@{handle@} はチャネルもしくはチャネルを持つジョブであっても良い。閉じられたコールバックは呼び出されません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_close_in()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetChannel()->ch_close_in()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_evalexpr()}
+@findex ch_evalexpr()
+ch_evalexpr(@{handle@}, @{expr@} [, @{options@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Send {expr} over {handle}.  The {expr} is encoded
+		according to the type of channel.  The function cannot be used
+		with a raw channel.  See |channel-use|.
+		{handle} can be a Channel or a Job that has a Channel.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{handle@} へ @{expr@} を送信します。@{expr@} はチャネル側と同じ型にエンコードされる。この関数は生のチャネルでは使用できません。|@ref{channel-use}| を参照してください。@{handle@} はチャネルもしくはチャネルを持つジョブであっても良い。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+								*E917*
+		{options} must be a Dictionary.  It must not have a "callback"
+		entry.  It can have a "timeout" entry to specify the timeout
+		for this specific request.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{E917}
+@erindex E917
+@{options@} は辞書でなければなりません。また "callback" のエントリを持ってはなりません。また個別のリクエストに対して "timeout" を持つ事ができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		ch_evalexpr() waits for a response and returns the decoded
+		expression.  When there is an error or timeout it returns an
+		empty string.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ch_evalexpr() は応答を待ち、式をデコードした物が返されます。エラーもしくはタイムアウトの場合は空文字列を返します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Note that while waiting for the response, Vim handles other
+		messages.  You need to make sure this doesn't cause trouble.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+応答を待っている間、Vim は他のメッセージを処理することに注意してください。これがトラブルを引き起こさないことを確認する必要があります。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_evalexpr(expr)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetChannel()->ch_evalexpr(expr)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_evalraw()}
+@findex ch_evalraw()
+@item ch_evalraw(@{handle@}, @{string@} [, @{options@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Send {string} over {handle}.
+		{handle} can be a Channel or a Job that has a Channel.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{handle@} へ @{string@} を送信します。@{handle@} はチャネルもしくはチャネルを持つジョブであっても良い。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Works like |ch_evalexpr()|, but does not encode the request or
+		decode the response.  The caller is responsible for the
+		correct contents.  Also does not add a newline for a channel
+		in NL mode, the caller must do that.  The NL in the response
+		is removed.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{ch_evalexpr()}| と同様に動作します。しかしリクエストをエンコードしたり応答をデコードしたりはしません。呼び出しは正しいコンテンツである事が保証されます。また NL モードでは改行が行われますが、ここでは改行が付与されません。NL は応答から削除されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Note that Vim does not know when the text received on a raw
+		channel is complete, it may only return the first part and you
+		need to use |ch_readraw()| to fetch the rest.
+		See |channel-use|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+Vim は Raw チャネル上で受け取るテキストがいつ完了するのか分からないことに注意してください。最初の部分だけを返す可能性もあり、残りを取り出すために |@ref{ch_readraw()}| を使う必要があります。|@ref{channel-use}| を参照してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_evalraw(rawstring)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetChannel()->ch_evalraw(rawstring)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ch_getbufnr({handle}, {what})				 *ch_getbufnr()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_getbufnr()}
+@findex ch_getbufnr()
+@item ch_getbufnr(@{handle@}, @{what@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Get the buffer number that {handle} is using for {what}.
+		{handle} can be a Channel or a Job that has a Channel.
+		{what} can be "err" for stderr, "out" for stdout or empty for
+		socket output.
+		Returns -1 when there is no buffer.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+l@{what@} に使用されている @{handle@} のバッファ番号を得ます。@{handle@} はチャネルもしくはチャネルを持つジョブであっても良い。@{what@} は標準エラーのための "err"、標準出力のための "out"、もしくはソケット出力のための空文字列を指定できます。バッファが存在しない場合は -1 を返します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_getbufnr(what)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetChannel()->ch_getbufnr(what)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+ch_getjob({channel})						*ch_getjob()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_getjob()}
+@findex ch_getjob()
+@item ch_getjob(@{channel@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Get the Job associated with {channel}.
+		If there is no job calling |job_status()| on the returned Job
+		will result in "fail".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{channel@} に関連付けられた Job を得ます。もしジョブが無い場合、戻り値の Job で |@ref{job_status()}| を呼び出すと "fail" が返されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_getjob()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetChannel()->ch_getjob()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ch_info({handle})						*ch_info()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_info()}
+@findex ch_info()
+@item ch_info(@{handle@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Returns a Dictionary with information about {handle}.  The
+		items are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{handle@} に関する情報を辞書で返します。アイテムは:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   "id"		  number of the channel
+		   "status"	  "open", "buffered" or "closed", like
+				  ch_status()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item "id" @tab チャネル番号
+@item "status" @tab ch_status() と同様に "open", "buffered" または "closed"
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When opened with ch_open():
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{ch_open() で開いた場合:}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   "hostname"	  the hostname of the address
+		   "port"	  the port of the address
+		   "sock_status"  "open" or "closed"
+		   "sock_mode"	  "NL", "RAW", "JSON" or "JS"
+		   "sock_io"	  "socket"
+		   "sock_timeout" timeout in msec
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item "hostname" @tab アドレスのホスト名
+@item "port" @tab アドレスのポート
+@item "sock_status" @tab "open" または "closed"
+@item "sock_mode" @tab "NL", "RAW", "JSON" または "JS"
+@item "sock_io" @tab "socket"
+@item "sock_timeout" @tab タイムアウト (ミリ秒)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		When opened with job_start():
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{job_start() で開いた場合:}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   "out_status"	  "open", "buffered" or "closed"
+		   "out_mode"	  "NL", "RAW", "JSON" or "JS"
+		   "out_io"	  "null", "pipe", "file" or "buffer"
+		   "out_timeout"  timeout in msec
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item "out_status" @tab "open", "buffered" または "closed"
+@item "out_mode" @tab "NL", "RAW", "JSON" または "JS"
+@item "out_io" @tab "null", "pipe", "file" または "buffer"
+@item "out_timeout" @tab タイムアウト (ミリ秒)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   "err_status"	  "open", "buffered" or "closed"
+		   "err_mode"	  "NL", "RAW", "JSON" or "JS"
+		   "err_io"	  "out", "null", "pipe", "file" or "buffer"
+		   "err_timeout"  timeout in msec
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "err_status" @tab "open", "buffered" または "closed"
+@item "err_mode" @tab "NL", "RAW", "JSON" または "JS"
+@item "err_io" @tab "out", "null", "pipe", "file" または "buffer"
+@item "err_timeout" @tab タイムアウト (ミリ秒)
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   "in_status"	  "open" or "closed"
+		   "in_mode"	  "NL", "RAW", "JSON" or "JS"
+		   "in_io"	  "null", "pipe", "file" or "buffer"
+		   "in_timeout"	  timeout in msec
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "in_status" @tab "open" または "closed"
+@item "in_mode" @tab "NL", "RAW", "JSON" または "JS"
+@item "in_io" @tab "null", "pipe", "file" または "buffer"
+@item "in_timeout" @tab タイムアウト (ミリ秒)
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_info()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetChannel()->ch_info()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ch_log({msg} [, {handle}])					*ch_log()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_log()}
+@findex ch_log()
+@item ch_log(@{msg@} [, @{handle@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Write {msg} in the channel log file, if it was opened with
+		|ch_logfile()|.
+		When {handle} is passed the channel number is used for the
+		message.
+		{handle} can be a Channel or a Job that has a Channel.  The
+		Channel must be open for the channel number to be used.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{ch_logfile()}| によってログファイルが開かれている場合は、チャネルのログファイルに @{msg@} を書き込みます。@{handle@} が渡されている場合はチャネル番号がメッセージの中で使われます。@{handle@} はチャネルもしくはチャネルを持つジョブであっても良い。使用されるチャネル番号のチャネルは開いていなければなりません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			'did something'->ch_log()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+'did something'->ch_log()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ch_logfile({fname} [, {mode}])					*ch_logfile()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_logfile()}
+@findex ch_logfile()
+@item ch_logfile(@{fname@} [, @{mode@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Start logging channel activity to {fname}.
+		When {fname} is an empty string: stop logging.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{fname@} へチャネルの挙動ログ出力を開始します。@{fname@} が空の場合、ロギングは停止します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When {mode} is omitted or "a" append to the file.
+		When {mode} is "w" start with an empty file.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{mode@} が省略されるか "a" の場合、ファイルへの追加になります。@{mode@} が "w" の場合、空のファイルへで開始されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Use |ch_log()| to write log messages.  The file is flushed
+		after every message, on Unix you can use "tail -f" to see what
+		is going on in real time.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ログメッセージを書き込むには |@ref{ch_log()}| を使用します。UNIX で "tail -f" にてリアルタイムで何が行われているかが見える様に、ファイルはメッセージ毎にフラッシュされます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		This function is not available in the |sandbox|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+この関数は |@ref{sandbox}| 内では無効です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		NOTE: the channel communication is stored in the file, be
+		aware that this may contain confidential and privacy sensitive
+		information, e.g. a password you type in a terminal window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+チャネルとの通信はファイルに格納されます。これには、あなたが端末ウィンドウ上でタイプしたパスワードのような、機密やプライバシーに関する情報を含むことがあることに注意してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			'logfile'->ch_logfile('w')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+'logfile'->ch_logfile('w')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ch_open({address} [, {options}])				*ch_open()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_open()}
+@findex ch_open()
+@item ch_open(@{address@} [, @{options@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Open a channel to {address}.  See |channel|.
+		Returns a Channel.  Use |ch_status()| to check for failure.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{address@} へのチャネルを開きます。|@ref{channel}| を参照してください。チャネルを返します。失敗をチェックするには |@ref{ch_status()}| を使用します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{address} has the form "hostname:port", e.g.,
+		"localhost:8765".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{address@} は "localhost:8765" のように "ホスト名:ポート" の形式です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If {options} is given it must be a |Dictionary|.
+		See |channel-open-options|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{options@} が与えられる場合は辞書でなければなりません。|@ref{channel-open-options}| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetAddress()->ch_open()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetAddress()->ch_open()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ch_read({handle} [, {options}])					*ch_read()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_read()}
+@findex ch_read()
+@item ch_read(@{handle@} [, @{options@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Read from {handle} and return the received message.
+		{handle} can be a Channel or a Job that has a Channel.
+		For a NL channel this waits for a NL to arrive, except when
+		there is nothing more to read (channel was closed).
+		See |channel-more|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{handle@} から読み込みメッセージを受信します。@{handle@} はチャネルもしくはチャネルを持つジョブであっても良い。NL チャネルの場合、何も読み込むものがない (チャネルが閉じられた) 場合を除いて NL を受信するまで待ちます。|@ref{channel-more}| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_read()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetChannel()->ch_read()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ch_readblob({handle} [, {options}])			*ch_readblob()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_readblob()}
+@findex ch_readblob()
+@item ch_readblob(@{handle@} [, @{options@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Like ch_read() but reads binary data and returns a |Blob|.
+		See |channel-more|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ch_read() と同様に動作しますが、バイナリデータを読み込んで |@ref{Blob}| を返します。|@ref{channel-more}| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_readblob()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+			GetChannel()->ch_readblob()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ch_readraw({handle} [, {options}])			*ch_readraw()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_readraw()}
+@findex ch_readraw()
+@item ch_readraw(@{handle@} [, @{options@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Like ch_read() but for a JS and JSON channel does not decode
+		the message.  For a NL channel it does not block waiting for
+		the NL to arrive, but otherwise works like ch_read().
+		See |channel-more|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ch_read() と同様に動作しますが JS や JSON の場合でもメッセージはデコードされません。NL チャネルの場合、NL を受信するまで待つことはありませんが、それ以外は ch_read() と同様に動作します。|@ref{channel-more}| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_readraw()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetChannel()->ch_readraw()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_sendexpr()}
+@findex ch_sendexpr()
+@item ch_sendexpr(@{handle@}, @{expr@} [, @{options@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Send {expr} over {handle}.  The {expr} is encoded
+		according to the type of channel.  The function cannot be used
+		with a raw channel.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{handle@} へ @{expr@} を送信します。@{expr@} はチャネル側と同じ型にエンコードされます。この関数は生のチャネルでは使用できません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		See |channel-use|.				*E912*
+		{handle} can be a Channel or a Job that has a Channel.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{channel-use}| を参照してください。
+@anchor{E912}
+@erindex E912
+@{handle@} はチャネルもしくはチャネルを持つジョブであっても良い。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_sendexpr(expr)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetChannel()->ch_sendexpr(expr)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ch_sendraw({handle}, {expr} [, {options}])		*ch_sendraw()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_sendraw()}
+@findex ch_sendraw()
+@item ch_sendraw(@{handle@}, @{expr@} [, @{options@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Send |String| or |Blob| {expr} over {handle}.
+		Works like |ch_sendexpr()|, but does not encode the request or
+		decode the response.  The caller is responsible for the
+		correct contents.  Also does not add a newline for a channel
+		in NL mode, the caller must do that.  The NL in the response
+		is removed.
+		See |channel-use|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+文字列 |@ref{String}| または |@ref{Blob}| @{expr@} を @{handle@} に送ります。|@ref{ch_sendexpr()}| と同様に動作しますが、リクエストをエンコードしたり応答をデコードしたりはしません。呼び出しは正しいコンテンツである事が保証されます。また NL モードでは改行が行われますが、ここでは改行が付与されません。NL は応答から削除されます。|@ref{channel-use}| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_sendraw(rawexpr)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetChannel()->ch_sendraw(rawexpr)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ch_setoptions({handle}, {options})			*ch_setoptions()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{ch_setoptions()}
+@findex ch_setoptions()
+@item ch_setoptions(@{handle@}, @{options@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Set options on {handle}:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{handle@} にオプションを設定します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			"callback"	the channel callback
+			"timeout"	default read timeout in msec
+			"mode"		mode for the whole channel
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item "callback" @tab チャネルのコールバック
+@item "timeout" @tab デフォルトの読み込みタイムアウト (ミリ秒)
+@item "mode" @tab チャネル全体のモード
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		See |ch_open()| for more explanation.
+		{handle} can be a Channel or a Job that has a Channel.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+より詳しい説明は |@ref{ch_open()}| を参照してください。@{handle@} はチャネルもしくはチャネルを持つジョブであっても良い。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Note that changing the mode may cause queued messages to be
+		lost.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+モードの変更はキューイングされているメッセージを失ってしまうかもしれないことに注意してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		These options cannot be changed:
+			"waittime"	only applies to |ch_open()|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+以下のオプションは変更できません:
+@multitable @columnfractions .3 .7
+@item "waittime" @tab |@ref{ch_open()}| のみに適用できる
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_setoptions(options)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetChannel()->ch_setoptions(options)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+ch_status({handle} [, {options}])				*ch_status()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ch_status(@{handle@} [, @{options@}])
+@anchor{ch_status()}
+@findex ch_status()
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Return the status of {handle}:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{handle@} の状態を返します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			"fail"		failed to open the channel
+			"open"		channel can be used
+			"buffered"	channel can be read, not written to
+			"closed"	channel can not be used
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item "fail" @tab チャネルのオープンに失敗
+@item "open" @tab チャネルは利用可能
+@item "buffered" @tab チャネルは読込可能、または書き込まれていない
+@item "closed" @tab チャネルは利用不可
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		{handle} can be a Channel or a Job that has a Channel.
+		"buffered" is used when the channel was closed but there is
+		still data that can be obtained with |ch_read()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{handle@} はチャネルもしくはチャネルを持つジョブであっても良い。チャネルは閉じられているが |@ref{ch_read()}| を使って残ったデータをまだ読み取る事ができる場合には "buffered" が利用できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If {options} is given it can contain a "part" entry to specify
+		the part of the channel to return the status for: "out" or
+		"err".  For example, to get the error status: >
+			ch_status(job, {"part": "err"})
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{options@} が指定された場合、"part" 要素でチャネルのどのパート ("out" または "err") の状態を返すかを指定できます。例えば、エラーの状態を得るには:
+@verbatim
+ch_status(job, {"part": "err"})
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Can also be used as a |method|: >
+			GetChannel()->ch_status()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetChannel()->ch_status()
+@end verbatim               
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+==============================================================================
+9. Starting a job with a channel			*job-start* *job*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{job-start}
@@ -1344,7 +2167,7 @@ JS または JSON チャネルの場合、これは 1 つのデコードされ�
 @cindex job-start
 @cindex job
 @cindex チャネルでジョブを開始する
-@section 8. チャネルでジョブを開始する
+@section 9. チャネルでジョブを開始する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1605,13 +2428,13 @@ You will want to do something more useful than "echomsg".
 
 @ifset EN
 ==============================================================================
-9. Starting a job without a channel			*job-start-nochannel*
+10. Starting a job without a channel			*job-start-nochannel*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{job-start-nochannel}
 @cindex job-start-nochannel
 @cindex チャネルなしでジョブを開始する
-@section 9. チャネルなしでジョブを開始する
+@section 10. チャネルなしでジョブを開始する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1686,13 +2509,551 @@ ch_open() の待ち時間は、ポートを利用可能にするためにジョ�
 
 @ifset EN
 ==============================================================================
-10. Job options						*job-options*
+11. Job functions					*job-functions-details*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job-functions-details}
+@cindex job-functions-details
+@section 11. Job 関数
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+job_getchannel({job})					 *job_getchannel()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@table @asis
+@anchor{job_getchannel()}
+@findex job_getchannel()
+@item job_getchannel(@{job@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Get the channel handle that {job} is using.
+		To check if the job has no channel: >
+			if string(job_getchannel()) == 'channel fail'
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{job@} が使用しているチャネルハンドルを取得します。ジョブにチャネルがないかどうかを確認するには:
+@verbatim
+if string(job_getchannel()) == 'channel fail'
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Can also be used as a |method|: >
+			GetJob()->job_getchannel()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetJob()->job_getchannel()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+job_info([{job}])					*job_info()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job_info()}
+@findex job_info()
+@item job_info([@{job@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Returns a Dictionary with information about {job}:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{job@} に関する情報を持つ辞書を返します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   "status"	what |job_status()| returns
+		   "channel"	what |job_getchannel()| returns
+		   "cmd"	List of command arguments used to start the job
+		   "process"	process ID
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item "status" @tab |@ref{job_status()}| が返すもの
+@item "channel" @tab |@ref{job_getchannel()}| が返すもの
+@item "cmd" @tab ジョブを開始するのに使われるコマンド引数のリスト
+@item "process" @tab プロセス ID
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   "tty_in"	terminal input name, empty when none
+		   "tty_out"	terminal output name, empty when none
+		   "exitval"	only valid when "status" is "dead"
+		   "exit_cb"	function to be called on exit
+		   "stoponexit"	|job-stoponexit|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item "tty_in" @tab 端末入力名、何もないときには空
+@item "tty_out" @tab 端末出力名、何もないときには空
+@item "exitval" @tab "status" が "dead" のときのみ有効
+@item "exit_cb" @tab 終了時に呼び出される関数
+@item "stoponexit" @tab |@ref{job-stoponexit}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		   Only in Unix:
+		   "termsig"	the signal which terminated the process
+				(See |job_stop()| for the values)
+				only valid when "status" is "dead"
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{Unix のみ:}
+@multitable @columnfractions .3 .7
+@item "termsig" @tab プロセスを終了させたシグナル (値については |@ref{job_stop()}| を参照してください)
+
+"status"が "dead" の場合にのみ有効で
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		   Only in MS-Windows:
+		   "tty_type"	Type of virtual console in use.
+				Values are "winpty" or "conpty".
+				See 'termwintype'.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{MS-Windows のみ:}
+@multitable @columnfractions .3 .7
+@item "tty_type" @tab 使用している仮想コンソールのタイプ。値は "winpty" または "conpty"。
+
+'@option{termwintype}' を参照してください。
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Without any arguments, returns a List with all Job objects.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+引数なしの場合、すべてのジョブオブジェクトのリストを返します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetJob()->job_info()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetJob()->job_info()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+job_setoptions({job}, {options})			*job_setoptions()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job_setoptions()}
+@findex job_setoptions()
+@item job_setoptions(@{job@}, @{options@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Change options for {job}.  Supported are:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{job@} のオプションを変更します。サポートされているものは:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		   "stoponexit"	|job-stoponexit|
+		   "exit_cb"	|job-exit_cb|
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .5 .5
+@item "stoponexit" @tab |@ref{job-stoponexit}|
+@item "exit_cb" @tab |@ref{job-exit_cb}|
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetJob()->job_setoptions(options)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetJob()->job_setoptions(options)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+job_start({command} [, {options}])			*job_start()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job_start()}
+@findex job_start()
+@item job_start(@{command@} [, @{options@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Start a job and return a Job object.  Unlike |system()| and
+		|:!cmd| this does not wait for the job to finish.
+		To start a job in a terminal window see |term_start()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブを開始し、ジョブオブジェクトを返します。|@ref{system()}| と |@ref{:!cmd}| とは異なり、これはジョブが終了するのを待つことはありません。端末ウィンドウ内でジョブを開始する方法については |@ref{term_start()}| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If the job fails to start then |job_status()| on the returned
+		Job object results in "fail" and none of the callbacks will be
+		invoked.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブが起動に失敗した場合、返されたジョブオブジェクトの |@ref{job_status()}| は "fail" となり、どのコールバックも呼び出されません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{command} can be a String.  This works best on MS-Windows.  On
+		Unix it is split up in white-separated parts to be passed to
+		execvp().  Arguments in double quotes can contain white space.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{command@} は文字列にすることができます。これは MS-Windows 上で最も効果的です。Unix では、それは execvp() に渡すために空白で区切られたパーツに分割されます。二重引用符で囲まれた引数には空白を含めることができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		{command} can be a List, where the first item is the executable
+		and further items are the arguments.  All items are converted
+		to String.  This works best on Unix.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{command@} はリストにすることができ、最初の項目は実行可能ファイルで、残りの項目は引数です。すべての項目は文字列に変換されます。これ は Unix で最も効果的です。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		On MS-Windows, job_start() makes a GUI application hidden. If
+		want to show it, Use |:!start| instead.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+MS-Windows では、|@ref{job_start()}| は GUI アプリケーションを隠します。それを表示したい場合は、|@ref{:!start}| を代わりに使用してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The command is executed directly, not through a shell, the
+		'shell' option is not used.  To use the shell: >
+	let job = job_start(["/bin/sh", "-c", "echo hello"])
+<		Or: >
+	let job = job_start('/bin/sh -c "echo hello"')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+コマンドはシェルではなく直接実行され、'@option{shell}' オプションは使用されません。シェルを使用するには:
+@verbatim
+let job = job_start(["/bin/sh", "-c", "echo hello"])
+@end verbatim
+または:
+@verbatim
+let job = job_start('/bin/sh -c "echo hello"')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		Note that this will start two processes, the shell and the
+		command it executes.  If you don't want this use the "exec"
+		shell command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+これは 2 つのプロセス、シェルとそれが実行するコマンドを開始することに注意してください。これを望まない場合は、"exec" シェルコマンドを使用します。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		On Unix $PATH is used to search for the executable only when
+		the command does not contain a slash.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unix では @env{$PATH} は、コマンドにスラッシュが含まれていない場合にのみ、実行可能ファイルを検索するために使用されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The job will use the same terminal as Vim.  If it reads from
+		stdin the job and Vim will be fighting over input, that
+		doesn't work.  Redirect stdin and stdout to avoid problems: >
+	let job = job_start(['sh', '-c', "myserver </dev/null >/dev/null"])
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブは Vim と同じ端末を使用します。ジョブが stdin を読む場合、ジョブと Vim が入力を奪い合うことになるのでうまく動作しません。問題を避けるために stdin と stdout をリダイレクトします:
+@verbatim
+let job = job_start(['sh', '-c', "myserver </dev/null >/dev/null"])
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The returned Job object can be used to get the status with
+		|job_status()| and stop the job with |job_stop()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+返されたジョブオブジェクトを使用して、|@ref{job_status()}| でステータスを取得し、|@ref{job_stop()}| でジョブを停止することができます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Note that the job object will be deleted if there are no
+		references to it.  This closes the stdin and stderr, which may
+		cause the job to fail with an error.  To avoid this keep a
+		reference to the job.  Thus instead of: >
+	call job_start('my-command')
+<		use: >
+	let myjob = job_start('my-command')
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ジョブオブジェクトは、それを参照するものがない場合削除されることに注意してください。これは stdin および stdout を閉じ、エラーによるジョブの失敗を引き起こします。これを回避するにはジョブへの参照を維持します。
+そのため、次の代わりに:
+@verbatim
+call job_start('my-command')
+@end verbatim
+以下のようにします:
+@verbatim
+let myjob = job_start('my-command')
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+<		and unlet "myjob" once the job is not needed or is past the
+		point where it would fail (e.g. when it prints a message on
+		startup).  Keep in mind that variables local to a function
+		will cease to exist if the function returns.  Use a
+		script-local variable if needed: >
+	let s:myjob = job_start('my-command')
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+さらに、ジョブが必要なくなったとき、もしくは (開始時にメッセージが表示されたときのように) ジョブが失敗した後に、"myjob" を unlet します。関数のローカル変数は、関数が終了すると消滅することに注意してください。必要であればスクリプトローカルな変数を使用することができます:
+@verbatim
+let s:myjob = job_start('my-command')
+@end verbatim
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		{options} must be a Dictionary.  It can contain many optional
+		items, see |job-options|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{options@} は辞書でなければなりません。多くのオプション項目を含めることができます。|@ref{job-options}| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			BuildCommand()->job_start()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+BuildCommand()->job_start()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+job_status({job})					*job_status()* *E916*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job_status()}
+@anchor{E916}
+@pindex job_status()
+@erindex E916
+@item job_status(@{job@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Returns a String with the status of {job}:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{job@} のステータスを String で返します:
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			"run"	job is running
+			"fail"	job failed to start
+			"dead"	job died or was stopped after running
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item "run" @tab ジョブが実行中
+@item "fail" @tab ジョブを開始できなかった
+@item "dead" @tab ジョブが死んだか実行後にジョブが停止した
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		On Unix a non-existing command results in "dead" instead of
+		"fail", because a fork happens before the failure can be
+		detected.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unix では存在しないコマンドは、失敗が検出される前にフォークが発生するため、"fail" ではなく "dead" になります。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If an exit callback was set with the "exit_cb" option and the
+		job is now detected to be "dead" the callback will be invoked.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+exit コールバックが "exit_cb" オプションで設定され、ジョブが "dead" と検出された場合、コールバックが呼び出されます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		For more information see |job_info()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+詳細は |@ref{job_info()}| を参照してください。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetJob()->job_status()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetJob()->job_status()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+job_stop({job} [, {how}])					*job_stop()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{job_stop()}
+@findex job_stop()
+@item job_stop(@{job@} [, @{how@}])
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Stop the {job}.  This can also be used to signal the job.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{job@} を停止します。これはジョブを通知するためにも使用できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When {how} is omitted or is "term" the job will be terminated.
+		For Unix SIGTERM is sent.  On MS-Windows the job will be
+		terminated forcedly (there is no "gentle" way).
+		This goes to the process group, thus children may also be
+		affected.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{how@} が省略されたり "term" の場合、ジョブは終了します。Unix では SIGTERM が送信されます。MS-Windows では、ジョブは強制的に終了します ("優しい"方法は存在しません)。これはプロセスグループに行くので、子プロセスにも影響を受けるかもしれません。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Effect for Unix:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{UNIX への影響:}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			"term"	 SIGTERM (default)
+			"hup"	 SIGHUP
+			"quit"	 SIGQUIT
+			"int"	 SIGINT
+			"kill"	 SIGKILL (strongest way to stop)
+			number	 signal with that number
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item "term" @tab SIGTERM (既定)
+@item "hup" @tab SIGHUP
+@item "quit" @tab SIGQUIT
+@item "int" @tab SIGINT
+@item "kill" @tab SIGKILL (停止するための最も強い方法)
+@item number @tab その番号の信号
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Effect for MS-Windows:
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@strong{MS-Windows への影響:}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			"term"	 terminate process forcedly (default)
+			"hup"	 CTRL_BREAK
+			"quit"	 CTRL_BREAK
+			"int"	 CTRL_C
+			"kill"	 terminate process forcedly
+			Others	 CTRL_BREAK
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@multitable @columnfractions .3 .7
+@item "term" @tab プロセスを強制終了 (既定)
+@item "hup" @tab CTRL_BREAK
+@item "quit" @tab CTRL_BREAK
+@item "int" @tab CTRL_C
+@item "kill" @tab プロセスを強制終了
+@item Others @tab CTRL_BREAK
+@end multitable
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		On Unix the signal is sent to the process group.  This means
+		that when the job is "sh -c command" it affects both the shell
+		and the command.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+Unix では、シグナルはプロセスグループに送られます。これは、ジョブが "sh -c command" であるときにシェルとコマンドの両方に影響を与えることを意味します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		The result is a Number: 1 if the operation could be executed,
+		0 if "how" is not supported on the system.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+結果は数値で、操作が実行できる場合は 1、システムで "how" がサポートされていない場合は 0。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Note that even when the operation was executed, whether the
+		job was actually stopped needs to be checked with
+		|job_status()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@quotation
+@strong{Note:} @*
+ジョブが実際に停止したかどうかは、操作が実行された場合でも、|@ref{job_status()}| でチェックする必要があることに注意してください。
+@end quotation
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		If the status of the job is "dead", the signal will not be
+		sent.  This is to avoid to stop the wrong job (esp. on Unix,
+		where process numbers are recycled).
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ジョブのステータスが "dead" の場合、シグナルは送られません。これは、(特にプロセス番号が再利用される Unix において) 間違ったジョブを停止することを防ぐためです。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		When using "kill" Vim will assume the job will die and close
+		the channel.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+"kill" を使用したとき、Vim はジョブが死ぬと想定し、チャネルを閉じます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetJob()->job_stop()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できる:
+@verbatim
+GetJob()->job_stop()
+@end verbatim
+@end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+==============================================================================
+12. Job options						*job-options*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{job-options}
 @cindex job-options
 @cindex ジョブオプション
-@section 10. ジョブオプション
+@section 12. ジョブオプション
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2361,13 +3722,13 @@ If the file already exists it is truncated.
 
 @ifset EN
 ==============================================================================
-11. Controlling a job					*job-control*
+13. Controlling a job					*job-control*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{job-control}
 @cindex job-control
 @cindex ジョブを制御する
-@section 11. ジョブを制御する
+@section 13. ジョブを制御する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2414,12 +3775,12 @@ For more options see |job_stop()|.
 
 @ifset EN
 ==============================================================================
-12. Using a prompt buffer				*prompt-buffer*
+14. Using a prompt buffer				*prompt-buffer*
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{prompt-buffer}
 @cindex prompt-buffer
-@section 12. プロンプトバッファを使う
+@section 14. プロンプトバッファを使う
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN

@@ -3,14 +3,14 @@
 @unnumbered イベントに応じて自動的にコマンドを実行する
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Jun 26
+*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Sep 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*autocmd.txt*   For Vim バージョン 8.1.  Last change: 2019 Jun 26
+*autocmd.txt*   For Vim バージョン 8.1.  Last change: 2019 Sep 16
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -768,7 +768,6 @@ Name			triggered by ~
 |BufCreate|		just after adding a buffer to the buffer list
 |BufDelete|		before deleting a buffer from the buffer list
 |BufWipeout|		before completely deleting a buffer
-|TerminalOpen|		after a terminal buffer was created
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ @tab
@@ -777,7 +776,6 @@ Name			triggered by ~
 @item |@ref{BufCreate}| @tab バッファリストにバッファを追加した直後
 @item |@ref{BufDelete}| @tab バッファリストからバッファを削除する前
 @item |@ref{BufWipeout}| @tab 完全にバッファを削除する前
-@item |@ref{TerminalOpen}| @tab ターミナルバッファが作成された後
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -831,6 +829,8 @@ Name			triggered by ~
 |EncodingChanged|	after the 'encoding' option has been changed
 |TermChanged|		after the value of 'term' has changed
 |OptionSet|		after setting any option
+|OSAppearanceChanged|	after the variable |v:os_appearance| has changed 
+			{only in MacVim GUI}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item @ @tab
@@ -840,6 +840,7 @@ Name			triggered by ~
 @item |@ref{EncodingChanged}| @tab オプション '@option{encoding}' が変更された後
 @item |@ref{TermChanged}| @tab オプション '@option{term}' が変更された後
 @item |@ref{OptionSet}| @tab オプションが設定された後
+@item |@ref{OSAppearanceChanged}| @tab 変数 |@ref{v:os_appearance}| が変更された後 @{MacVim GUI のみ@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -870,6 +871,18 @@ Name			triggered by ~
 @item |@ref{ExitPre}| @tab Vim を終了するコマンドを使ったとき
 @item |@ref{VimLeavePre}| @tab Vim を終了する前、viminfo ファイルを書き出す前
 @item |@ref{VimLeave}| @tab Vim を終了する前、viminfo ファイルを書き出した後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+	Terminal
+|TerminalOpen|		after a terminal buffer was created
+|TerminalWinOpen|	after a terminal buffer was created in a new window
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item @ @tab
+@item @strong{Terminal} @tab
+@item |@ref{TerminalOpen}| @tab ターミナルバッファが作成された後
+@item |@ref{TerminalWinOpen}| @tab 新しいウィンドウで端末バッファが生成された後
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1007,6 +1020,16 @@ Name			triggered by ~
 @item |@ref{TextChangedI}| @tab ポップアップメニューが表示されていないときに、挿入モードでテキストが変更された後
 @item |@ref{TextChangedP}| @tab ポップアップメニューが表示されているときに、挿入モードでテキストが変更された後
 @item |@ref{TextYankPost}| @tab テキストがヤンクもしくは削除された後
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+|SafeState|		nothing pending, going to wait for the user to type a
+			character
+|SafeStateAgain|	repeated SafeState
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item |@ref{SafeState}| @tab 保留中のものはなく、ユーザーの文字入力を待つとき
+@item |@ref{SafeStateAgain}| @tab 繰り返された SafeState
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1526,8 +1549,7 @@ CmdlineLeave			Before leaving the command line.
 							*CmdwinEnter*
 CmdwinEnter			After entering the command-line window.
 				Useful for setting options specifically for
-				this special type of window.  This is
-				triggered _instead_ of BufEnter and WinEnter.
+				this special type of window.
 				<afile> is set to a single character,
 				indicating the type of command-line.
 				|cmdwin-char|
@@ -1536,14 +1558,13 @@ CmdwinEnter			After entering the command-line window.
 @anchor{CmdwinEnter}
 @cindex CmdwinEnter
 @item CmdwinEnter
-Command-line ウィンドウに入った後。この特殊なウィンドウに対してのみオプションを設定するのに便利である。このイベントは BufEnter や WinEnter の「代わりに」発生する。<afile> は、command-line の種類を示す 1 文字に設定される。|@ref{cmdwin-char}|
+Command-line ウィンドウに入った後。この特殊なウィンドウに対してのみオプションを設定するのに便利である。<afile> は、command-line の種類を示す 1 文字に設定される。|@ref{cmdwin-char}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*CmdwinLeave*
 CmdwinLeave			Before leaving the command-line window.
 				Useful to clean up any global setting done
-				with CmdwinEnter.  This is triggered _instead_
-				of BufLeave and WinLeave.
+				with CmdwinEnter.
 				<afile> is set to a single character,
 				indicating the type of command-line.
 				|cmdwin-char|
@@ -1552,7 +1573,7 @@ CmdwinLeave			Before leaving the command-line window.
 @anchor{CmdwinLeave}
 @cindex CmdwinLeave
 @item CmdwinLeave
-Command-line ウィンドウから出る前。イベント CmdwinEnter で行ったグローバル設定を消去するのに便利である。このイベントは BufLeave や WinLeave の「代わりに」発生する。<afile> は、command-line の種類を示す 1 文字に設定される。|@ref{cmdwin-char}|
+Command-line ウィンドウから出る前。イベント CmdwinEnter で行ったグローバル設定を消去するのに便利である。<afile> は、command-line の種類を示す 1 文字に設定される。|@ref{cmdwin-char}|
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
 							*ColorScheme*
@@ -1585,7 +1606,7 @@ ColorSchemePre			Before loading a color scheme. |:colorscheme|
 あるカラースキームが読み込まれる前に、それ以前に別のカラースキームによって追加されたものを取り除くのに便利。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-CompleteChanged 					*CompleteChanged*
+CompleteChanged						*CompleteChanged*
 				After each time the Insert mode completion
 				menu changed.  Not fired on popup menu hide,
 				use |CompleteDone| for that.  Never triggered
@@ -1627,6 +1648,15 @@ CompleteChanged 					*CompleteChanged*
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 テキストの |@ref{textlock}| を変更することはできない。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+				The size and position of the popup are also
+				available by calling |pum_getpos()|.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+ポップアップのサイズと位置は、|@ref{pum_getpos()}| を呼び出すことでも得られる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
 							*CompleteDone*
 CompleteDone			After Insert mode completion is done.  Either
@@ -2456,6 +2486,18 @@ OptionSet は起動時と 'key' の変更の際にはあえてイベントが発
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 自動コマンドで |@ref{:set}| を使用するとき、イベントは再度引き起こされない。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+                                                        *OSAppearanceChanged*
+OSAppearanceChanged             After changing the variable |v:os_appearance|. 
+                                This change happens only if the OS changes
+                                its appearance and Vim is running with a GUI.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{OSAppearanceChanged}
+@cindex OSAppearanceChanged
+@item OSAppearanceChanged
+変数 |v:os_appearance| が変更された後。 この変更は OS が自身のアピアランスを変更、かつ Vim が GUI で動作しているときのみ生じます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
 							*QuickFixCmdPre*
@@ -2543,6 +2585,78 @@ RemoteReply			When a reply from a Vim that functions as
 これに自動コマンドを定義したときも、応答を読み込むのには、読み込んだ応答を処理できるように関数 |@ref{remote_read()}| を使うべきであることに注意。
 @end quotation
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*SafeState*
+SafeState			When nothing is pending, going to wait for the
+				user to type a character.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{SafeState}
+@cindex SafeState
+@item SafeState
+何も保留されておらず、ユーザーの文字入力を待つとき。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				This will not be triggered when:
+				- an operator is pending
+				- a register was entered with "r
+				- halfway executing a command
+				- executing a mapping
+				- there is typeahead
+				- Insert mode completion is active
+				- Command line completion is active
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+次の場合はトリガーされない:
+@itemize
+@item オペレータ待機中
+@item レジスタが "r で入力された
+@item コマンドの実行途中
+@item マップの実行中
+@item 先行入力がある
+@item 挿入モード補完がアクティブ
+@item コマンドライン補完がアクティブ
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				You can use `mode()` to find out what state
+				Vim is in.  That may be:
+				- VIsual mode
+				- Normal mode
+				- Insert mode
+				- Command-line mode
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+`@command{mode()}` を使用して、Vim の状態を確認できる。それは以下かもしれない:
+@itemize
+@item ビジュアルモード
+@item ノーマルモード
+@item 挿入モード
+@item コマンドラインモード
+@end itemize
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+				Depending on what you want to do, you may also
+				check more with `state()`, e.g. whether the
+				screen was scrolled for messages.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+やりたいことによっては、`@command{state()}` でさらにチェックすることもできる。例えば、画面がメッセージのためにスクロールされたかどうか。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+							*SafeStateAgain*
+SafeStateAgain			Like SafeState but after processing any
+				messages and invoking callbacks. This may be
+				triggered often, don't do something that takes
+				time.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{SafeStateAgain}
+@cindex SafeStateAgain
+@item SafeStateAgain
+SafeState に似ているが、メッセージを処理し、コールバックを呼び出した後。これは頻繁にトリガーされる可能性があるので、時間がかかるようなことはしないこと。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
 							*SessionLoadPost*
 SessionLoadPost			After loading the session file created using
@@ -2812,6 +2926,20 @@ TerminalOpen			Just after a terminal buffer was created, with
 `@command{:terminal}` もしくは |@ref{term_start()}| により端末バッファが生成された直後。このイベントは、++hidden オプションによってウィンドウなしにバッファが生成された場合でも発生する。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
+							*TerminalWinOpen*
+TerminalWinOpen			Just after a terminal buffer was created, with
+				`:terminal` or |term_start()|. This event is
+				triggered only if the buffer is created
+				with a window.  Can be used to set window
+				local options for the terminal window.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{TerminalWinOpen}
+@cindex TerminalWinOpen
+@item TerminalWinOpen
+`@command{:terminal}` もしくは |@ref{term_start()}| により端末バッファが作成された直後。このイベントは、バッファがウィンドウと共に作成された場合にのみ発生する。端末ウィンドウのウィンドウローカルオプションの設定に使用できる。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 							*TermResponse*
 TermResponse			After the response to |t_RV| is received from
 				the terminal.  The value of |v:termresponse|
@@ -2910,8 +3038,8 @@ TextYankPost			After text has been yanked or deleted in the
 カレントバッファでテキストがヤンクもしくは削除された後。|@ref{v:event}| の以下の値は、この autocmd を発生させた操作を特定するのに使用できる:
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-				   operator    	The operation performed.
-				   regcontents 	Text that was stored in the
+				   operator	The operation performed.
+				   regcontents	Text that was stored in the
 						register, as a list of lines,
 						like with: >
 						getreg(r, 1, 1)
@@ -3000,7 +3128,7 @@ VimEnter			After doing all the startup stuff, including
 				   if v:vim_did_enter
 				     call s:init()
 				   else
- 	  			     au VimEnter * call s:init()
+				     au VimEnter * call s:init()
 				   endif
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
