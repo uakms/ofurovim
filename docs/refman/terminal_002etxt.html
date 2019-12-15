@@ -47,7 +47,7 @@ Up: <a href="Mu-Ci-.html" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Ind
 </div>
 <hr>
 <span id="taminaruuindounosapoto"></span><h2 class="unnumbered">ターミナルウィンドウのサポート</h2>
-<pre class="verbatim">*terminal.txt*  For Vim バージョン 8.1.  Last change: 2019 Jul 04
+<pre class="verbatim">*terminal.txt*  For Vim バージョン 8.1.  Last change: 2019 Nov 03
 
 
                 VIMリファレンスマニュアル    by Bram Moolenaar
@@ -215,8 +215,8 @@ set notimeout ttimeout timeoutlen=100
 <span id="index-term_002b_002bopen"></span>
 <p>サポートされる [options] は以下の通り:
 </p><table>
-<tr><td width="30%">++close</td><td width="70%">ジョブが終了した際には自動的に端末ウィンドウを閉ぢる。</td></tr>
-<tr><td width="30%">++noclose</td><td width="70%">ジョブが終了しても自動的に端末ウィンドウを<strong>閉ぢ</strong>ません。</td></tr>
+<tr><td width="30%">++close</td><td width="70%">ジョブが終了した際には自動的に端末ウィンドウを閉ぢる。|<a href="#terminal_002dclose">terminal-close</a>|</td></tr>
+<tr><td width="30%">++noclose</td><td width="70%">ジョブが終了しても自動的に端末ウィンドウを<strong>閉ぢません</strong>。</td></tr>
 <tr><td width="30%">++open</td><td width="70%">ジョブが終了した際にウィンドウが表示されてゐない場合に、ウィンドウを表示する。
 <blockquote>
 <p><strong>Note:</strong> <br>
@@ -227,6 +227,9 @@ set notimeout ttimeout timeoutlen=100
 <tr><td width="30%">++curwin</td><td width="70%">現在のウィンドウで端末を開き、現在のウィンドウを分割しない。現在のバッファを抛棄( |<a href="editing_002etxt.html#abandon">abandon</a>| )できない場合は失敗する。</td></tr>
 <tr><td width="30%">++hidden</td><td width="70%">端末を隱しバッファとして開く。ウィンドウは使用されない。</td></tr>
 <tr><td width="30%">++norestore</td><td width="70%">セッションファイルに端末ウィンドウを含めません。</td></tr>
+<tr><td width="30%">++shell</td><td width="70%">{command} を直接實行するのではなく、&lsquo;<code>:!command</code>&lsquo; と同樣にシェルを使用します。
+<span id="E279"></span><span id="index-E279"></span>
+{Vim: 現狀、Unix でのみ動作します}</td></tr>
 <tr><td width="30%">++kill={how}</td><td width="70%">端末ウィンドウを閉ぢるときに {how} でジョブを終了させます。値については |<a href="#term_005fsetkill_0028_0029">term_setkill()</a>| を參照してください。</td></tr>
 <tr><td width="30%">++rows={height}</td><td width="70%">端末ウィンドウの高さとして {height} を使ひます。もし、端末が Vim の完全な高さ (端末ウィンドウの上や下にウィンドウがない) を使用する場合、必要に應じてコマンドラインの高さが現象します。</td></tr>
 <tr><td width="30%">++cols={width}</td><td width="70%">端末ウィンドウの幅として {width} を使ひます。もし、端末が Vim の完全な幅 (端末ウィンドウの左や右にウィンドウがない) を使用する場合、この値は無視されます。</td></tr>
@@ -235,6 +238,7 @@ set notimeout ttimeout timeoutlen=100
 <p>例: シェルには &quot;++eof=exit&quot; を、Python には &quot;++eof=exit()&quot; を指定する。特殊 コードが &lsquo;<code>:map</code>&lsquo; と同樣に利用できる。例: &quot;&lt;C-Z&gt;&quot; は CTRL-Z を示す。
 </p></td></tr>
 <tr><td width="30%">++type={pty}</td><td width="70%">(MS-Windows のみ): 假想コンソールとして {pty} を使用する。値については &rsquo;<samp>termwintype</samp>&rsquo; を參照。</td></tr>
+<tr><td width="30%">++api={expr}</td><td width="70%">{expr} で始まる函數名を |<a href="#terminal_002dapi">terminal-api</a>| 機能として呼び出すことを許可します。{expr} が空の場合、函數を呼び出すことはできません。</td></tr>
 </table>
 
 <p>より詳細なオプションを使ひたいならば |<a href="#term_005fstart_0028_0029">term_start()</a>| 函數を使つてください。
@@ -254,6 +258,9 @@ set notimeout ttimeout timeoutlen=100
 <p>&lsquo;<code>CTRL-W :close</code>&lsquo; で閉ぢようとしてもまた失敗します。&lsquo;<code>CTRL-W :close!</code>&lsquo; はウィンドウを閉ぢ、バッファを隱し狀態にします。
 </p>
 <p>&lsquo;<code>CTRL-W :hide</code>&lsquo; を使ふとジョブを實行したまま、端末ウィンドウを閉ぢバッファを隱し狀態にできます。&lsquo;<code>:buffer</code>&lsquo; コマンドで現在のウィンドウを端末ウィンドウにすることができます。未保存の變更があつた場合にはこれは失敗しますが、通常と同じやうに ! で强制できます。
+</p>
+<span id="terminal_002dclose"></span><span id="index-terminal_002dclose"></span>
+<p>端末ウィンドウが閉ぢられたとき、例へばシェルを終了したときや &quot;++close&quot; 引數が使はれたとき、またこれが最後のノーマル Vim ウィンドウのときは、Vim は終了します。これはノーマルウィンドウ內で |<a href="editing_002etxt.html#g_t_003aquit">:quit</a>| を使ふやうなものです。ヘルプやプレビューウィンドウは含まれません。
 </p>
 <p>バックグラウンドジョブをウィンドウ無しで實行し、終了したらウィンドウに表示するには、次のやうにオプションを指定します:
 </p><pre class="verbatim">:term ++hidden ++open make
@@ -415,14 +422,18 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 
 <p>&quot;s&quot; キーを使ふと上と下の部分が交換される。これは差異を見つけやすくする。
 </p>
-<span id="term_005fdumpload_0028_0029"></span><span id="index-term_005fdumpload_0028_0029"></span>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetFilename()-&gt;term_dumpdiff(otherfile)
+</pre><span id="term_005fdumpload_0028_0029"></span><span id="index-term_005fdumpload_0028_0029"></span>
 </dd>
 <dt>term_dumpload({filename} [, {options}])</dt>
 <dd><p>{filename} の內容を表示してゐる新しいウィンドウを開く。ファイルは |<a href="#term_005fdumpwrite_0028_0029">term_dumpwrite()</a>| で作成されてゐなければならない。失敗した場合はバッファ番號もしくは 0 を返す。|<a href="#terminal_002ddiff">terminal-diff</a>| も參照。
 </p>
 <p>{options} の詳細は |<a href="#term_005fdumpdiff_0028_0029">term_dumpdiff()</a>| を參照。
 </p>
-<span id="term_005fdumpwrite_0028_0029"></span><span id="index-term_005fdumpwrite_0028_0029"></span>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetFilename()-&gt;term_dumpload()
+</pre><span id="term_005fdumpwrite_0028_0029"></span><span id="index-term_005fdumpwrite_0028_0029"></span>
 </dd>
 <dt>term_dumpwrite({buf}, {filename} [, {options}])</dt>
 <dd><p>ファイル {filename} 內の {buf} のターミナル畫面の內容をダンプする。これは |<a href="#term_005fdumpload_0028_0029">term_dumpload()</a>| と |<a href="#term_005fdumpdiff_0028_0029">term_dumpdiff()</a>| で使はれるフォーマットを使ふ。
@@ -439,6 +450,9 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 <tr><td width="30%">&quot;columns&quot;</td><td width="70%">ダンプする列の最大値</td></tr>
 </table>
 
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます。ベースはファイル名に使用されます:
+</p><pre class="verbatim">GetFilename()-&gt;term_dumpwrite(bufnr)
+</pre>
 <span id="term_005fgetaltscreen_0028_0029"></span><span id="index-term_005fgetaltscreen_0028_0029"></span>
 </dd>
 <dt>term_getaltscreen({buf})</dt>
@@ -446,8 +460,10 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 </p>
 <p>{buf} は |<a href="#term_005fgetsize_0028_0029">term_getsize()</a>| と同樣に使はれる。
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_getaltscreen()
+</pre>
+
 <span id="term_005fgetansicolors_0028_0029"></span><span id="index-term_005fgetansicolors_0028_0029"></span>
 </dd>
 <dt>term_getansicolors({buf})</dt>
@@ -455,7 +471,10 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 </p>
 <p>{buf} は |<a href="#term_005fgetsize_0028_0029">term_getsize()</a>| と同樣に使はれる。もしもバッファが存在しないか端末ウィンドウでなければ、空のリストが返される。
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたとき、かつ GUI が有效のとき、かつ/または |<a href="various_002etxt.html#g_t_002btermguicolors">+termguicolors</a>| 機能付きでコンパイルされたときのみ有效}
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_getansicolors()
+</pre>
+<p>{Vim が GUI が有效のとき、かつ/または |<a href="various_002etxt.html#g_t_002btermguicolors">+termguicolors</a>| 機能付きでコンパイルされたときのみ有效}
 </p>
 <span id="term_005fgetattr_0028_0029"></span><span id="index-term_005fgetattr_0028_0029"></span>
 </dd>
@@ -468,8 +487,11 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 <tr><td width="10%">strike</td><td width="90%"></td></tr>
 <tr><td width="10%">reverse</td><td width="90%"></td></tr>
 </table>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetAttr()-&gt;term_getattr()
+</pre>
+
 <span id="term_005fgetcursor_0028_0029"></span><span id="index-term_005fgetcursor_0028_0029"></span>
 </dd>
 <dt>term_getcursor({buf})</dt>
@@ -487,15 +509,18 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 
 <p>{buf} はターミナルウィンドウのバッファ番號でなければならない。バッファが存在しないか、ターミナルウィンドウでなければ、空のリストが返される。
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_getcursor()
+</pre>
 <span id="term_005fgetjob_0028_0029"></span><span id="index-term_005fgetjob_0028_0029"></span>
 </dd>
 <dt>term_getjob({buf})</dt>
 <dd><p>ターミナルウィンドウの {buf} と關聯付けられたジョブを取得する。{buf} は |<a href="#term_005fgetsize_0028_0029">term_getsize()</a>| として使はれる。ジョブがない場合は |<a href="eval_002etxt.html#v_003anull">v:null</a>| を返す。
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_getjob()
+</pre>
+
 <span id="term_005fgetline_0028_0029"></span><span id="index-term_005fgetline_0028_0029"></span>
 </dd>
 <dt>term_getline({buf}, {row})</dt>
@@ -505,8 +530,10 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 </p>
 <p>それぞれの文字の屬性を取得するには |<a href="#term_005fscrape_0028_0029">term_scrape()</a>| を使ふ。
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_getline(row)
+</pre>
+
 <span id="term_005fgetscrolled_0028_0029"></span><span id="index-term_005fgetscrolled_0028_0029"></span>
 </dd>
 <dt>term_getscrolled({buf})</dt>
@@ -519,8 +546,10 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 </p>
 <p>{buf} は |<a href="#term_005fgetsize_0028_0029">term_getsize()</a>| として使はれる。
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_getscrolled()
+</pre>
+
 <span id="term_005fgetsize_0028_0029"></span><span id="index-term_005fgetsize_0028_0029"></span>
 </dd>
 <dt>term_getsize({buf})</dt>
@@ -528,8 +557,10 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 </p>
 <p>{buf} はターミナルウィンドウのバッファ番號でなければならない。カレントバッファのために空文字列を使ふ。バッファが存在しないか、ターミナルウィンドウでなければ、空リストが返される。
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_getsize()
+</pre>
+
 <span id="term_005fgetstatus_0028_0029"></span><span id="index-term_005fgetstatus_0028_0029"></span>
 </dd>
 <dt>term_getstatus({buf})</dt>
@@ -543,8 +574,10 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 </p>
 <p>{buf} はターミナルウィンドウのバッファ番號でなければならない。バッファが存在しないか、ターミナルウィンドウでなければ、空文字列が返される。
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_getstatus()
+</pre>
+
 <span id="term_005fgettitle_0028_0029"></span><span id="index-term_005fgettitle_0028_0029"></span>
 </dd>
 <dt>term_gettitle({buf})</dt>
@@ -552,8 +585,10 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 </p>
 <p>{buf} はターミナルウィンドウのバッファ番號でなければならない。バッファが存在しないか、ターミナルウィンドウでなければ、空文字列が返される。
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_gettitle()
+</pre>
+
 <span id="term_005fgettty_0028_0029"></span><span id="index-term_005fgettty_0028_0029"></span>
 </dd>
 <dt>term_gettty({buf} [, {input}])</dt>
@@ -561,15 +596,16 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 </p>
 <p>{input} が省略されるか 0 なら、書き込んでゐる名前を返す (stdout)。{input} が 1 なら、讀み込んでゐる名前を返す (stdin)。UNIX ではどちらも同じ名前を返す。
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_gettty()
+</pre>
+
 <span id="term_005flist_0028_0029"></span><span id="index-term_005flist_0028_0029"></span>
 </dd>
 <dt>term_list()</dt>
 <dd><p>ターミナルウィンドウのためのすべてのバッファのバッファ番號を持つリスト
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+
 <span id="term_005fscrape_0028_0029"></span><span id="index-term_005fscrape_0028_0029"></span>
 </dd>
 <dt>term_scrape({buf}, {row})</dt>
@@ -585,8 +621,11 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 <tr><td width="20%">&quot;attr&quot;</td><td width="80%">セルの屬性。個々のフラグを取得するには |<a href="#term_005fgetattr_0028_0029">term_getattr()</a>| を使ふ</td></tr>
 <tr><td width="20%">&quot;width&quot;</td><td width="80%">セルの幅: 1 もしくは 2</td></tr>
 </table>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_scrape(row)
+</pre>
+
 <span id="term_005fsendkeys_0028_0029"></span><span id="index-term_005fsendkeys_0028_0029"></span>
 </dd>
 <dt>term_sendkeys({buf}, {keys})</dt>
@@ -594,7 +633,17 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 </p>
 <p>{keys} はキーの連續として解釋される。例へば、&quot;\&lt;c-x&gt;&quot; は <kbd>CTRL-X</kbd> を意味する。
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_sendkeys(keys)
+</pre>
+
+<span id="term_005fsetapi_0028_0029"></span><span id="index-term_005fsetapi_0028_0029"></span>
+</dd>
+<dt>term_setapi({buf}, {expr})</dt>
+<dd><p>端末 {buf} 內で |<a href="#terminal_002dapi">terminal-api</a>| 機能に使用する函數名のプリフィックスを設定します。例:
+</p><pre class="verbatim">:call term_setapi(buf, &quot;Myapi_&quot;)
+:call term_setapi(buf, &quot;&quot;)
+</pre><p>デフォルトは &quot;Tapi_&quot; です。{expr} が空の文字列の場合、{buf} の |<a href="#terminal_002dapi">terminal-api</a>| 機能は使用できません。
 </p>
 <span id="term_005fsetansicolors_0028_0029"></span><span id="index-term_005fsetansicolors_0028_0029"></span>
 </dd>
@@ -623,7 +672,10 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 
 <p>これらのカラーは &rsquo;<samp>termguicolors</samp>&rsquo; が設定されてゐるときに GUI と端末で使はれる。GUI カラーが使はれてゐないとき (GUI モードもしくは &rsquo;<samp>termguicolors</samp>&rsquo; が設定されてゐる)、端末ウィンドウは常に、端末の根柢にある 16 ANSI カラーを使ふ。
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたとき、かつ GUI が有效のとき、かつ/または |<a href="various_002etxt.html#g_t_002btermguicolors">+termguicolors</a>| 機能付きでコンパイルされたときのみ有效}
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_setansicolors(colors)
+</pre>
+<p>{Vim が GUI が有效のとき、かつ/または |<a href="various_002etxt.html#g_t_002btermguicolors">+termguicolors</a>| 機能付きでコンパイルされたときのみ有效}
 </p>
 <span id="term_005fsetkill_0028_0029"></span><span id="index-term_005fsetkill_0028_0029"></span>
 </dd>
@@ -634,6 +686,10 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 </p>
 <p>シグナルが送られたあと、Vim はジョブが實際に停止するのを確認するまでの時閒 (秒) 待機するだらう。
 </p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_setkill(how)
+</pre>
+
 <span id="term_005fsetrestore_0028_0029"></span><span id="index-term_005fsetrestore_0028_0029"></span>
 </dd>
 <dt>term_setrestore({buf}, {command})</dt>
@@ -645,8 +701,10 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 </p>
 <p>このウィンドウを復歸しないやうにするには &quot;NONE&quot; を使ふ。
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_setrestore(command)
+</pre>
+
 <span id="term_005fsetsize_0028_0029"></span><span id="E955"></span><span id="index-term_005fsetsize_0028_0029"></span>
 <span id="index-E955"></span>
 </dd>
@@ -655,8 +713,10 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 </p>
 <p>{buf} は端末ウィンドウのバッファ番號でなければならない。現在のバッファに適用するには空文字列を使ふ。もしもバッファが存在しないか端末ウィンドウでなければ、エラーになる。
 </p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_setsize(rows, cols)
+</pre>
+
 <span id="term_005fstart_0028_0029"></span><span id="index-term_005fstart_0028_0029"></span>
 </dd>
 <dt>term_start({cmd} [, {options}])</dt>
@@ -705,12 +765,16 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 <p>|<a href="#term_002b_002bclose">term++close</a>| と |<a href="#term_002b_002bopen">term++open</a>| を參照。
 </p></td></tr>
 <tr><td width="30%">&quot;term_opencmd&quot;</td><td width="70%">&quot;term_finish&quot; のために &quot;open&quot; が使はれるとき、ウィンドウを開くためのコマンド。バッファ番號の先に &quot;%d&quot; がなければならない。例へば &quot;10split|buffer %d&quot;。これが指定されてゐなければ、&quot;botright sbuf %d&quot; が使はれる。</td></tr>
-<tr><td width="30%">&quot;eof_chars&quot;</td><td width="70%">ターミナルに書き込まれるすべてのバッファ行のあとに送られるテキスト。これが設定されてゐないとき、MS-Windows では CTRL-D が使はれる。Python では CTRL-Z か &quot;exit()&quot; が使はれる。シェルでは &quot;exit&quot; が使はれる。CR は常に付加される。</td></tr>
-<tr><td width="30%">&quot;ansi_colors&quot;</td><td width="70%">16 ANSI カラーの名前か GUI カラーモードで使はれてゐる ANSI パレットで定義されてゐる 16 進數のカラーコードのリスト。|<a href="#g_003aterminal_005fansi_005fcolors">g:terminal_ansi_colors</a>| を參照</td></tr>
-<tr><td width="30%">&quot;tty_type&quot;</td><td width="70%">(MS-Windows のみ): 使用する pty を明示しまう。値については &rsquo;<samp>termwintype</samp>&rsquo; を參照してください。</td></tr>
+<tr><td width="30%">&quot;eof_chars&quot;</td><td width="70%">ターミナルに書き込まれるすべてのバッファ行のあとに送られるテキスト。これが設定されてゐないとき、MS-Windows では CTRL-D が使はれます。Python では CTRL-Z か &quot;exit()&quot; が使はれます。シェルでは &quot;exit&quot; が使はれます。CR は常に付加されます。</td></tr>
+<tr><td width="30%">&quot;ansi_colors&quot;</td><td width="70%">16 ANSI カラーの名前か GUI カラーモードで使はれてゐる ANSI パレットで定義されてゐる 16 進數のカラーコードのリスト。|<a href="#g_003aterminal_005fansi_005fcolors">g:terminal_ansi_colors</a>| を參照してください。</td></tr>
+<tr><td width="30%">&quot;tty_type&quot;</td><td width="70%">(MS-Windows のみ): 使用する pty を明示します。値については &rsquo;<samp>termwintype</samp>&rsquo; を參照してください。</td></tr>
+<tr><td width="30%">&quot;term_api&quot;</td><td width="70%">|<a href="#terminal_002dapi">terminal-api</a>| 機能の函數名プリフィックス。|<a href="#term_005fsetapi_0028_0029">term_setapi()</a>| を參照してください。</td></tr>
 </table>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
-</p>
+
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetCommand()-&gt;term_start()
+</pre>
+
 </dd>
 <dt>term_wait({buf} [, {time}])</dt>
 <dd><span id="term_005fwait_0028_0029"></span><span id="index-term_005fwait_0028_0029"></span>
@@ -719,11 +783,12 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 <p>{buf} は |<a href="#term_005fgetsize_0028_0029">term_getsize()</a>| として使はれる。
 </p>
 <p>{time} はアップデートまでのミリ秒。設定されてゐなければ 10 ミリ秒が使はれる。
-</p>
-<p>{Vim が |<a href="various_002etxt.html#g_t_002bterminal">+terminal</a>| 機能付きでコンパイルされたときのみ有效}
 </p></dd>
 </dl>
 
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;term_wait()
+</pre>
 <span id="terminal_002dcommunication"></span><span id="index-terminal_002dcommunication"></span>
 <span id="g_t3_002e-Duan-Mo-Tong-Xin-"></span><h3 class="section">3. 端末通信</h3>
 
@@ -759,7 +824,7 @@ MS-Windows 10 の最新バージョン (&quot;October 2018 Update&quot; 以降) 
 <dt>call {funcname} {argument}</dt>
 <dd><p>ユーザー定義函數を {argument} で呼び出します。函數は 2 つの引數で呼び出されます: 端末のバッファ番號とデコードされた JSON 引數 {argument} です。
 </p>
-<p>函數名は端末 API 用に意圖されてゐない函數を誤つて呼び出すのを避けるため、&quot;Tapi_&quot; で始まる必要があります。
+<p>デフォルトでは函數名は端末 API 用に意圖されてゐない函數を誤つて呼び出すのを避けるため、&quot;Tapi_&quot; で始まる必要があります。これは、|<a href="#term_005fsetapi_0028_0029">term_setapi()</a>| で變更できます。
 </p>
 <p>ユーザー函數は引數の正常性チェックをする必要があります。
 函數は |<a href="#term_005fsendkeys_0028_0029">term_sendkeys()</a>| を使つて返信を送り返すことができます。
@@ -967,7 +1032,9 @@ set t_ts&amp; t_fs&amp;
 <span id="setusiyonLi"></span><h4 class="unnumberedsubsec">セッション例</h4>
 <p>Vim の &quot;src&quot; ディレクトリを起動して、Vim をビルドします:
 </p><pre class="verbatim">% make
-</pre><p>Vim を起動します:
+</pre><p>デバッグシンボルが存在することを確認します。通常は、$CFLAGS に &quot;-g&quot; が含まれることを意味します。
+</p>
+<p>Vim を起動します:
 </p><pre class="verbatim">% ./vim
 </pre><p>termdebug プラグインを讀み込んで、Vim のデバッグを開始します:
 </p><pre class="verbatim">:packadd termdebug

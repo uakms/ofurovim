@@ -47,7 +47,7 @@ Up: <a href="Mu-Ci-.html" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Ind
 </div>
 <hr>
 <span id="potupuatupuuindounosapoto"></span><h2 class="unnumbered">ポップアップウィンドウのサポート</h2>
-<pre class="verbatim">*popup.txt*    For Vim バージョン 8.1.  Last change: 2019 Jul 18
+<pre class="verbatim">*popup.txt*    For Vim バージョン 8.1.  Last change: 2019 Nov 17
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -68,6 +68,7 @@ Up: <a href="Mu-Ci-.html" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Ind
 <tr><td width="50%">3. 使用方法</td><td width="50%">|<a href="#popup_002dusage">popup-usage</a>|</td></tr>
 <tr><td width="50%">popup_create() の引數</td><td width="50%">|<a href="#popup_005fcreate_002darguments">popup_create-arguments</a>|</td></tr>
 <tr><td width="50%">ポップアップテキストプロパティ</td><td width="50%">|<a href="#popup_002dprops">popup-props</a>|</td></tr>
+<tr><td width="50%">ポップアップと textprop の位置</td><td width="50%">|<a href="#popup_002dtextprop_002dpos">popup-textprop-pos</a>|</td></tr>
 <tr><td width="50%">ポップアップフィルタ</td><td width="50%">|<a href="#popup_002dfilter">popup-filter</a>|</td></tr>
 <tr><td width="50%">ポップアップコールバック</td><td width="50%">|<a href="#popup_002dcallback">popup-callback</a>|</td></tr>
 <tr><td width="50%">ポップアップスクロールバー</td><td width="50%">|<a href="#popup_002dscrollbar">popup-scrollbar</a>|</td></tr>
@@ -153,7 +154,7 @@ call setwinvar(winid, '&amp;wincolor', 'MyPopupColor')
 
 <p>具體的に言及されたオプションを變更することは可能ですが、何かが壞れてしまふ可能性があるので、そのままにしておくはうが望ましいでせう。
 </p>
-<p>ウィンドウにはカーソル位置がありますが、カーソルは表示されません。
+<p>ウィンドウにはカーソル位置がありますが、カーソルは表示されません。實際、下にあるウィンドウのカーソルは、ポップアップを覗くやうに表示されるため、どこにあるかを確認できます。
 </p>
 <p>ポップアップウィンドウとバッファのコンテキストでコマンドを實行するには &lsquo;<code>win_execute()</code>&lsquo; を使用してください。例:
 </p><pre class="verbatim">call win_execute(winid, 'syntax enable')
@@ -162,12 +163,8 @@ call setwinvar(winid, '&amp;wincolor', 'MyPopupColor')
 </p><pre class="verbatim">call setwinvar(winid, '&amp;wrap', 0)
 </pre><p>そしてオプションは &lsquo;<code>setbufvar()</code>&lsquo; を使つてバッファに設定することができます。例:
 </p><pre class="verbatim">call setbufvar(winbufnr(winid), '&amp;filetype', 'java')
-</pre><blockquote>
-<p><strong>Note:</strong> <br>
-これは自動コマンドをトリガーしないことに注意してください。必要ならば &lsquo;<code>win_execute()</code>&lsquo; を使用してください。
-</p></blockquote>
-
-
+</pre><p>&quot;<code>:setlocal</code>&quot; コマンドを &lsquo;<code>win_execute()</code>&lsquo; で使用することもできます。
+</p>
 
 <span id="popup_002dfunctions"></span><span id="index-popup_002dfunctions"></span>
 <span id="g_t2_002e-Guan-Shu-"></span><h3 class="section">2. 函數</h3>
@@ -225,8 +222,11 @@ call setwinvar(winid, '&amp;wincolor', 'MyPopupColor')
         \ 'col': 'cursor',
         \ 'moved': 'WORD',
         \ })
-</pre><p>プロパティを變更するには {options} を使用します。
+</pre><p>プロパティを變更するには {options} を使用します。もしも &quot;pos&quot; が &quot;topleft&quot; として渡されたなら、&quot;line&quot; へのデフォルトは &quot;cursor+1&quot; になります。
 </p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;popup_atcursor({})
+</pre>
 
 <span id="popup_005fbeval_0028_0029"></span><span id="index-popup_005fbeval_0028_0029"></span>
 </dd>
@@ -239,10 +239,11 @@ call popup_create({what}, #{
       \ col: pos.col,
       \ mousemoved: 'WORD',
       \ })
-</pre><p>特性を變更するには {options} を使ひます。使ひ方については |<a href="#popup_005fbeval_005fexample">popup_beval_example</a>| を參照してください。
+</pre><p>特性を變更するには {options} を使ひます。例については |<a href="#popup_005fbeval_005fexample">popup_beval_example</a>| を參照してください。
 </p>
-
-<span id="popup_005fclear_0028_0029"></span><span id="index-popup_005fclear_0028_0029"></span>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;popup_beval({})
+</pre><span id="popup_005fclear_0028_0029"></span><span id="index-popup_005fclear_0028_0029"></span>
 </dd>
 <dt>popup_clear()</dt>
 <dd><p>不作法にふるまふプラグインに對する緊急の解決策: グローバルポップアップとカレントタブポップアップをすべて閉ぢます。
@@ -255,7 +256,9 @@ call popup_create({what}, #{
 </p>
 <p>ポップアップがコールバックを持つ場合は、ポップアップウィンドウが削除される直前に呼び出されます。オプションの {result} が存在する場合、それはコールバックの第 2 引數として渡されます。さうでなければ、ゼロがコールバックに渡されます。
 </p>
-
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPopup()-&gt;popup_close()
+</pre>
 <span id="popup_005fcreate_0028_0029"></span><span id="index-popup_005fcreate_0028_0029"></span>
 </dd>
 <dt>popup_create({what}, {options})</dt>
@@ -276,7 +279,9 @@ let bufnr = winbufnr(winid)
 call setbufline(bufnr, 2, 'second line')
 </pre><p>失敗した場合はゼロが返されます。
 </p>
-
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;popup_create({})
+</pre>
 <span id="popup_005fdialog_0028_0029"></span><span id="index-popup_005fdialog_0028_0029"></span>
 </dd>
 <dt>popup_dialog({what}, {options})</dt>
@@ -287,6 +292,7 @@ call setbufline(bufnr, 2, 'second line')
         \ drag: 1,
         \ border: [],
         \ padding: [],
+        \ mapping: 0,
         \})
 </pre><p>プロパティを變更するには {options} を使用します。例: 値 &rsquo;<var>popup_filter_yesno</var>&rsquo; を持つ &rsquo;<samp>filter</samp>&rsquo; オプションを追加します。例:
 </p><pre class="verbatim">call popup_create('do you want to quit (Yes/no)?', #{
@@ -296,7 +302,9 @@ call setbufline(bufnr, 2, 'second line')
 </pre>
 <p>デフォルトではダイアログはドラッグすることができるので、必要であればその下のテキストを讀むことができます。
 </p>
-
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;popup_dialog({})
+</pre>
 </dd>
 <dt>popup_filter_menu({id}, {key})</dt>
 <dd><span id="popup_005ffilter_005fmenu_0028_0029"></span><span id="index-popup_005ffilter_005fmenu_0028_0029"></span>
@@ -345,15 +353,21 @@ call setbufline(bufnr, 2, 'second line')
 </p>
 <p>&quot;mousemoved&quot; エントリはスクリーン行、最小桁と最大桁のリストで、未設定時は [0, 0, 0] です。
 </p>
+<p>&quot;firstline&quot; は、ポップアップウィンドウの上部にある實際のバッファ行である |<a href="#popup_005fgetpos_0028_0029">popup_getpos()</a>| で取得される &quot;firstline&quot; とは異なり、ポップアップに設定されたプロパティです。
+</p>
 <p>すべての値がゼロの場合、&quot;border&quot; と &quot;padding&quot; は含まれません。すべての値が 1 の場合、空のリストが含まれます。
 </p>
 <p>すべての値が空の場合、&quot;borderhighlight&quot; は含まれません。設定されてゐるときのみ &quot;scrollbarhighlight&quot; と &quot;thumbhighlight&quot; が含まれます。
 </p>
 <p>グローバルポップアップの場合 &quot;tabpage&quot; には -1 が設定され、カレントタブページの場合は 0 、別のタブページの場合は正の整數が設定されます。
 </p>
+<p>&quot;textprop&quot;, &quot;textpropid&quot; および &quot;textpropwin&quot; は、&quot;textprop&quot; が設定されてゐる場合にのみ與へられます。
+</p>
 <p>ポップアップウィンドウ {id} が見つからない場合は空の辭書が返されます。
 </p>
-
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPopup()-&gt;popup_getoptions()
+</pre>
 <span id="popup_005fgetpos_0028_0029"></span><span id="index-popup_005fgetpos_0028_0029"></span>
 </dd>
 <dt>popup_getpos({id})</dt>
@@ -367,7 +381,9 @@ call setbufline(bufnr, 2, 'second line')
 <tr><td width="30%">core_line</td><td width="70%">テキストボックスの畫面の行</td></tr>
 <tr><td width="30%">core_width</td><td width="70%">畫面セル內のテキストボックスの幅</td></tr>
 <tr><td width="30%">core_height</td><td width="70%">畫面セル內のテキストボックスの高さ</td></tr>
-<tr><td width="30%">firstline</td><td width="70%">トップにおけるバッファの行 (スクロールされてゐなければ 1)</td></tr>
+<tr><td width="30%">firstline</td><td width="70%">トップにおけるバッファの行 (スクロールされてゐなければ 1) <br>
+(&quot;firstline&quot; のプロパティの値ではありません)</td></tr>
+<tr><td width="30%">lastline</td><td width="70%">下端のバッファの行</td></tr>
 <tr><td width="30%">scrollbar</td><td width="70%">スクロールバーが表示されてゐるなら非ゼロ</td></tr>
 <tr><td width="30%">visible</td><td width="70%">ポップアップが表示されてゐる場合は 1、非表示の場合は 0</td></tr>
 </table>
@@ -380,7 +396,9 @@ call setbufline(bufnr, 2, 'second line')
 </p>
 <p>ポップアップウィンドウ {id} が見つからない場合は空の辭書が返されます。
 </p>
-
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPopup()-&gt;popup_getpos()
+</pre>
 <span id="popup_005fhide_0028_0029"></span><span id="index-popup_005fhide_0028_0029"></span>
 </dd>
 <dt>popup_hide({id})</dt>
@@ -388,7 +406,9 @@ call setbufline(bufnr, 2, 'second line')
 <span id="E993"></span><span id="index-E993"></span>
 ウィンドウ {id} が存在しない場合は何も起こりません。ウィンドウ {id} が存在するがポップアップウィンドウではない場合、エラーが發生します。
 </p>
-
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPopup()-&gt;popup_hide()
+</pre>
 <span id="popup_005flocate_0028_0029"></span><span id="index-popup_005flocate_0028_0029"></span>
 </dd>
 <dt>popup_locate({row}, {col})</dt>
@@ -408,12 +428,22 @@ call setbufline(bufnr, 2, 'second line')
         \ cursorline: 1,
         \ padding: [0,1,0,1],
         \ filter: 'popup_filter_menu',
+        \ mapping: 0,
         \ })
 </pre><p>現在行は、&quot;PopupSelected&quot; を使用してマッチでハイライトされます。&quot;PopupSelected&quot; が未定義の場合は、&quot;PmenuSel&quot; が使はれます。
 </p>
 <p>プロパティを變更するには {options} を使用します。少なくとも &quot;callback&quot; を選擇された項目を扱ふ函數に設定するべきです。
-</p>
-
+例:
+</p><pre class="verbatim">func ColorSelected(id, result)
+   &quot; use a:result
+endfunc
+call popup_menu(['red', 'green', 'blue'], #{
+        \ callback: 'ColorSelected',
+        \ })
+</pre>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetChoices()-&gt;popup_menu({})
+</pre>
 <span id="popup_005fmove_0028_0029"></span><span id="index-popup_005fmove_0028_0029"></span>
 </dd>
 <dt>popup_move({id}, {options})</dt>
@@ -430,7 +460,9 @@ call setbufline(bufnr, 2, 'second line')
 </table>
 <p>{id} については &lsquo;<code>popup_hide()</code>&lsquo; を參照してください。その他のオプションについては |<a href="#popup_005fsetoptions_0028_0029">popup_setoptions()</a>| を參照してください。
 </p>
-
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPopup()-&gt;popup_move(options)
+</pre>
 <span id="popup_005fnotification_0028_0029"></span><span id="index-popup_005fnotification_0028_0029"></span>
 </dd>
 <dt>popup_notification({what}, {options})</dt>
@@ -454,11 +486,15 @@ call setbufline(bufnr, 2, 'second line')
 </p>
 <p>他の通知と重ならないやうに位置が調整されます。プロパティを變更するには {options} を使用します。
 </p>
-
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;popup_notification({})
+</pre>
 <span id="popup_005fshow_0028_0029"></span><span id="index-popup_005fshow_0028_0029"></span>
 </dd>
 <dt>popup_show({id})</dt>
 <dd><p>{id} が非表示のポップアップの場合はそれを表示します。{id} については &lsquo;<code>popup_hide()</code>&lsquo; を參照してください。
+</p>
+<p>{id} が情報ポップアップの場合、現在のポップアップメニュー項目の隣に配置されます。
 </p>
 
 <span id="popup_005fsetoptions_0028_0029"></span><span id="index-popup_005fsetoptions_0028_0029"></span>
@@ -471,14 +507,16 @@ call setbufline(bufnr, 2, 'second line')
 <tr><td width="90%">borderhighlight</td><td width="10%"></td></tr>
 <tr><td width="90%">callback</td><td width="10%"></td></tr>
 <tr><td width="90%">close</td><td width="10%"></td></tr>
-<tr><td width="90%">drag</td><td width="10%"></td></tr>
 <tr><td width="90%">cursorline</td><td width="10%"></td></tr>
+<tr><td width="90%">drag</td><td width="10%"></td></tr>
 <tr><td width="90%">filter</td><td width="10%"></td></tr>
 <tr><td width="90%">firstline</td><td width="10%"></td></tr>
 <tr><td width="90%">flip</td><td width="10%"></td></tr>
 <tr><td width="90%">highlight</td><td width="10%"></td></tr>
+<tr><td width="90%">mapping</td><td width="10%"></td></tr>
 <tr><td width="90%">mask</td><td width="10%"></td></tr>
 <tr><td width="90%">moved</td><td width="10%"></td></tr>
+<tr><td width="90%">resize</td><td width="10%"></td></tr>
 <tr><td width="90%">padding</td><td width="10%"></td></tr>
 <tr><td width="90%">scrollbar</td><td width="10%"></td></tr>
 <tr><td width="90%">scrollbarhighlight</td><td width="10%"></td></tr>
@@ -490,15 +528,20 @@ call setbufline(bufnr, 2, 'second line')
 </table>
 <p>|<a href="#popup_005fmove_0028_0029">popup_move()</a>| からのオプションも使用することができます。&quot;hidden&quot; のために |<a href="#popup_005fhide_0028_0029">popup_hide()</a>| と |<a href="#popup_005fshow_0028_0029">popup_show()</a>| を使用します。&quot;tabpage&quot; は變更することはできません。
 </p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPopup()-&gt;popup_setoptions(options)
+</pre>
 <span id="popup_005fsettext_0028_0029"></span><span id="index-popup_005fsettext_0028_0029"></span>
 </dd>
 <dt>popup_settext({id}, {text})</dt>
 <dd><p>ポップアップウィンドウ {id} でバッファのテキストを設定します。{text} は |<a href="#popup_005fcreate_0028_0029">popup_create()</a>| に提供されるものと同じです。ただしバッファ番號は認められてゐません。
 </p>
 <p>テキストの違ひが生じる以外ではウィンドウのサイズや位置を變更しません。
-</p></dd>
+</p>
+<p>|<a href="eval_002etxt.html#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPopup()-&gt;popup_settext('hello')
+</pre></dd>
 </dl>
-
 
 <span id="popup_002dusage"></span><span id="index-popup_002dusage"></span>
 <span id="g_t3_002e-Shi-Yong-Fang-Fa-"></span><h3 class="section">3. 使用方法</h3>
@@ -518,11 +561,25 @@ call setbufline(bufnr, 2, 'second line')
 </table>
 </li></ul>
 
+<p>自分で新しいバッファを作成したい場合は、|<a href="eval_002etxt.html#bufadd_0028_0029">bufadd()</a>| を使用して、バッファ番號を popup_create() に渡します。
+<span id="E278"></span><span id="index-E278"></span>
+端末ウィンドウのバッファを使用することはできません。
+</p>
 <p>|<a href="#popup_005fcreate_0028_0029">popup_create()</a>| の第 2 引數は任意の辭書です:
 </p><table>
-<tr><td width="20%">line</td><td width="80%">ポップアップを配置する畫面の行。數値または、カーソルの行を使用して行數を加算または減算するには、&quot;cursor&quot;、&quot;cursor+1&quot;、または &quot;cursor-1&quot; を使用することができます。省略した場合、ポップアップは垂直方向の中央に配置されます。最初の行は 1 です。</td></tr>
-<tr><td width="20%">col</td><td width="80%">ポップアップを配置する畫面の桁。數値または、カーソルの桁を使用するには &quot;cursor&quot; を使用し、桁を加算または減算するには &quot;cursor+9&quot; または &quot;cursor-9&quot; を使用することができます。省略した場合、ポップアップは水平方向の中央に配置されます。最初の桁は 1 です。</td></tr>
+<tr><td width="20%">line</td><td width="80%">ポップアップを配置する畫面の行。數値または、カーソルの行を使用して行數を加算または減算するには、&quot;cursor&quot;、&quot;cursor+1&quot;、または &quot;cursor-1&quot; を使用することができます。省略した場合、ポップアップは垂直方向の中央に配置されます。最初の行は 1 です。
+
+<p>&quot;textprop&quot; を使用する場合、數値はテキストプロパティに關聯してゐて、負の値にすることができます。
+</p></td></tr>
+<tr><td width="20%">col</td><td width="80%">ポップアップを配置する畫面の桁。數値または、カーソルの桁を使用するには &quot;cursor&quot; を使用し、桁を加算または減算するには &quot;cursor+9&quot; または &quot;cursor-9&quot; を使用することができます。省略した場合、ポップアップは水平方向の中央に配置されます。最初の桁は 1 です。
+
+<p>&quot;textprop&quot; を使用する場合、數値はテキストプロパティに關聯してゐて、負の値にすることができます。
+</p></td></tr>
 <tr><td width="20%">pos</td><td width="80%">&quot;topleft&quot;、&quot;topright&quot;、&quot;botleft&quot; または &quot;botright&quot;: ポップアップのどのコーナーに &quot;line&quot; と &quot;col&quot; が使はれるかを定義します。設定されてゐない場合は &quot;topleft&quot; が使用されます。あるいは &quot;center&quot; を使つてポップアップを Vim のウィンドウの中央に配置することもできます。その場合は &quot;line&quot; と &quot;col&quot; は無視されます。</td></tr>
+<tr><td width="20%">posinvert</td><td width="80%">FALSE の場合、&quot;pos&quot; の値が常に使はれます。TRUE (デフォルト) の場合と、ポップアップが垂直にフィットしない場合と、別の方向にスペースがある場合は &quot;line&quot; で示された別の場所に配置されます。</td></tr>
+<tr><td width="20%">textprop</td><td width="80%">指定した場合、ポップアップはこの名前のテキストプロパティの隣に配置され、テキストプロパティが移動すると移動します。削除するには空の文字列を使用してください。|<a href="#popup_002dtextprop_002dpos">popup-textprop-pos</a>| を參照してください。</td></tr>
+<tr><td width="20%">textpropwin</td><td width="80%">テキストプロパティを檢索するウィンドウ。省略または無效な場合、現在のウィンドウが使用されます。</td></tr>
+<tr><td width="20%">textpropid</td><td width="80%">&quot;textprop&quot; が指定された場合にテキストプロパティを識別するために使用されます。0 を使用してリセットします。</td></tr>
 <tr><td width="20%">fixed</td><td width="80%">FALSE (デフォルト) の場合は:
 <ul>
 <li> &quot;pos&quot; は &quot;botleft&quot; または &quot;topleft&quot; で、
@@ -537,9 +594,9 @@ call setbufline(bufnr, 2, 'second line')
 </p></td></tr>
 <tr><td width="20%">maxheight</td><td width="80%">コンテンツの最大高さ (ボーダーとパディングを除く)</td></tr>
 <tr><td width="20%">minheight</td><td width="80%">コンテンツの最小高さ (ボーダーとパディングを除く)</td></tr>
-<tr><td width="20%">maxwidth</td><td width="80%">コンテンツの最大幅 (ボーダーとパディングを除く)</td></tr>
-<tr><td width="20%">minwidth</td><td width="80%">コンテンツの最小幅 (ボーダーとパディングを除く)</td></tr>
-<tr><td width="20%">firstline</td><td width="80%">表示する最初のバッファ行。1 より大きい場合は、テキストが上にスクロールしたやうに見えます。範圍外の場合、最後のバッファ行はウィンドウの最上部に表示されます。&quot;scrollbar&quot; も參照してください。</td></tr>
+<tr><td width="20%">maxwidth</td><td width="80%">コンテンツの最大幅 (ボーダーとパディングとスクロールバーを除く)</td></tr>
+<tr><td width="20%">minwidth</td><td width="80%">コンテンツの最小幅 (ボーダーとパディングとスクロールバーを除く)</td></tr>
+<tr><td width="20%">firstline</td><td width="80%">表示する最初のバッファ行。1 より大きい場合は、テキストが上にスクロールしたやうに見えます。範圍外の場合、最後のバッファ行はウィンドウの最上部に表示されます。コマンドによつて設定された位置のままにするには、0 に設定します。&quot;scrollbar&quot; も參照してください。</td></tr>
 <tr><td width="20%">hidden</td><td width="80%">TRUE の場合、ポップアップは存在するけれども表示はされません。表示するには &lsquo;<code>popup_show()</code>&lsquo; を使ひます。</td></tr>
 <tr><td width="20%">tabpage</td><td width="80%">-1 の場合: すべてのタブページにポップアップを表示します。
 
@@ -553,6 +610,7 @@ call setbufline(bufnr, 2, 'second line')
 <tr><td width="20%">title</td><td width="80%">ポップアップの最初の項目の上、ボーダーの上に表示されるテキスト。上枠がない場合は、タイトルを付けるために 1 行のパディングが追加されます。最初と最後に 1 つ以上のスペースをパディングとして追加することを薦めます。</td></tr>
 <tr><td width="20%">wrap</td><td width="80%">行を折り返す場合は TRUE (デフォルトは TRUE)。</td></tr>
 <tr><td width="20%">drag</td><td width="80%">ボーダーを摑んでマウスでポップアップをドラッグできるやうにする場合は TRUE。ポップアップにボーダーがない場合は效果がありません。&quot;pos&quot; が &quot;center&quot; の場合は、ドラッグが始まるとすぐに &quot;topleft&quot; に變更されます。</td></tr>
+<tr><td width="20%">resize</td><td width="80%">TRUE を設定すると、マウスで右下隅をつかんでポップアップのサイズを變更できます。ポップアップにボーダーがない場合は效果がありません。</td></tr>
 <tr><td width="20%">close</td><td width="80%">&quot;<var>button</var>&quot; の時は、どのやうなボーダ、パディング、テキスト上であつても X が右上に表示されます。X をクリックするとポップアップは閉ぢられます。どのやうなコールバックも -2 の値で呼び出されます。
 
 <p>&quot;<var>click</var>&quot; の時は、ポップアップ內ならどのやうなマウスクリックでも閉ぢられます。
@@ -594,13 +652,31 @@ call setbufline(bufnr, 2, 'second line')
 </li><li> &quot;WORD&quot;: カーソルが |&lt;cWORD&gt;| の外側に移動した場合
 </li><li> &quot;expr&quot;: カーソルが |&lt;cexpr&gt;| の外側に移動した場合
 </li><li> [{start}, {end}]: カーソルが桁 {start} の前、または {end} の後に移動した場合
+</li><li> [{lnum}, {start}, {end}]: カーソルが行 {lnum} から離れた場合、または、桁が {start} の前、または {end} の後に移動した場合
+</li><li> [0, 0, 0]: カーソルが移動してもポップアップを閉ぢません
 </li></ul>
 <p>カーソルが別の行または別のウィンドウに移動した場合もポップアップは閉ぢます。
 </p></td></tr>
+<tr><td width="20%">mousemoved</td><td width="80%">&quot;moved&quot; に似てゐますが、マウスポインタの位置を參照します。</td></tr>
 <tr><td width="20%">cursorline</td><td width="80%">ゼロ以外: カーソル行をハイライトします。またこの行を表示するためにテキストをスクロールします (たぶん &rsquo;<samp>wrap</samp>&rsquo; がオフの時のみに動作します)。<br>
 ゼロ: カーソル行をハイライトしません。<br>
 既定はゼロで、他のものについては |popup_menu()| を參照してください。</td></tr>
 <tr><td width="20%">filter</td><td width="80%">入力した文字をフィルタ處理できるコールバック。|<a href="#popup_002dfilter">popup-filter</a>| を參照してください。</td></tr>
+<tr><td width="20%">mapping</td><td width="80%">キーマッピングを許可します。FALSE で、かつポップアップが表示され、フィルターコールバックがある場合、キーマッピングは無效になつてゐます。 デフォルト値は TRUE です。</td></tr>
+<tr><td width="20%">filtermode</td><td width="80%">どのモードでフィルターが使用されるか (|<a href="eval_002etxt.html#hasmapto_0028_0029">hasmapto()</a>| と同じフラグと &quot;a&quot;):
+<table>
+<tr><td width="20%">n</td><td width="80%">ノーマルモード</td></tr>
+<tr><td width="20%">v</td><td width="80%">ビジュアルまたは選擇モード</td></tr>
+<tr><td width="20%">x</td><td width="80%">ビジュアルモード</td></tr>
+<tr><td width="20%">s</td><td width="80%">選擇モード</td></tr>
+<tr><td width="20%">o</td><td width="80%">オペレータ待機モード</td></tr>
+<tr><td width="20%">i</td><td width="80%">插入モード</td></tr>
+<tr><td width="20%">l</td><td width="80%">言語引數 (&quot;r&quot;, &quot;f&quot;, &quot;t&quot; 等)</td></tr>
+<tr><td width="20%">c</td><td width="80%">コマンドラインモード</td></tr>
+<tr><td width="20%">a</td><td width="80%">すべてのモード</td></tr>
+</table>
+<p>デフォルト値は &quot;a&quot; です。
+</p></td></tr>
 <tr><td width="20%">callback</td><td width="80%">ポップアップが閉ぢたときに呼び出されるコールバック。例へば、|<a href="#popup_005ffilter_005fmenu_0028_0029">popup_filter_menu()</a>| を使用する場合、|<a href="#popup_002dcallback">popup-callback</a>| を參照してください。</td></tr>
 </table>
 
@@ -629,6 +705,66 @@ call setbufline(bufnr, 2, 'second line')
 </table>
 
 
+<span id="popup_002dtextprop_002dpos"></span><span id="index-popup_002dtextprop_002dpos"></span>
+<span id="potupuatuputo-textprop-noWei-Zhi-"></span><h4 class="unnumberedsubsec">ポップアップと textprop の位置</h4>
+
+<p>テキストプロパティの隣にポップアップを配置すると、テキストが插入または削除されたときにポップアップが移動します。ポップアップはツールチップのやうに機能します。
+</p>
+<p>この動作をさせるには、次の手順が必要です:
+</p>
+<ul>
+<li> テキストプロパティタイプを定義して、その名前を定義する:
+<pre class="verbatim">call prop_type_add('popupMarker', {})
+</pre>
+</li><li> 目的のテキストにテキストプロパティを配置する:
+<pre class="verbatim">let lnum = {line of the text}
+let col = {start column of the text}
+let len = {length of the text}
+let propId = {arbitrary but unique number}
+call prop_add(lnum, col, #{
+        \ length: len,
+        \ type: 'popupMarker',
+        \ id: propId,
+        \ })
+</pre>
+</li><li> ポップアップを作成する:
+<pre class="verbatim">let winid = popup_create('the text', #{
+        \ pos: 'botleft',
+        \ textprop: 'popupMarker',
+        \ textpropid: propId,
+        \ border: [],
+        \ padding: [0,1,0,1],
+        \ close: 'click',
+        \ })
+</pre></li></ul>
+
+<p>デフォルトでは、ポップアップは、ポップアップに指定された &quot;pos&quot; の反對側のテキストの隅に配置されます。したがつて、ポップアップが &quot;botleft&quot; を使用する場合、ポップアップの左下隅はテキストプロパティの右上隅の隣に配置されます。
+</p><pre class="verbatim">                  +----------+
+                  | the text |
+                  +----------+
+just some PROPERTY as an example
+</pre>
+<p>ここで、テキストプロパティは &quot;PROPERTY&quot; にあります。負の &quot;col&quot; 値を popup_create() に渡すことにより、ポップアップを左に移動します。&quot;col: -5&quot; を使用すると、以下が得られます:
+</p>
+<pre class="verbatim">             +----------+
+             | the text |
+             +----------+
+just some PROPERTY as an example
+</pre>
+<p>テキストプロパティがビューの外に移動すると、ポップアップは非表示になります。ポップアップが定義されたウィンドウが閉ぢられた場合、ポップアップは閉ぢられます。
+</p>
+<p>ポップアップが目的の位置に收まらない場合、近くの位置に表示される場合があります。
+</p>
+<p>いくつかのヒント:
+</p><ul>
+<li> 他のプラグインとの衝突を避けるために、テキストプロパティタイプ名は一意である必要があります。&quot;bufnr&quot; 項目を使用して、バッファに對してローカルにすることもできます。
+</li><li> テキストプロパティが 1 つしか表示されてゐない場合は、テキストプロパティ ID を省略できます。
+</li><li> ポップアップは、ユーザーの操作の邪魔になる場合があります。上記の例のやうに、クリックするだけで閉ぢることができるのが役立ちます。
+</li><li> テキストプロパティが削除されると、ポップアップは閉ぢられます。このやうな感じで使用します:
+<pre class="verbatim">call prop_remove(#{type: 'popupMarker', id: propId})
+</pre></li></ul>
+
+
 <span id="popup_002dfilter"></span><span id="index-popup_002dfilter"></span>
 <span id="potupuatupuhuiruta"></span><h4 class="unnumberedsubsec">ポップアップフィルタ</h4>
 
@@ -648,17 +784,20 @@ call setbufline(bufnr, 2, 'second line')
   endif
   return 0
 endfunc
-</pre>
-<p>現在のキーは、マッピング後に得られるものです。これは變はるかもしれません...
+</pre><span id="popup_002dfilter_002dmode"></span><span id="index-popup_002dfilter_002dmode"></span>
+<p>&quot;filtermode&quot; プロパティを使用して、フィルターを呼び出すモードを指定できます。デフォルトは &quot;a&quot;: すべてのモードです。&quot;nvi&quot; コマンドラインモードが含まれない場合、コマンドラインで入力されたコマンドはフィルタリングされません。ただし、コマンドラインモードに移行するには、フィルターで &quot;:&quot; を使用しないでください。ビジュアルモードに入るために &quot;v&quot; を消費してはいけないやうに。
 </p>
-<p>いくつかの共通のキー動作:
+<span id="popup_002dmapping"></span><span id="index-popup_002dmapping"></span>
+<p>通常、キーは、フィルターが使用しない場合にキーが通常の入力として渡されるため、マッピング後に結果として得られるものです。フィルターがすべてのキーを消費する場合、マッピングが邪魔にならないやうに、&quot;mapping&quot; プロパティを 0 に設定します。これは、|<a href="#popup_005fmenu_0028_0029">popup_menu()</a>| および |<a href="#popup_005fdialog_0028_0029">popup_dialog()</a>| のデフォルトです。
+</p>
+<p>いくつかの推奬されるキー動作:
 </p><table>
 <tr><td width="20%">x</td><td width="80%">ポップアップを閉ぢる (下記の note を參照)</td></tr>
 <tr><td width="20%">cursor keys</td><td width="80%">別のエントリを選擇</td></tr>
 <tr><td width="20%">Tab</td><td width="80%">現在の提案を受け入れる</td></tr>
 </table>
 
-<p>マウスクリックは &lt;LeftMouse&gt; として屆きます。座標は v:mouse_popup_col および v:mouse_popup_row です。ポップアップの左上の畫面セルは、桁 1、行 1 です (ボーダーはカウントしません)。
+<p>マウスクリックは &lt;LeftMouse&gt; として屆きます。座標は |<a href="eval_002etxt.html#getmousepos_0028_0029">getmousepos()</a>| から得ることができます。
 </p>
 <p>Vim は標準のフィルタ |<a href="#popup_005ffilter_005fmenu_0028_0029">popup_filter_menu()</a>| と |<a href="#popup_005ffilter_005fyesno_0028_0029">popup_filter_yesno()</a>| を提供します。
 </p>
@@ -677,6 +816,11 @@ endfunc
 </p>
 <p>ポップアップが强制終了された場合、例へば、カーソルが移動したか <kbd>CTRL-C</kbd> が押された場合、-1 がコールバックに渡されます。
 </p>
+<p>例:
+</p><pre class="verbatim">func SelectedColor(id, result)
+   echo 'choice made: ' .. a:result
+endfunc
+</pre>
 
 <span id="popup_002dscrollbar"></span><span id="index-popup_002dscrollbar"></span>
 <span id="potupuatupusukuroruba"></span><h4 class="unnumberedsubsec">ポップアップスクロールバー</h4>

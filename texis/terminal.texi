@@ -3,14 +3,14 @@
 @unnumbered ターミナルウィンドウのサポート
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 @ifset EN
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 Jul 04
+*terminal.txt*	For Vim version 8.1.  Last change: 2019 Nov 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @verbatim
-*terminal.txt*  For Vim バージョン 8.1.  Last change: 2019 Jul 04
+*terminal.txt*  For Vim バージョン 8.1.  Last change: 2019 Nov 03
 
 
                 VIMリファレンスマニュアル    by Bram Moolenaar
@@ -534,6 +534,7 @@ Command syntax ~
 @ifset EN
 			++close		The terminal window will close
 					automatically when the job terminates.
+					|terminal-close|
 			++noclose	The terminal window will NOT close
 					automatically when the job terminates.
 			++open		When the job terminates and no window
@@ -549,8 +550,8 @@ Command syntax ~
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @multitable @columnfractions .3 .7
-@item ++close @tab ジョブが終了した際には自動的に端末ウィンドウを閉じる。
-@item ++noclose @tab ジョブが終了しても自動的に端末ウィンドウを@strong{閉じ}ません。
+@item ++close @tab ジョブが終了した際には自動的に端末ウィンドウを閉じる。|@ref{terminal-close}|
+@item ++noclose @tab ジョブが終了しても自動的に端末ウィンドウを@strong{閉じません}。
 @item ++open @tab ジョブが終了した際にウィンドウが表示されていない場合に、ウィンドウを表示する。
 @quotation
 @strong{Note:} @*
@@ -564,6 +565,20 @@ Command syntax ~
 					no window will be used.
 			++norestore	Do not include this terminal window
 					in a session file.
+			++shell		Instead of executing {command}
+					directly, use a shell, like with
+					`:!command` 		*E279*
+					{only works on Unix currently}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ++hidden @tab 端末を隠しバッファとして開く。ウィンドウは使用されない。
+@item ++norestore @tab セッションファイルに端末ウィンドウを含めません。
+@item ++shell @tab @{command@} を直接実行するのではなく、`@command{:!command}` と同様にシェルを使用します。
+@anchor{E279}
+@erindex E279
+@{Vim: 現状、Unix でのみ動作します@}
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 			++kill={how}	When trying to close the terminal
 					window kill the job with {how}.  See
 					|term_setkill()| for the values.
@@ -579,8 +594,6 @@ Command syntax ~
 					ignored.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
-@item ++hidden @tab 端末を隠しバッファとして開く。ウィンドウは使用されない。
-@item ++norestore @tab セッションファイルに端末ウィンドウを含めません。
 @item ++kill=@{how@} @tab 端末ウィンドウを閉じるときに @{how@} でジョブを終了させます。値については |@ref{term_setkill()}| を参照してください。
 @item ++rows=@{height@} @tab 端末ウィンドウの高さとして @{height@} を使います。もし、端末が Vim の完全な高さ (端末ウィンドウの上や下にウィンドウがない) を使用する場合、必要に応じてコマンドラインの高さが現象します。
 @item ++cols=@{width@} @tab 端末ウィンドウの幅として @{width@} を使います。もし、端末が Vim の完全な幅 (端末ウィンドウの左や右にウィンドウがない) を使用する場合、この値は無視されます。
@@ -608,6 +621,15 @@ Command syntax ~
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item ++type=@{pty@} @tab (MS-Windows のみ): 仮想コンソールとして @{pty@} を使用する。値については '@option{termwintype}' を参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+			++api={expr}	Permit the function name starting with
+					{expr} to be called as |terminal-api|
+					function.  If {expr} is empty then no
+					function can be called.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@item ++api=@{expr@} @tab @{expr@} で始まる関数名を |@ref{terminal-api}| 機能として呼び出すことを許可します。@{expr@} が空の場合、関数を呼び出すことはできません。
 @end multitable
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
@@ -683,6 +705,19 @@ fails, use ! to force, as usual.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 `@command{CTRL-W :hide}` を使うとジョブを実行したまま、端末ウィンドウを閉じバッファを隠し状態にできます。`@command{:buffer}` コマンドで現在のウィンドウを端末ウィンドウにすることができます。未保存の変更があった場合にはこれは失敗しますが、通常と同じように ! で強制できます。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+							*terminal-close*
+When the terminal window is closed, e.g. when the shell exits and "++close"
+argument was used, and this is the last normal Vim window, then Vim will exit.
+This is like using |:quit| in a normal window. Help and preview windows are
+not counted.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{terminal-close}
+@cindex terminal-close
+端末ウィンドウが閉じられたとき、例えばシェルを終了したときや "++close" 引数が使われたとき、またこれが最後のノーマル Vim ウィンドウのときは、Vim は終了します。これはノーマルウィンドウ内で |@ref{:quit}| を使うようなものです。ヘルプやプレビューウィンドウは含まれません。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1249,6 +1284,17 @@ diff に失敗した場合はバッファ番号もしくは 0 を返す。|@ref{
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+		Can also be used as a |method|: >
+			GetFilename()->term_dumpdiff(otherfile)
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetFilename()->term_dumpdiff(otherfile)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 							*term_dumpload()*
 term_dumpload({filename} [, {options}])
 		Open a new window displaying the contents of {filename}
@@ -1268,6 +1314,17 @@ term_dumpload({filename} [, {options}])
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+		Can also be used as a |method|: >
+			GetFilename()->term_dumpload()
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetFilename()->term_dumpload()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
 							*term_dumpwrite()*
 term_dumpwrite({buf}, {filename} [, {options}])
 		Dump the contents of the terminal screen of {buf} in the file
@@ -1277,10 +1334,6 @@ term_dumpwrite({buf}, {filename} [, {options}])
 		*E958*
 		If {filename} already exists an error is given:	*E953*
 		Also see |terminal-diff|.
-
-		{options} is a dictionary with these optional entries:
-			"rows"		maximum number of rows to dump
-			"columns"	maximum number of columns to dump
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{term_dumpwrite()}
@@ -1295,7 +1348,14 @@ term_dumpwrite({buf}, {filename} [, {options}])
 @anchor{E953}
 @erindex E953
 もしも @{filename@} がすでに存在しているなら、E953 のエラーが与えられる。|@ref{terminal-diff}| も参照。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
+@ifset EN
+		{options} is a dictionary with these optional entries:
+			"rows"		maximum number of rows to dump
+			"columns"	maximum number of columns to dump
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @{options@} は次のオプションを持つ辞書:
 @multitable @columnfractions .3 .7
 @item "rows" @tab ダンプする行の最大値
@@ -1304,11 +1364,22 @@ term_dumpwrite({buf}, {filename} [, {options}])
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+		Can also be used as a |method|, the base is used for the file
+		name: >
+			GetFilename()->term_dumpwrite(bufnr)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます。ベースはファイル名に使用されます:
+@verbatim
+GetFilename()->term_dumpwrite(bufnr)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
 term_getaltscreen({buf})				*term_getaltscreen()*
 		Returns 1 if the terminal of {buf} is using the alternate
 		screen.
 		{buf} is used as with |term_getsize()|.
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{term_getaltscreen()}
@@ -1317,9 +1388,19 @@ term_getaltscreen({buf})				*term_getaltscreen()*
 @{buf@} のターミナルがオルタネートスクリーンを使っているなら 1 を返す。
 
 @{buf@} は |@ref{term_getsize()}| と同様に使われる。
-
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_getaltscreen()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_getaltscreen()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 term_getansicolors({buf})				*term_getansicolors()*
@@ -1339,13 +1420,28 @@ term_getansicolors({buf})				*term_getansicolors()*
 @ifset EN
 		{buf} is used as with |term_getsize()|.  If the buffer does not
 		exist or is not a terminal window, an empty list is returned.
-		{only available when compiled with the |+terminal| feature and
-		with GUI enabled and/or the |+termguicolors| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @{buf@} は |@ref{term_getsize()}| と同様に使われる。もしもバッファが存在しないか端末ウィンドウでなければ、空のリストが返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたとき、かつ GUI が有効のとき、かつ/または |@ref{+termguicolors}| 機能付きでコンパイルされたときのみ有効@}
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_getansicolors()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_getansicolors()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<		{only available when compiled with GUI enabled and/or the
+		|+termguicolors| feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vim が GUI が有効のとき、かつ/または |@ref{+termguicolors}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1357,7 +1453,6 @@ term_getattr({attr}, {what})				*term_getattr()*
 			underline
 			strike
 			reverse
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{term_getattr()}
@@ -1371,8 +1466,19 @@ term_getattr({attr}, {what})				*term_getattr()*
 @item strike @tab
 @item reverse @tab
 @end multitable
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetAttr()->term_getattr()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetAttr()->term_getattr()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 term_getcursor({buf})					*term_getcursor()*
@@ -1419,12 +1525,20 @@ term_getcursor({buf})					*term_getcursor()*
 		{buf} must be the buffer number of a terminal window. If the
 		buffer does not exist or is not a terminal window, an empty
 		list is returned.
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @{buf@} はターミナルウィンドウのバッファ番号でなければならない。バッファが存在しないか、ターミナルウィンドウでなければ、空のリストが返される。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_getcursor()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_getcursor()
+@end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1432,16 +1546,25 @@ term_getjob({buf})					*term_getjob()*
 		Get the Job associated with terminal window {buf}.
 		{buf} is used as with |term_getsize()|.
 		Returns |v:null| when there is no job.
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{term_getjob()}
 @findex term_getjob()
 @item term_getjob(@{buf@})
 ターミナルウィンドウの @{buf@} と関連付けられたジョブを取得する。@{buf@} は |@ref{term_getsize()}| として使われる。ジョブがない場合は |@ref{v:null}| を返す。
-
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_getjob()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_getjob()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 term_getline({buf}, {row})				*term_getline()*
@@ -1453,7 +1576,6 @@ term_getline({buf}, {row})				*term_getline()*
 		returned.
 
 		To get attributes of each character use |term_scrape()|.
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{term_getline()}
@@ -1464,9 +1586,19 @@ term_getline({buf}, {row})				*term_getline()*
 1 番目の行は @{row@} を 1 つ持っている。@{row@} が "." のとき、カーソル行が使われる。@{row@} が正しくなければ、空文字列が返される。
 
 それぞれの文字の属性を取得するには |@ref{term_scrape()}| を使う。
-
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_getline(row)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_getline(row)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 term_getscrolled({buf})					*term_getscrolled()*
@@ -1479,7 +1611,6 @@ term_getscrolled({buf})					*term_getscrolled()*
 <		(if that line exists).
 
 		{buf} is used as with |term_getsize()|.
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{term_getscrolled()}
@@ -1497,9 +1628,19 @@ getline(N + term_getscrolled(buf))
 (その行が存在するなら)。
 
 @{buf@} は |@ref{term_getsize()}| として使われる。
-
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_getscrolled()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_getscrolled()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 term_getsize({buf})					*term_getsize()*
@@ -1518,13 +1659,22 @@ term_getsize({buf})					*term_getsize()*
 		{buf} must be the buffer number of a terminal window.  Use an
 		empty string for the current buffer.  If the buffer does not
 		exist or is not a terminal window, an empty list is returned.
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @{buf@} はターミナルウィンドウのバッファ番号でなければならない。カレントバッファのために空文字列を使う。バッファが存在しないか、ターミナルウィンドウでなければ、空リストが返される。
-
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_getsize()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_getsize()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 term_getstatus({buf})					*term_getstatus()*
@@ -1552,13 +1702,22 @@ term_getstatus({buf})					*term_getstatus()*
 		{buf} must be the buffer number of a terminal window. If the
 		buffer does not exist or is not a terminal window, an empty
 		string is returned.
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @{buf@} はターミナルウィンドウのバッファ番号でなければならない。バッファが存在しないか、ターミナルウィンドウでなければ、空文字列が返される。
-
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_getstatus()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_getstatus()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 term_gettitle({buf})					*term_gettitle()*
@@ -1568,7 +1727,6 @@ term_gettitle({buf})					*term_gettitle()*
 		{buf} must be the buffer number of a terminal window. If the
 		buffer does not exist or is not a terminal window, an empty
 		string is returned.
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{term_gettitle()}
@@ -1577,9 +1735,19 @@ term_gettitle({buf})					*term_gettitle()*
 ターミナル @{buf@} のタイトルを取得する。これはターミナル内で設定されたジョブのタイトル。
 
 @{buf@} はターミナルウィンドウのバッファ番号でなければならない。バッファが存在しないか、ターミナルウィンドウでなければ、空文字列が返される。
-
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_gettitle()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_gettitle()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 term_gettty({buf} [, {input}])				*term_gettty()*
@@ -1589,7 +1757,6 @@ term_gettty({buf} [, {input}])				*term_gettty()*
 		When {input} is omitted or 0, return the name for writing
 		(stdout). When {input} is 1 return the name for reading
 		(stdin). On UNIX, both return same name.
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{term_gettty()}
@@ -1598,24 +1765,32 @@ term_gettty({buf} [, {input}])				*term_gettty()*
 ターミナルウィンドウ @{buf@} に関連付けらてた制御中のターミナルの名前を取得する。@{buf@} は |@ref{term_getsize()}| として使われる。
 
 @{input@} が省略されるか 0 なら、書き込んでいる名前を返す (stdout)。@{input@} が 1 なら、読み込んでいる名前を返す (stdin)。UNIX ではどちらも同じ名前を返す。
-
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_gettty()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_gettty()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 term_list()						*term_list()*
 		Return a list with the buffer numbers of all buffers for
 		terminal windows.
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @anchor{term_list()}
 @findex term_list()
 @item term_list()
 ターミナルウィンドウのためのすべてのバッファのバッファ番号を持つリスト
-
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 term_scrape({buf}, {row})				*term_scrape()*
@@ -1646,7 +1821,6 @@ term_scrape({buf}, {row})				*term_scrape()*
 		    "attr"	attributes of the cell, use |term_getattr()|
 				to get the individual flags
 		    "width"	cell width: 1 or 2
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 それぞれのスクリーンセルのための辞書を含むリストを返す:
@@ -1657,8 +1831,19 @@ term_scrape({buf}, {row})				*term_scrape()*
 @item "attr" @tab セルの属性。個々のフラグを取得するには |@ref{term_getattr()}| を使う
 @item "width" @tab セルの幅: 1 もしくは 2
 @end multitable
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_scrape(row)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_scrape(row)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 term_sendkeys({buf}, {keys})				*term_sendkeys()*
@@ -1675,12 +1860,51 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 @ifset EN
 		{keys} are translated as key sequences. For example, "\<c-x>"
 		means the character CTRL-X.
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @{keys@} はキーの連続として解釈される。例えば、"\<c-x>" は @kbd{CTRL-X} を意味する。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_sendkeys(keys)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_sendkeys(keys)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
+term_setapi({buf}, {expr})				*term_setapi()*
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@anchor{term_setapi()}
+@findex term_setapi()
+@item term_setapi(@{buf@}, @{expr@})
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		Set the function name prefix to be used for the |terminal-api|
+		function in terminal {buf}.  For example: >
+		    :call term_setapi(buf, "Myapi_")
+		    :call term_setapi(buf, "")
+<
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+端末 @{buf@} 内で |@ref{terminal-api}| 機能に使用する関数名のプリフィックスを設定します。例:
+@verbatim
+:call term_setapi(buf, "Myapi_")
+:call term_setapi(buf, "")
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+		The default is "Tapi_".  When {expr} is an empty string then
+		no |terminal-api| function can be used for {buf}.
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デフォルトは "Tapi_" です。@{expr@} が空の文字列の場合、@{buf@} の |@ref{terminal-api}| 機能は使用できません。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1743,13 +1967,28 @@ term_setansicolors({buf}, {colors})			*term_setansicolors()*
 		'termguicolors' is set.  When not using GUI colors (GUI mode
 		or 'termguicolors'), the terminal window always uses the 16
 		ANSI colors of the underlying terminal.
-		{only available when compiled with the |+terminal| feature and
-		with GUI enabled and/or the |+termguicolors| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 これらのカラーは '@option{termguicolors}' が設定されているときに GUI と端末で使われる。GUI カラーが使われていないとき (GUI モードもしくは '@option{termguicolors}' が設定されている)、端末ウィンドウは常に、端末の根底にある 16 ANSI カラーを使う。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたとき、かつ GUI が有効のとき、かつ/または |@ref{+termguicolors}| 機能付きでコンパイルされたときのみ有効@}
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_setansicolors(colors)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_setansicolors(colors)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+<		{only available with GUI enabled and/or the |+termguicolors|
+		feature}
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+@{Vim が GUI が有効のとき、かつ/または |@ref{+termguicolors}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -1784,6 +2023,18 @@ Vim を終了もしくは他の方法で端末ウィンドウを閉じようと�
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_setkill(how)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_setkill(how)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+
+@ifset EN
 term_setrestore({buf}, {command})			*term_setrestore()*
 		Set the command to write in a session file to restore the job
 		in this terminal.  The line written in the session file is: >
@@ -1804,15 +2055,24 @@ terminal ++curwin ++cols=%d ++rows=%d {command}
 @ifset EN
 		Use an empty {command} to run 'shell'.
 		Use "NONE" to not restore this window.
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 'shell' を実行するには 空 @{command@} を使う。
 
 このウィンドウを復帰しないようにするには "NONE" を使う。
-
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_setrestore(command)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_setrestore(command)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
@@ -1834,13 +2094,22 @@ term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
 		{buf} must be the buffer number of a terminal window.  Use an
 		empty string for the current buffer.  If the buffer does not
 		exist or is not a terminal window, an error is given.
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @{buf@} は端末ウィンドウのバッファ番号でなければならない。現在のバッファに適用するには空文字列を使う。もしもバッファが存在しないか端末ウィンドウでなければ、エラーになる。
-
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_setsize(rows, cols)
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_setsize(rows, cols)
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 term_start({cmd} [, {options}])			*term_start()*
@@ -1988,19 +2257,33 @@ term_start({cmd} [, {options}])			*term_start()*
 				     color modes.  See |g:terminal_ansi_colors|.
 		   "tty_type"	     (MS-Windows only): Specify which pty to
 				     use.  See 'termwintype' for the values.
-
-		{only available when compiled with the |+terminal| feature}
+		   "term_api"	     function name prefix for the
+				     |terminal-api| function.  See
+				     |term_setapi()|.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item "eof_chars" @tab
-ターミナルに書き込まれるすべてのバッファ行のあとに送られるテキスト。これが設定されていないとき、MS-Windows では CTRL-D が使われる。Python では CTRL-Z か "exit()" が使われる。シェルでは "exit" が使われる。CR は常に付加される。
+ターミナルに書き込まれるすべてのバッファ行のあとに送られるテキスト。これが設定されていないとき、MS-Windows では CTRL-D が使われます。Python では CTRL-Z か "exit()" が使われます。シェルでは "exit" が使われます。CR は常に付加されます。
 @item "ansi_colors" @tab
-16 ANSI カラーの名前か GUI カラーモードで使われている ANSI パレットで定義されている 16 進数のカラーコードのリスト。|@ref{g:terminal_ansi_colors}| を参照
+16 ANSI カラーの名前か GUI カラーモードで使われている ANSI パレットで定義されている 16 進数のカラーコードのリスト。|@ref{g:terminal_ansi_colors}| を参照してください。
 @item "tty_type" @tab
-(MS-Windows のみ): 使用する pty を明示しまう。値については '@option{termwintype}' を参照してください。
+(MS-Windows のみ): 使用する pty を明示します。値については '@option{termwintype}' を参照してください。
+@item "term_api" @tab
+|@ref{terminal-api}| 機能の関数名プリフィックス。|@ref{term_setapi()}| を参照してください。
 @end multitable
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetCommand()->term_start()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetCommand()->term_start()
+@end verbatim
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 
 @ifset EN
 term_wait({buf} [, {time}])					*term_wait()*
@@ -2008,7 +2291,6 @@ term_wait({buf} [, {time}])					*term_wait()*
 		{buf} is used as with |term_getsize()|.
 		{time} is how long to wait for updates to arrive in msec.  If
 		not set then 10 msec will be used.
-		{only available when compiled with the |+terminal| feature}
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
 @item term_wait(@{buf@} [, @{time@}])
@@ -2019,9 +2301,18 @@ term_wait({buf} [, {time}])					*term_wait()*
 @{buf@} は |@ref{term_getsize()}| として使われる。
 
 @{time@} はアップデートまでのミリ秒。設定されていなければ 10 ミリ秒が使われる。
-
-@{Vim が |@ref{+terminal}| 機能付きでコンパイルされたときのみ有効@}
 @end table
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
+@ifset EN
+		Can also be used as a |method|: >
+			GetBufnr()->term_wait()
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+|@ref{method}| としても使用できます:
+@verbatim
+GetBufnr()->term_wait()
+@end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
 
 @ifset EN
@@ -2138,9 +2429,9 @@ Currently supported commands:
 		Call a user defined function with {argument}.
 		The function is called with two arguments: the buffer number
 		of the terminal and {argument}, the decoded JSON argument. 
-		The function name must start with "Tapi_" to avoid
+		By default, the function name must start with "Tapi_" to avoid
 		accidentally calling a function not meant to be used for the
-		terminal API.
+		terminal API.  This can be changed with |term_setapi()|.
 		The user function should sanity check the argument.
 @end ifset
 @ifset JA  @c ----------- v -----------  JA  ----------- v -----------
@@ -2148,7 +2439,7 @@ Currently supported commands:
 @item call @{funcname@} @{argument@}
 ユーザー定義関数を @{argument@} で呼び出します。関数は 2 つの引数で呼び出されます: 端末のバッファ番号とデコードされた JSON 引数 @{argument@} です。
 
-関数名は端末 API 用に意図されていない関数を誤って呼び出すのを避けるため、"Tapi_" で始まる必要があります。
+デフォルトでは関数名は端末 API 用に意図されていない関数を誤って呼び出すのを避けるため、"Tapi_" で始まる必要があります。これは、|@ref{term_setapi()}| で変更できます。
 
 ユーザー関数は引数の正常性チェックをする必要があります。
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
@@ -2846,6 +3137,14 @@ Vim の "src" ディレクトリを起動して、Vim をビルドします:
 % make
 @end verbatim
 @end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+@ifset EN
+Make sure that debug symbols are present, usually that means that $CFLAGS
+includes "-g".
+@end ifset
+@ifset JA  @c ----------- v -----------  JA  ----------- v -----------
+デバッグシンボルが存在することを確認します。通常は、$CFLAGS に "-g" が含まれることを意味します。
+@end ifset @c ----------- ^ -----------  JA  ----------- ^ -----------
+
 @ifset EN
 Start Vim: >
 	% ./vim
