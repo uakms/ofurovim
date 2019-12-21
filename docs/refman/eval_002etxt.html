@@ -47,7 +47,7 @@ Up: <a href="Mu-Ci-.html" accesskey="u" rel="up">目次</a> &nbsp; [<a href="Ind
 </div>
 <hr>
 <span id="Shi-noPing-Jia-_002c-Tiao-Jian-Shi--_0028Vim-script-rihuarensu_0029"></span><h2 class="unnumbered">式の評價、條件式 (Vim script リファレンス)</h2>
-<pre class="verbatim">*eval.txt*	For Vim バージョン 8.1.  Last change: 2019 Jul 19
+<pre class="verbatim">*eval.txt*	For Vim バージョン 8.1.  Last change: 2019 Nov 17
 
 
 		  VIMリファレンスマニュアル    by Bram Moolenaar
@@ -86,9 +86,11 @@ Vim script はコンパイル時に無效化できる。もしさうなつてゐ
 <tr><td width="50%">11. +eval 機能が無效</td><td width="50%">|<a href="#no_002deval_002dfeature">no-eval-feature</a>|</td></tr>
 <tr><td width="50%">12. サンドボックス</td><td width="50%">|<a href="#eval_002dsandbox">eval-sandbox</a>|</td></tr>
 <tr><td width="50%">13. テキストロック</td><td width="50%">|<a href="#textlock">textlock</a>|</td></tr>
-<tr><td width="50%">14. テスト</td><td width="50%">|<a href="testing_002etxt.html#testing">testing</a>|</td></tr>
 </table>
 
+<p>テストのサポートは |<a href="testing_002etxt.html">testing.txt</a>| を參照してください。
+プロファイリングは |<a href="repeat_002etxt.html#profiling">profiling</a>| に記錄されてゐます。
+</p>
 <span id="variables"></span><span id="index-variables"></span>
 <span id="index-Bian-Shu-"></span>
 <span id="g_t1_002e-Bian-Shu-"></span><h3 class="section">1. 變數</h3>
@@ -99,7 +101,7 @@ Vim script はコンパイル時に無效化できる。もしさうなつてゐ
 <span id="index-E896"></span>
 <span id="index-E897"></span>
 <span id="index-E899"></span>
-<p>變數には 9 種類の型がある:
+<p>變數には 10 種類の型があります:
 </p>
 <dl compact="compact">
 <dd><span id="Number"></span><span id="index-Number"></span>
@@ -189,7 +191,7 @@ Vim script はコンパイル時に無效化できる。もしさうなつてゐ
 數値 0          --&gt;     文字列 &quot;0&quot;
 數値 -1         --&gt;     文字列 &quot;-1&quot;
 </pre><span id="octal"></span><span id="index-octal"></span>
-<p>文字列から數値への變換は最初の數字を用ゐて數値に變換する。16 進表記 &quot;0xf9&quot; や 8 進表記 &quot;017&quot;、2 進數表記の &quot;0b10&quot; も認識される。文字列が數字で始まらない場合結果は 0 となる。
+<p>文字列から數値への變換は最初の數字を用ゐて數値に變換します。16 進表記 &quot;0xf9&quot; や 8 進表記 &quot;017&quot;、2 進數表記の &quot;0b10&quot; も認識されます。(<strong>NOTE:</strong> |<a href="#scriptversion_002d4">scriptversion-4</a>| を使用する場合、8 進數は認識されません)。文字列が數字で始まらない場合結果は 0 となります。
 例:
 </p><pre class="verbatim">文字列 &quot;456&quot;    --&gt;     數値 456
 文字列 &quot;6bar&quot;   --&gt;     數値 6
@@ -568,7 +570,8 @@ echo [4] == [&quot;4&quot;]
 <p><strong>Note:</strong> <br>
 文字列 &rsquo;04&rsquo; と數値 04 は異なることに注意。なぜなら數値 04 は文字列 &rsquo;4&rsquo; に變換されるからである。空文字列もキーとして使用できる。
 </p></blockquote>
-<span id="literal_002dDict"></span><span id="index-literal_002dDict"></span>
+<span id="literal_002dDict"></span><span id="g_t_0023_007b_007d"></span><span id="index-literal_002dDict"></span>
+<span id="index-_0023_007b_007d"></span>
 <p>すべてのキーについてクォートを付けなければいけないことを囘避するためには #{} を使ふことができます。これは ASCII 文字、digit、&rsquo;-&rsquo; と &rsquo;_&rsquo; のみからなるキーについては {譯注: キーにクォートを付けなければならないルールを} 要求されません。
 </p>
 <p>例:
@@ -856,68 +859,70 @@ echo [4] == [&quot;4&quot;]
 <p>式文法一覽、優先順位の低いものから高い順に:
 </p>
 <table>
-<tr><td width="10%">|<a href="#expr1">expr1</a>|</td><td width="30%">expr2</td></tr>
-<tr><td width="10%"></td><td width="30%">expr2 ? expr1 : expr1</td><td width="60%">if-then-else 條件式</td></tr>
-<tr><td width="10%">&nbsp;</td><td width="30%"></td></tr>
-<tr><td width="10%">|<a href="#expr2">expr2</a>|</td><td width="30%">expr3</td></tr>
-<tr><td width="10%"></td><td width="30%">expr3 || expr3 ...</td><td width="60%">論理和</td></tr>
-<tr><td width="10%">&nbsp;</td><td width="30%"></td></tr>
-<tr><td width="10%">|<a href="#expr3">expr3</a>|</td><td width="30%">expr4</td></tr>
-<tr><td width="10%"></td><td width="30%">expr4 &amp;&amp; expr4 ...</td><td width="60%">論理積</td></tr>
-<tr><td width="10%">&nbsp;</td><td width="30%"></td></tr>
-<tr><td width="10%">|<a href="#expr4">expr4</a>|</td><td width="30%">expr5</td></tr>
-<tr><td width="10%"></td><td width="30%">expr5 == expr5</td><td width="60%">等しい</td></tr>
-<tr><td width="10%"></td><td width="30%">expr5 != expr5</td><td width="60%">等しくない</td></tr>
-<tr><td width="10%"></td><td width="30%">expr5 &gt; expr5</td><td width="60%">より大きい</td></tr>
-<tr><td width="10%"></td><td width="30%">expr5 &gt;= expr5</td><td width="60%">大きいか等しい</td></tr>
-<tr><td width="10%"></td><td width="30%">expr5 &lt; expr5</td><td width="60%">より小さい</td></tr>
-<tr><td width="10%"></td><td width="30%">expr5 &lt;= expr5</td><td width="60%">小さいか等しい</td></tr>
-<tr><td width="10%"></td><td width="30%">expr5 =~ expr5</td><td width="60%">正規表現にマッチする</td></tr>
-<tr><td width="10%"></td><td width="30%">expr5 !~ expr5</td><td width="60%">正規表現にマッチしない</td></tr>
-<tr><td width="10%">&nbsp;</td><td width="30%"></td></tr>
-<tr><td width="10%"></td><td width="30%">expr5 ==? expr5</td><td width="60%">文字列として等しい(大文字/小文字區別無し)</td></tr>
-<tr><td width="10%"></td><td width="30%">expr5 ==# expr5</td><td width="60%">文字列として等しい(大文字/小文字區別有り)</td></tr>
-<tr><td width="10%"></td><td width="30%">etc.</td><td width="60%">上記の各式は大小文字の區別を、?を付加すると行はず、#を付加すると行ふ</td></tr>
-<tr><td width="10%">&nbsp;</td><td width="30%"></td></tr>
-<tr><td width="10%"></td><td width="30%">expr5 is expr5</td><td width="60%">同一の |<a href="#List">List</a>|, |<a href="#Dictionary">Dictionary</a>| もしくは |<a href="#Blob">Blob</a>| のインスタンス</td></tr>
-<tr><td width="10%"></td><td width="30%">expr5 isnot expr5</td><td width="60%">異なる |<a href="#List">List</a>|, |<a href="#Dictionary">Dictionary</a>| もしくは |<a href="#Blob">Blob</a>| のインスタンス</td></tr>
-<tr><td width="10%">&nbsp;</td><td width="30%"></td></tr>
-<tr><td width="10%">|<a href="#expr5">expr5</a>|</td><td width="30%">expr6</td></tr>
-<tr><td width="10%"></td><td width="30%">expr6 + expr6 ...</td><td width="60%">足し算、リストまたは blob の連結</td></tr>
-<tr><td width="10%"></td><td width="30%">expr6 - expr6 ...</td><td width="60%">引き算</td></tr>
-<tr><td width="10%"></td><td width="30%">expr6 . expr6 ...</td><td width="60%">文字列の連結</td></tr>
-<tr><td width="10%"></td><td width="30%">expr6 .. expr6 ...</td><td width="60%">文字列の連結</td></tr>
-<tr><td width="10%">&nbsp;</td><td width="30%"></td></tr>
-<tr><td width="10%">|<a href="#expr6">expr6</a>|</td><td width="30%">expr7</td></tr>
-<tr><td width="10%"></td><td width="30%">expr7 * expr7 ...</td><td width="60%">掛け算</td></tr>
-<tr><td width="10%"></td><td width="30%">expr7 / expr7 ...</td><td width="60%">割り算</td></tr>
-<tr><td width="10%"></td><td width="30%">expr7 % expr7 ...</td><td width="60%">剩餘(割つた餘り)</td></tr>
-<tr><td width="10%">&nbsp;</td><td width="30%"></td></tr>
-<tr><td width="10%">|<a href="#expr7">expr7</a>|</td><td width="30%">expr8</td></tr>
-<tr><td width="10%"></td><td width="30%">! expr7</td><td width="60%">論理否定</td></tr>
-<tr><td width="10%"></td><td width="30%">- expr7</td><td width="60%">單項のマイナス {譯注: -1 等}</td></tr>
-<tr><td width="10%"></td><td width="30%">+ expr7</td><td width="60%">單項のプラス</td></tr>
-<tr><td width="10%">&nbsp;</td><td width="30%"></td></tr>
-<tr><td width="10%">|<a href="#expr8">expr8</a>|</td><td width="30%">expr9</td></tr>
-<tr><td width="10%"></td><td width="30%">expr8[expr1]</td><td width="60%">文字列のバイト、またはリスト |<a href="#List">List</a>| の要素</td></tr>
-<tr><td width="10%"></td><td width="30%">expr8[expr1 : expr1]</td><td width="60%">文字列の部分文字列、またはリスト |<a href="#List">List</a>| の部分リスト</td></tr>
-<tr><td width="10%"></td><td width="30%">expr8.name</td><td width="60%">辭書 |<a href="#Dictionary">Dictionary</a>| の要素</td></tr>
-<tr><td width="10%"></td><td width="30%">expr8(expr1, ...)</td><td width="60%">|<a href="#Funcref">Funcref</a>| 變數による函數呼び出し</td></tr>
-<tr><td width="10%">&nbsp;</td><td width="30%"></td></tr>
-<tr><td width="10%">|<a href="#expr9">expr9</a>|</td><td width="30%">number</td><td width="60%">數定數</td></tr>
-<tr><td width="10%"></td><td width="30%">&quot;string&quot;</td><td width="60%">文字列定數。バックスラッシュは特別な意味を持つ</td></tr>
-<tr><td width="10%"></td><td width="30%">&rsquo;string&rsquo;</td><td width="60%">リテラル文字列定數。&rsquo;を含めるには 2 重にする</td></tr>
-<tr><td width="10%"></td><td width="30%">[expr1, ...]</td><td width="60%">リスト |<a href="#List">List</a>|</td></tr>
-<tr><td width="10%"></td><td width="30%">{expr1: expr1, ...}</td><td width="60%">辭書 |<a href="#Dictionary">Dictionary</a>|</td></tr>
-<tr><td width="10%"></td><td width="30%">&amp;option</td><td width="60%">オプション變數</td></tr>
-<tr><td width="10%"></td><td width="30%">(expr1)</td><td width="60%">式の入れ子</td></tr>
-<tr><td width="10%"></td><td width="30%">variable</td><td width="60%">內部變數</td></tr>
-<tr><td width="10%"></td><td width="30%">va{ria}ble</td><td width="60%">波括弧付きの內部變數</td></tr>
-<tr><td width="10%"></td><td width="30%">$VAR</td><td width="60%">環境變數</td></tr>
-<tr><td width="10%"></td><td width="30%">@r</td><td width="60%">レジスタ &rsquo;r&rsquo; の値</td></tr>
-<tr><td width="10%"></td><td width="30%">function(expr1, ...)</td><td width="60%">函數呼出し</td></tr>
-<tr><td width="10%"></td><td width="30%">func{ti}on(expr1, ...)</td><td width="60%">波括弧付きの函數呼出し</td></tr>
-<tr><td width="10%"></td><td width="30%">{args -&gt; expr1}</td><td width="60%">ラムダ式</td></tr>
+<tr><td width="20%">|<a href="#expr1">expr1</a>|</td><td width="30%">expr2</td></tr>
+<tr><td width="20%"></td><td width="30%">expr2 ? expr1 : expr1</td><td width="50%">if-then-else 條件式</td></tr>
+<tr><td width="20%">&nbsp;</td><td width="30%"></td></tr>
+<tr><td width="20%">|<a href="#expr2">expr2</a>|</td><td width="30%">expr3</td></tr>
+<tr><td width="20%"></td><td width="30%">expr3 || expr3 ...</td><td width="50%">論理和</td></tr>
+<tr><td width="20%">&nbsp;</td><td width="30%"></td></tr>
+<tr><td width="20%">|<a href="#expr3">expr3</a>|</td><td width="30%">expr4</td></tr>
+<tr><td width="20%"></td><td width="30%">expr4 &amp;&amp; expr4 ...</td><td width="50%">論理積</td></tr>
+<tr><td width="20%">&nbsp;</td><td width="30%"></td></tr>
+<tr><td width="20%">|<a href="#expr4">expr4</a>|</td><td width="30%">expr5</td></tr>
+<tr><td width="20%"></td><td width="30%">expr5 == expr5</td><td width="50%">等しい</td></tr>
+<tr><td width="20%"></td><td width="30%">expr5 != expr5</td><td width="50%">等しくない</td></tr>
+<tr><td width="20%"></td><td width="30%">expr5 &gt; expr5</td><td width="50%">より大きい</td></tr>
+<tr><td width="20%"></td><td width="30%">expr5 &gt;= expr5</td><td width="50%">大きいか等しい</td></tr>
+<tr><td width="20%"></td><td width="30%">expr5 &lt; expr5</td><td width="50%">より小さい</td></tr>
+<tr><td width="20%"></td><td width="30%">expr5 &lt;= expr5</td><td width="50%">小さいか等しい</td></tr>
+<tr><td width="20%"></td><td width="30%">expr5 =~ expr5</td><td width="50%">正規表現にマッチする</td></tr>
+<tr><td width="20%"></td><td width="30%">expr5 !~ expr5</td><td width="50%">正規表現にマッチしない</td></tr>
+<tr><td width="20%">&nbsp;</td><td width="30%"></td></tr>
+<tr><td width="20%"></td><td width="30%">expr5 ==? expr5</td><td width="50%">文字列として等しい(大文字/小文字區別無し)</td></tr>
+<tr><td width="20%"></td><td width="30%">expr5 ==# expr5</td><td width="50%">文字列として等しい(大文字/小文字區別有り)</td></tr>
+<tr><td width="20%"></td><td width="30%">etc.</td><td width="50%">上記の各式は大小文字の區別を、?を付加すると行はず、#を付加すると行ふ</td></tr>
+<tr><td width="20%">&nbsp;</td><td width="30%"></td></tr>
+<tr><td width="20%"></td><td width="30%">expr5 is expr5</td><td width="50%">同一の |<a href="#List">List</a>|, |<a href="#Dictionary">Dictionary</a>| もしくは |<a href="#Blob">Blob</a>| のインスタンス</td></tr>
+<tr><td width="20%"></td><td width="30%">expr5 isnot expr5</td><td width="50%">異なる |<a href="#List">List</a>|, |<a href="#Dictionary">Dictionary</a>| もしくは |<a href="#Blob">Blob</a>| のインスタンス</td></tr>
+<tr><td width="20%">&nbsp;</td><td width="30%"></td></tr>
+<tr><td width="20%">|<a href="#expr5">expr5</a>|</td><td width="30%">expr6</td></tr>
+<tr><td width="20%"></td><td width="30%">expr6 + expr6 ...</td><td width="50%">足し算、リストまたは blob の連結</td></tr>
+<tr><td width="20%"></td><td width="30%">expr6 - expr6 ...</td><td width="50%">引き算</td></tr>
+<tr><td width="20%"></td><td width="30%">expr6 . expr6 ...</td><td width="50%">文字列の連結</td></tr>
+<tr><td width="20%"></td><td width="30%">expr6 .. expr6 ...</td><td width="50%">文字列の連結</td></tr>
+<tr><td width="20%">&nbsp;</td><td width="30%"></td></tr>
+<tr><td width="20%">|<a href="#expr6">expr6</a>|</td><td width="30%">expr7</td></tr>
+<tr><td width="20%"></td><td width="30%">expr7 * expr7 ...</td><td width="50%">掛け算</td></tr>
+<tr><td width="20%"></td><td width="30%">expr7 / expr7 ...</td><td width="50%">割り算</td></tr>
+<tr><td width="20%"></td><td width="30%">expr7 % expr7 ...</td><td width="50%">剩餘(割つた餘り)</td></tr>
+<tr><td width="20%">&nbsp;</td><td width="30%"></td></tr>
+<tr><td width="20%">|<a href="#expr7">expr7</a>|</td><td width="30%">expr8</td></tr>
+<tr><td width="20%"></td><td width="30%">! expr7</td><td width="50%">論理否定</td></tr>
+<tr><td width="20%"></td><td width="30%">- expr7</td><td width="50%">單項のマイナス {譯注: -1 等}</td></tr>
+<tr><td width="20%"></td><td width="30%">+ expr7</td><td width="50%">單項のプラス</td></tr>
+<tr><td width="20%">&nbsp;</td><td width="30%"></td></tr>
+<tr><td width="20%">|<a href="#expr8">expr8</a>|</td><td width="30%">expr9</td></tr>
+<tr><td width="20%"></td><td width="30%">expr8[expr1]</td><td width="50%">文字列のバイト、またはリスト |<a href="#List">List</a>| の要素</td></tr>
+<tr><td width="20%"></td><td width="30%">expr8[expr1 : expr1]</td><td width="50%">文字列の部分文字列、またはリスト |<a href="#List">List</a>| の部分リスト</td></tr>
+<tr><td width="20%"></td><td width="30%">expr8.name</td><td width="50%">辭書 |<a href="#Dictionary">Dictionary</a>| の要素</td></tr>
+<tr><td width="20%"></td><td width="30%">expr8(expr1, ...)</td><td width="50%">|<a href="#Funcref">Funcref</a>| 變數による函數呼び出し</td></tr>
+<tr><td width="20%"></td><td width="30%">expr8-&gt;name(expr1, ...)</td><td width="50%">|<a href="#method">method</a>| 呼び出し</td></tr>
+<tr><td width="20%">&nbsp;</td><td width="30%"></td></tr>
+<tr><td width="20%">|<a href="#expr9">expr9</a>|</td><td width="30%">number</td><td width="50%">數定數</td></tr>
+<tr><td width="20%"></td><td width="30%">&quot;string&quot;</td><td width="50%">文字列定數。バックスラッシュは特別な意味を持つ</td></tr>
+<tr><td width="20%"></td><td width="30%">&rsquo;string&rsquo;</td><td width="50%">リテラル文字列定數。&rsquo;を含めるには 2 重にする</td></tr>
+<tr><td width="20%"></td><td width="30%">[expr1, ...]</td><td width="50%">リスト |<a href="#List">List</a>|</td></tr>
+<tr><td width="20%"></td><td width="30%">{expr1: expr1, ...}</td><td width="50%">辭書 |<a href="#Dictionary">Dictionary</a>|</td></tr>
+<tr><td width="20%"></td><td width="30%">#{key: expr1, ...}</td><td width="50%">辭書 |<a href="#Dictionary">Dictionary</a>|</td></tr>
+<tr><td width="20%"></td><td width="30%">&amp;option</td><td width="50%">オプション變數</td></tr>
+<tr><td width="20%"></td><td width="30%">(expr1)</td><td width="50%">式の入れ子</td></tr>
+<tr><td width="20%"></td><td width="30%">variable</td><td width="50%">內部變數</td></tr>
+<tr><td width="20%"></td><td width="30%">va{ria}ble</td><td width="50%">波括弧付きの內部變數</td></tr>
+<tr><td width="20%"></td><td width="30%">$VAR</td><td width="50%">環境變數</td></tr>
+<tr><td width="20%"></td><td width="30%">@r</td><td width="50%">レジスタ &rsquo;r&rsquo; の値</td></tr>
+<tr><td width="20%"></td><td width="30%">function(expr1, ...)</td><td width="50%">函數呼出し</td></tr>
+<tr><td width="20%"></td><td width="30%">func{ti}on(expr1, ...)</td><td width="50%">波括弧付きの函數呼出し</td></tr>
+<tr><td width="20%"></td><td width="30%">{args -&gt; expr1}</td><td width="50%">ラムダ式</td></tr>
 </table>
 
 
@@ -967,7 +972,7 @@ echo [4] == [&quot;4&quot;]
 <p>演算子 &quot;||&quot; と &quot;&amp;&amp;&quot; は左右に 1 つずつ引數を取る。引數は數値に變換される。結果は:
 </p>
 <table>
-<tr><td width="25%">入力</td><td width="25%"></td><td width="25%">出力</td></tr>
+<thead><tr><th width="25%">入力</th><th width="25%"></th><th width="25%">出力</th><th width="25%"></th></tr></thead>
 <tr><td width="25%">n1</td><td width="25%">n2</td><td width="25%">n1 || n2</td><td width="25%">n1 &amp;&amp; n2</td></tr>
 <tr><td width="25%">|<a href="#FALSE">FALSE</a>|</td><td width="25%">|<a href="#FALSE">FALSE</a>|</td><td width="25%">|<a href="#FALSE">FALSE</a>|</td><td width="25%">|<a href="#FALSE">FALSE</a>|</td></tr>
 <tr><td width="25%">|<a href="#FALSE">FALSE</a>|</td><td width="25%">|<a href="#TRUE">TRUE</a>|</td><td width="25%">|<a href="#TRUE">TRUE</a>|</td><td width="25%">|<a href="#FALSE">FALSE</a>|</td></tr>
@@ -1199,10 +1204,12 @@ echo 0 is []
 <span id="expr8"></span><span id="index-expr8"></span>
 <span id="expr8-1"></span><h4 class="unnumberedsubsec">expr8</h4>
 <p>この式は |<a href="#expr9">expr9</a>| もしくは連續する以下の選擇方式であり、どんな順番でもよい。例として、これらはすべて可能である:
-</p><pre class="verbatim">expr9[expr1].name
-expr9.name[expr1]
-expr9(expr1, ...)[expr1].name
-</pre>
+</p><pre class="verbatim">expr8[expr1].name
+expr8.name[expr1]
+expr8(expr1, ...)[expr1].name
+expr8-&gt;(expr1, ...)[expr1]
+</pre><p>評價は常に左から右に行はれます。
+</p>
 
 <span id="expr_002d_005b_005d"></span><span id="E111"></span><span id="E909"></span><span id="subscript"></span><span id="index-expr_002d_005b_005d"></span>
 <span id="index-E111"></span>
@@ -1727,7 +1734,13 @@ endif
 <p>一部の變數はユーザーが設定できるが、型を變更することはできない。
 </p>
 <dl compact="compact">
-<dd><span id="v_003abeval_005fcol"></span><span id="beval_005fcol_002dvariable"></span><span id="index-v_003abeval_005fcol"></span>
+<dd><span id="v_003aargv"></span><span id="argv_002dvariable"></span><span id="index-v_003aargv"></span>
+<span id="index-argv_002dvariable"></span>
+</dd>
+<dt>v:argv</dt>
+<dd><p>Vim の起動に使用したコマンドライン引數。これは文字列のリストです。最初の項目は Vim コマンドです。
+</p>
+<span id="v_003abeval_005fcol"></span><span id="beval_005fcol_002dvariable"></span><span id="index-v_003abeval_005fcol"></span>
 <span id="index-beval_005fcol_002dvariable"></span>
 </dd>
 <dt>v:beval_col</dt>
@@ -1897,7 +1910,7 @@ v:dying が 1 のときに別の致命的なシグナルを受信した場合は
 </p><pre class="verbatim">:try
 :  throw &quot;oops&quot;
 :catch /.*/
-:  echo &quot;caught&quot; v:exception
+:  echo &quot;caught &quot; .. v:exception
 :endtry
 </pre><p>出力: &quot;caught oops&quot;.
 </p>
@@ -2179,9 +2192,18 @@ v:null
 <span id="index-progpath_002dvariable"></span>
 </dd>
 <dt>v:progpath</dt>
-<dd><p>Vim を起動したときのコマンド (パスを含む)。|<a href="remote_002etxt.html#g_t_002d_002dremote_002dexpr">--remote-expr</a>| で Vim サーバーにメッセージを送信するときに便利。フルパスを得るには:
+<dd><p>Vim が呼び出されたときのコマンドが含まれてゐる。シェルに渡されると、現在の Vim と同じ Vim 實行可能ファイルが實行されます ($PATH が變更されない場合)。
+|<a href="remote_002etxt.html#g_t_002d_002dremote_002dexpr">--remote-expr</a>| を使用して Vim サーバーにメッセージを送信する場合に便利です。
+</p>
+<p>フルパスを得るには:
 </p><pre class="verbatim">echo exepath(v:progpath)
-</pre><p>パスが相對の場合、フルパスに展開され、これにより &lsquo;:cd&lsquo; 後でも機能する。例へば &quot;./vim&quot; で開始すると &quot;/home/user/path/to/vim/src/vim&quot; といふ結果になる。MS-Windows では實行ファイルが &quot;vim.exe&quot; として呼び出されるかもしれないが、&quot;.exe&quot; は v:progpath には追加されない。
+</pre><p>コマンドが相對パスの場合、フルパスに展開されるため &lsquo;<code>:cd</code>&lsquo; の後でも機能します。したがつて、&quot;./vim&quot; を開始すると &quot;/home/user/path/to/vim/src/vim&quot; といふ結果になります。
+</p>
+<p>Linux およびその他のシステムでは常にフルパスになります。
+</p>
+<p>Mac では單に &quot;vim&quot; であり、前述の exepath() を使用してフルパスを取得する必要があります。
+</p>
+<p>MS-Windows では實行ファイルが &quot;vim.exe&quot; として呼び出されるかもしれませんが、&quot;.exe&quot; は v:progpath には追加されません。
 </p>
 <p>讀出し專用。
 </p>
@@ -2491,8 +2513,8 @@ Vim の中のウィンドウを扱ふときは |<a href="#winnr_0028_0029">winnr
 <tr><td width="40%"><a href="#buflisted_0028_0029">buflisted</a>({expr})</td><td width="20%">數値</td><td width="40%">バッファ {expr} がリストにあるなら |<a href="#TRUE">TRUE</a>|</td></tr>
 <tr><td width="40%"><a href="#bufload_0028_0029">bufload</a>({expr})</td><td width="20%">數値</td><td width="40%">もしもロードされてゐないなければバッファ {expr} をロードする</td></tr>
 <tr><td width="40%"><a href="#bufloaded_0028_0029">bufloaded</a>({expr})</td><td width="20%">數値</td><td width="40%">バッファ {expr} がロード濟みなら |<a href="#TRUE">TRUE</a>|</td></tr>
-<tr><td width="40%"><a href="#bufname_0028_0029">bufname</a>({expr})</td><td width="20%">文字列</td><td width="40%">バッファ {expr} の名前</td></tr>
-<tr><td width="40%"><a href="#bufnr_0028_0029">bufnr</a>({expr} [, {create}])</td><td width="20%">數値</td><td width="40%">バッファ {expr} の番號</td></tr>
+<tr><td width="40%"><a href="#bufname_0028_0029">bufname</a>([{expr}])</td><td width="20%">文字列</td><td width="40%">バッファ {expr} の名前</td></tr>
+<tr><td width="40%"><a href="#bufnr_0028_0029">bufnr</a>([{expr} [, {create}]])</td><td width="20%">數値</td><td width="40%">バッファ {expr} の番號</td></tr>
 <tr><td width="40%"><a href="#bufwinid_0028_0029">bufwinid</a>({expr})</td><td width="20%">數値</td><td width="40%">バッファ {expr} のウィンドウ ID</td></tr>
 <tr><td width="40%"><a href="#bufwinnr_0028_0029">bufwinnr</a>({nr})</td><td width="20%">數値</td><td width="40%">バッファ {nr} のウィンドウ番號</td></tr>
 <tr><td width="40%"><a href="#byte2line_0028_0029">byte2line</a>({byte})</td><td width="20%">數値</td><td width="40%">{byte} 番目のバイトの行番號</td></tr>
@@ -2582,7 +2604,7 @@ Vim の中のウィンドウを扱ふときは |<a href="#winnr_0028_0029">winnr
 <tr><td width="40%"><a href="#getbufinfo_0028_0029">getbufinfo</a>([{expr}])</td><td width="20%">リスト</td><td width="40%">バッファに關する情報</td></tr>
 <tr><td width="40%"><a href="#getbufline_0028_0029">getbufline</a>({expr}, {lnum} [, {end}])</td><td width="20%">リスト</td><td width="40%">バッファ {expr} の {lnum} から {end} 行目</td></tr>
 <tr><td width="40%"><a href="#getbufvar_0028_0029">getbufvar</a>({expr}, {varname} [, {def}])</td><td width="20%">任意</td><td width="40%">バッファ {expr} の變數 {varname}</td></tr>
-<tr><td width="40%"><a href="#getchangelist_0028_0029">getchangelist</a>({expr})</td><td width="20%">リスト</td><td width="40%">變更リスト要素のリスト</td></tr>
+<tr><td width="40%"><a href="#getchangelist_0028_0029">getchangelist</a>([{expr}])</td><td width="20%">リスト</td><td width="40%">變更リスト要素のリスト</td></tr>
 <tr><td width="40%"><a href="#getchar_0028_0029">getchar</a>([expr])</td><td width="20%">數値</td><td width="40%">ユーザーから 1 文字を取得する</td></tr>
 <tr><td width="40%"><a href="#getcharmod_0028_0029">getcharmod</a>()</td><td width="20%">數値</td><td width="40%">修飾キーの狀態を表す數値を取得</td></tr>
 <tr><td width="40%"><a href="#getcharsearch_0028_0029">getcharsearch</a>()</td><td width="20%">辭書</td><td width="40%">最後の文字檢索を取得</td></tr>
@@ -2599,11 +2621,13 @@ Vim の中のウィンドウを扱ふときは |<a href="#winnr_0028_0029">winnr
 <tr><td width="40%"><a href="#getfsize_0028_0029">getfsize</a>({fname})</td><td width="20%">數値</td><td width="40%">ファイル {fname} のバイト數を取得</td></tr>
 <tr><td width="40%"><a href="#getftime_0028_0029">getftime</a>({fname})</td><td width="20%">數値</td><td width="40%">ファイルの最終更新時閒</td></tr>
 <tr><td width="40%"><a href="#getftype_0028_0029">getftype</a>({fname})</td><td width="20%">文字列</td><td width="40%">ファイル {fname} の種類の說明</td></tr>
+<tr><td width="40%"><a href="#getimstatus_0028_0029">getimstatus()</a></td><td width="20%">數値</td><td width="40%">IME のステータがアクティブなら |<a href="#TRUE">TRUE</a>|</td></tr>
 <tr><td width="40%"><a href="#getjumplist_0028_0029">getjumplist</a>([{winnr} [, {tabnr}]])</td><td width="20%">リスト</td><td width="40%">ジャンプリスト要素のリスト</td></tr>
 <tr><td width="40%"><a href="#getline_0028_0029">getline</a>({lnum})</td><td width="20%">文字列</td><td width="40%">現在のバッファから行の內容を取得</td></tr>
 <tr><td width="40%"><a href="#getline_0028_0029">getline</a>({lnum}, {end})</td><td width="20%">リスト</td><td width="40%">カレントバッファの {lnum} から {end} 行目</td></tr>
 <tr><td width="40%"><a href="#getloclist_0028_0029">getloclist</a>({nr} [, {what}])</td><td width="20%">リスト</td><td width="40%">ロケーションリストの要素のリスト</td></tr>
 <tr><td width="40%"><a href="#getmatches_0028_0029">getmatches</a>([{win}])</td><td width="20%">リスト</td><td width="40%">現在のマッチのリスト</td></tr>
+<tr><td width="40%"><a href="#getmousepos_0028_0029">getmousepos()</a></td><td width="20%">辭書</td><td width="40%">最後にわかつてゐるマウスの位置</td></tr>
 <tr><td width="40%"><a href="#getpid_0028_0029">getpid</a>()</td><td width="20%">數値</td><td width="40%">Vim のプロセス ID</td></tr>
 <tr><td width="40%"><a href="#getpos_0028_0029">getpos</a>({expr})</td><td width="20%">リスト</td><td width="40%">カーソル・マークなどの位置を取得</td></tr>
 <tr><td width="40%"><a href="#getqflist_0028_0029">getqflist</a>([{what}])</td><td width="20%">リスト</td><td width="40%">quickfix 要素のリスト</td></tr>
@@ -2663,7 +2687,7 @@ Vim の中のウィンドウを扱ふときは |<a href="#winnr_0028_0029">winnr
 <tr><td width="40%"><a href="#len_0028_0029">len</a>({expr})</td><td width="20%">數値</td><td width="40%">{expr} の長さを取得</td></tr>
 <tr><td width="40%"><a href="#libcall_0028_0029">libcall</a>({lib}, {func}, {arg}</td><td width="20%">文字列</td><td width="40%">ライブラリ {lib} の函數 {func} をコール</td></tr>
 <tr><td width="40%"><a href="#libcallnr_0028_0029">libcallnr</a>({lib}, {func}, {arg})</td><td width="20%">數値</td><td width="40%">上と同じ。ただし數値を返す</td></tr>
-<tr><td width="40%"><a href="#line_0028_0029">line</a>({expr})</td><td width="20%">數値</td><td width="40%">行番號の取得</td></tr>
+<tr><td width="40%"><a href="#line_0028_0029">line</a>({expr} [, {winid}])</td><td width="20%">數値</td><td width="40%">行番號の取得</td></tr>
 <tr><td width="40%"><a href="#line2byte_0028_0029">line2byte</a>({lnum})</td><td width="20%">數値</td><td width="40%">行 {lnum} のバイトカウント</td></tr>
 <tr><td width="40%"><a href="#lispindent_0028_0029">lispindent</a>({lnum})</td><td width="20%">數値</td><td width="40%">{lnum} 行目の Lisp インデント量を取得</td></tr>
 <tr><td width="40%"><a href="#list2str_0028_0029">list2str</a>({list} [, {utf8}])</td><td width="20%">文字列</td><td width="40%">{list} の數値を文字列に變換する</td></tr>
@@ -2704,6 +2728,8 @@ Vim の中のウィンドウを扱ふときは |<a href="#winnr_0028_0029">winnr
 <tr><td width="40%"><a href="popup_002etxt.html#popup_005fdialog_0028_0029">popup_dialog</a>({what}, {options})</td><td width="20%">數値</td><td width="40%">ダイアログとして使用するポップアップウィンドウを作成する</td></tr>
 <tr><td width="40%"><a href="popup_002etxt.html#popup_005ffilter_005fmenu_0028_0029">popup_filter_menu</a>({id}, {key})</td><td width="20%">數値</td><td width="40%">filter for a menu popup window</td></tr>
 <tr><td width="40%"><a href="popup_002etxt.html#popup_005ffilter_005fyesno_0028_0029">popup_filter_yesno</a>({id}, {key})</td><td width="20%">數値</td><td width="40%">filter for a dialog popup window</td></tr>
+<tr><td width="40%"><a href="popup_002etxt.html#popup_005ffindinfo_0028_0029">popup_findinfo()</a></td><td width="20%">數値</td><td width="40%">情報ポップアップウィンドウの window ID を取得する</td></tr>
+<tr><td width="40%"><a href="popup_002etxt.html#popup_005ffindpreview_0028_0029">popup_findpreview()</a></td><td width="20%">數値</td><td width="40%">プレビューポップアップウィンドウの window ID を取得する</td></tr>
 <tr><td width="40%"><a href="popup_002etxt.html#popup_005fgetoptions_0028_0029">popup_getoptions</a>({id})</td><td width="20%">辭書</td><td width="40%">get options of popup window {id}</td></tr>
 <tr><td width="40%"><a href="popup_002etxt.html#popup_005fgetpos_0028_0029">popup_getpos</a>({id})</td><td width="20%">辭書</td><td width="40%">get position of popup window {id}</td></tr>
 <tr><td width="40%"><a href="popup_002etxt.html#popup_005fhide_0028_0029">popup_hide</a>({id})</td><td width="20%">なし</td><td width="40%">hide popup menu {id}</td></tr>
@@ -2729,6 +2755,7 @@ Vim の中のウィンドウを扱ふときは |<a href="#winnr_0028_0029">winnr
 <tr><td width="40%"><a href="textprop_002etxt.html#prop_005ftype_005fdelete_0028_0029">prop_type_delete</a>({name} [, {props}])</td><td width="20%">なし</td><td width="40%">プロパティタイプを削除</td></tr>
 <tr><td width="40%"><a href="textprop_002etxt.html#prop_005ftype_005fget_0028_0029">prop_type_get</a>([{name} [, {props}])</td><td width="20%">辭書</td><td width="40%">プロパティタイプの値を取得</td></tr>
 <tr><td width="40%"><a href="textprop_002etxt.html#prop_005ftype_005flist_0028_0029">prop_type_list</a>([{props}])</td><td width="20%">リスト</td><td width="40%">プロパティタイプ一覽を取得</td></tr>
+<tr><td width="40%"><a href="#pum_005fgetpos_0028_0029">pum_getpos()</a></td><td width="20%">辭書</td><td width="40%">ポップアップメニューが表示されてゐる場合、位置とサイズを取得</td></tr>
 <tr><td width="40%"><a href="#pumvisible_0028_0029">pumvisible()</a></td><td width="20%">數値</td><td width="40%">ポップアップメニューが表示されてゐるか</td></tr>
 <tr><td width="40%"><a href="#pyeval_0028_0029">pyeval</a>({expr})</td><td width="20%">任意</td><td width="40%">|<a href="if_005fpyth_002etxt.html#Python">Python</a>| の式を評價する</td></tr>
 <tr><td width="40%"><a href="#py3eval_0028_0029">py3eval</a>({expr})</td><td width="20%">任意</td><td width="40%">|<a href="if_005fpyth_002etxt.html#python3">python3</a>| の式を評價する</td></tr>
@@ -2813,9 +2840,10 @@ Vim の中のウィンドウを扱ふときは |<a href="#winnr_0028_0029">winnr
 <tr><td width="40%"><a href="#spellsuggest_0028_0029">spellsuggest</a>({word} [, {max} [, {capital}]])</td><td width="20%">リスト</td><td width="40%">スペリング補完</td></tr>
 <tr><td width="40%"><a href="#split_0028_0029">split</a>({expr} [, {pat} [, {keepempty}]])</td><td width="20%">リスト</td><td width="40%">{expr} を {pat} で區切つてリスト |<a href="#List">List</a>| を作る</td></tr>
 <tr><td width="40%"><a href="#sqrt_0028_0029">sqrt</a>({expr})</td><td width="20%">浮動小數點數</td><td width="40%">{expr} の平方根</td></tr>
+<tr><td width="40%"><a href="#state_0028_0029">state</a>([{what}])</td><td width="20%">文字列</td><td width="40%">Vim の現在の狀態</td></tr>
 <tr><td width="40%"><a href="#str2float_0028_0029">str2float</a>({expr})</td><td width="20%">浮動小數點數</td><td width="40%">文字列を浮動小數點數に變換する</td></tr>
 <tr><td width="40%"><a href="#str2list_0028_0029">str2list</a>({expr} [, {utf8}])</td><td width="20%">リスト</td><td width="40%">{expr} の各文字を ASCII/UTF8 値に變換する</td></tr>
-<tr><td width="40%"><a href="#str2nr_0028_0029">str2nr</a>({expr} [, {base}])</td><td width="20%">數値</td><td width="40%">文字列を數値に變換する</td></tr>
+<tr><td width="40%"><a href="#str2nr_0028_0029">str2nr</a>({expr} [, {base} [, {quoted}]])</td><td width="20%">數値</td><td width="40%">文字列を數値に變換する</td></tr>
 <tr><td width="40%"><a href="#strchars_0028_0029">strchars</a>({expr} [, {skipcc}])</td><td width="20%">數値</td><td width="40%">文字列 {expr} の文字の數</td></tr>
 <tr><td width="40%"><a href="#strcharpart_0028_0029">strcharpart</a>({str}, {start} [, {len}])</td><td width="20%">文字列</td><td width="40%">{str} の {start} から長さ {len} の文字列を得る</td></tr>
 <tr><td width="40%"><a href="#strdisplaywidth_0028_0029">strdisplaywidth</a>({expr} [, {col}])</td><td width="20%">數値</td><td width="40%">文字列 {expr} の表示幅</td></tr>
@@ -2864,6 +2892,7 @@ Vim の中のウィンドウを扱ふときは |<a href="#winnr_0028_0029">winnr
 <tr><td width="40%"><a href="terminal_002etxt.html#term_005flist_0028_0029">term_list</a>()</td><td width="20%">リスト</td><td width="40%">端末バッファのリストを取得する</td></tr>
 <tr><td width="40%"><a href="terminal_002etxt.html#term_005fscrape_0028_0029">term_scrape</a>({buf}, {row})</td><td width="20%">リスト</td><td width="40%">端末スクリーンの行を取得する</td></tr>
 <tr><td width="40%"><a href="terminal_002etxt.html#term_005fsendkeys_0028_0029">term_sendkeys</a>({buf}, {keys})</td><td width="20%">なし</td><td width="40%">キー入力を端末に送信する</td></tr>
+<tr><td width="40%"><a href="terminal_002etxt.html#term_005fsetapi_0028_0029">term_setapi</a>({buf}, {expr})</td><td width="20%">なし</td><td width="40%">|<a href="terminal_002etxt.html#terminal_002dapi">terminal-api</a>| 函數名プリフィックスを設定する</td></tr>
 <tr><td width="40%"><a href="terminal_002etxt.html#term_005fsetansicolors_0028_0029">term_setansicolors</a>({buf}, {colors})</td><td width="20%">なし</td><td width="40%">GUI カラーモードでの ANSI パレットを設定する</td></tr>
 <tr><td width="40%"><a href="terminal_002etxt.html#term_005fsetkill_0028_0029">term_setkill</a>({buf}, {how})</td><td width="20%">なし</td><td width="40%">端末のジョブを停止するためのシグナルを設定する</td></tr>
 <tr><td width="40%"><a href="terminal_002etxt.html#term_005fsetrestore_0028_0029">term_setrestore</a>({buf}, {command})</td><td width="20%">なし</td><td width="40%">端末を復元するためのコマンドを設定する</td></tr>
@@ -2915,6 +2944,7 @@ Vim の中のウィンドウを扱ふときは |<a href="#winnr_0028_0029">winnr
 <tr><td width="40%"><a href="#win_005fid2tabwin_0028_0029">win_id2tabwin</a>({expr})</td><td width="20%">リスト</td><td width="40%">ウィンドウ ID からタブとウィンドウ nr 取得</td></tr>
 <tr><td width="40%"><a href="#win_005fid2win_0028_0029">win_id2win</a>({expr})</td><td width="20%">數値</td><td width="40%">ウィンドウ ID からウィンドウ nr 取得</td></tr>
 <tr><td width="40%"><a href="#win_005fscreenpos_0028_0029">win_screenpos</a>({nr})</td><td width="20%">リスト</td><td width="40%">ウィンドウ {nr} のスクリーン位置を取得する</td></tr>
+<tr><td width="40%"><a href="#win_005fsplitmove_0028_0029">win_splitmove</a>({nr}, {target} [, {options}])</td><td width="20%">數値</td><td width="40%">ウィンドウ {nr} を {target} の分割へ移動</td></tr>
 <tr><td width="40%"><a href="#winbufnr_0028_0029">winbufnr</a>({nr})</td><td width="20%">數値</td><td width="40%">ウィンドウ {nr} のバッファ番號</td></tr>
 <tr><td width="40%"><a href="#wincol_0028_0029">wincol</a>()</td><td width="20%">數値</td><td width="40%">カーソル位置のウィンドウ桁</td></tr>
 <tr><td width="40%"><a href="#winheight_0028_0029">winheight</a>({nr})</td><td width="20%">數値</td><td width="40%">ウィンドウ {nr} の高さ</td></tr>
@@ -2944,7 +2974,11 @@ echo abs(-5.456)
 5.456
 echo abs(-4)
 4
-</pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;abs()
+</pre>
+<p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 
 <span id="acos_0028_0029"></span><span id="index-acos_0028_0029"></span>
@@ -2957,7 +2991,11 @@ echo abs(-4)
 1.570796
 :echo acos(-0.5)
 2.094395
-</pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;acos()
+</pre>
+<p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 
 <span id="add_0028_0029"></span><span id="index-add_0028_0029"></span>
@@ -2971,12 +3009,17 @@ echo abs(-4)
 {expr} がリストのときは、1 個の要素として追加される。リストを連結するには |<a href="#extend_0028_0029">extend()</a>| を使ふ。{object} が |<a href="#Blob">Blob</a>| の場合、{expr} は數値でなければならない。他の位置に要素を追加するには |<a href="#insert_0028_0029">insert()</a>| を使ふ。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;add(val1)-&gt;add(val2)
+</pre>
 
 <span id="and_0028_0029"></span><span id="index-and_0028_0029"></span>
 </dd>
 <dt>and({expr}, {expr})</dt>
 <dd><p>2 つの引數のビット論理積。引數は數値に變換される。リスト、辭書、浮動小數點數を指定するとエラーになる。例:
 </p><pre class="verbatim">:let flag = and(bits, 0x80)
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">:let flag = bits-&gt;and(0x80)
 </pre>
 
 <span id="append_0028_0029"></span><span id="index-append_0028_0029"></span>
@@ -2987,10 +3030,16 @@ echo abs(-4)
 </p><pre class="verbatim">:let failed = append(line('$'), &quot;# THE END&quot;)
 :let failed = append(0, [&quot;Chapter 1&quot;, &quot;the beginning&quot;])
 </pre>
+<p>リストの後で |<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;append(lnum)
+</pre>
+
 <span id="appendbufline_0028_0029"></span><span id="index-appendbufline_0028_0029"></span>
 </dd>
 <dt>appendbufline({expr}, {lnum}, {text})</dt>
 <dd><p>|<a href="#append_0028_0029">append()</a>| と同樣、ただしバッファ {expr} にテキストを追加する。
+</p>
+<p>この函數はロードされたバッファに對してのみ機能します。必要であれば最初に |<a href="#bufload_0028_0029">bufload()</a>| を呼び出してください。
 </p>
 <p>{expr} の使ひ方については |<a href="#bufname_0028_0029">bufname()</a>| を參照。
 </p>
@@ -3004,7 +3053,11 @@ echo abs(-4)
 </p>
 <p>{expr} が有效なバッファでない、もしくは {lnum} が有效でない場合、エラーメッセージが與へられる。例:
 </p><pre class="verbatim">:let failed = appendbufline(13, 0, &quot;# THE START&quot;)
-</pre><span id="argc_0028_0029"></span><span id="index-argc_0028_0029"></span>
+</pre><p>リストのあとに |<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;appendbufline(buf, lnum)
+</pre>
+
+<span id="argc_0028_0029"></span><span id="index-argc_0028_0029"></span>
 </dd>
 <dt>argc([{winid}])</dt>
 <dd><p>引數リスト內のファイルの數を返す。|<a href="editing_002etxt.html#arglist">arglist</a>| を參照。
@@ -3039,8 +3092,14 @@ echo abs(-4)
 :endwhile
 </pre><p>引數 {nr} が指定されなかつた、もしくは {nr} が -1 の場合は、引數リスト |<a href="editing_002etxt.html#arglist">arglist</a>| 全體を返す。
 </p>
-<p>{winid} 引數はウィンドウ ID を指定する。|<a href="#argc_0028_0029">argc()</a>| を參照。
+<p>{winid} 引數はウィンドウ ID を指定します。|<a href="#argc_0028_0029">argc()</a>| を參照してください。Vim のコマンドライン引數については、|<a href="#v_003aargv">v:argv</a>| を參照してください。
 </p>
+
+</dd>
+<dt>assert_ 函數群</dt>
+<dd><p>assert_ 函數群についてはここに文書化されてゐます: |<a href="testing_002etxt.html#assert_002dfunctions_002ddetails">assert-functions-details</a>|
+</p>
+
 <span id="asin_0028_0029"></span><span id="index-asin_0028_0029"></span>
 </dd>
 <dt>asin({expr})</dt>
@@ -3051,6 +3110,9 @@ echo abs(-4)
 0.927295
 :echo asin(-0.5)
 -0.523599
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;asin()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 
@@ -3064,6 +3126,9 @@ echo abs(-4)
 1.560797
 :echo atan(-4.01)
 -1.326405
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;atan()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 
@@ -3077,6 +3142,9 @@ echo abs(-4)
 -0.785398
 :echo atan2(1, -1)
 2.356194
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;atan(1)
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 <span id="balloon_005fgettext_0028_0029"></span><span id="index-balloon_005fgettext_0028_0029"></span>
@@ -3101,6 +3169,8 @@ set balloonexpr=GetBalloonContent()
 func BalloonCallback(result)
   call balloon_show(a:result)
 endfunc
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;balloon_show()
 </pre><p>想定される使用方法は、バルーンの內容の取得が &rsquo;<samp>balloonexpr</samp>&rsquo; から開始されることである。そこから非同期メソッドを呼び出し、コールバックから balloon_show() を呼び出す。&rsquo;<samp>balloonexpr</samp>&rsquo; 自身は空文字列かプレースホルダーを返すことができる。
 </p>
 <p>バルーンを表示できないときは何も起こらず、エラーメッセージも表示されない。
@@ -3111,7 +3181,9 @@ endfunc
 </dd>
 <dt>balloon_split({msg})</dt>
 <dd><p>{msg} をバルーン內で表示される行に分割する。カレントウィンドウサイズ用に分割され、デバッガ出力を表示するために最適化される。分割された行の |<a href="#List">List</a>| を返す。
-</p>
+|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;balloon_split()-&gt;balloon_show()
+</pre>
 <p>{Vim が |<a href="various_002etxt.html#g_t_002bballoon_005feval_005fterm">+balloon_eval_term</a>| 機能付きでコンパイルされたときのみ有效}
 </p>
 <span id="browse_0028_0029"></span><span id="index-browse_0028_0029"></span>
@@ -3149,6 +3221,8 @@ endfunc
 </p><pre class="verbatim">let bufnr = bufadd('someName')
 call bufload(bufnr)
 call setbufline(bufnr, 1, ['some', 'text'])
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">let bufnr = 'somename'-&gt;bufadd()
 </pre>
 <span id="bufexists_0028_0029"></span><span id="index-bufexists_0028_0029"></span>
 </dd>
@@ -3167,7 +3241,10 @@ call setbufline(bufnr, 1, ['some', 'text'])
 <p><strong>Note:</strong> <br>
 |<a href="windows_002etxt.html#g_t_003abuffers">:buffers</a>| の出力で、ヘルプファイルは短い名前でリストされてゐるが、bufexists() は長い名前でないと見つけることができない。ある名前を bufexists() に與へて非零になつたとしても、その名前をコマンド |<a href="windows_002etxt.html#g_t_003abuffer">:buffer</a>| に與へる際には |<a href="#expand_0028_0029">expand()</a>| を使つて展開しなければならない場合がある。特に MS-Windows の &quot;c:\DOCUME~1&quot; といふ 8.3 名形式において。代替ファイル名が存在するかを判定するには &quot;bufexists(0)&quot; を使ふ。
 </p></blockquote>
-<span id="buffer_005fexists_0028_0029"></span><span id="index-buffer_005fexists_0028_0029"></span>
+
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">let exists = 'somename'-&gt;bufexists()
+</pre><span id="buffer_005fexists_0028_0029"></span><span id="index-buffer_005fexists_0028_0029"></span>
 <p>以前の名前: buffer_exists().
 </p>
 <span id="buflisted_0028_0029"></span><span id="index-buflisted_0028_0029"></span>
@@ -3175,21 +3252,30 @@ call setbufline(bufnr, 1, ['some', 'text'])
 <dt>buflisted({expr})</dt>
 <dd><p>戾り値は數値で、{expr} と呼ばれるバッファが存在しリストされてゐる (&rsquo;<samp>buflisted</samp>&rsquo; オプションがオンになつてゐる) ならば結果は |<a href="#TRUE">TRUE</a>| となる。引數 {expr} は |<a href="#bufexists_0028_0029">bufexists()</a>| と同じやうに扱はれる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">let listed = 'somename'-&gt;buflisted()
+</pre>
 <span id="bufload_0028_0029"></span><span id="index-bufload_0028_0029"></span>
 </dd>
 <dt>bufload({expr})</dt>
 <dd><p>バッファ {expr} がロードされることを確實にします。バッファ名が存在するファイルを指してゐるなら、ファイルが讀み込まれます。さうでなければバッファは空になるでせう。もしもバッファがすでに讀み込まれてゐるなら、變更はありません。
 もしもバッファのファイルのためのスワップファイルが存在してゐるなら、何も言はずにとにかく讀み込まれるでせう。{expr} 引數は |<a href="#bufexists_0028_0029">bufexists()</a>| のやうに使はれます。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">eval 'somename'-&gt;bufload()
+</pre>
 <span id="bufloaded_0028_0029"></span><span id="index-bufloaded_0028_0029"></span>
 </dd>
 <dt>bufloaded({expr})</dt>
 <dd><p>戾り値は數値で、{expr} と呼ばれるバッファが存在しロード濟み (ウィンドウに表示されてゐるか、隱されてゐるかは問はない) ならば結果は |<a href="#TRUE">TRUE</a>| となる。引數 {expr} は |<a href="#bufexists_0028_0029">bufexists()</a>| と同じやうに扱はれる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">let loaded = 'somename'-&gt;bufloaded()
+</pre>
 <span id="bufname_0028_0029"></span><span id="index-bufname_0028_0029"></span>
 </dd>
-<dt>bufname({expr})</dt>
-<dd><p>戾り値はバッファの名前。バッファ名はコマンド &quot;<code>:ls</code>&quot; で表示されるものと同樣。
+<dt>bufname([{expr}])</dt>
+<dd><p>戾り値はバッファの名前。バッファ名はコマンド &quot;<code>:ls</code>&quot; で表示されるものと同樣。{expr} が省略された場合は、カレントバッファが使はれます。
 </p>
 <p>{expr} が數値ならば、その番號のバッファ名が返される。0 は現在のウィンドウの代替バッファを意味する。{expr} が文字列ならば、バッファ名に對してファイル名マッチング |<a href="autocmd_002etxt.html#file_002dpattern">file-pattern</a>| を行ふパターンとなる。このマッチングは常に、&rsquo;<samp>magic</samp>&rsquo; をセットし &rsquo;<samp>cpoptions</samp>&rsquo; を空にした狀態で行はれる。複數マッチしてしまつた場合には空文字列が返される。
 </p>
@@ -3201,7 +3287,10 @@ call setbufline(bufnr, 1, ['some', 'text'])
 </p>
 <p>{expr} が文字列のときに、それをバッファ番號として使ひたいならば、0 を足すことによつて强制的に數値にすることができる:
 </p><pre class="verbatim">echo bufname(&quot;3&quot; + 0)
-</pre><p>バッファが存在しないか名前を持つてゐない場合には、空文字列が返される。
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">echo bufnr-&gt;bufname()
+</pre>
+<p>バッファが存在しないか名前を持つてゐない場合には、空文字列が返される。
 </p><table>
 <tr><td width="40%">bufname(&quot;#&quot;)</td><td width="60%">代替バッファの名前</td></tr>
 <tr><td width="40%">bufname(3)</td><td width="60%">バッファ 3 の名前</td></tr>
@@ -3213,21 +3302,27 @@ call setbufline(bufnr, 1, ['some', 'text'])
 </p>
 <span id="bufnr_0028_0029"></span><span id="index-bufnr_0028_0029"></span>
 </dd>
-<dt>bufnr({expr} [, {create}])</dt>
+<dt>bufnr([{expr} [, {create}]])</dt>
 <dd><p>結果はバッファの番號。バッファ番號はコマンド &quot;<code>:ls</code>&quot; で表示されるものと同樣。{expr} の使ひ方は前述の |<a href="#bufname_0028_0029">bufname()</a>| を參照。
-バッファが存在しない場合 -1 が返される。ただし、{create} が與へられて0でないときは、バッファリストに載せない新しいバッファを作成しその番號を返す。
+</p>
+<p>バッファが存在しない場合 -1 が返される。ただし、{create} が與へられて0でないときは、バッファリストに載せない新しいバッファを作成しその番號を返す。例:
+</p><pre class="verbatim">let newbuf = bufnr('Scratch001', 1)
+</pre><p>空の名前を使用すると、カレントバッファが使用されます。空の名前で新しいバッファを作成するには |<a href="#bufadd_0028_0029">bufadd()</a>| を使用します。
 </p>
 <p>bufnr(&quot;$&quot;) は最後のバッファを意味する:
 </p><pre class="verbatim">:let last_buffer = bufnr(&quot;$&quot;)
-</pre><p>結果は存在してゐるバッファのうちで、もつとも大きなバッファ番號となる。
+</pre><p>結果は存在してゐるバッファのうちで、もつとも大きなバッファ番號です。
 </p><blockquote>
 <p><strong>Note:</strong> <br>
-そのバッファ番號より小さいバッファ番號を持つ (ハズの) バッファが、必ずしも全て存在するとは限らない。なぜなら &quot;<code>:bwipeout</code>&quot; がバッファを消すことができるからだ。バッファが存在するかテストするには bufexists() を使ふ。
+そのバッファ番號より小さいバッファ番號を持つ (ハズの) バッファが、必ずしも全て存在するとは限らないことに注意してください。なぜなら &quot;<code>:bwipeout</code>&quot; がバッファを消すことができるからです。バッファが存在するかテストするには bufexists() を使ひます。
 </p></blockquote>
-<span id="buffer_005fnumber_0028_0029"></span><span id="index-buffer_005fnumber_0028_0029"></span>
-<p>以前の名前: buffer_number().
+
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">echo bufref-&gt;bufnr()
+</pre><span id="buffer_005fnumber_0028_0029"></span><span id="index-buffer_005fnumber_0028_0029"></span>
+<p>以前の名前: buffer_number()。
 <span id="last_005fbuffer_005fnr_0028_0029"></span><span id="index-last_005fbuffer_005fnr_0028_0029"></span>
-bufnr(&quot;$&quot;) の以前の名前: last_buffer_nr().
+bufnr(&quot;$&quot;) の以前の名前: last_buffer_nr()。
 </p>
 <span id="bufwinid_0028_0029"></span><span id="index-bufwinid_0028_0029"></span>
 </dd>
@@ -3236,20 +3331,28 @@ bufnr(&quot;$&quot;) の以前の名前: last_buffer_nr().
 </p><pre class="verbatim">echo &quot;A window containing buffer 1 is &quot; . (bufwinid(1))
 </pre><p>現在のタブページのみを處理する。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">FindBuffer()-&gt;bufwinid()
+</pre>
 <span id="bufwinnr_0028_0029"></span><span id="index-bufwinnr_0028_0029"></span>
 </dd>
 <dt>bufwinnr({expr})</dt>
-<dd><p>結果は數値で、バッファ {expr} に關聯付けられた最初のウィンドウの番號。{expr} の使ひ方は前述の |<a href="#bufname_0028_0029">bufname()</a>| を參照。バッファ {expr} が存在しないか、ウィンドウが無い場合には -1 を返す。例:
+<dd><p>|<a href="#bufwinid_0028_0029">bufwinid()</a>| と同樣ですが、|<a href="windows_002etxt.html#window_002dID">window-ID</a>| の代はりにウィンドウ番號を返します。バッファ {expr} が存在しないか、ウィンドウが無い場合には -1 を返します。例:
 </p><pre class="verbatim">echo &quot;A window containing buffer 1 is &quot; . (bufwinnr(1))
-</pre><p>この番號は |<a href="windows_002etxt.html#CTRL_002dW_005fw">CTRL-W_w</a>| や &quot;<code>:wincmd w</code>&quot; |<a href="windows_002etxt.html#g_t_003awincmd">:wincmd</a>| で使へる。
+</pre>
+<p>この番號は |<a href="windows_002etxt.html#CTRL_002dW_005fw">CTRL-W_w</a>| や &quot;<code>:wincmd w</code>&quot; |<a href="windows_002etxt.html#g_t_003awincmd">:wincmd</a>| で使へます。
 </p>
-<p>カレントタブページ內のウィンドウだけを探す。
-</p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">FindBuffer()-&gt;bufwinnr()
+</pre>
 <span id="byte2line_0028_0029"></span><span id="index-byte2line_0028_0029"></span>
 </dd>
 <dt>byte2line({byte})</dt>
 <dd><p>カレントバッファの先頭から {byte} 番目の文字が、何行目に含まれるかを返す。これにはカレントバッファの &rsquo;<samp>fileformat</samp>&rsquo; に依存した、改行文字も含まれる。先頭の文字にはバイトカウント 1 が與へられる。|<a href="#line2byte_0028_0029">line2byte()</a>| と |<a href="motion_002etxt.html#go">go</a>| と |<a href="motion_002etxt.html#g_t_003agoto">:goto</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetOffset()-&gt;byte2line()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002bbyte_005foffset">+byte_offset</a>| 機能付きでコンパイルされたときのみ有效}
 </p>
 <span id="byteidx_0028_0029"></span><span id="index-byteidx_0028_0029"></span>
@@ -3263,6 +3366,9 @@ bufnr(&quot;$&quot;) の以前の名前: last_buffer_nr().
 echo strpart(s, 0, byteidx(s, 1))
 </pre><p>|<a href="#strgetchar_0028_0029">strgetchar()</a>| と |<a href="#strcharpart_0028_0029">strcharpart()</a>| も參照。{expr} が {nr} 文字以下の場合は -1 を返す。{expr} がちやうど {nr} 文字の場合は文字列の長さ (バイト單位) を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;byteidx(idx)
+</pre>
 <span id="byteidxcomp_0028_0029"></span><span id="index-byteidxcomp_0028_0029"></span>
 </dd>
 <dt>byteidxcomp({expr}, {nr})</dt>
@@ -3273,6 +3379,9 @@ echo byteidxcomp(s, 1)
 echo byteidxcomp(s, 2)
 </pre><p>1 番目と 3 番目は 3 が出力される (&rsquo;e&rsquo; の長さと合成文字の長さを足すと 3 バイト)。2 番目は 1 が出力される (&rsquo;e&rsquo; は 1 バイト)。&rsquo;<samp>encoding</samp>&rsquo; に Unicode が設定されてゐるときのみ byteidx() と違ふ動作になる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;byteidxcomp(idx)
+</pre>
 <span id="call_0028_0029"></span><span id="E699"></span><span id="index-call_0028_0029"></span>
 <span id="index-E699"></span>
 </dd>
@@ -3281,6 +3390,9 @@ echo byteidxcomp(s, 2)
 </p>
 <p>{dict} は &quot;dict&quot; 屬性つきの函數用で、これがローカル變數 &quot;self&quot; に代入される。|<a href="#Dictionary_002dfunction">Dictionary-function</a>| を參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetFunc()-&gt;call([arg, arg], dict)
+</pre>
 <span id="ceil_0028_0029"></span><span id="index-ceil_0028_0029"></span>
 </dd>
 <dt>ceil({expr})</dt>
@@ -3293,8 +3405,17 @@ echo ceil(-5.456)
 -5.0
 echo ceil(4.0)
 4.0
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;ceil()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
+
+</dd>
+<dt>ch_ 函數群</dt>
+<dd><p>ch_ 函數群についてはここに文書化されてゐます: |<a href="channel_002etxt.html#channel_002dfunctions_002ddetails">channel-functions-details</a>|
+</p>
+
 <span id="changenr_0028_0029"></span><span id="index-changenr_0028_0029"></span>
 </dd>
 <dt>changenr()</dt>
@@ -3319,6 +3440,9 @@ echo ceil(4.0)
 let list = map(split(str, '\zs'), {_, val -&gt; char2nr(val)})
 </pre><p>結果: [65, 66, 67]
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetChar()-&gt;char2nr()
+</pre>
 <span id="chdir_0028_0029"></span><span id="index-chdir_0028_0029"></span>
 </dd>
 <dt>chdir({dir})</dt>
@@ -3328,22 +3452,25 @@ let list = map(split(str, '\zs'), {_, val -&gt; char2nr(val)})
 </li><li> それ以外の場合、カレントタブページにローカルディレクトリ (|<a href="editing_002etxt.html#g_t_003atcd">:tcd</a>|) がある場合は、タブページのローカルディレクトリを變更する。
 </li><li> それ以外の場合、グローバルディレクトリを變更する。
 </li></ul>
-<p>If successful, returns the previous working directory.  Pass
-		this to another chdir() to restore the directory.
-		On failure, returns an empty string.
+<p>成功した場合は、前の作業ディレクトリを返します。ディレクトリを復元するには、これを別の chdir() に渡してください。失敗した場合は、空の文字列を返します。
 </p>
-<p>Example: &gt;
-			let save_dir = chdir(newdir)
-			if save_dir != &quot;&quot;
-			   &quot; ... do some work
-			   call chdir(save_dir)
-			endif
-&lt;
-<span id="cindent_0028_0029"></span><span id="index-cindent_0028_0029"></span>
-</p></dd>
+<p>例:
+</p><pre class="verbatim">let save_dir = chdir(newdir)
+if save_dir != &quot;&quot;
+   &quot; ... do some work
+   call chdir(save_dir)
+endif
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetDir()-&gt;chdir()
+</pre><span id="cindent_0028_0029"></span><span id="index-cindent_0028_0029"></span>
+</dd>
 <dt>cindent({lnum})</dt>
 <dd><p>&rsquo;<samp>cindent</samp>&rsquo; で使はれるのと同じ C 言語用のインデント規則に從つた場合の {lnum} 行目のインデント量を返す。インデント量はスペースで數へられ、&rsquo;<samp>tabstop</samp>&rsquo; の値は關係ない。{lnum} は |<a href="#getline_0028_0029">getline()</a>| の場合と同樣に扱はれる。{lnum} が無效な値のときや |<a href="various_002etxt.html#g_t_002bcindent">+cindent</a>| 機能なしでコンパイルされてゐるときは -1 を返す。|<a href="indent_002etxt.html#C_002dindenting">C-indenting</a>| を參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetLnum()-&gt;cindent()
+</pre>
 <span id="clearmatches_0028_0029"></span><span id="index-clearmatches_0028_0029"></span>
 </dd>
 <dt>clearmatches([{win}])</dt>
@@ -3351,6 +3478,9 @@ let list = map(split(str, '\zs'), {_, val -&gt; char2nr(val)})
 </p>
 <p>{win} が指定されれば、カレントウィンドウではなく指定されたウィンドウあるいはウィンドウ ID を對象にする。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWin()-&gt;clearmatches()
+</pre>
 <span id="col_0028_0029"></span><span id="index-col_0028_0029"></span>
 </dd>
 <dt>col({expr})</dt>
@@ -3382,6 +3512,9 @@ let list = map(split(str, '\zs'), {_, val -&gt; char2nr(val)})
         \&lt;C-O&gt;:echo col(&quot;.&quot;) . &quot;\n&quot; &lt;Bar&gt;
         \let &amp;ve = save_ve&lt;CR&gt;
 </pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPos()-&gt;col()
+</pre>
 <span id="complete_0028_0029"></span><span id="E785"></span><span id="index-complete_0028_0029"></span>
 <span id="index-E785"></span>
 </dd>
@@ -3410,6 +3543,9 @@ endfunc
 0 が插入されてしまはないやうに空文字列を返してゐることに注意。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 2 引數として渡されます:
+</p><pre class="verbatim">GetMatches()-&gt;complete(col('.'))
+</pre>
 <span id="complete_005fadd_0028_0029"></span><span id="index-complete_005fadd_0028_0029"></span>
 </dd>
 <dt>complete_add({expr})</dt>
@@ -3419,6 +3555,9 @@ endfunc
 </p>
 <p>{expr} の說明については |<a href="insert_002etxt.html#complete_002dfunctions">complete-functions</a>| を參照。&rsquo;<samp>omnifunc</samp>&rsquo; が返すリストと同じである。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetMoreMatches()-&gt;complete_add()
+</pre>
 <span id="complete_005fcheck_0028_0029"></span><span id="index-complete_005fcheck_0028_0029"></span>
 </dd>
 <dt>complete_check()</dt>
@@ -3468,6 +3607,8 @@ endfunc
 
 <p>オプショナル引數としてリスト {what} が與へられると、{what} にある項目のみが返る。{what} 內のサポートされてゐない項目は無視される。
 </p>
+<p>ポップアップメニューの位置とサイズを取得するには、|<a href="#pum_005fgetpos_0028_0029">pum_getpos()</a>| を參照してください。|<a href="autocmd_002etxt.html#CompleteChanged">CompleteChanged</a>| イベント中に |<a href="#v_003aevent">v:event</a>| でも利用可能です。
+</p>
 <p>例:
 </p><pre class="verbatim">&quot; 全ての項目を取得
 call complete_info()
@@ -3475,6 +3616,10 @@ call complete_info()
 call complete_info(['mode'])
 &quot; 'mode' と 'pum_visible' のみを取得
 call complete_info(['mode', 'pum_visible'])
+</pre>
+
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetItems()-&gt;complete_info()
 </pre><span id="confirm_0028_0029"></span><span id="index-confirm_0028_0029"></span>
 </dd>
 <dt>confirm({msg} [, {choices} [, {default} [, {type}]]])</dt>
@@ -3510,11 +3655,15 @@ confirm() は、ダイアログサポートを有效にしてコンパイルし�
 :endif
 </pre><p>GUI のダイアログではボタンが使用される。ボタンの配置は &rsquo;<samp>guioptions</samp>&rsquo; の &rsquo;<var>v</var>&rsquo; フラグに依存する。もしも &rsquo;<var>v</var>&rsquo; フラグが含まれてゐるのなら、ボタンは常に垂直に配置される。さうでなければ水平に配置しようと試みられる。水平配置がうまくマッチしない場合は、垂直配置が使はれる。幾つかのシステムでは常に水平配置が使はれる。
 </p>
-<span id="copy_0028_0029"></span><span id="index-copy_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">BuildMessage()-&gt;confirm(&quot;&amp;Yes\n&amp;No&quot;)
+</pre><span id="copy_0028_0029"></span><span id="index-copy_0028_0029"></span>
 </dd>
 <dt>copy({expr})</dt>
 <dd><p>{expr} のコピーを作る。數値と文字列の場合は、{expr} そのものとコピーの閒に違ひはない。{expr} がリスト |<a href="#List">List</a>| の場合は淺いコピーを作る。つまり元のリストを變更してもコピーは變更されず、逆も同じである。しかし要素は共通で、片方の要素に對し變更を加へると、もう一方の要素も變更される |<a href="#Lists">Lists</a>|。辭書 |<a href="#Dictionary">Dictionary</a>| はリスト |<a href="#List">List</a>| と同樣な方法でコピーされる。|<a href="#deepcopy_0028_0029">deepcopy()</a>| も參照。
-</p>
+|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;copy()
+</pre>
 <span id="cos_0028_0029"></span><span id="index-cos_0028_0029"></span>
 </dd>
 <dt>cos({expr})</dt>
@@ -3525,6 +3674,9 @@ confirm() は、ダイアログサポートを有效にしてコンパイルし�
 0.862319
 :echo cos(-4.01)
 -0.646043
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;cos()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 
@@ -3538,6 +3690,9 @@ confirm() は、ダイアログサポートを有效にしてコンパイルし�
 1.127626
 :echo cosh(-0.5)
 -1.127626
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;cosh()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 
@@ -3552,8 +3707,9 @@ confirm() は、ダイアログサポートを有效にしてコンパイルし�
 </p>
 <p>{comp} が文字列の場合、オーバーラップしてゐない {expr} の回數が返される。{expr} が空文字列の場合は 0 が返る。
 </p>
-
-<span id="cscope_005fconnection_0028_0029"></span><span id="index-cscope_005fconnection_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;count(val)
+</pre><span id="cscope_005fconnection_0028_0029"></span><span id="index-cscope_005fconnection_0028_0029"></span>
 </dd>
 <dt>cscope_connection([{num} , {dbpath} [, {prepend}]])</dt>
 <dd><p>|<a href="if_005fcscop_002etxt.html#cscope">cscope</a>| 接續が存在するかどうか判定する。引數が 1 個も指定されなかつた場合、戾り値は以下のやうになる:
@@ -3611,6 +3767,9 @@ cscope_connection(4, &quot;cscope.out&quot;, &quot;/usr/local&quot;)        1
 </p>
 <p>&rsquo;<samp>virtualedit</samp>&rsquo; が有效のとき、{off} は文字の先頭からの畫面上のオフセットを指定する。例へば、&lt;Tab&gt; の中の位置や最後の文字より後などへも移動できる。カーソルを移動できたときは 0 を、できなかつたときは -1 を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetCursorPos()-&gt;cursor()
+</pre>
 <span id="debugbreak_0028_0029"></span><span id="index-debugbreak_0028_0029"></span>
 </dd>
 <dt>debugbreak({pid})</dt>
@@ -3618,6 +3777,9 @@ cscope_connection(4, &quot;cscope.out&quot;, &quot;/usr/local&quot;)        1
 </p>
 <p>{MS-Windows 上でのみ有效}
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPid()-&gt;debugbreak()
+</pre>
 <span id="deepcopy_0028_0029"></span><span id="E698"></span><span id="index-deepcopy_0028_0029"></span>
 <span id="index-E698"></span>
 </dd>
@@ -3631,6 +3793,9 @@ cscope_connection(4, &quot;cscope.out&quot;, &quot;/usr/local&quot;)        1
 <span id="E724"></span><span id="index-E724"></span>
 <p>ネストは 100 レベルまで可能である。それ以上參照を繰り返してゐる要素があると、{noref} が 1 の場合は失敗する。|<a href="#copy_0028_0029">copy()</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetObject()-&gt;deepcopy()
+</pre>
 <span id="delete_0028_0029"></span><span id="index-delete_0028_0029"></span>
 </dd>
 <dt>delete({fname} [, {flags}])</dt>
@@ -3650,10 +3815,15 @@ MS-Windows では、使用中のディレクトリを削除することはでき
 </p>
 <p>リスト |<a href="#List">List</a>| から項目を削除するには |<a href="#remove_0028_0029">remove()</a>| を使ふ。バッファから行を削除するには |<a href="change_002etxt.html#g_t_003adelete">:delete</a>| もしくは |<a href="#deletebufline_0028_0029">deletebufline()</a>| を使ふ。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;delete()
+</pre>
 <span id="deletebufline_0028_0029"></span><span id="index-deletebufline_0028_0029"></span>
 </dd>
 <dt>deletebufline({expr}, {first} [, {last}])</dt>
 <dd><p>{first} から {last} (を含む) までの行をバッファ {expr} から削除する。{last} が省略されてゐる場合、{first} 行だけを削除する。成功時には 0 が返され、失敗時には 1 が返される。
+</p>
+<p>この函數はロードされたバッファに對してのみ機能します。必要であれば、最初に |<a href="#bufload_0028_0029">bufload()</a>| を呼び出してください。
 </p>
 <p>{expr} の使ひ方は前述の |<a href="#bufname_0028_0029">bufname()</a>| を參照。
 </p>
@@ -3663,7 +3833,9 @@ MS-Windows では、使用中のディレクトリを削除することはでき
 |<a href="#line_0028_0029">line()</a>| の使用はカレントバッファを參照することに注意。バッファ {expr} 內の最後の行を參照するには &quot;$&quot; を使用する。
 </p></blockquote>
 
-<span id="did_005ffiletype_0028_0029"></span><span id="index-did_005ffiletype_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBuffer()-&gt;deletebufline(1)
+</pre><span id="did_005ffiletype_0028_0029"></span><span id="index-did_005ffiletype_0028_0029"></span>
 </dd>
 <dt>did_filetype()</dt>
 <dd><p>autocommand が實行され FileType イベントが一度でも起こつてゐれば、|<a href="#TRUE">TRUE</a>| が返る。スクリプトの FileType イベントが、複數回呼び出されるのを囘避するのに使へる。|<a href="autocmd_002etxt.html#FileType">FileType</a>|
@@ -3680,6 +3852,9 @@ MS-Windows では、使用中のディレクトリを削除することはでき
 </p>
 <p>カレントウィンドウが差分モードでないときは 0 を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetLnum()-&gt;diff_filler()
+</pre>
 <span id="diff_005fhlID_0028_0029"></span><span id="index-diff_005fhlID_0028_0029"></span>
 </dd>
 <dt>diff_hlID({lnum}, {col})</dt>
@@ -3691,7 +3866,9 @@ MS-Windows では、使用中のディレクトリを削除することはでき
 </p>
 <p>ハイライト ID は |<a href="#synIDattr_0028_0029">synIDattr()</a>| を使つて構文情報を得るために使へる。
 </p>
-<span id="environ_0028_0029"></span><span id="index-environ_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetLnum()-&gt;diff_hlID(col)
+</pre><span id="environ_0028_0029"></span><span id="index-environ_0028_0029"></span>
 </dd>
 <dt>environ()</dt>
 <dd><p>すべての環境變數を辭書として返す。このやうに環境變數が存在するかどうかを確認できる:
@@ -3718,6 +3895,9 @@ MS-Windows では、使用中のディレクトリを削除することはでき
 
 <p>長いリスト |<a href="#List">List</a>| に對しては長さを 0 と比較するよりこちらの方がずつと高速である。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;empty()
+</pre>
 <span id="escape_0028_0029"></span><span id="index-escape_0028_0029"></span>
 </dd>
 <dt>escape({string}, {chars})</dt>
@@ -3727,11 +3907,16 @@ MS-Windows では、使用中のディレクトリを削除することはでき
 </p><pre class="verbatim">c:\\program\ files\\vim
 </pre><p>|<a href="#shellescape_0028_0029">shellescape()</a>| および |<a href="#fnameescape_0028_0029">fnameescape()</a>| も參照。
 </p>
-<span id="eval_0028_0029"></span><span id="index-eval_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;escape(' \')
+</pre><span id="eval_0028_0029"></span><span id="index-eval_0028_0029"></span>
 </dd>
 <dt>eval({string})</dt>
 <dd><p>{string} を評價し、値を返す。|<a href="#string_0028_0029">string()</a>| の戾り値を元の値に戾すのに非常に便利である。數値、浮動小數點數、文字列、Blobs、およびそれらの複合に對して動作する。實際に存在する函數への |<a href="#Funcref">Funcref</a>| に對しても動作する。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">argv-&gt;join()-&gt;eval()
+</pre>
 <span id="eventhandler_0028_0029"></span><span id="index-eventhandler_0028_0029"></span>
 </dd>
 <dt>eventhandler()</dt>
@@ -3754,6 +3939,9 @@ MS-Windows では、使用中のディレクトリを削除することはでき
 </table>
 <p>|<a href="#exepath_0028_0029">exepath()</a>| は、實行ファイルの絕對パスを取得するのに使用することができる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetCommand()-&gt;executable()
+</pre>
 <span id="execute_0028_0029"></span><span id="index-execute_0028_0029"></span>
 </dd>
 <dt>execute({command} [, {silent}])</dt>
@@ -3784,6 +3972,9 @@ redir END
 </p>
 <p>再歸的に使用されると、再歸呼び出しの出力は、上位呼び出しの出力に含まれません。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetCommand()-&gt;execute()
+</pre>
 <span id="exepath_0028_0029"></span><span id="index-exepath_0028_0029"></span>
 </dd>
 <dt>exepath({expr})</dt>
@@ -3795,7 +3986,9 @@ redir END
 </pre><p>{expr} が <code>$PATH</code> の中に見つからないか、それが實行ファイルではなかつた場合は空文字列が返る。
 </p></blockquote>
 
-<span id="exists_0028_0029"></span><span id="index-exists_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetCommand()-&gt;exepath()
+</pre><span id="exists_0028_0029"></span><span id="index-exists_0028_0029"></span>
 </dd>
 <dt>exists({expr})</dt>
 <dd><p>結果は數値で、變數 {expr} が存在すれば |<a href="#TRUE">TRUE</a>| となり、さうでなければ 0 となる。
@@ -3892,6 +4085,9 @@ exists(&quot;##ColorScheme&quot;)
 </pre><p>これは變數 &quot;bufcount&quot; の存在を判定するのではなく、bufcount の値を渡し、それが存在するかどうか判定してしまふ。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Varname()-&gt;exists()
+</pre>
 <span id="exp_0028_0029"></span><span id="index-exp_0028_0029"></span>
 </dd>
 <dt>exp({expr})</dt>
@@ -3901,6 +4097,9 @@ exists(&quot;##ColorScheme&quot;)
 7.389056
 :echo exp(-1)
 0.367879
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;exp()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 
@@ -3963,13 +4162,19 @@ exists(&quot;##ColorScheme&quot;)
 </p>
 <p>存在するファイルを探すには |<a href="#glob_0028_0029">glob()</a>| を參照。外部コマンドの「生の」實行結果を扱ふには |<a href="#system_0028_0029">system()</a>| を參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Getpattern()-&gt;expand()
+</pre>
 <span id="expandcmd_0028_0029"></span><span id="index-expandcmd_0028_0029"></span>
 </dd>
 <dt>expandcmd({expr})</dt>
-<dd><p>&lsquo;<code>:edit</code>&lsquo; などの Ex コマンドに對しておこなはれてゐるやうに、{expr} の特殊な項目を展開する。これは {expr} の中のどこでも、|<a href="#expand_0028_0029">expand()</a>| のやうな特殊なキーワードと環境變數を展開する。展開された文字列を返す。
+<dd><p>&lsquo;<code>:edit</code>&lsquo; などの Ex コマンドに對しておこなはれてゐるやうに、{expr} の特殊な項目を展開します。これは {expr} の中のどこでも、|<a href="#expand_0028_0029">expand()</a>| のやうな特殊なキーワードと環境變數を展開します。&quot;~user&quot; および &quot;~/path&quot; は冒頭でのみ展開されます。展開された文字列を返します。
 </p>
 <p>例:
 </p><pre class="verbatim">:echo expandcmd('make %&lt;.o')
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetCommand()-&gt;expandcmd()
 </pre><span id="extend_0028_0029"></span><span id="index-extend_0028_0029"></span>
 </dd>
 <dt>extend({expr1}, {expr2} [, {expr3}])</dt>
@@ -4003,6 +4208,9 @@ exists(&quot;##ColorScheme&quot;)
 </p>
 <p>{expr1} を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;extend(otherlist)
+</pre>
 
 <span id="feedkeys_0028_0029"></span><span id="index-feedkeys_0028_0029"></span>
 </dd>
@@ -4038,12 +4246,23 @@ Vim が插入モードを終了したときは、スクリプト續行前の文�
 </table>
 <p>戾り値は常に0。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetInput()-&gt;feedkeys()
+</pre>
 <span id="filereadable_0028_0029"></span><span id="index-filereadable_0028_0029"></span>
 </dd>
 <dt>filereadable({file})</dt>
 <dd><p>結果は數値で、{file} といふファイルが存在し、讀み込むことが可能ならば |<a href="#TRUE">TRUE</a>| となる。ファイル {file} が存在しないかディレクトリだつた場合には、結果は |<a href="#FALSE">FALSE</a>| となる。引數 {file} は文字列として使へればどのやうな表現でもよい。ファイルが讀み込み可能でなくてもよい場合には |<a href="#glob_0028_0029">glob()</a>| を使ふ。
-<span id="file_005freadable_0028_0029"></span><span id="index-file_005freadable_0028_0029"></span>
-以前の名前: file_readable().
+{file} はそのまま使用されるため、最初にワイルドカードを展開することを推奬します:
+</p><pre class="verbatim">echo filereadable('~/.vimrc')
+0
+echo filereadable(expand('~/.vimrc'))
+1
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;filereadable()
+</pre><span id="file_005freadable_0028_0029"></span><span id="index-file_005freadable_0028_0029"></span>
+<p>以前の名前: file_readable()。
 </p>
 
 <span id="filewritable_0028_0029"></span><span id="index-filewritable_0028_0029"></span>
@@ -4051,6 +4270,9 @@ Vim が插入モードを終了したときは、スクリプト續行前の文�
 <dt>filewritable({file})</dt>
 <dd><p>結果は數値で、{file} といふファイルが存在し、書き込むことが可能ならば 1 となる。ファイル {file} が存在しないか書き込み不可能である場合には、結果は 0 となる。{file} がディレクトリであり、書き込み可能な場合、結果は 2 となる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;filewriteable()
+</pre>
 
 <span id="filter_0028_0029"></span><span id="index-filter_0028_0029"></span>
 </dd>
@@ -4090,7 +4312,9 @@ call filter(mylist, function('Odd'))
 </pre>
 <p>{expr1} のリスト |<a href="#List">List</a>| または辭書 |<a href="#Dictionary">Dictionary</a>| をフィルターした結果を返す。{expr2} を評價してゐる最中にエラーが發生した場合は、{expr1} 內のそれ以降の要素の處理は行はれない。{expr2} が函數參照の場合、函數が &quot;abort&quot; フラグつきで定義されてゐない限り、函數內のエラーは無視される。
 </p>
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;filter(expr2)
+</pre>
 <span id="finddir_0028_0029"></span><span id="index-finddir_0028_0029"></span>
 </dd>
 <dt>finddir({name} [, {path} [, {count}]])</dt>
@@ -4102,6 +4326,9 @@ call filter(mylist, function('Odd'))
 </p>
 <p>{|<a href="various_002etxt.html#g_t_002bfile_005fin_005fpath">+file_in_path</a>| 機能付きでコンパイルされたときのみ利用可能}
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;finddir()
+</pre>
 <span id="findfile_0028_0029"></span><span id="index-findfile_0028_0029"></span>
 </dd>
 <dt>findfile({name} [, {path} [, {count}]])</dt>
@@ -4111,6 +4338,9 @@ call filter(mylist, function('Odd'))
 </p><pre class="verbatim">:echo findfile(&quot;tags.vim&quot;, &quot;.;&quot;)
 </pre><p>この例は、カレントファイルがあるディレクトリから上方に &quot;tags.vim&quot; を見つけるまで再歸的に檢索する。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;findfile()
+</pre>
 <span id="float2nr_0028_0029"></span><span id="index-float2nr_0028_0029"></span>
 </dd>
 <dt>float2nr({expr})</dt>
@@ -4127,6 +4357,9 @@ echo float2nr(-1.0e150)
 -2147483647  (または -9223372036854775807)
 echo float2nr(1.0e-100)
 0
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;float2nr()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 
@@ -4141,6 +4374,9 @@ echo floor(-5.456)
 -6.0
 echo floor(4.0)
 4.0
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;floor()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 
@@ -4155,6 +4391,9 @@ echo floor(4.0)
 0.13
 :echo fmod(-12.33, 1.22)
 -0.13
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;fmod(1.22)
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 
@@ -4171,6 +4410,8 @@ echo floor(4.0)
 :exe &quot;edit &quot; . fnameescape(fname)
 </pre><p>上記は次と同じ結果になる:
 </p><pre class="verbatim">edit \+some\ str\%nge\|name
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;fnameescape()
 </pre>
 <span id="fnamemodify_0028_0029"></span><span id="index-fnamemodify_0028_0029"></span>
 </dd>
@@ -4185,22 +4426,33 @@ echo floor(4.0)
 {fname} の中の環境變數は展開されない。環境變數を展開させるには |<a href="#expand_0028_0029">expand()</a>| を使ふこと。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;fnamemodify(':p:h')
+</pre>
 <span id="foldclosed_0028_0029"></span><span id="index-foldclosed_0028_0029"></span>
 </dd>
 <dt>foldclosed({lnum})</dt>
 <dd><p>結果は數値。{lnum} 行目が閉ぢた折り疊みの中にあるなら、その折り疊みを構成する最初の行の行番號を返す。{lnum} 行目が閉ぢた折り疊みに入つてゐないなら -1 を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetLnum()-&gt;foldclosed()
+</pre>
 <span id="foldclosedend_0028_0029"></span><span id="index-foldclosedend_0028_0029"></span>
 </dd>
 <dt>foldclosedend({lnum})</dt>
 <dd><p>結果は數値。{lnum} 行目が閉ぢた折り疊みの中にあるなら、その折り疊みを構成する最後の行の行番號を返す。{lnum} 行目が閉ぢた折り疊みに入つてゐないなら -1 を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetLnum()-&gt;foldclosedend()
+</pre>
 <span id="foldlevel_0028_0029"></span><span id="index-foldlevel_0028_0029"></span>
 </dd>
 <dt>foldlevel({lnum})</dt>
 <dd><p>カレントバッファの {lnum} 行目の折り疊みレベルを表す數値を返す。折り疊みがネストしてゐるときは一番下のレベルを返す。{lnum} 行目に折り疊みがまつたくないときは 0 を返す。折り疊みが開いてゐるか閉ぢてゐるかは關係ない。(&rsquo;<samp>foldexpr</samp>&rsquo; の中で) 折り疊みを更新してゐる最中に呼ぶと、まだ折り疊みを更新してゐなく、折り疊みレベルが未知の行に對しては -1 を返す。特別な場合として、普通は 1 行前のレベルは取得できる。
 </p>
-<span id="foldtext_0028_0029"></span><span id="index-foldtext_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetLnum()-&gt;foldlevel()
+</pre><span id="foldtext_0028_0029"></span><span id="index-foldtext_0028_0029"></span>
 </dd>
 <dt>foldtext()</dt>
 <dd><p>閉ぢた折り疊みに表示する文字列を返す。これはオプション &rsquo;<samp>foldtext</samp>&rsquo; のデフォルトの函數であり、&rsquo;<samp>foldtext</samp>&rsquo; を評價してゐるときにだけ呼ぶようにすべきである。この函數は變數 |<a href="#v_003afoldstart">v:foldstart</a>|, |<a href="#v_003afoldend">v:foldend</a>|, |<a href="#v_003afolddashes">v:folddashes</a>| を使用する。
@@ -4220,6 +4472,10 @@ echo floor(4.0)
 </p>
 <p>{|<a href="various_002etxt.html#g_t_002bfolding">+folding</a>| 機能付きでコンパイルされたときのみ利用可能}
 </p>
+
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetLnum()-&gt;foldtextresult()
+</pre>
 <span id="foreground_0028_0029"></span><span id="index-foreground_0028_0029"></span>
 </dd>
 <dt>foreground()</dt>
@@ -4234,7 +4490,9 @@ echo floor(4.0)
 </p>
 <p>|<a href="#function_0028_0029">function()</a>| とは違ひ、{name} はユーザー定義函數として存在してゐなければならない。また、autoload 函數についても同樣である。{name} は組込み函數であつてはならない。
 </p>
-<span id="function_0028_0029"></span><span id="E700"></span><span id="E922"></span><span id="E923"></span><span id="index-function_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetFuncname()-&gt;funcref([arg])
+</pre><span id="function_0028_0029"></span><span id="E700"></span><span id="E922"></span><span id="E923"></span><span id="index-function_0028_0029"></span>
 <span id="index-E700"></span>
 <span id="index-E922"></span>
 <span id="index-E923"></span>
@@ -4249,14 +4507,23 @@ let Broken = function(dict.Func, [arg], dict)
 </p>
 <p>{arglist} もしくは {dict} が與へられると、函數の部分適用が作られる。すなはち引數のリスト及び/または辭書は Funcref に格納され、その Funcref が呼ばれるときに使用される。
 </p>
-<p>格納された引數は他の引數よりも前に函數に渡される。例へば:
+<p>格納された引數は他の引數よりも前に函數に渡されます。しかしメソッドからの任意の引數の後になります。例へば:
 </p><pre class="verbatim">func Callback(arg1, arg2, name)
 ...
-let Func = function('Callback', ['one', 'two'])
+let Partial = function('Callback', ['one', 'two'])
 ...
-call Func('name')
+call Partial('name')
 </pre><p>函數は次のやうに呼び出す:
 </p><pre class="verbatim">call Callback('one', 'two', 'name')
+</pre>
+<p>|<a href="#method">method</a>| の場合:
+</p><pre class="verbatim">func Callback(one, two, three)
+...
+let Partial = function('Callback', ['two'])
+...
+eval 'one'-&gt;Partial('three')
+</pre><p>次のやうに函數を呼び出します: 
+</p><pre class="verbatim">call Callback('one', 'two', 'three')
 </pre>
 <p>function() は Funcref により多くの引數を加へるためにネストして呼び出すことができる。餘分な引數は、引數のリストに追加される。例へば:
 </p><pre class="verbatim">func Callback(arg1, arg2, name)
@@ -4290,6 +4557,8 @@ let Func = function('Callback', ['one'], context)
 call Func(500)
 </pre><p>これは次のやうに函數を呼び出す:
 </p><pre class="verbatim">call context.Callback('one', 500)
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetFuncname()-&gt;function([arg])
 </pre>
 
 <span id="garbagecollect_0028_0029"></span><span id="index-garbagecollect_0028_0029"></span>
@@ -4306,13 +4575,18 @@ call Func(500)
 <span id="get_0028_0029"></span><span id="index-get_0028_0029"></span>
 </dd>
 <dt>get({list}, {idx} [, {default}])</dt>
-<dd><p>リスト |<a href="#List">List</a>| {list} から {idx} 番目の要素を取得する。この要素を取得できないときは {default} を返す。{default} が省略されたときは 0 を返す。
-</p></dd>
+<dd><p>リスト |<a href="#List">List</a>| {list} から {idx} 番目の要素を取得します。この要素を取得できないときは {default} を返します。{default} が省略されたときは 0 を返します。
+</p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;get(idx)
+</pre></dd>
 <dt>get({blob}, {idx} [, {default}])</dt>
 <dd><p>|<a href="#Blob">Blob</a>| {blob} から {idx} 番目のバイトを取得する。このバイトを取得できないときは {default} を返す。{default} が省略されたときは -1 を返す。
 </p></dd>
 <dt>get({dict}, {key} [, {default}])</dt>
-<dd><p>辭書 |<a href="#Dictionary">Dictionary</a>| {dict} からキー {key} に關聯づけられた値を取得する。この要素を取得できないときは {default} を返す。{default} が省略されたときは 0 を返す。
+<dd><p>辭書 |<a href="#Dictionary">Dictionary</a>| {dict} からキー {key} に關聯づけられた値を取得します。この要素を取得できないときは {default} を返します。{default} が省略されたときは 0 を返します。便利な例:
+</p><pre class="verbatim">let val = get(g:, 'var_name', 'default')
+</pre><p><var>g:var_name</var> の値が存在する場合はこれを取得して使用しますが、存在しない場合は &rsquo;<samp>default</samp>&rsquo; を返します。
 </p></dd>
 <dt>get({func}, {what})</dt>
 <dd><p>Funcref {func} から項目を取得する。{what} の可能な値は:
@@ -4346,6 +4620,10 @@ call Func(500)
 <tr><td width="20%">changed</td><td width="80%">バッファが變更されてゐる場合は TRUE。</td></tr>
 <tr><td width="20%">changedtick</td><td width="80%">バッファに加へられた變更の數。</td></tr>
 <tr><td width="20%">hidden</td><td width="80%">バッファが隱されてゐる場合は TRUE。</td></tr>
+<tr><td width="20%">lastused</td><td width="80%">バッファが最後に使用されたときの |<a href="#localtime_0028_0029">localtime()</a>| のやうな秒單位のタイムスタンプ。
+
+<p>{|<a href="various_002etxt.html#g_t_002bviminfo">+viminfo</a>| 機能付きでコンパイルされたときのみ有效}
+</p></td></tr>
 <tr><td width="20%">listed</td><td width="80%">バッファがリストされてゐる場合は TRUE。</td></tr>
 <tr><td width="20%">lnum</td><td width="80%">バッファ內の現在の行番號。</td></tr>
 <tr><td width="20%">loaded</td><td width="80%">バッファがロードされてゐる場合は TRUE。</td></tr>
@@ -4390,6 +4668,9 @@ endfor
 <p>例:
 </p><pre class="verbatim">:let lines = getbufline(bufnr(&quot;myfile&quot;), 1, &quot;$&quot;)
 </pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;getbufline(lnum)
+</pre>
 <span id="getbufvar_0028_0029"></span><span id="index-getbufvar_0028_0029"></span>
 </dd>
 <dt>getbufvar({expr}, {varname} [, {def}])</dt>
@@ -4410,9 +4691,12 @@ endfor
 <p>例:
 </p><pre class="verbatim">:let bufmodified = getbufvar(1, &quot;&amp;mod&quot;)
 :echo &quot;todo myvar = &quot; . getbufvar(&quot;todo&quot;, &quot;myvar&quot;)
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;getbufvar(varname)
 </pre><span id="getchangelist_0028_0029"></span><span id="index-getchangelist_0028_0029"></span>
 </dd>
-<dt>getchangelist({expr})</dt>
+<dt>getchangelist([{expr}])</dt>
 <dd><p>バッファの {expr} の |<a href="motion_002etxt.html#changelist">changelist</a>| を返す。{expr} の使ひ方は、前述の |<a href="#bufname_0028_0029">bufname()</a>| を參照。バッファ {expr} が存在しない場合、空のリストが返される。
 </p>
 <p>返されるリストは 2 つのエントリを含む: 變更位置のリストと、リスト內の現在地。變更リスト內のそれぞれの項目は、以下の項目を含む辭書になつてゐる:
@@ -4423,6 +4707,9 @@ endfor
 </table>
 <p>バッファ {expr} がカレンノバッファの場合、現在地はリスト內の位置を指す。それ以外のバッファではリストの長さに設定される。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;getchangelist()
+</pre>
 <span id="getchar_0028_0029"></span><span id="index-getchar_0028_0029"></span>
 </dd>
 <dt>getchar([expr])</dt>
@@ -4444,7 +4731,7 @@ endfor
 </p>
 <p>修飾キーを取得するには getcharmod() を使ふ。
 </p>
-<p>ユーザーがマウスをクリックしたときはマウスイベントを返す。クリックした位置は |<a href="#v_003amouse_005fcol">v:mouse_col</a>|, |<a href="#v_003amouse_005flnum">v:mouse_lnum</a>|, |<a href="#v_003amouse_005fwinid">v:mouse_winid</a>|, |<a href="#v_003amouse_005fwin">v:mouse_win</a>| で得られる。以下の例は、普通にマウスがクリックされたときと同じやうにカーソルを移動させる。
+<p>ユーザーがマウスをクリックしたときはマウスイベントを返します。クリックした位置は |<a href="#v_003amouse_005fcol">v:mouse_col</a>|, |<a href="#v_003amouse_005flnum">v:mouse_lnum</a>|, |<a href="#v_003amouse_005fwinid">v:mouse_winid</a>|, |<a href="#v_003amouse_005fwin">v:mouse_win</a>| で得られます。また |<a href="#getmousepos_0028_0029">getmousepos()</a>| も使へます。以下の例は、普通にマウスがクリックされたときと同じやうにカーソルを移動させます。
 </p><pre class="verbatim">let c = getchar()
 if c == &quot;\&lt;LeftMouse&gt;&quot; &amp;&amp; v:mouse_win &gt; 0
   exe v:mouse_win . &quot;wincmd w&quot;
@@ -4602,7 +4889,9 @@ getchar() == &quot;\&lt;S-Left&gt;&quot;
 </p>
 <p>一致するものがなければ、空のリストが返される。{type} の値が無效だと、エラーが發生する。
 </p>
-<span id="getcurpos_0028_0029"></span><span id="index-getcurpos_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPattern()-&gt;getcompletion('color')
+</pre><span id="getcurpos_0028_0029"></span><span id="index-getcurpos_0028_0029"></span>
 </dd>
 <dt>getcurpos()</dt>
 <dd><p>カーソルの位置を返す。これは getpos(&rsquo;.&rsquo;) に似てゐるが、追加の情報を含む:
@@ -4647,15 +4936,21 @@ call setpos('.', save_cursor)
 :echo getcwd(-1, 3)
 &quot; カレントタブページの作業ディレクトリを取得
 :echo getcwd(-1, 0)
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinnr()-&gt;getcwd()
 </pre><span id="getenv_0028_0029"></span><span id="index-getenv_0028_0029"></span>
 </dd>
 <dt>getenv({name})</dt>
 <dd><p>環境變數 {name} の値を返す。
 </p>
-<p>變數が存在しない場合は |<a href="#v_003anull">v:null</a>| が返される。これは、空の文字列に設定された變數とは異なる。
+<p>變數が存在しない場合は |<a href="#v_003anull">v:null</a>| が返されます。これは空の文字列に設定された變數とは異なりますが、一部のシステムは空の値を削除される變數として解釋します。
 </p>
-<p>|<a href="#expr_002denv">expr-env</a>| も參照。
+<p>|<a href="#expr_002denv">expr-env</a>| も參照してください。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetVarname()-&gt;getenv()
+</pre>
 <span id="getfontname_0028_0029"></span><span id="index-getfontname_0028_0029"></span>
 </dd>
 <dt>getfontname([{name}])</dt>
@@ -4680,7 +4975,10 @@ GTK の GUI はどんなフォント名でも受け付けてしまふため、�
 :echo getfperm(expand(&quot;~/.vimrc&quot;))
 </pre><p>この例は、(セキュリティの觀點から望ましい設定がされてゐるならば) &quot;&lsquo;<samp>rw-r--r--</samp>&rsquo;&quot; あるいは &quot;&lsquo;<samp>rw-------</samp>&rsquo;&quot; と表示する。
 </p>
-<p>許可屬性を設定するには |<a href="#setfperm_0028_0029">setfperm()</a>| を使用する。
+
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetFilename()-&gt;getfperm()
+</pre><p>許可屬性を設定するには |<a href="#setfperm_0028_0029">setfperm()</a>| を使用する。
 </p>
 <span id="getfsize_0028_0029"></span><span id="index-getfsize_0028_0029"></span>
 </dd>
@@ -4693,6 +4991,9 @@ GTK の GUI はどんなフォント名でも受け付けてしまふため、�
 </p>
 <p>{fname} のサイズが |<a href="#Number">Number</a>| の範圍外の場合は -2 を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetFilename()-&gt;getfsize()
+</pre>
 <span id="getftime_0028_0029"></span><span id="index-getftime_0028_0029"></span>
 </dd>
 <dt>getftime({fname})</dt>
@@ -4700,6 +5001,9 @@ GTK の GUI はどんなフォント名でも受け付けてしまふため、�
 </p>
 <p>ファイル {fname} が見つからなかつた場合には -1 を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetFilename()-&gt;getftime()
+</pre>
 <span id="getftype_0028_0029"></span><span id="index-getftype_0028_0029"></span>
 </dd>
 <dt>getftype({fname})</dt>
@@ -4725,6 +5029,14 @@ GTK の GUI はどんなフォント名でも受け付けてしまふため、�
 &quot;link&quot; などの種別はそれをサポートしてゐるシステムでのみ返される。&quot;dir&quot; と &quot;file&quot; しか返らないシステムもある。MS-Windows では、ディレクトリへのシンボリックリンクは &quot;link&quot; の代はりに &quot;dir&quot; を返す。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetFilename()-&gt;getftype()
+</pre>
+<span id="getimstatus_0028_0029"></span><span id="index-getimstatus_0028_0029"></span>
+</dd>
+<dt>getimstatus()</dt>
+<dd><p>結果は數値で、IMEステータスがアクティブの場合は |<a href="#TRUE">TRUE</a>| です。&rsquo;<samp>imstatusfunc</samp>&rsquo; を參照してください。
+</p>
 <span id="getjumplist_0028_0029"></span><span id="index-getjumplist_0028_0029"></span>
 </dd>
 <dt>getjumplist([{winnr} [, {tabnr}]])</dt>
@@ -4741,6 +5053,9 @@ GTK の GUI はどんなフォント名でも受け付けてしまふため、�
 <tr><td width="30%">lnum</td><td width="70%">行番號</td></tr>
 </table>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinnr()-&gt;getjumplist()
+</pre>
 <span id="getline_0028_0029"></span><span id="index-getline_0028_0029"></span>
 </dd>
 <dt>getline({lnum} [, {end}])</dt>
@@ -4759,6 +5074,9 @@ GTK の GUI はどんなフォント名でも受け付けてしまふため、�
 </p><pre class="verbatim">:let start = line('.')
 :let end = search(&quot;^$&quot;) - 1
 :let lines = getline(start, end)
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">ComputeLnum()-&gt;getline()
 </pre>
 <p>他のバッファの行を取得するには |<a href="#getbufline_0028_0029">getbufline()</a>| を參照。
 </p>
@@ -4849,6 +5167,9 @@ call setpos(&quot;'a&quot;, save_a_mark)
 </pre><p>|<a href="#getcurpos_0028_0029">getcurpos()</a>| と |<a href="#setpos_0028_0029">setpos()</a>|も參照。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetMark()-&gt;getpos()
+</pre>
 
 <span id="getqflist_0028_0029"></span><span id="index-getqflist_0028_0029"></span>
 </dd>
@@ -4936,6 +5257,9 @@ call setpos(&quot;'a&quot;, save_a_mark)
 </p>
 <p>{regname} を指定しないときは |<a href="#v_003aregister">v:register</a>| が使はれる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetRegname()-&gt;getreg()
+</pre>
 
 <span id="getregtype_0028_0029"></span><span id="index-getregtype_0028_0029"></span>
 </dd>
@@ -4951,6 +5275,9 @@ call setpos(&quot;'a&quot;, save_a_mark)
 </p>
 <p>{regname} を指定しないときは |<a href="#v_003aregister">v:register</a>| が使はれる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetRegname()-&gt;getregtype()
+</pre>
 <span id="gettabinfo_0028_0029"></span><span id="index-gettabinfo_0028_0029"></span>
 </dd>
 <dt>gettabinfo([{arg}])</dt>
@@ -4963,6 +5290,9 @@ call setpos(&quot;'a&quot;, save_a_mark)
 <tr><td width="20%">windows</td><td width="80%">タブページの |<a href="windows_002etxt.html#window_002dID">window-ID</a>| のリスト。</td></tr>
 </table>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetTabnr()-&gt;gettabinfo()
+</pre>
 <span id="gettabvar_0028_0029"></span><span id="index-gettabvar_0028_0029"></span>
 </dd>
 <dt>gettabvar({tabnr}, {varname} [, {def}])</dt>
@@ -4976,6 +5306,9 @@ call setpos(&quot;'a&quot;, save_a_mark)
 指定する變數名は &quot;t:&quot; を除いた名前。タブや變數が存在しないときは {def} または空文字列を返し、エラーメッセージは表示されない。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetTabnr()-&gt;gettabvar(varname)
+</pre>
 <span id="gettabwinvar_0028_0029"></span><span id="index-gettabwinvar_0028_0029"></span>
 </dd>
 <dt>gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])</dt>
@@ -5002,6 +5335,9 @@ call setpos(&quot;'a&quot;, save_a_mark)
 </pre><p>すべてのウィンドウローカル變數を取得するには:
 </p><pre class="verbatim">gettabwinvar({tabnr}, {winnr}, '&amp;')
 </pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetTabnr()-&gt;gettabwinvar(winnr, varname)
+</pre>
 <span id="gettagstack_0028_0029"></span><span id="index-gettagstack_0028_0029"></span>
 </dd>
 <dt>gettagstack([{nr}])</dt>
@@ -5024,6 +5360,9 @@ call setpos(&quot;'a&quot;, save_a_mark)
 
 <p>タグスタックについての詳細は |<a href="tagsrch_002etxt.html#tagstack">tagstack</a>| を參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinnr()-&gt;gettagstack()
+</pre>
 <span id="getwininfo_0028_0029"></span><span id="index-getwininfo_0028_0029"></span>
 </dd>
 <dt>getwininfo([{winid}])</dt>
@@ -5061,6 +5400,9 @@ call setpos(&quot;'a&quot;, save_a_mark)
 <tr><td width="20%">winrow</td><td width="80%">ウィンドウの最も上のスクリーン行、|<a href="#win_005fscreenpos_0028_0029">win_screenpos()</a>| の行</td></tr>
 </table>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinnr()-&gt;getwininfo()
+</pre>
 <span id="getwinpos_0028_0029"></span><span id="index-getwinpos_0028_0029"></span>
 </dd>
 <dt>getwinpos([{timeout}])</dt>
@@ -5078,6 +5420,9 @@ call setpos(&quot;'a&quot;, save_a_mark)
   endif
   &quot; Do some work here
 endwhile
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetTimeout()-&gt;getwinpos()
 </pre><span id="getwinposx_0028_0029"></span><span id="index-getwinposx_0028_0029"></span>
 </dd>
 <dt>getwinposx()</dt>
@@ -5096,6 +5441,9 @@ endwhile
 <p>例:
 </p><pre class="verbatim">:let list_is_on = getwinvar(2, '&amp;list')
 :echo &quot;myvar = &quot; . getwinvar(1, 'myvar')
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinnr()-&gt;getwinvar(varname)
 </pre><span id="glob_0028_0029"></span><span id="index-glob_0028_0029"></span>
 </dd>
 <dt>glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])</dt>
@@ -5120,6 +5468,9 @@ endwhile
 </p>
 <p>特殊な Vim の變數を展開するためには |<a href="#expand_0028_0029">expand()</a>| を參照。外部コマンドの生の出力を得るためには |<a href="#system_0028_0029">system()</a>| を參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetExpr()-&gt;glob()
+</pre>
 <span id="glob2regpat_0028_0029"></span><span id="index-glob2regpat_0028_0029"></span>
 </dd>
 <dt>glob2regpat({expr})</dt>
@@ -5133,10 +5484,12 @@ endwhile
 結果はシステムによつて異なることに注意すること。MS-Windows では、バックスラッシュは通常、パス區切りを意味する。
 </p></blockquote>
 
-<span id="globpath_0028_0029"></span><span id="index-globpath_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetExpr()-&gt;glob2regpat()
+</pre><span id="globpath_0028_0029"></span><span id="index-globpath_0028_0029"></span>
 </dd>
 <dt>globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])</dt>
-<dd><p>{path} の中の全ディレクトリに對して |<a href="#glob_0028_0029">glob()</a>| を實行し、結果を連結する。例:
+<dd><p>{path} の中の全ディレクトリで {expr} に對して |<a href="#glob_0028_0029">glob()</a>| を實行し、結果を連結します。例:
 </p><pre class="verbatim">:echo globpath(&amp;rtp, &quot;syntax/c.vim&quot;)
 </pre><p>{path} はコンマ區切りのディレクトリのリスト。各ディレクトリを {expr} の前に付加し、|<a href="#glob_0028_0029">glob()</a>| と同樣にそれを展開する。必要に應じてパスの區切り文字が插入される。
 </p>
@@ -5156,7 +5509,9 @@ MS-Windows ではディレクトリ名の末尾にバックスラッシュがつ
 </p><pre class="verbatim">:echo globpath(&amp;rtp, &quot;**/README.txt&quot;)
 </pre><p>上向き檢索と、&quot;**&quot; の深さの限界はサポートされてゐない。よつてオプション &rsquo;<samp>path</samp>&rsquo; の値をそのまま使ふとうまく動かないことがある。
 </p>
-<span id="has_0028_0029"></span><span id="index-has_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 2 引數として渡されます:
+</p><pre class="verbatim">GetExpr()-&gt;globpath(&amp;rtp)
+</pre><span id="has_0028_0029"></span><span id="index-has_0028_0029"></span>
 </dd>
 <dt>has({feature})</dt>
 <dd><p>結果は機能 {feature} がサポートされる場合 1、されない場合 0 となる。引數 {feature} は文字列。下記の |<a href="#feature_002dlist">feature-list</a>| を參照。|<a href="#exists_0028_0029">exists()</a>| も參照。
@@ -5167,6 +5522,9 @@ MS-Windows ではディレクトリ名の末尾にバックスラッシュがつ
 <dt>has_key({dict}, {key})</dt>
 <dd><p>結果は數値で、辭書 |<a href="#Dictionary">Dictionary</a>| {dict} がキー {key} の要素を持つなら 1、持たないなら 0 となる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mydict-&gt;has_key(key)
+</pre>
 <span id="haslocaldir_0028_0029"></span><span id="index-haslocaldir_0028_0029"></span>
 </dd>
 <dt>haslocaldir([{winnr} [, {tabnr}]])</dt>
@@ -5207,7 +5565,10 @@ endif
 :echo haslocaldir(n, m)
 &quot; tab page m
 :echo haslocaldir(-1, m)
-</pre><span id="hasmapto_0028_0029"></span><span id="index-hasmapto_0028_0029"></span>
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinnr()-&gt;haslocaldir()
+</pre>
+<span id="hasmapto_0028_0029"></span><span id="index-hasmapto_0028_0029"></span>
 </dd>
 <dt>hasmapto({what} [, {mode} [, {abbr}]])</dt>
 <dd><p>結果は數値。右邊側 (マップした先) の一部分に {what} を含むマッピングが存在し、それが {mode} で指定されたモードのいづれかで定義されてゐるなら 1 を返す。
@@ -5219,7 +5580,9 @@ endif
 {mode} に對しては以下の文字が利用できる:
 </p><table>
 <tr><td width="10%">n</td><td width="90%">ノーマルモード</td></tr>
-<tr><td width="10%">v</td><td width="90%">ビジュアルモード</td></tr>
+<tr><td width="10%">v</td><td width="90%">ビジュアルモードおよび選擇モード</td></tr>
+<tr><td width="10%">x</td><td width="90%">ビジュアルモード</td></tr>
+<tr><td width="10%">s</td><td width="90%">選擇モード</td></tr>
 <tr><td width="10%">o</td><td width="90%">オペレータ待機モード (Operator-pending)</td></tr>
 <tr><td width="10%">i</td><td width="90%">插入モード</td></tr>
 <tr><td width="10%">l</td><td width="90%">Language-Argument モード (&quot;r&quot;, &quot;f&quot;, &quot;t&quot; など)</td></tr>
@@ -5233,6 +5596,9 @@ endif
 :endif
 </pre><p>この例は、&quot;\ABCdoit&quot; へのマッピングが存在しないときだけ &quot;\ABCdoit&quot; へのマッピングを作成する。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetRHS()-&gt;hasmapto()
+</pre>
 <span id="histadd_0028_0029"></span><span id="index-histadd_0028_0029"></span>
 </dd>
 <dt>histadd({history}, {item})</dt>
@@ -5257,6 +5623,9 @@ endif
 :let date=input(&quot;Enter date: &quot;)
 </pre><p>サンドボックス |<a href="#sandbox">sandbox</a>| の中では利用できない。
 </p>
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 2 引數として渡されます:
+</p><pre class="verbatim">GetHistory()-&gt;histadd('search')
+</pre>
 <span id="histdel_0028_0029"></span><span id="index-histdel_0028_0029"></span>
 </dd>
 <dt>histdel({history} [, {item}])</dt>
@@ -5285,6 +5654,8 @@ endif
 </pre><p>最後の檢索パターンを削除し、1 つ前のパターンを &quot;n&quot; コマンド (次のマッチへ移動) と &rsquo;<samp>hlsearch</samp>&rsquo; の爲に設定する:
 </p><pre class="verbatim">:call histdel(&quot;search&quot;, -1)
 :let @/ = histget(&quot;search&quot;, -1) 
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetHistory()-&gt;histdel()
 </pre>
 <span id="histget_0028_0029"></span><span id="index-histget_0028_0029"></span>
 </dd>
@@ -5298,13 +5669,19 @@ endif
 </pre>
 <p>|<a href="cmdline_002etxt.html#g_t_003ahistory">:history</a>| によつて出力される {num} 番目のエントリを、再度實行するための &quot;:H {num}&quot; といふコマンドを定義する。
 </p><pre class="verbatim">:command -nargs=1 H execute histget(&quot;cmd&quot;,0+&lt;args&gt;)
-</pre><span id="histnr_0028_0029"></span><span id="index-histnr_0028_0029"></span>
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetHistory()-&gt;histget()
+</pre>
+<span id="histnr_0028_0029"></span><span id="index-histnr_0028_0029"></span>
 </dd>
 <dt>histnr({history})</dt>
 <dd><p>結果は數値で {history} の現在のエントリ數。{history} の部分に可能な値は |<a href="#hist_002dnames">hist-names</a>| を參照。エラーが起こつた場合、-1 が返される。
 </p>
 <p>例:
 </p><pre class="verbatim">:let inp_index = histnr(&quot;expr&quot;)
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetHistory()-&gt;histnr()
 </pre><span id="hlexists_0028_0029"></span><span id="index-hlexists_0028_0029"></span>
 </dd>
 <dt>hlexists({name})</dt>
@@ -5312,7 +5689,9 @@ endif
 <span id="highlight_005fexists_0028_0029"></span><span id="index-highlight_005fexists_0028_0029"></span>
 以前の名前: highlight_exists().
 </p>
-<span id="hlID_0028_0029"></span><span id="index-hlID_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;hlexists()
+</pre><span id="hlID_0028_0029"></span><span id="index-hlID_0028_0029"></span>
 </dd>
 <dt>hlID({name})</dt>
 <dd><p>結果は數値で、{name} といふ名前のハイライトグループの ID 番號。そのハイライトグループが存在しない場合は 0 が返される。これはハイライトグループについての情報を獲得するために使用される。例へば &quot;Comment&quot; グループの背景色を取得するにはこのやうにする:
@@ -5320,6 +5699,9 @@ endif
 </pre><span id="highlightID_0028_0029"></span><span id="index-highlightID_0028_0029"></span>
 <p>以前の名前: highlightID()
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;hlID()
+</pre>
 <span id="hostname_0028_0029"></span><span id="index-hostname_0028_0029"></span>
 </dd>
 <dt>hostname()</dt>
@@ -5343,14 +5725,18 @@ endif
 Vim は全ての Unicode エンコーディングに對して UTF-8 を使ふ。UCS-2 との變換を行はうとしても、自動的に UTF-8 との變換に變更される。いづれにせよ、UCS-2 は NUL バイトを含むため、文字列に UCS-2 を使ふことはできない。
 </p></blockquote>
 
-<span id="indent_0028_0029"></span><span id="index-indent_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;iconv('latin1', 'utf-8')
+</pre><span id="indent_0028_0029"></span><span id="index-indent_0028_0029"></span>
 </dd>
 <dt>indent({lnum})</dt>
 <dd><p>カレントバッファの {lnum} 行目のインデント量を數値で返す。このインデント量はスペース單位で數へられ、&rsquo;<samp>tabstop</samp>&rsquo; の値が關係する。{lnum} は |<a href="#getline_0028_0029">getline()</a>| の場合と同樣に扱はれる。
 </p>
 <p>{lnum} が無效なときは -1 を返す。
 </p>
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetLnum()-&gt;indent()
+</pre>
 <span id="index_0028_0029"></span><span id="index-index_0028_0029"></span>
 </dd>
 <dt>index({list}, {expr} [, {start} [, {ic}]])</dt>
@@ -5367,7 +5753,9 @@ Vim は全ての Unicode エンコーディングに對して UTF-8 を使ふ。
 </p><pre class="verbatim">:let idx = index(words, &quot;the&quot;)
 :if index(numbers, 123) &gt;= 0
 </pre>
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetObject()-&gt;index(what)
+</pre>
 <span id="input_0028_0029"></span><span id="index-input_0028_0029"></span>
 </dd>
 <dt>input({prompt} [, {text} [, {completion}]])</dt>
@@ -5403,6 +5791,9 @@ Vim は全ての Unicode エンコーディングに對して UTF-8 を使ふ。
 :  call inputrestore()
 :endfunction
 </pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPrompt()-&gt;input()
+</pre>
 <span id="inputdialog_0028_0029"></span><span id="index-inputdialog_0028_0029"></span>
 </dd>
 <dt>inputdialog({prompt} [, {text} [, {cancelreturn}]])</dt>
@@ -5419,6 +5810,9 @@ Vim は全ての Unicode エンコーディングに對して UTF-8 を使ふ。
 コマンドライン補完は對應してゐない。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPrompt()-&gt;inputdialog()
+</pre>
 <span id="inputlist_0028_0029"></span><span id="index-inputlist_0028_0029"></span>
 </dd>
 <dt>inputlist({textlist})</dt>
@@ -5431,6 +5825,9 @@ Vim は全ての Unicode エンコーディングに對して UTF-8 を使ふ。
 <p>例:
 </p><pre class="verbatim">let color = inputlist(['Select color:', '1. red',
         \ '2. green', '3. blue'])
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetChoices()-&gt;inputlist()
 </pre>
 <span id="inputrestore_0028_0029"></span><span id="index-inputrestore_0028_0029"></span>
 </dd>
@@ -5456,6 +5853,9 @@ Vim は全ての Unicode エンコーディングに對して UTF-8 を使ふ。
 コマンドライン補完には對應してゐない。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPrompt()-&gt;inputsecret()
+</pre>
 <span id="insert_0028_0029"></span><span id="index-insert_0028_0029"></span>
 </dd>
 <dt>insert({list}, {item} [, {idx}])</dt>
@@ -5473,17 +5873,25 @@ Vim は全ての Unicode エンコーディングに對して UTF-8 を使ふ。
 {item} がリスト |<a href="#List">List</a>| の場合は、1個の要素として追加される。リスト |<a href="#Lists">Lists</a>| を連結するには |<a href="#extend_0028_0029">extend()</a>| を使ふこと。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;insert(item)
+</pre>
 <span id="invert_0028_0029"></span><span id="index-invert_0028_0029"></span>
 </dd>
 <dt>invert({expr})</dt>
 <dd><p>ビット反轉。引數は數値に變換される。リスト、辭書、浮動小數點數を指定するとエラーになる。例:
 </p><pre class="verbatim">:let bits = invert(bits)
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">:let bits = bits-&gt;invert()
 </pre>
 <span id="isdirectory_0028_0029"></span><span id="index-isdirectory_0028_0029"></span>
 </dd>
 <dt>isdirectory({directory})</dt>
 <dd><p>結果は數値で、{directory} といふ名前のディレクトリが存在すれば |<a href="#TRUE">TRUE</a>| となる。{directory} が存在しないか、存在したとしてもディレクトリではなかつた場合には、|<a href="#FALSE">FALSE</a>| が返される。文字列として解釋できるのならば {directory} の表現はどのやうなものであつてもかまはない。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;isdirectory()
+</pre>
 <span id="isinf_0028_0029"></span><span id="index-isinf_0028_0029"></span>
 </dd>
 <dt>isinf({expr})</dt>
@@ -5493,7 +5901,9 @@ Vim は全ての Unicode エンコーディングに對して UTF-8 を使ふ。
 :echo isinf(-1.0 / 0.0)
 -1
 </pre>
-<p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;isinf()
+</pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 <span id="islocked_0028_0029"></span><span id="E786"></span><span id="index-islocked_0028_0029"></span>
 <span id="index-E786"></span>
@@ -5509,6 +5919,9 @@ Vim は全ての Unicode エンコーディングに對して UTF-8 を使ふ。
 </pre>
 <p>{expr} が存在しない變數のときはエラーメッセージが表示される。變數の存在を確認するには |<a href="#exists_0028_0029">exists()</a>| を使ふ。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;islocked()
+</pre>
 <span id="isnan_0028_0029"></span><span id="index-isnan_0028_0029"></span>
 </dd>
 <dt>isnan({expr})</dt>
@@ -5516,7 +5929,9 @@ Vim は全ての Unicode エンコーディングに對して UTF-8 を使ふ。
 </p><pre class="verbatim">echo isnan(0.0 / 0.0)
 1
 </pre>
-<p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;isnan()
+</pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 <span id="items_0028_0029"></span><span id="index-items_0028_0029"></span>
 </dd>
@@ -5528,6 +5943,14 @@ Vim は全ての Unicode エンコーディングに對して UTF-8 を使ふ。
    echo key . ': ' . value
 endfor
 </pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mydict-&gt;items()
+</pre>
+</dd>
+<dt>job_ 函數群</dt>
+<dd><p>job_ 函數群についてはここに文書化されてゐます: |<a href="channel_002etxt.html#job_002dfunctions_002ddetails">job-functions-details</a>|
+</p>
+
 <span id="join_0028_0029"></span><span id="index-join_0028_0029"></span>
 </dd>
 <dt>join({list} [, {sep}])</dt>
@@ -5541,6 +5964,9 @@ endfor
 </pre></blockquote>
 <p>{list} の要素が文字列なら、そのまま使はれる。リスト |<a href="#Lists">Lists</a>| と辭書 |<a href="#Dictionaries">Dictionaries</a>| は |<a href="#string_0028_0029">string()</a>| を使つたときと同じやうにして文字列に變換される。この逆を行ふ函數は |<a href="#split_0028_0029">split()</a>| である。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;join()
+</pre>
 <span id="js_005fdecode_0028_0029"></span><span id="index-js_005fdecode_0028_0029"></span>
 </dd>
 <dt>js_decode({string})</dt>
@@ -5551,6 +5977,9 @@ endfor
 </li><li> 排列內の (2 つのコンマで區切られた) 空アイテムが許可され結果として v:none のアイテムとなる。
 </li></ul>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">ReadObject()-&gt;js_decode()
+</pre>
 <span id="js_005fencode_0028_0029"></span><span id="index-js_005fencode_0028_0029"></span>
 </dd>
 <dt>js_encode({expr})</dt>
@@ -5567,7 +5996,9 @@ endfor
 </p><pre class="verbatim">[1,null,{&quot;one&quot;:1},null]
 </pre><p>このエンコードは JavaScript では妥當である。特に排列內でオプショナルアイテムを扱ふ場合には JSON より能率的である。
 </p>
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetObject()-&gt;js_encode()
+</pre>
 <span id="json_005fdecode_0028_0029"></span><span id="index-json_005fdecode_0028_0029"></span>
 </dd>
 <dt>json_decode({string})</dt>
@@ -5587,7 +6018,9 @@ endfor
 <span id="E938"></span><span id="index-E938"></span>
 <p>オブジェクトの重複するキー (rfc7159 では妥當だが) は、正しい Vim タイプの結果でなければならないので、json_decode() によつて受け入れられない。例へば、次のものは失敗する: {&quot;a&quot;:&quot;b&quot;, &quot;a&quot;:&quot;c&quot;}
 </p>
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">ReadObject()-&gt;json_decode()
+</pre>
 <span id="json_005fencode_0028_0029"></span><span id="index-json_005fencode_0028_0029"></span>
 </dd>
 <dt>json_encode({expr})</dt>
@@ -5619,11 +6052,17 @@ endfor
 NaN と Infinity は値として渡されることに注意すること。これは JSON 標準には存在しないが、いくつかの實裝でそれが可能である。さうでない場合、エラーが發生する。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetObject()-&gt;json_encode()
+</pre>
 <span id="keys_0028_0029"></span><span id="index-keys_0028_0029"></span>
 </dd>
 <dt>keys({dict})</dt>
 <dd><p>{dict} の全キーからなるリスト |<a href="#List">List</a>| を返す。リスト |<a href="#List">List</a>| の順序は不定である。|<a href="#items_0028_0029">items()</a>| と |<a href="#values_0028_0029">values()</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mydict-&gt;keys()
+</pre>
 <span id="len_0028_0029"></span><span id="E701"></span><span id="index-len_0028_0029"></span>
 <span id="index-E701"></span>
 </dd>
@@ -5638,6 +6077,9 @@ NaN と Infinity は値として渡されることに注意すること。これ
 </p>
 <p>それ以外のときはエラーとなる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;len()
+</pre>
 <span id="libcall_0028_0029"></span><span id="E364"></span><span id="E368"></span><span id="index-libcall_0028_0029"></span>
 <span id="index-E364"></span>
 <span id="index-E368"></span>
@@ -5673,6 +6115,9 @@ NaN と Infinity は値として渡されることに注意すること。これ
 </p>
 <p>例:
 </p><pre class="verbatim">:echo libcall(&quot;libc.so&quot;, &quot;getenv&quot;, &quot;HOME&quot;)
+</pre>
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 3 引數として渡されます:
+</p><pre class="verbatim">GetValue()-&gt;libcall(&quot;libc.so&quot;, &quot;getenv&quot;)
 </pre><span id="libcallnr_0028_0029"></span><span id="index-libcallnr_0028_0029"></span>
 </dd>
 <dt>libcallnr({libname}, {funcname}, {argument})</dt>
@@ -5681,9 +6126,12 @@ NaN と Infinity は値として渡されることに注意すること。これ
 </p><pre class="verbatim">:echo libcallnr(&quot;/usr/lib/libc.so&quot;, &quot;getpid&quot;, &quot;&quot;)
 :call libcallnr(&quot;libc.so&quot;, &quot;printf&quot;, &quot;Hello World!\n&quot;)
 :call libcallnr(&quot;libc.so&quot;, &quot;sleep&quot;, 10)
-</pre><span id="line_0028_0029"></span><span id="index-line_0028_0029"></span>
+</pre><p>|<a href="#method">method</a>| としても使用でき、ベースは第 3 引數として渡されます:
+</p><pre class="verbatim">GetValue()-&gt;libcallnr(&quot;libc.so&quot;, &quot;printf&quot;)
+</pre>
+<span id="line_0028_0029"></span><span id="index-line_0028_0029"></span>
 </dd>
-<dt>line({expr})</dt>
+<dt>line({expr} [, {winid}])</dt>
 <dd><p>結果は數値で、{expr} で與へられた位置のファイル內での行番號。受け付けられる位置指定は次の通り:
 </p><table>
 <tr><td width="10%">.</td><td width="90%">カーソルの位置</td></tr>
@@ -5695,17 +6143,24 @@ NaN と Infinity は値として渡されることに注意すること。これ
 </table>
 <blockquote>
 <p><strong>Note:</strong> <br>
-他のファイルのマークも使へる。その場合、戾り値はそのファイルの行番號となる。桁番號を取得するには |<a href="#col_0028_0029">col()</a>| を使ふ。兩方を取得するには |<a href="#getpos_0028_0029">getpos()</a>| を使ふ。
+他のファイルのマークも使へることに注意してください。その場合、戾り値はそのファイルの行番號となります。
+</p></blockquote>
+<p>桁番號を取得するには |<a href="#col_0028_0029">col()</a>| を使ひます。兩方を取得するには |<a href="#getpos_0028_0029">getpos()</a>| を使ひます。
+</p>
+<p>オプションの {winid} 引數を使用すると、カレントウィンドウの代はりにそのウィンドウの値が取得されます。
 </p>
 <p>例:
 </p><table>
 <tr><td width="40%">line(&quot;.&quot;)</td><td width="60%">カーソルの行番號</td></tr>
+<tr><td width="40%">line(&quot;.&quot;, winid)</td><td width="60%">ウィンドウ &quot;winid&quot; で同上</td></tr>
 <tr><td width="40%">line(&quot;&rsquo;t&quot;)</td><td width="60%">マーク t の位置の行番號</td></tr>
 <tr><td width="40%">line(&quot;&rsquo;&quot; . marker)</td><td width="60%">マーク marker の位置の行番號</td></tr>
 </table>
-</blockquote>
-<p>ファイルを開くときに最後の既知の位置にジャンプするには、|<a href="usr_005f05_002etxt.html#last_002dposition_002djump">last-position-jump</a>| を參照。
+<p>ファイルを開くときに最後の既知の位置にジャンプするには、|<a href="usr_005f05_002etxt.html#last_002dposition_002djump">last-position-jump</a>| を參照してください。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetValue()-&gt;line()
+</pre>
 <span id="line2byte_0028_0029"></span><span id="index-line2byte_0028_0029"></span>
 </dd>
 <dt>line2byte({lnum})</dt>
@@ -5717,6 +6172,9 @@ NaN と Infinity は値として渡されることに注意すること。これ
 </p>
 <p>|<a href="#byte2line_0028_0029">byte2line()</a>|、|<a href="motion_002etxt.html#go">go</a>| 及び |<a href="motion_002etxt.html#g_t_003agoto">:goto</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetLnum()-&gt;line2byte()
+</pre>
 <span id="lispindent_0028_0029"></span><span id="index-lispindent_0028_0029"></span>
 </dd>
 <dt>lispindent({lnum})</dt>
@@ -5724,6 +6182,9 @@ NaN と Infinity は値として渡されることに注意すること。これ
 </p>
 <p>インデント量はスペースで數へられ、&rsquo;<samp>tabstop</samp>&rsquo; の値は關係ない。{lnum} は |<a href="#getline_0028_0029">getline()</a>| の場合と同樣に扱はれる。{lnum} が無效な値のときや |<a href="various_002etxt.html#g_t_002blispindent">+lispindent</a>| 機能なしでコンパイルされてゐるときは -1 を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetLnum()-&gt;lispindent()
+</pre>
 <span id="list2str_0028_0029"></span><span id="index-list2str_0028_0029"></span>
 </dd>
 <dt>list2str({list} [, {utf8}])</dt>
@@ -5736,7 +6197,10 @@ list2str([65, 66, 67])  returns &quot;ABC&quot;
 </p>
 <p>{utf8} が省略されてゐるかゼロの場合、現在の &rsquo;<samp>encoding</samp>&rsquo;が使用される。{utf8} が 1 の場合は、常に UTF-8 文字列を返す。utf-8 の合成文字は期待通りに動作する:
 </p><pre class="verbatim">list2str([97, 769])     returns &quot;á&quot;
-</pre><span id="listener_005fadd_0028_0029"></span><span id="index-listener_005fadd_0028_0029"></span>
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetList()-&gt;list2str()
+</pre>
+<span id="listener_005fadd_0028_0029"></span><span id="index-listener_005fadd_0028_0029"></span>
 </dd>
 <dt>listener_add({callback} [, {buf}])</dt>
 <dd><p>バッファ {buf} に變更が加へられたときに呼び出されるコールバック函數を追加する。
@@ -5745,12 +6209,12 @@ list2str([65, 66, 67])  returns &quot;ABC&quot;
 </p>
 <p>|<a href="#listener_005fremove_0028_0029">listener_remove()</a>| に渡すことができる一意の ID を返す。
 </p>
-<p>{callback} は 4 つの引數で呼び出される:
+<p>{callback} は 5 つの引數で呼び出される:
 </p><table>
 <tr><td width="30%">a:bufnr</td><td width="70%">變更されたバッファ</td></tr>
 <tr><td width="30%">a:start</td><td width="70%">最初に變更された行番號</td></tr>
 <tr><td width="30%">a:end</td><td width="70%">變更された下の最初の行番號</td></tr>
-<tr><td width="30%">a:added</td><td width="70%">追加された行の合計數。行が削除された場合は負値</td></tr>
+<tr><td width="30%">a:added</td><td width="70%">追加された行數。行が削除された場合は負値</td></tr>
 <tr><td width="30%">a:changes</td><td width="70%">變更についての詳細を含む項目のリスト</td></tr>
 </table>
 
@@ -5799,6 +6263,9 @@ call listener_add('Listener', bufnr)
 </p>
 <p>{callback} はバッファがアンロードされたときにも呼び出されない。そのためには |<a href="autocmd_002etxt.html#BufUnload">BufUnload</a>| 自動コマンドイベントを使用すること。
 </p>
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 2 引數として渡されます:
+</p><pre class="verbatim">GetBuffer()-&gt;listener_add(callback)
+</pre>
 <span id="listener_005fflush_0028_0029"></span><span id="index-listener_005fflush_0028_0029"></span>
 </dd>
 <dt>listener_flush([{buf}])</dt>
@@ -5806,11 +6273,17 @@ call listener_add('Listener', bufnr)
 </p>
 <p>{buf} はバッファ名またはバッファ番號を表す。許容値については、|<a href="#bufname_0028_0029">bufname()</a>| を參照。{buf} を省略すると、カレントバッファが使用される。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBuffer()-&gt;listener_flush()
+</pre>
 <span id="listener_005fremove_0028_0029"></span><span id="index-listener_005fremove_0028_0029"></span>
 </dd>
 <dt>listener_remove({id})</dt>
 <dd><p>以前に listener_add() で追加されたリスナーを削除します。{id} が見つからないときはゼロを、{id} が削除されたときは 1 を返します。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetListenerId()-&gt;listener_remove()
+</pre>
 <span id="localtime_0028_0029"></span><span id="index-localtime_0028_0029"></span>
 </dd>
 <dt>localtime()</dt>
@@ -5826,6 +6299,9 @@ call listener_add('Listener', bufnr)
 2.302585
 :echo log(exp(5))
 5.0
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;log()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 
@@ -5838,6 +6314,9 @@ call listener_add('Listener', bufnr)
 3.0
 :echo log10(0.01)
 -2.0
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;log10()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 <span id="luaeval_0028_0029"></span><span id="index-luaeval_0028_0029"></span>
@@ -5852,6 +6331,9 @@ call listener_add('Listener', bufnr)
 </p>
 <p>vim.eval() で取得される辭書とリストはそのまま返される。それ以外のオブジェクトは 0 が返され、エラーにはならない。詳細は |<a href="if_005flua_002etxt.html#lua_002dluaeval">lua-luaeval</a>| を參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetExpr()-&gt;luaeval()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002blua">+lua</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 <span id="map_0028_0029"></span><span id="index-map_0028_0029"></span>
@@ -5881,16 +6363,20 @@ call listener_add('Listener', bufnr)
   return a:key . '-' . a:val
 endfunc
 call map(myDict, function('KeyValue'))
-</pre><p>|<a href="#lambda">lambda</a>| を使へばより短く書ける:
+</pre><p>|<a href="#lambda">lambda</a>| を使へばより短く書けます:
 </p><pre class="verbatim">call map(myDict, {key, val -&gt; key . '-' . val})
-</pre><p>&quot;val&quot; を使はない場合は省略できる:
+</pre><p>&quot;val&quot; を使はない場合は省略できます:
 </p><pre class="verbatim">call map(myDict, {key -&gt; 'item: ' . key})
+</pre><p>&quot;key&quot; を使用しない場合は短い名前が使用できます:
+</p><pre class="verbatim">call map(myDict, {_, val -&gt; 'item: ' . val})
 </pre><p>この操作はその場で (in-place) 行はれる。リスト |<a href="#List">List</a>| や辭書 |<a href="#Dictionary">Dictionary</a>| を變更したくない場合は最初にコピーを作ること:
 </p><pre class="verbatim">:let tlist = map(copy(mylist), ' v:val . &quot;\t&quot;')
 </pre>
 <p>{expr1} のリスト |<a href="#List">List</a>| または辭書 |<a href="#Dictionary">Dictionary</a>| に式を適用した結果を返す。{expr2} を評價してゐる最中にエラーが發生した場合は、{expr1} 內のそれ以降の要素の處理は行はれない。{expr2} が函數參照の場合、函數が &quot;abort&quot; フラグつきで定義されてゐない限り、函數內のエラーは無視される。
 </p>
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;map(expr2)
+</pre>
 <span id="maparg_0028_0029"></span><span id="index-maparg_0028_0029"></span>
 </dd>
 <dt>maparg({name} [, {mode} [, {abbr} [, {dict}]]])</dt>
@@ -5940,7 +6426,9 @@ call map(myDict, function('KeyValue'))
 <p>この函數を使ふと、あるキーに對して既にマップがされてゐるとき、その動作を行ひつつ、再マップすることができる。槪要:
 </p><pre class="verbatim">exe 'nnoremap &lt;Tab&gt; ==' . maparg('&lt;Tab&gt;', 'n')
 </pre>
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetKey()-&gt;maparg('n')
+</pre>
 <span id="mapcheck_0028_0029"></span><span id="index-mapcheck_0028_0029"></span>
 </dd>
 <dt>mapcheck({name} [, {mode} [, {abbr}]])</dt>
@@ -5970,6 +6458,9 @@ call map(myDict, function('KeyValue'))
 :endif
 </pre><p>これは、&quot;_vv&quot; といふマッピングが &quot;_v&quot; とか &quot;_vvv&quot; といつたマッピングと衝突しないやうに事前にチェックしてゐる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetKey()-&gt;mapcheck('n')
+</pre>
 <span id="match_0028_0029"></span><span id="index-match_0028_0029"></span>
 </dd>
 <dt>match({expr}, {pat} [, {start} [, {count}]])</dt>
@@ -6013,7 +6504,9 @@ call map(myDict, function('KeyValue'))
 
 <p>受け付ける正規表現については |<a href="pattern_002etxt.html#pattern">pattern</a>| を參照。オプション &rsquo;<samp>ignorecase</samp>&rsquo; により、大文字・小文字を區別するかどうかを設定できる。&rsquo;<samp>smartcase</samp>&rsquo; は適用されない。マッチングは常に &rsquo;<samp>magic</samp>&rsquo; をオン、&rsquo;<samp>cpoptions</samp>&rsquo; を空にした狀態で行はれる。
 </p>
-<span id="matchadd_0028_0029"></span><span id="E798"></span><span id="E799"></span><span id="E801"></span><span id="E957"></span><span id="index-matchadd_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetList()-&gt;match('word')
+</pre><span id="matchadd_0028_0029"></span><span id="E798"></span><span id="E799"></span><span id="E801"></span><span id="E957"></span><span id="index-matchadd_0028_0029"></span>
 <span id="index-E798"></span>
 <span id="index-E799"></span>
 <span id="index-E801"></span>
@@ -6051,7 +6544,9 @@ call map(myDict, function('KeyValue'))
 </pre>
 <p>|<a href="#matchadd_0028_0029">matchadd()</a>| と |<a href="pattern_002etxt.html#g_t_003amatch">:match</a>| で定義したマッチのリストは |<a href="#getmatches_0028_0029">getmatches()</a>| で取得できる。全てのマッチを削除するのは |<a href="#clearmatches_0028_0029">clearmatches()</a>| 一發でできる。
 </p>
-<span id="matchaddpos_0028_0029"></span><span id="index-matchaddpos_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetGroup()-&gt;matchadd('TODO')
+</pre><span id="matchaddpos_0028_0029"></span><span id="index-matchaddpos_0028_0029"></span>
 </dd>
 <dt>matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])</dt>
 <dd><p>|<a href="#matchadd_0028_0029">matchadd()</a>| と同じだが、パターンを指定するのではなく、位置のリスト {pos} を指定する。このコマンドは正規表現を扱ふ必要もなく、畫面更新のためにバッファ行の境界を設定するため、|<a href="#matchadd_0028_0029">matchadd()</a>| よりも速い。これは、例へば括弧の對應を强調表示するやうな、マッチの追加と削除を高速に實行したい狀況を想定してゐる。
@@ -6074,6 +6569,9 @@ call map(myDict, function('KeyValue'))
 </pre>
 <p>|<a href="#matchaddpos_0028_0029">matchaddpos()</a>| で追加されたマッチは |<a href="#getmatches_0028_0029">getmatches()</a>| で取得する際には &quot;pos1&quot;, &quot;pos2&quot;, ... といふ項目を持つ。それぞれの値は {pos} で指定された値である。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetGroup()-&gt;matchaddpos([23, 11])
+</pre>
 <span id="matcharg_0028_0029"></span><span id="index-matcharg_0028_0029"></span>
 </dd>
 <dt>matcharg({nr})</dt>
@@ -6086,6 +6584,9 @@ call map(myDict, function('KeyValue'))
 </li></ul>
 <p>{nr} が 1、2、3 のどれでもないときは空リスト |<a href="#List">List</a>| を返す。マッチパターンがセットされてゐないときは [&rdquo;, &rdquo;] を返す。|<a href="pattern_002etxt.html#g_t_003amatch">:match</a>| を保存し、復元するのに便利である。|<a href="pattern_002etxt.html#g_t_003amatch">:match</a>| を使つた强調は 3 個までに限られてゐる。|<a href="#matchadd_0028_0029">matchadd()</a>| にはこの制限はない。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetMatch()-&gt;matcharg()
+</pre>
 <span id="matchdelete_0028_0029"></span><span id="E802"></span><span id="E803"></span><span id="index-matchdelete_0028_0029"></span>
 <span id="index-E802"></span>
 <span id="index-E803"></span>
@@ -6094,6 +6595,9 @@ call map(myDict, function('KeyValue'))
 <dd><p>|<a href="#matchadd_0028_0029">matchadd()</a>| または |<a href="pattern_002etxt.html#g_t_003amatch">:match</a>| で定義したマッチの中で ID が {id} であるものを削除する。成功したときは 0、失敗したときは -1 を返す。|<a href="#matchadd_0028_0029">matchadd()</a>| の例を參照。すべてのマッチを削除するのは |<a href="#clearmatches_0028_0029">clearmatches()</a>| 一發でできる。
 {win} が指定されれば、カレントウィンドウではなく指定されたウィンドウあるいはウィンドウ ID を對象にする。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetMatch()-&gt;matchdelete()
+</pre>
 <span id="matchend_0028_0029"></span><span id="index-matchend_0028_0029"></span>
 </dd>
 <dt>matchend({expr}, {pat} [, {start} [, {count}]])</dt>
@@ -6116,6 +6620,9 @@ call map(myDict, function('KeyValue'))
 </p>
 <p>{expr} がリスト |<a href="#List">List</a>| の場合、戾り値は |<a href="#match_0028_0029">match()</a>| と等しくなる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;matchend('word')
+</pre>
 <span id="matchlist_0028_0029"></span><span id="index-matchlist_0028_0029"></span>
 </dd>
 <dt>matchlist({expr}, {pat} [, {start} [, {count}]])</dt>
@@ -6123,6 +6630,9 @@ call map(myDict, function('KeyValue'))
 </p><pre class="verbatim">echo matchlist('acd', '\(a\)\?\(b\)\?\(c\)\?\(.*\)')
 </pre><p>結果は [&rsquo;acd&rsquo;, &rsquo;a&rsquo;, &rdquo;, &rsquo;c&rsquo;, &rsquo;d&rsquo;, &rdquo;, &rdquo;, &rdquo;, &rdquo;, &rdquo;] となる。マッチしなかつたときは空リストを返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetList()-&gt;matchlist('word')
+</pre>
 <span id="matchstr_0028_0029"></span><span id="index-matchstr_0028_0029"></span>
 </dd>
 <dt>matchstr({expr}, {pat} [, {start} [, {count}]])</dt>
@@ -6139,6 +6649,9 @@ call map(myDict, function('KeyValue'))
 </p>
 <p>{expr} がリスト |<a href="#List">List</a>| のときはマッチした要素を返す。その要素の型は變換されないため、必ずしも文字列であるとは限らない。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;matchstr('word')
+</pre>
 <span id="matchstrpos_0028_0029"></span><span id="index-matchstrpos_0028_0029"></span>
 </dd>
 <dt>matchstrpos({expr}, {pat} [, {start} [, {count}]])</dt>
@@ -6159,16 +6672,24 @@ call map(myDict, function('KeyValue'))
 </p>
 <p>型は變更されない。必ずしも文字列である必要はない。
 </p>
-<span id="max_0028_0029"></span><span id="index-max_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;matchstrpos('word')
+</pre><span id="max_0028_0029"></span><span id="index-max_0028_0029"></span>
 </dd>
 <dt>max({expr})</dt>
 <dd><p>{expr} の全要素の値の最大値を返す。{expr} はリストか辭書である。辭書の場合、辭書に含まれるすべての値の最大値を返す。{expr} がリストでも辭書でもなかつたり、要素のどれかが數値に變換できない場合はエラーとなる。空のリスト |<a href="#List">List</a>| または辭書 |<a href="#Dictionary">Dictionary</a>| の場合は 0 を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;max()
+</pre>
 <span id="min_0028_0029"></span><span id="index-min_0028_0029"></span>
 </dd>
 <dt>min({expr})</dt>
 <dd><p>{expr} の全要素の値の最小値を返す。{expr} はリストか辭書である。辭書の場合、辭書に含まれるすべての値の最小値を返す。{expr} がリストでも辭書でもなかつたり、要素のどれかが數値に變換できない場合はエラーとなる。空のリスト |<a href="#List">List</a>| または辭書 |<a href="#Dictionary">Dictionary</a>| の場合は 0 を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;min()
+</pre>
 <span id="mkdir_0028_0029"></span><span id="E739"></span><span id="index-mkdir_0028_0029"></span>
 <span id="index-E739"></span>
 </dd>
@@ -6193,12 +6714,16 @@ call map(myDict, function('KeyValue'))
 <p>システムによつては利用できない場合がある。これを確認するには次のやうにする:
 </p><pre class="verbatim">:if exists(&quot;*mkdir&quot;)
 </pre>
-<span id="mode_0028_0029"></span><span id="index-mode_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;mkdir()
+</pre><span id="mode_0028_0029"></span><span id="index-mode_0028_0029"></span>
 </dd>
 <dt>mode([expr])</dt>
 <dd><p>現在のモードを示す文字列を返す。
 </p>
 <p>[expr] に 0 でない數値か空でない文字列 (|<a href="#non_002dzero_002darg">non-zero-arg</a>|) を指定した場合、フルモードが返される。それ以外の場合は最初の 1 文字だけが返される。
+</p>
+<p>|<a href="#state_0028_0029">state()</a>| も參照してください。
 </p>
 <table>
 <tr><td width="30%">n</td><td width="70%">ノーマル、Terminal-Normal</td></tr>
@@ -6238,6 +6763,9 @@ call map(myDict, function('KeyValue'))
 </p></blockquote>
 <p>|<a href="#visualmode_0028_0029">visualmode()</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">DoFull()-&gt;mode()
+</pre>
 <span id="mzeval_0028_0029"></span><span id="index-mzeval_0028_0029"></span>
 </dd>
 <dt>mzeval({expr})</dt>
@@ -6255,6 +6783,8 @@ call map(myDict, function('KeyValue'))
 :mz (define h (make-hash)) (hash-set! h &quot;list&quot; l)
 :echo mzeval(&quot;l&quot;)
 :echo mzeval(&quot;h&quot;)
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetExpr()-&gt;mzeval()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bmzscheme">+mzscheme</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 <span id="nextnonblank_0028_0029"></span><span id="index-nextnonblank_0028_0029"></span>
@@ -6264,6 +6794,9 @@ call map(myDict, function('KeyValue'))
 </p><pre class="verbatim">if getline(nextnonblank(1)) =~ &quot;Java&quot;
 </pre><p>{lnum} が無效なときや、それ以降に非空行がないときは 0 を返す。|<a href="#prevnonblank_0028_0029">prevnonblank()</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetLnum()-&gt;nextnonblank()
+</pre>
 <span id="nr2char_0028_0029"></span><span id="index-nr2char_0028_0029"></span>
 </dd>
 <dt>nr2char({expr} [, {utf8}])</dt>
@@ -6286,6 +6819,9 @@ Vim 內部では、ファイル中の NUL 文字を改行文字 (0x0A) に變換
 let str = join(map(list, {_, val -&gt; nr2char(val)}), '')
 </pre><p>結果: &quot;ABC&quot;
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetNumber()-&gt;nr2char()
+</pre>
 <span id="or_0028_0029"></span><span id="index-or_0028_0029"></span>
 </dd>
 <dt>or({expr}, {expr})</dt>
@@ -6293,6 +6829,8 @@ let str = join(map(list, {_, val -&gt; nr2char(val)}), '')
 </p>
 <p>例:
 </p><pre class="verbatim">:let bits = or(bits, 0x80)
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">:let bits = bits-&gt;or(0x80)
 </pre>
 
 <span id="pathshorten_0028_0029"></span><span id="index-pathshorten_0028_0029"></span>
@@ -6303,6 +6841,9 @@ let str = join(map(list, {_, val -&gt; nr2char(val)}), '')
 ~/.v/a/myfile.vim
 </pre><p>パスが實際に存在するかどうかは關係ない。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetDirectories()-&gt;pathshorten()
+</pre>
 <span id="perleval_0028_0029"></span><span id="index-perleval_0028_0029"></span>
 </dd>
 <dt>perleval({expr})</dt>
@@ -6316,10 +6857,15 @@ let str = join(map(list, {_, val -&gt; nr2char(val)}), '')
 [1, 2, 3, 4]
 </pre></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetExpr()-&gt;perleval()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002bperl">+perl</a>| 機能付きでコンパイルされたときのみ利用可能}
 </p>
 
-<p>popup_ 函數については次に說明されてゐます: |<a href="popup_002etxt.html#popup_002dfunctions">popup-functions</a>|
+</dd>
+<dt>popup_ 函數群</dt>
+<dd><p>popup_ 函數群についてはここに文書化されてゐます: |<a href="popup_002etxt.html#popup_002dfunctions">popup-functions</a>|
 </p>
 
 <span id="pow_0028_0029"></span><span id="index-pow_0028_0029"></span>
@@ -6335,7 +6881,9 @@ let str = join(map(list, {_, val -&gt; nr2char(val)}), '')
 :echo pow(32, 0.20)
 2.0
 </pre>
-<p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;pow(3)
+</pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 <span id="prevnonblank_0028_0029"></span><span id="index-prevnonblank_0028_0029"></span>
 </dd>
@@ -6344,7 +6892,9 @@ let str = join(map(list, {_, val -&gt; nr2char(val)}), '')
 </p><pre class="verbatim">let ind = indent(prevnonblank(v:lnum - 1))
 </pre><p>{lnum} が無效なときや、それ以前に非空行がないときは 0 を返す。|<a href="#nextnonblank_0028_0029">nextnonblank()</a>| も參照。
 </p>
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetLnum()-&gt;prevnonblank()
+</pre>
 <span id="printf_0028_0029"></span><span id="index-printf_0028_0029"></span>
 </dd>
 <dt>printf({fmt}, {expr1} ...)</dt>
@@ -6352,6 +6902,9 @@ let str = join(map(list, {_, val -&gt; nr2char(val)}), '')
 </p><pre class="verbatim">printf(&quot;%4d: E%d %.30s&quot;, lnum, errno, msg)
 </pre><p>結果は次のやうな形になる:
 </p><pre class="verbatim">&quot;  99: E42 asdfasdfasdfasdfasdfasdfasdfas&quot;
+</pre>
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 2 引數として渡されます:
+</p><pre class="verbatim">Compute()-&gt;printf(&quot;result: %d&quot;)
 </pre>
 <p>よく使はれる變換指示子は次の通り:
 </p><table>
@@ -6502,7 +7055,7 @@ let str = join(map(list, {_, val -&gt; nr2char(val)}), '')
 </p>
 <p>コールバックは 1 つの引數で呼び出される。この引數はプロンプトで入力されたテキストだ。ユーザーが Enter だけを押した時は、空の文字列になる。
 例:
-</p><pre class="verbatim">call prompt_setcallback(bufnr(''), function('s:TextEntered'))
+</p><pre class="verbatim">call prompt_setcallback(bufnr(), function('s:TextEntered'))
 func s:TextEntered(text)
   if a:text == 'exit' || a:text == 'quit'
     stopinsert
@@ -6514,6 +7067,10 @@ func s:TextEntered(text)
   endif
 endfunc
 </pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBuffer()-&gt;prompt_setcallback(callback)
+</pre>
+
 <span id="prompt_005fsetinterrupt_0028_0029"></span><span id="index-prompt_005fsetinterrupt_0028_0029"></span>
 </dd>
 <dt>prompt_setinterrupt({buf}, {expr})</dt>
@@ -6521,17 +7078,23 @@ endfunc
 </p>
 <p>このコールバックは插入モードで <kbd>CTRL-C</kbd> を押すことで呼び出される。コールバックの設定がないと、Vim はどのやうなバッファであつても、插入モードを拔けるだらう。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBuffer()-&gt;prompt_setinterrupt(callback)
+</pre>
 <span id="prompt_005fsetprompt_0028_0029"></span><span id="index-prompt_005fsetprompt_0028_0029"></span>
 </dd>
 <dt>prompt_setprompt({buf}, {text})</dt>
 <dd><p>{buf} バッファのためのプロンプトを {text} に設定する。{text} の終はりは 1 つのスペースにしたいに違ひない。
 </p>
 <p>もしも {buf} の &rsquo;<samp>buftype</samp>&rsquo; が &quot;<var>prompt</var>&quot; に設定されてゐるなら、結果は可視のものだけである。例:
-</p><pre class="verbatim">call prompt_setprompt(bufnr(''), 'command: ')
+</p><pre class="verbatim">call prompt_setprompt(bufnr(), 'command: ')
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBuffer()-&gt;prompt_setprompt('command: ')
 </pre>
 </dd>
 <dt>prop_ 函數群</dt>
-<dd><p>prop_ 函數群はここに文書化されてゐます: |<a href="textprop_002etxt.html#text_002dprop_002dfunctions">text-prop-functions</a>|
+<dd><p>prop_ 函數群についてはここに文書化されてゐます: |<a href="textprop_002etxt.html#text_002dprop_002dfunctions">text-prop-functions</a>|
 </p>
 <span id="pum_005fgetpos_0028_0029"></span><span id="index-pum_005fgetpos_0028_0029"></span>
 </dd>
@@ -6563,6 +7126,9 @@ endfunc
 </p>
 <p>辭書は Vim の |<a href="#Dictionary">Dictionary</a>| 型に變換される。辭書のキーは文字列に變換される。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetExpr()-&gt;py3eval()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002bpython3">+python3</a>| 機能付きでコンパイルされたときのみ利用可能}
 </p>
 <span id="E858"></span><span id="E859"></span><span id="pyeval_0028_0029"></span><span id="index-E858"></span>
@@ -6578,6 +7144,9 @@ endfunc
 </p>
 <p>辭書は Vim の |<a href="#Dictionary">Dictionary</a>| 型に變換される。文字列ではない辭書のキーはエラーになる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetExpr()-&gt;pyeval()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002bpython">+python</a>| 機能付きでコンパイルされたときのみ利用可能}
 </p>
 <span id="pyxeval_0028_0029"></span><span id="index-pyxeval_0028_0029"></span>
@@ -6589,6 +7158,9 @@ endfunc
 </p>
 <p>|<a href="#pyeval_0028_0029">pyeval()</a>|, |<a href="#py3eval_0028_0029">py3eval()</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetExpr()-&gt;pyxeval()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002bpython">+python</a>| または |<a href="various_002etxt.html#g_t_002bpython3">+python3</a>| 機能付きでコンパイルされたときのみ利用可能}
 </p>
 <span id="E726"></span><span id="E727"></span><span id="range_0028_0029"></span><span id="index-E726"></span>
@@ -6611,6 +7183,8 @@ range(2, 9, 3)          &quot; [2, 5, 8]
 range(2, -2, -1)        &quot; [2, 1, 0, -1, -2]
 range(0)                &quot; []
 range(2, 0)             &quot; エラー！
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetExpr()-&gt;range()
 </pre><span id="readdir_0028_0029"></span><span id="index-readdir_0028_0029"></span>
 </dd>
 <dt>readdir({directory} [, {expr}])</dt>
@@ -6636,6 +7210,8 @@ range(2, 0)             &quot; エラー！
     \          {x : s:tree(a:dir . '/' . x)} : x})}
 endfunction
 echo s:tree(&quot;.&quot;)
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetDirName()-&gt;readdir()
 </pre><span id="readfile_0028_0029"></span><span id="index-readfile_0028_0029"></span>
 </dd>
 <dt>readfile({fname} [, {type} [, {max}]])</dt>
@@ -6663,6 +7239,9 @@ echo s:tree(&quot;.&quot;)
 </p></blockquote>
 <p>ファイルを開けないときはエラーメッセージを表示し、空リストを返す。|<a href="#writefile_0028_0029">writefile()</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetFileName()-&gt;readfile()
+</pre>
 <span id="reg_005fexecuting_0028_0029"></span><span id="index-reg_005fexecuting_0028_0029"></span>
 </dd>
 <dt>reg_executing()</dt>
@@ -6679,7 +7258,9 @@ echo s:tree(&quot;.&quot;)
 </p>
 <p>引數を指定しないと現在時刻を返す。1 個の引數を指定すると、その引數で指定された時刻からの經過時閒を返す。2 個の引數を指定すると、{start} と {end} の閒の經過時閒を返す。{start} と {end} は reltime() で返される値でなければならない。
 </p>
-<p>{|<a href="various_002etxt.html#g_t_002breltime">+reltime</a>| 機能付きでコンパイルされたときのみ利用可能}
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetStart()-&gt;reltime()
+</pre><p>{|<a href="various_002etxt.html#g_t_002breltime">+reltime</a>| 機能付きでコンパイルされたときのみ利用可能}
 </p>
 <span id="reltimefloat_0028_0029"></span><span id="index-reltimefloat_0028_0029"></span>
 </dd>
@@ -6692,6 +7273,9 @@ call MyFunction()
 let seconds = reltimefloat(reltime(start))
 </pre><p>オーバーヘッドについては reltimestr() の note を參照。|<a href="repeat_002etxt.html#profiling">profiling</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">reltime(start)-&gt;reltimefloat()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002breltime">+reltime</a>| 機能付きでコンパイルされたときのみ利用可能}
 </p>
 <span id="reltimestr_0028_0029"></span><span id="index-reltimestr_0028_0029"></span>
@@ -6709,6 +7293,9 @@ echo reltimestr(reltime(start))
 </p><pre class="verbatim">echo split(reltimestr(reltime(start)))[0]
 </pre><p>|<a href="repeat_002etxt.html#profiling">profiling</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">reltime(start)-&gt;reltimestr()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002breltime">+reltime</a>| 機能付きでコンパイルされたときのみ利用可能}
 </p>
 <span id="remote_005fexpr_0028_0029"></span><span id="E449"></span><span id="index-remote_005fexpr_0028_0029"></span>
@@ -6736,6 +7323,8 @@ echo reltimestr(reltime(start))
 <p>例:
 </p><pre class="verbatim">:echo remote_expr(&quot;gvim&quot;, &quot;2+2&quot;)
 :echo remote_expr(&quot;gvim1&quot;, &quot;b:current_syntax&quot;)
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">ServerName()-&gt;remote_expr(expr)
 </pre>
 <span id="remote_005fforeground_0028_0029"></span><span id="index-remote_005fforeground_0028_0029"></span>
 </dd>
@@ -6749,6 +7338,9 @@ foreground() と違ひ、最小化されてゐたウィンドウを復元しな�
 </p></blockquote>
 <p>|<a href="#sandbox">sandbox</a>| の中ではこの函數は利用できない。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">ServerName()-&gt;remote_foreground()
+</pre>
 <p>{Win32, Athena, Motif, GTK の GUI 版と Win32 コンソール版でのみ利用可能}
 </p>
 
@@ -6766,6 +7358,9 @@ foreground() と違ひ、最小化されてゐたウィンドウを復元しな�
 </p><pre class="verbatim">:let repl = &quot;&quot;
 :echo &quot;PEEK: &quot;.remote_peek(id, &quot;repl&quot;).&quot;: &quot;.repl
 </pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">ServerId()-&gt;remote_peek()
+</pre>
 <span id="remote_005fread_0028_0029"></span><span id="index-remote_005fread_0028_0029"></span>
 </dd>
 <dt>remote_read({serverid}, [{timeout}])</dt>
@@ -6777,6 +7372,9 @@ foreground() と違ひ、最小化されてゐたウィンドウを復元しな�
 </p>
 <p>例:
 </p><pre class="verbatim">:echo remote_read(id)
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">ServerId()-&gt;remote_read()
 </pre><span id="remote_005fsend_0028_0029"></span><span id="E241"></span><span id="index-remote_005fsend_0028_0029"></span>
 <span id="index-E241"></span>
 </dd>
@@ -6801,13 +7399,18 @@ foreground() と違ひ、最小化されてゐたウィンドウを復元しな�
 :echo remote_send(&quot;gvim&quot;, &quot;:sleep 10 | echo &quot;.
  \ 'server2client(expand(&quot;&lt;client&gt;&quot;), &quot;HELLO&quot;)&lt;CR&gt;')
 </pre></blockquote>
-<span id="remote_005fstartserver_0028_0029"></span><span id="E941"></span><span id="E942"></span><span id="index-remote_005fstartserver_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">ServerName()-&gt;remote_send(keys)
+</pre><span id="remote_005fstartserver_0028_0029"></span><span id="E941"></span><span id="E942"></span><span id="index-remote_005fstartserver_0028_0029"></span>
 <span id="index-E941"></span>
 <span id="index-E942"></span>
 </dd>
 <dt>remote_startserver({name})</dt>
 <dd><p>サーバー {name} になる。|<a href="#v_003aservername">v:servername</a>| が空でないときに、すでにサーバーとして動作してゐるのであれば失敗する。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">ServerName()-&gt;remote_startserver()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002bclientserver">+clientserver</a>| 機能付きでコンパイルされたときのみ利用可能}
 </p>
 <span id="remove_0028_0029"></span><span id="index-remove_0028_0029"></span>
@@ -6826,6 +7429,9 @@ foreground() と違ひ、最小化されてゐたウィンドウを復元しな�
 :call remove(mylist, 0, 9)
 </pre><p>ファイルを削除するには |<a href="#delete_0028_0029">delete()</a>| を使ふ。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;remove(idx)
+</pre>
 </dd>
 <dt>remove({blob}, {idx} [, {end}])</dt>
 <dd><p>{end} を指定しなかつた場合: |<a href="#Blob">Blob</a>| {blob} から {idx} 位置のバイトを削除し、そのバイトを返す。
@@ -6838,9 +7444,9 @@ foreground() と違ひ、最小化されてゐたウィンドウを復元しな�
 </pre>
 </dd>
 <dt>remove({dict}, {key})</dt>
-<dd><p>{dict} からキー {key} を持つ要素を削除する。例:
+<dd><p>{dict} からキー {key} を持つ要素を削除して返します。例:
 </p><pre class="verbatim">:echo &quot;removed &quot; . remove(dict, &quot;one&quot;)
-</pre><p>{dict} に {key} がない場合はエラーになる。
+</pre><p>{dict} に {key} がない場合はエラーになります。
 </p>
 <span id="rename_0028_0029"></span><span id="index-rename_0028_0029"></span>
 </dd>
@@ -6851,6 +7457,9 @@ foreground() と違ひ、最小化されてゐたウィンドウを復元しな�
 ファイル {to} がすでに存在する場合、警告なしに上書きされる。|<a href="#sandbox">sandbox</a>| の中ではこの函數は利用できない。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetOldName()-&gt;rename(newname)
+</pre>
 <span id="repeat_0028_0029"></span><span id="index-repeat_0028_0029"></span>
 </dd>
 <dt>repeat({expr}, {count})</dt>
@@ -6860,7 +7469,9 @@ foreground() と違ひ、最小化されてゐたウィンドウを復元しな�
 </p><pre class="verbatim">:let longlist = repeat(['a', 'b'], 3)
 </pre><p>結果は [&rsquo;a&rsquo;, &rsquo;b&rsquo;, &rsquo;a&rsquo;, &rsquo;b&rsquo;, &rsquo;a&rsquo;, &rsquo;b&rsquo;] となる。
 </p>
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;repeat(count)
+</pre>
 <span id="resolve_0028_0029"></span><span id="E655"></span><span id="index-resolve_0028_0029"></span>
 <span id="index-E655"></span>
 </dd>
@@ -6873,6 +7484,9 @@ foreground() と違ひ、最小化されてゐたウィンドウを復元しな�
 </p>
 <p>その他のシステムでは {filename} を單純化して返す。單純化の手順は |<a href="#simplify_0028_0029">simplify()</a>| と同じである。resolve() は (結果も相對パスであるならば) カレントディレクトリを表す先頭のパスコンポーネントと、末尾のパス區切り文字をそのままにする。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;resolve()
+</pre>
 <span id="reverse_0028_0029"></span><span id="index-reverse_0028_0029"></span>
 </dd>
 <dt>reverse({object})</dt>
@@ -6880,6 +7494,8 @@ foreground() と違ひ、最小化されてゐたウィンドウを復元しな�
 </p>
 <p>オブジェクトを變更させないでおくには、最初にコピーを作る:
 </p><pre class="verbatim">:let revlist = reverse(copy(mylist))
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;reverse()
 </pre>
 <span id="round_0028_0029"></span><span id="index-round_0028_0029"></span>
 </dd>
@@ -6895,7 +7511,9 @@ echo round(4.5)
 echo round(-4.5)
 -5.0
 </pre>
-<p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;round()
+</pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 <span id="rubyeval_0028_0029"></span><span id="index-rubyeval_0028_0029"></span>
 </dd>
@@ -6903,12 +7521,11 @@ echo round(-4.5)
 <dd><p>Ruby の式 {expr} を評價し、その結果を Vim のデータ構造に變換したものを返す。
 </p>
 <p>數値、浮動小數點數、文字列はそのまま返される (文字列はコピーされる)。
-排列は Vim の |<a href="#List">List</a>| 型に變換される。
+排列は Vim の |<a href="#List">List</a>| 型に變換される。ハッシュは Vim の |<a href="#Dictionary">Dictionary</a>| 型に變換される。それ以外のオブジェクトは &quot;Object#to_s&quot; メソッドの結果の文字列として表現される。
 </p>
-<p>ハッシュは Vim の |<a href="#Dictionary">Dictionary</a>| 型に變換される。
-</p>
-<p>それ以外のオブジェクトは &quot;Object#to_s&quot; メソッドの結果の文字列として表現される。
-</p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetRubyExpr()-&gt;rubyeval()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002bruby">+ruby</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 <span id="screenattr_0028_0029"></span><span id="index-screenattr_0028_0029"></span>
@@ -6916,6 +7533,9 @@ echo round(-4.5)
 <dt>screenattr({row}, {col})</dt>
 <dd><p>|<a href="#screenchar_0028_0029">screenchar()</a>| と同樣だが、屬性を返す。これは他の位置の屬性と比較するのに利用できるだけの適當な數値である。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetRow()-&gt;screenattr(col)
+</pre>
 <span id="screenchar_0028_0029"></span><span id="index-screenchar_0028_0029"></span>
 </dd>
 <dt>screenchar({row}, {col})</dt>
@@ -6923,6 +7543,9 @@ echo round(-4.5)
 </p>
 <p>この函數は主にテスト用に使はれる。row か col が範圍外である場合は -1 を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetRow()-&gt;screenchar(col)
+</pre>
 <span id="screenchars_0028_0029"></span><span id="index-screenchars_0028_0029"></span>
 </dd>
 <dt>screenchars({row}, {col})</dt>
@@ -6932,6 +7555,9 @@ echo round(-4.5)
 </p>
 <p>row や col が範圍外である場合は空のリストを返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetRow()-&gt;screenchars(col)
+</pre>
 <span id="screencol_0028_0029"></span><span id="index-screencol_0028_0029"></span>
 </dd>
 <dt>screencol()</dt>
@@ -6957,6 +7583,9 @@ nnoremap &lt;silent&gt; GG :echom screencol()&lt;CR&gt;
 <p>もしも指定された位置が不可視なら、すべての値はゼロです。文字が 1 つのスクリーンセルよりも大きいときは、&quot;<var>endcol</var>&quot; の値は &quot;<var>col</var>&quot; とは異なります。例: 1 つのタブ &quot;<var>col</var>&quot; は 1 になり、&quot;<var>endcol</var>&quot; は 8 になります。
 &quot;<var>curscol</var>&quot; の値はカーソルが置かれる場所です。1 つのタブは &quot;<var>endcol</var>&quot; と同じになります。一方でダブル幅文字については &quot;<var>col</var>&quot; と同じになります。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinid()-&gt;screenpos(lnum, col)
+</pre>
 <span id="screenrow_0028_0029"></span><span id="index-screenrow_0028_0029"></span>
 </dd>
 <dt>screenrow()</dt>
@@ -6975,6 +7604,9 @@ nnoremap &lt;silent&gt; GG :echom screencol()&lt;CR&gt;
 </p>
 <p>row や col が範圍外である場合は空文字列を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetRow()-&gt;screenstring(col)
+</pre>
 <span id="search_0028_0029"></span><span id="index-search_0028_0029"></span>
 </dd>
 <dt>search({pattern} [, {flags} [, {stopline} [, {timeout}]]])</dt>
@@ -7039,7 +7671,9 @@ let end = search('END', '', line(&quot;w$&quot;))
 </p><pre class="verbatim">if (foo == 0) | let foo = foo + 1 | endif
 </pre><p>1 が返る。フラグ &rsquo;c&rsquo; を外すと &quot;endif&quot; にマッチし 3 を返すやうになる。カーソルを &quot;if&quot; の &quot;f&quot; の上におき、フラグ &rsquo;e&rsquo; を外して實行しても同じく3が返る。フラグ &rsquo;n&rsquo; によりカーソルは移動しない。
 </p>
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPattern()-&gt;search()
+</pre>
 <span id="searchdecl_0028_0029"></span><span id="index-searchdecl_0028_0029"></span>
 </dd>
 <dt>searchdecl({name} [, {global} [, {thisblock}]])</dt>
@@ -7055,6 +7689,8 @@ let end = search('END', '', line(&quot;w$&quot;))
 </p><pre class="verbatim">if searchdecl('myvar') == 0
    echo getline('.')
 endif
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetName()-&gt;searchdecl()
 </pre><span id="searchpair_0028_0029"></span><span id="index-searchpair_0028_0029"></span>
 </dd>
 <dt>searchpair({start}, {middle}, {end} [, {flags} [, {skip} [, {stopline} [, {timeout}]]]])</dt>
@@ -7135,6 +7771,9 @@ endif 1
 </p><pre class="verbatim">:let [lnum, col, submatch] = searchpos('\(\l\)\|\(\u\)', 'np')
 </pre><p>この例において、&quot;submatch&quot; は小文字 |<a href="pattern_002etxt.html#g_t_002f_005cl">/\l</a>| が見つかつたとき2となり、大文字 |<a href="pattern_002etxt.html#g_t_002f_005cu">/\u</a>| が見つかつたとき 3 となる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPattern()-&gt;searchpos()
+</pre>
 <span id="server2client_0028_0029"></span><span id="index-server2client_0028_0029"></span>
 </dd>
 <dt>server2client({clientid}, {string})</dt>
@@ -7148,7 +7787,10 @@ endif 1
 <p>例:
 </p><pre class="verbatim">:echo server2client(expand(&quot;&lt;client&gt;&quot;), &quot;HELLO&quot;)
 </pre></blockquote>
-<span id="serverlist_0028_0029"></span><span id="index-serverlist_0028_0029"></span>
+
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetClientId()-&gt;server2client(string)
+</pre><span id="serverlist_0028_0029"></span><span id="index-serverlist_0028_0029"></span>
 </dd>
 <dt>serverlist()</dt>
 <dd><p>利用可能なサーバー名のリストを返す。1 行に 1 つの形式。サーバーが 1 つもないとき、または情報を取得できないときは空文字列を返す。|<a href="remote_002etxt.html#clientserver">clientserver</a>| も參照。
@@ -7160,14 +7802,23 @@ endif 1
 </pre><span id="setbufline_0028_0029"></span><span id="index-setbufline_0028_0029"></span>
 </dd>
 <dt>setbufline({expr}, {lnum}, {text})</dt>
-<dd><p>バッファ {expr} の {text} に行 {lnum} を設定する。行を插入するには |<a href="#append_0028_0029">append()</a>| を使ふ。{lnum} 內のテキストプロパティはすべて消去される。
+<dd><p>バッファ {expr} の行 {lnum} を {text} に設定します。これは特定のバッファに對し、|<a href="#setline_0028_0029">setline()</a>| のやうに機能します。
 </p>
-<p>{expr} の使ひ方については、上記の |<a href="#bufname_0028_0029">bufname()</a>| を參照。
+<p>この函數は、ロードされたバッファに對してのみ機能します。必要であれば、最初に |<a href="#bufload_0028_0029">bufload()</a>| を呼び出してください。
 </p>
-<p>{lnum} は |<a href="#setline_0028_0029">setline()</a>| と同じやうに使はれる。明示されたバッファへの |<a href="#setline_0028_0029">setline()</a>| と同じやうに働く。
+<p>行を插入する場合には |<a href="#appendbufline_0028_0029">appendbufline()</a>| を使用します。{lnum} 內のテキストプロパティはすべて消去されます。
+</p>
+<p>{text} は、1 行を設定する文字列、または複數行を設定する文字列のリストです。リストが最後の行の下にある場合、それらの行が追加されます。
+</p>
+<p>{expr} の使ひ方については、上記の |<a href="#bufname_0028_0029">bufname()</a>| を參照してください。
+</p>
+<p>{lnum} は |<a href="#setline_0028_0029">setline()</a>| と同じやうに使はれます。{lnum} が最後の行のすぐ下にある場合、{text} は最後の行の下に追加されます。
 </p>
 <p>{expr} が有效なバッファでないか、{lnum} が無效な場合は 1 が返される。成功すると 0 が返される。
 </p>
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 3 引數として渡されます:
+</p><pre class="verbatim">GetText()-&gt;setbufline(buf, lnum)
+</pre>
 <span id="setbufvar_0028_0029"></span><span id="index-setbufvar_0028_0029"></span>
 </dd>
 <dt>setbufvar({expr}, {varname}, {val})</dt>
@@ -7183,6 +7834,9 @@ endif 1
 </pre><p>サンドボックス |<a href="#sandbox">sandbox</a>| の中ではこの函數は使用できない。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 3 引數として渡されます:
+</p><pre class="verbatim">GetValue()-&gt;setbufvar(buf, varname)
+</pre>
 <span id="setcharsearch_0028_0029"></span><span id="index-setcharsearch_0028_0029"></span>
 </dd>
 <dt>setcharsearch({dict})</dt>
@@ -7200,6 +7854,9 @@ endif 1
 :call setcharsearch(prevsearch)
 </pre><p>|<a href="#getcharsearch_0028_0029">getcharsearch()</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">SavedSearch()-&gt;setcharsearch()
+</pre>
 <span id="setcmdpos_0028_0029"></span><span id="index-setcmdpos_0028_0029"></span>
 </dd>
 <dt>setcmdpos({pos})</dt>
@@ -7213,6 +7870,9 @@ endif 1
 </p>
 <p>{pos} が大きすぎるときは行末にカーソルを移動する。{pos} が 1 より小さいときの結果は未定義である。成功なら 0、コマンドラインを編輯してゐるとき以外には 1 を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPos()-&gt;setcmdpos()
+</pre>
 <span id="setenv_0028_0029"></span><span id="index-setenv_0028_0029"></span>
 </dd>
 <dt>setenv({name}, {val})</dt>
@@ -7222,6 +7882,9 @@ endif 1
 </p>
 <p>|<a href="#expr_002denv">expr-env</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 2 引數として渡されます:
+</p><pre class="verbatim">GetPath()-&gt;setenv('PATH')
+</pre>
 <span id="setfperm_0028_0029"></span><span id="chmod"></span><span id="index-setfperm_0028_0029"></span>
 <span id="index-chmod"></span>
 </dd>
@@ -7233,7 +7896,9 @@ endif 1
 </p>
 <p>成功するとゼロ以外を返し、失敗するとゼロを返す。
 </p>
-<p>許可屬性の讀み取りについては |<a href="#getfperm_0028_0029">getfperm()</a>| を參照。
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetFilename()-&gt;setfperm(mode)
+</pre><p>許可屬性の讀み取りについては |<a href="#getfperm_0028_0029">getfperm()</a>| を參照。
 </p>
 
 <span id="setline_0028_0029"></span><span id="index-setline_0028_0029"></span>
@@ -7243,7 +7908,7 @@ endif 1
 </p>
 <p>{lnum} は |<a href="#getline_0028_0029">getline()</a>| のときと同じやうに解釋される。
 </p>
-<p>{lnum} が最後の行の次の行の場合、新規行として {text} を追加する。
+<p>{lnum} が最後の行の次の行の場合、最後の行の下に {text} を追加されます。
 </p>
 <p>成功したら 0 を返す。失敗したら (大抵 {lnum} が無效な値のとき) 1 を返す。
 </p>
@@ -7262,6 +7927,9 @@ endif 1
 マーク &rsquo;[ と &rsquo;] はセットされない。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 2 引數として渡されます:
+</p><pre class="verbatim">GetText()-&gt;setline(lnum)
+</pre>
 <span id="setloclist_0028_0029"></span><span id="index-setloclist_0028_0029"></span>
 </dd>
 <dt>setloclist({nr}, {list} [, {action} [, {what}]])</dt>
@@ -7273,6 +7941,9 @@ endif 1
 </p>
 <p>オプショナル引數の辭書 {what} が提供される場合、{what} で指定されるアイテムのみが設定される。サポートされる {what} の一覽は |<a href="#setqflist_0028_0029">setqflist()</a>| を參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 2 引數として渡されます:
+</p><pre class="verbatim">GetLoclist()-&gt;setloclist(winnr)
+</pre>
 <span id="setmatches_0028_0029"></span><span id="index-setmatches_0028_0029"></span>
 </dd>
 <dt>setmatches({list} [, {win}])</dt>
@@ -7280,7 +7951,9 @@ endif 1
 </p>
 <p>{win} が指定されれば、カレントウィンドウではなく指定されたウィンドウあるいはウィンドウ ID を對象にする。
 </p>
-<span id="setpos_0028_0029"></span><span id="index-setpos_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetMatches()-&gt;setmatches()
+</pre><span id="setpos_0028_0029"></span><span id="index-setpos_0028_0029"></span>
 </dd>
 <dt>setpos({expr}, {list})</dt>
 <dd><p>{expr} の位置を設定する。{expr} として有效な値は次の通り:
@@ -7316,6 +7989,9 @@ endif 1
 </p>
 <p>縱方向移動の優先的列番號は復元されない。しかしカーソル位置を設定するときにこの値を設定した場合は、|<a href="motion_002etxt.html#j">j</a>| や |<a href="motion_002etxt.html#k">k</a>| で移動すると以前の列にジャンプやうになるだらう。優先的列番號の設定については |<a href="#cursor_0028_0029">cursor()</a>| も參照。|<a href="#winrestview_0028_0029">winrestview()</a>| の &quot;curswant&quot; キーも參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPosition()-&gt;setpos('.')
+</pre>
 <span id="setqflist_0028_0029"></span><span id="index-setqflist_0028_0029"></span>
 </dd>
 <dt>setqflist({list} [, {action} [, {what}]])</dt>
@@ -7382,8 +8058,9 @@ endif 1
 </p>
 <p>この函數は &rsquo;<samp>errorformat</samp>&rsquo; の設定とは無關係に QuickFix リストを作るために使へる。その最初のエラーへジャンプするには &lsquo;<code>:cc 1</code>&lsquo; などのコマンドを使ふ。
 </p>
-
-<span id="setreg_0028_0029"></span><span id="index-setreg_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 2 引數として渡されます:
+</p><pre class="verbatim">GetErrorlist()-&gt;setqflist()
+</pre><span id="setreg_0028_0029"></span><span id="index-setreg_0028_0029"></span>
 </dd>
 <dt>setreg({regname}, {value} [, {options}])</dt>
 <dd><p>レジスタ {regname} に {value} をセットする。
@@ -7424,6 +8101,9 @@ endif 1
 <p>空文字列を追加すると、レジスタの種類を變更することができる:
 </p><pre class="verbatim">:call setreg('a', '', 'al')
 </pre>
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 2 引數として渡されます:
+</p><pre class="verbatim">GetText()-&gt;setreg('a')
+</pre>
 <span id="settabvar_0028_0029"></span><span id="index-settabvar_0028_0029"></span>
 </dd>
 <dt>settabvar({tabnr}, {varname}, {val})</dt>
@@ -7439,6 +8119,9 @@ endif 1
 <p>タブの番號は 1 から始まる。
 この函數はサンドボックス |<a href="#sandbox">sandbox</a>| の中では使へない。
 </p>
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 3 引數として渡されます:
+</p><pre class="verbatim">GetValue()-&gt;settabvar(tab, name)
+</pre>
 <span id="settabwinvar_0028_0029"></span><span id="index-settabwinvar_0028_0029"></span>
 </dd>
 <dt>settabwinvar({tabnr}, {winnr}, {varname}, {val})</dt>
@@ -7464,6 +8147,9 @@ endif 1
 :call settabwinvar(3, 2, &quot;myvar&quot;, &quot;foobar&quot;)
 </pre><p>この函數は |<a href="#sandbox">sandbox</a>| の中では使用できない。
 </p>
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 4 引數として渡されます:
+</p><pre class="verbatim">GetValue()-&gt;settabvar(tab, winnr, name)
+</pre>
 <span id="settagstack_0028_0029"></span><span id="index-settagstack_0028_0029"></span>
 </dd>
 <dt>settagstack({nr}, {dict} [, {action}])</dt>
@@ -7493,28 +8179,35 @@ call settagstack(2, {'items' : newtag}, 'a')
 &quot; do something else
 call settagstack(1003, stack)
 unlet stack
-</pre><span id="setwinvar_0028_0029"></span><span id="index-setwinvar_0028_0029"></span>
+</pre><p>|<a href="#method">method</a>| としても使用でき、ベースは第 2 引數として渡されます:
+</p><pre class="verbatim">GetStack()-&gt;settagstack(winnr)
+</pre>
+<span id="setwinvar_0028_0029"></span><span id="index-setwinvar_0028_0029"></span>
 </dd>
-<dt>setwinvar({nr}, {varname}, {val})</dt>
+<dt>setwinvar({winnr}, {varname}, {val})</dt>
 <dd><p>|<a href="#settabwinvar_0028_0029">settabwinvar()</a>| と同樣。カレントタブページを對象とする。
 </p>
 <p>例:
 </p><pre class="verbatim">:call setwinvar(1, &quot;&amp;list&quot;, 0)
 :call setwinvar(2, &quot;myvar&quot;, &quot;foobar&quot;)
 </pre>
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 3 引數として渡されます:
+</p><pre class="verbatim">GetValue()-&gt;setwinvar(winnr, name)
+</pre>
 <span id="sha256_0028_0029"></span><span id="index-sha256_0028_0029"></span>
 </dd>
 <dt>sha256({string})</dt>
-<dd><p>{string} の SHA256 チェックサムを 64 文字の 16 進文字列で返す。
+<dd><p>{string} の SHA256 チェックサムを 64 文字の 16 進文字列で返します。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;sha256()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002bcryptv">+cryptv</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 <span id="shellescape_0028_0029"></span><span id="index-shellescape_0028_0029"></span>
 </dd>
 <dt>shellescape({string} [, {special}])</dt>
-<dd><p>シェルコマンドの引數として利用できるやうに {string} をエスケープする。
-MS-Windows と MS-DOS では、&rsquo;<samp>shellslash</samp>&rsquo; が設定されてゐない場合、{string} をダブルクォートで圍み、{string} の中のダブルクォートを全て二重にする。
-さうでなければ、{string} をシングルクォートで圍み、&quot;&rsquo;&quot; を &quot;&rsquo;\&rdquo;&quot; で置き換へる。
+<dd><p>シェルコマンドの引數として利用できるやうに {string} をエスケープします。MS-Windows では、&rsquo;<samp>shellslash</samp>&rsquo; が設定されてゐない場合、{string} をダブルクォートで圍み、{string} の中のダブルクォートを全て二重にします。さうでなければ、{string} をシングルクォートで圍み、&quot;&rsquo;&quot; を &quot;&rsquo;\&rdquo;&quot; で置き換へます。
 </p>
 <p>{special} が指定され、0 でない數値または空でない文字列の場合 (|<a href="#non_002dzero_002darg">non-zero-arg</a>|)、&quot;!&quot;, &quot;%&quot;, &quot;#&quot;, &quot;&lt;cword&gt;&quot; などの特殊なアイテムの前にはバックスラッシュがつく。コマンド |<a href="various_002etxt.html#g_t_003a_0021">:!</a>| によつてそのバックスラッシュは再び除かれる。
 </p>
@@ -7528,7 +8221,9 @@ MS-Windows と MS-DOS では、&rsquo;<samp>shellslash</samp>&rsquo; が設定�
 </p><pre class="verbatim">:call system(&quot;chmod +w -- &quot; . shellescape(expand(&quot;%&quot;)))
 </pre><p>|<a href="cmdline_002etxt.html#g_t_003a_003aS">::S</a>| も參照のこと。
 </p>
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetCommand()-&gt;shellescape()
+</pre>
 <span id="shiftwidth_0028_0029"></span><span id="index-shiftwidth_0028_0029"></span>
 </dd>
 <dt>shiftwidth([{col}])</dt>
@@ -7536,6 +8231,14 @@ MS-Windows と MS-DOS では、&rsquo;<samp>shellslash</samp>&rsquo; が設定�
 </p>
 <p>引數に 1 つの {col} がある場合、これは &rsquo;<samp>shiftwidth</samp>&rsquo; の値を返すための桁番號として使はれる。これは &rsquo;<samp>vartabstop</samp>&rsquo; 機能のためのものである。{list} 引數のためには |<a href="#cursor_0028_0029">cursor()</a>| 函數を參照のこと。もしも &rsquo;<samp>vartabstop</samp>&rsquo; 設定が有效になつてゐて、引數 {col} が與へられてゐない場合は、1 桁目と假定する。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetColumn()-&gt;shiftwidth()
+</pre>
+</dd>
+<dt>sign_ 函數群</dt>
+<dd><p>sign_ 函數群についてはここに文書化されてゐます: |<a href="sign_002etxt.html#sign_002dfunctions_002ddetails">sign-functions-details</a>|
+</p>
+
 <span id="simplify_0028_0029"></span><span id="index-simplify_0028_0029"></span>
 </dd>
 <dt>simplify({filename})</dt>
@@ -7559,6 +8262,9 @@ MS-Windows と MS-DOS では、&rsquo;<samp>shellslash</samp>&rsquo; が設定�
 -0.506366
 :echo sin(-4.01)
 0.763301
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;sin()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 
@@ -7574,6 +8280,9 @@ MS-Windows と MS-DOS では、&rsquo;<samp>shellslash</samp>&rsquo; が設定�
 0.521095
 :echo sinh(-0.9)
 -1.026517
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;sinh()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 
@@ -7602,6 +8311,9 @@ MS-Windows と MS-DOS では、&rsquo;<samp>shellslash</samp>&rsquo; が設定�
 </p>
 <p>ソートは安定である。(數値または文字列として) 等價な要素は元の順序關係が保持される。例へば數値としてソートした場合、文字列は元の順番通りに隣り合つて竝ぶ。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;sort()
+</pre>
 <p>|<a href="#uniq_0028_0029">uniq()</a>| も參照のこと。
 </p>
 <p>例:
@@ -7643,6 +8355,9 @@ call sound_playevent('bell', 'Callback')
 </p>
 <p>&lsquo;<code>sound_stop()</code>&lsquo; に渡すことができるサウンド ID を返す。サウンドを再生できなかつた場合はゼロを返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetSoundName()-&gt;sound_playevent()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002bsound">+sound</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 <span id="sound_005fplayfile_0028_0029"></span><span id="index-sound_005fplayfile_0028_0029"></span>
@@ -7650,7 +8365,11 @@ call sound_playevent('bell', 'Callback')
 <dt>sound_playfile({path} [, {callback}])</dt>
 <dd><p>&lsquo;<code>sound_playevent()</code>&lsquo; と似てゐるが、サウンドファイル {name} を再生する。{name} はフルパスでなければならない。Ubuntu では、このコマンドで再生するファイルが見つかるかもしれない:
 </p><pre class="verbatim">:!find /usr/share/sounds -type f | grep -v index.theme
-</pre><p>{|<a href="various_002etxt.html#g_t_002bsound">+sound</a>| 機能つきでコンパイルされたときのみ有效}
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetSoundPath()-&gt;sound_playfile()
+</pre>
+<p>{|<a href="various_002etxt.html#g_t_002bsound">+sound</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 
 <span id="sound_005fstop_0028_0029"></span><span id="index-sound_005fstop_0028_0029"></span>
@@ -7660,6 +8379,9 @@ call sound_playevent('bell', 'Callback')
 </p>
 <p>MS-Windows では、これは &lsquo;<code>sound_playevent()</code>&lsquo; によつて開始されるイベントサウンドに對しては機能しない。イベントのサウンドを止めるには &lsquo;<code>sound_clear()</code>&lsquo; を使用する。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">soundid-&gt;sound_stop()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002bsound">+sound</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 <span id="soundfold_0028_0029"></span><span id="index-soundfold_0028_0029"></span>
@@ -7674,7 +8396,9 @@ call sound_playevent('bell', 'Callback')
 </p></blockquote>
 <p>{譯注: phonetic algorithm の一種}
 </p>
-<span id="spellbadword_0028_0029"></span><span id="index-spellbadword_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWord()-&gt;soundfold()
+</pre><span id="spellbadword_0028_0029"></span><span id="index-spellbadword_0028_0029"></span>
 </dd>
 <dt>spellbadword([{sentence}])</dt>
 <dd><p>引數なしの場合: カーソル下またはカーソル以降のスペルミスした單語を返す。その單語の先頭へカーソルを移動する。カレント行にスペルミスした單語が見つからない場合は空文字列を返し、カーソルは移動しない。
@@ -7698,7 +8422,9 @@ call sound_playevent('bell', 'Callback')
 </pre>
 <p>カレントウィンドウに對するスペリング情報が適用される。オプション &rsquo;<samp>spell</samp>&rsquo; がオンでなければならない。&rsquo;<samp>spelllang</samp>&rsquo; の値が使用される。
 </p>
-<span id="spellsuggest_0028_0029"></span><span id="index-spellsuggest_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;spellbadword()
+</pre><span id="spellsuggest_0028_0029"></span><span id="index-spellsuggest_0028_0029"></span>
 </dd>
 <dt>spellsuggest({word} [, {max} [, {capital}]])</dt>
 <dd><p>{word} の正しいスペルの候補のリスト |<a href="#List">List</a>| を返す。{max} を指定すると、候補の數の最大値となる。{max} を指定しないと、25 個までの候補を返す。
@@ -7711,7 +8437,9 @@ call sound_playevent('bell', 'Callback')
 </p>
 <p>カレントウィンドウのスペリング情報が使はれる。オプション &rsquo;<samp>spell</samp>&rsquo; がオンでなければならず、&rsquo;<samp>spelllang</samp>&rsquo; と &rsquo;<samp>spellsuggest</samp>&rsquo; の値が適用される。
 </p>
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWord()-&gt;spellsuggest()
+</pre>
 <span id="split_0028_0029"></span><span id="index-split_0028_0029"></span>
 </dd>
 <dt>split({expr} [, {pattern} [, {keepempty}]])</dt>
@@ -7731,7 +8459,9 @@ call sound_playevent('bell', 'Callback')
 </p><pre class="verbatim">:let items = split(line, ':', 1)
 </pre><p>これの逆を行ふ函數は |<a href="#join_0028_0029">join()</a>| である。
 </p>
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetString()-&gt;split()
+</pre>
 <span id="sqrt_0028_0029"></span><span id="index-sqrt_0028_0029"></span>
 </dd>
 <dt>sqrt({expr})</dt>
@@ -7744,8 +8474,39 @@ call sound_playevent('bell', 'Callback')
 nan
 </pre><p>&quot;nan&quot; はシステムのライブラリに依存するので、異なるかもしれない。
 </p>
-<p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;sqrt()
+</pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
+
+<span id="state_0028_0029"></span><span id="index-state_0028_0029"></span>
+</dd>
+<dt>state([{what}])</dt>
+<dd><p>現在の狀態を示す文字を含む文字列を返します。常に安全であるとは限らないかもしれない作業を行ひたいコールバックで最も有用です。おほよそ次のやうに動作します:
+</p><ul>
+<li> コールバックは state() を使用して、作業が安全かどうかを確認します。
+<table>
+<tr><td width="20%">はい:</td><td width="70%">その後すぐにそれを行ひます</td></tr>
+<tr><td width="20%">いいえ:</td><td width="70%">作業キューへの追加と |<a href="autocmd_002etxt.html#SafeState">SafeState</a>| および/または |<a href="autocmd_002etxt.html#SafeStateAgain">SafeStateAgain</a>| 自動コマンドを追加します (|<a href="autocmd_002etxt.html#SafeState">SafeState</a>| はトップレベルでトリガー、|<a href="autocmd_002etxt.html#SafeStateAgain">SafeStateAgain</a>| はメッセージとコールバックの處理後にトリガー)。</td></tr>
+</table>
+</li><li> SafeState または SafeStateAgain がトリガーされて自動コマンドが實行されたら、&lsquo;<code>state()</code>&lsquo; で作業をすぐに實行できるかどうかを確認し、はいの場合はキューから削除して實行します。キューが空になつた場合、自動コマンドを削除します。
+</li></ul>
+<p>|<a href="#mode_0028_0029">mode()</a>| も參照してください。
+</p>
+<p>{what} を指定すると、この文字列の文字のみが追加されます。たとへば、これは畫面がスクロールしたかどうかを確認します:
+</p><pre class="verbatim">if state('s') == ''
+   &quot; 畫面はスクロールしてゐない
+</pre><p>これらの文字は狀態を示し、大槪は何かがビジーであることを示します:
+</p><table>
+<tr><td width="10%">m</td><td width="90%">マッピングの途中、:normal コマンド、feedkeys() または詰め込まれたコマンド</td></tr>
+<tr><td width="10%">o</td><td width="90%">オペレータ待機またはコマンド引數のための待機中。例へば |<a href="motion_002etxt.html#f">f</a>| の後</td></tr>
+<tr><td width="10%">a</td><td width="90%">插入モード自動補完がアクティブ</td></tr>
+<tr><td width="10%">x</td><td width="90%">自動コマンド實行中</td></tr>
+<tr><td width="10%">w</td><td width="90%">待機中にブロックされた。例へば json を讀む時の ch_evalexpr(), ch_read() および ch_readraw()</td></tr>
+<tr><td width="10%">S</td><td width="90%">SafeState または SafeStateAgain をトリガーしない</td></tr>
+<tr><td width="10%">c</td><td width="90%">タイマーを含むコールバック呼び出し (再歸呼び出しは &quot;ccc&quot; まで繰り返す)</td></tr>
+<tr><td width="10%">s</td><td width="90%">畫面がメッセージでスクロールされた</td></tr>
+</table>
 
 <span id="str2float_0028_0029"></span><span id="index-str2float_0028_0029"></span>
 </dd>
@@ -7756,6 +8517,8 @@ nan
 </p>
 <p>小數點數はロケールの設定にかかはらず常に &rsquo;.&rsquo; である。コンマを發見すると、そこで數値は終はりになる。つまり &quot;12,345.67&quot; は 12.0 に變換される。3 桁ごとのコンマ區切りを取り除くには |<a href="#substitute_0028_0029">substitute()</a>| が使へる:
 </p><pre class="verbatim">let f = str2float(substitute(text, ',', '', 'g'))
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">let f = text-&gt;substitute(',', '', 'g')-&gt;str2float()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 <span id="str2list_0028_0029"></span><span id="index-str2list_0028_0029"></span>
@@ -7769,18 +8532,36 @@ str2list(&quot;ABC&quot;)         returns [65, 66, 67]
 <p>{utf8} が省略されてゐるかゼロの場合、現在の &rsquo;<samp>encoding</samp>&rsquo; が使用される。{utf8} が 1 の場合は、常に utf-8 文字列を返す。utf-8 の合成文字は正しく處理される:
 </p><pre class="verbatim">str2list(&quot;á&quot;)           returns [97, 769]
 </pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetString()-&gt;str2list()
+</pre>
+
 <span id="str2nr_0028_0029"></span><span id="index-str2nr_0028_0029"></span>
 </dd>
-<dt>str2nr({expr} [, {base}])</dt>
-<dd><p>文字列 {expr} を數値に變換する。{base} は變換の底。2, 8, 10, 16 のいづれか。
+<dt>str2nr({expr} [, {base} [, {quoted}]])</dt>
+<dd><p>文字列 {expr} を數値に變換する。{base} は變換の底。2, 8, 10, 16 のいづれか。{quoted} が與へられ 0 以外の場合、埋め込まれた單一引用符は無視されるため、&quot;1&rsquo;000&rsquo;000&quot; は100萬です。
 </p>
-<p>{base} を省略すると 10 となる。そのため、文字列の先頭に 0 があるとき、デフォルトの文字列・數値變換とは異なり、8 進數とは解釋されない。
-</p>
-<p>{base} が 16 のとき、文字列の先頭の &quot;0x&quot; と &quot;0X&quot; は無視される。それ以外の底の場合は 0 となる。同樣に、{base} が 8 のとき、文字列の先頭の &quot;0&quot; は無視される。そして、{base} が 2 のとき、文字列の先頭の &quot;0b&quot; と &quot;0B&quot; は無視される。
+<p>{base} を省略すると 10 となる。そのため、文字列の先頭に 0 があるとき、デフォルトの文字列・數値變換とは異なり、8 進數とは解釋されない。例:
+</p><pre class="verbatim">let nr = str2nr('0123')
+</pre><p>{base} が 16 のとき、文字列の先頭の &quot;0x&quot; と &quot;0X&quot; は無視される。それ以外の底の場合は 0 となる。同樣に、{base} が 8 のとき、文字列の先頭の &quot;0&quot; は無視される。そして、{base} が 2 のとき、文字列の先頭の &quot;0b&quot; と &quot;0B&quot; は無視される。
 </p>
 <p>數値の後のテキストは暗默に無視される。
 </p>
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;str2nr()
+</pre>
+<span id="strcharpart_0028_0029"></span><span id="index-strcharpart_0028_0029"></span>
+</dd>
+<dt>strcharpart({src}, {start} [, {len}])</dt>
+<dd><p>|<a href="#strpart_0028_0029">strpart()</a>| と同樣だがバイトのインデックスおよび長さではなく文字のインデックスおよび長さを使用する。
+</p>
+<p>文字インデックスが存在しない文字を指す場合、それは 1 文字であるとして扱はれる。例:
+</p><pre class="verbatim">strcharpart('abc', -1, 2)
+</pre><p>結果は &quot;a&quot; である。
+</p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;strcharpart(5)
+</pre>
 <span id="strchars_0028_0029"></span><span id="index-strchars_0028_0029"></span>
 </dd>
 <dt>strchars({expr} [, {skipcc}])</dt>
@@ -7808,15 +8589,9 @@ else
     endif
   endfunction
 endif
-</pre><span id="strcharpart_0028_0029"></span><span id="index-strcharpart_0028_0029"></span>
-</dd>
-<dt>strcharpart({src}, {start} [, {len}])</dt>
-<dd><p>|<a href="#strpart_0028_0029">strpart()</a>| と同樣だがバイトのインデックスおよび長さではなく文字のインデックスおよび長さを使用する。
-</p>
-<p>文字インデックスが存在しない文字を指す場合、それは 1 文字であるとして扱はれる。例:
-</p><pre class="verbatim">strcharpart('abc', -1, 2)
-</pre><p>結果は &quot;a&quot; である。
-</p>
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;strchars()
+</pre>
 <span id="strdisplaywidth_0028_0029"></span><span id="index-strdisplaywidth_0028_0029"></span>
 </dd>
 <dt>strdisplaywidth({expr} [, {col}])</dt>
@@ -7829,6 +8604,9 @@ endif
 </p>
 <p>|<a href="#strlen_0028_0029">strlen()</a>|, |<a href="#strwidth_0028_0029">strwidth()</a>|, |<a href="#strchars_0028_0029">strchars()</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;strdisplaywidth()
+</pre>
 <span id="strftime_0028_0029"></span><span id="index-strftime_0028_0029"></span>
 </dd>
 <dt>strftime({format} [, {time}])</dt>
@@ -7846,6 +8624,9 @@ endif
 </pre><p>この函數はどのシステムでも利用できるとは限らない。利用できるかチェックするには次のやうにする:
 </p><pre class="verbatim">:if exists(&quot;*strftime&quot;)
 </pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetFormat()-&gt;strftime()
+</pre>
 <span id="strgetchar_0028_0029"></span><span id="index-strgetchar_0028_0029"></span>
 </dd>
 <dt>strgetchar({str}, {index})</dt>
@@ -7853,6 +8634,9 @@ endif
 </p>
 <p>|<a href="#strcharpart_0028_0029">strcharpart()</a>| と |<a href="#strchars_0028_0029">strchars()</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;strgetchar(5)
+</pre>
 <span id="stridx_0028_0029"></span><span id="index-stridx_0028_0029"></span>
 </dd>
 <dt>stridx({haystack}, {needle} [, {start}])</dt>
@@ -7870,7 +8654,9 @@ endif
 <span id="index-strchr_0028_0029"></span>
 <p>stridx() は C の函數 strstr() と同じやうに動作する。{needle} が 1 文字のときは strchr() と同じやうに動作する。
 </p>
-<span id="string_0028_0029"></span><span id="index-string_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetHaystack()-&gt;stridx(needle)
+</pre><span id="string_0028_0029"></span><span id="index-string_0028_0029"></span>
 </dd>
 <dt>string({expr})</dt>
 <dd><p>{expr} を文字列に變換して返す。{expr} が數値、浮動小數點數、文字列、Blob、それらの複合の場合は、この戾り値を |<a href="#eval_0028_0029">eval()</a>| でパースして復元できる。
@@ -7887,7 +8673,10 @@ endif
 
 <p>リストや辭書に循環參照がある場合、それらは &quot;[...]&quot; や &quot;{...}&quot; に置き換へられる。その結果に對して eval() を使用すると失敗する。
 </p>
-<p>|<a href="#strtrans_0028_0029">strtrans()</a>|も參照。
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;string()
+</pre>
+<p>|<a href="#strtrans_0028_0029">strtrans()</a>|も參照してください。
 </p>
 <span id="strlen_0028_0029"></span><span id="index-strlen_0028_0029"></span>
 </dd>
@@ -7896,6 +8685,9 @@ endif
 </p>
 <p>|<a href="#len_0028_0029">len()</a>|, |<a href="#strdisplaywidth_0028_0029">strdisplaywidth()</a>|, |<a href="#strwidth_0028_0029">strwidth()</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetString()-&gt;strlen()
+</pre>
 <span id="strpart_0028_0029"></span><span id="index-strpart_0028_0029"></span>
 </dd>
 <dt>strpart({src}, {start} [, {len}])</dt>
@@ -7912,6 +8704,9 @@ strpart(&quot;abcdefg&quot;, 3)       == &quot;defg&quot;
 文字列の最初の文字を指定するためには、{start} は 0 でなければならない。カーソルのある位置から3文字を取得する例:
 </p><pre class="verbatim">strpart(getline(&quot;.&quot;), col(&quot;.&quot;) - 1, 3)
 </pre></blockquote>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;strpart(5)
+</pre>
 <span id="strridx_0028_0029"></span><span id="index-strridx_0028_0029"></span>
 </dd>
 <dt>strridx({haystack}, {needle} [, {start}])</dt>
@@ -7926,6 +8721,9 @@ strpart(&quot;abcdefg&quot;, 3)       == &quot;defg&quot;
 </pre><span id="strrchr_0028_0029"></span><span id="index-strrchr_0028_0029"></span>
 <p>{needle} が 1 文字の場合は C の函數 strrchr() と同じやうに動作する。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetHaystack()-&gt;strridx(needle)
+</pre>
 <span id="strtrans_0028_0029"></span><span id="index-strtrans_0028_0029"></span>
 </dd>
 <dt>strtrans({expr})</dt>
@@ -7933,6 +8731,9 @@ strpart(&quot;abcdefg&quot;, 3)       == &quot;defg&quot;
 </p><pre class="verbatim">echo strtrans(@a)
 </pre><p>これはレジスタの中の改行を、改行として表示する代はりに &quot;^@&quot; と表示する。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetString()-&gt;strtrans()
+</pre>
 <span id="strwidth_0028_0029"></span><span id="index-strwidth_0028_0029"></span>
 </dd>
 <dt>strwidth({expr})</dt>
@@ -7942,6 +8743,9 @@ strpart(&quot;abcdefg&quot;, 3)       == &quot;defg&quot;
 </p>
 <p>|<a href="#strlen_0028_0029">strlen()</a>|, |<a href="#strdisplaywidth_0028_0029">strdisplaywidth()</a>|, |<a href="#strchars_0028_0029">strchars()</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetString()-&gt;strwidth()
+</pre>
 <span id="submatch_0028_0029"></span><span id="E935"></span><span id="index-submatch_0028_0029"></span>
 <span id="index-E935"></span>
 </dd>
@@ -7966,6 +8770,9 @@ strpart(&quot;abcdefg&quot;, 3)       == &quot;defg&quot;
 :echo substitute(text, '\d\+', '\=submatch(0) + 1', '')
 </pre><p>この例は、行の中で最初の數値を檢索し、それに 1 を加へる。改行は改行文字として含まれる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetNr()-&gt;submatch()
+</pre>
 <span id="substitute_0028_0029"></span><span id="index-substitute_0028_0029"></span>
 </dd>
 <dt>substitute({expr}, {pat}, {sub}, {flags})</dt>
@@ -7998,6 +8805,9 @@ strpart(&quot;abcdefg&quot;, 3)       == &quot;defg&quot;
 </pre><p>オプショナル引數はマッチ文字列全體と9個のサブマッチが含まれる以下の |<a href="#submatch_0028_0029">submatch()</a>| が返す樣なリストである。例:
 </p><pre class="verbatim">:echo substitute(s, '%\(\x\x\)', {m -&gt; '0x' . m[1]}, 'g')
 </pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetString()-&gt;substitute(pat, sub, flags)
+</pre>
 <span id="swapinfo_0028_0029"></span><span id="index-swapinfo_0028_0029"></span>
 </dd>
 <dt>swapinfo({fname})</dt>
@@ -8024,11 +8834,17 @@ strpart(&quot;abcdefg&quot;, 3)       == &quot;defg&quot;
 <tr><td width="30%">Magic number mismatch:</td><td width="70%">無效な最初のブロックの情報</td></tr>
 </table>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetFilename()-&gt;swapinfo()
+</pre>
 <span id="swapname_0028_0029"></span><span id="index-swapname_0028_0029"></span>
 </dd>
 <dt>swapname({expr})</dt>
 <dd><p>結果はバッファ {expr} のスワップファイルへのパス。{expr} の使ひ方は上記の |<a href="#bufname_0028_0029">bufname()</a>| を參照。もしもバッファ {expr} が現在のバッファなら、結果は |<a href="recover_002etxt.html#g_t_003aswapname">:swapname</a>| (スワップファイルがあるのであれば) と同じ。もしもバッファ {expr} がスワップファイルを持たないのであれば、空文字が返される。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufname()-&gt;swapname()
+</pre>
 <span id="synID_0028_0029"></span><span id="index-synID_0028_0029"></span>
 </dd>
 <dt>synID({lnum}, {col}, {trans})</dt>
@@ -8082,13 +8898,20 @@ strpart(&quot;abcdefg&quot;, 3)       == &quot;defg&quot;
 
 <p>例 (カーソルの下の構文アイテムのカラーを表示する):
 </p><pre class="verbatim">:echo synIDattr(synIDtrans(synID(line(&quot;.&quot;), col(&quot;.&quot;), 1)), &quot;fg&quot;)
-</pre><span id="synIDtrans_0028_0029"></span><span id="index-synIDtrans_0028_0029"></span>
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">:echo synID(line(&quot;.&quot;), col(&quot;.&quot;), 1)-&gt;synIDtrans()-&gt;synIDattr(&quot;fg&quot;)
+</pre>
+
+<span id="synIDtrans_0028_0029"></span><span id="index-synIDtrans_0028_0029"></span>
 </dd>
 <dt>synIDtrans({synID})</dt>
 <dd><p>結果は數値で、{synID} を構文 ID に變換したもの。キャラクタをハイライト表示してゐる構文グループの ID である。
 </p>
 <p>&quot;<code>:highlight link</code>&quot; によつて與へられるハイライトのリンクはこれに從つてゐる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">:echo synID(line(&quot;.&quot;), col(&quot;.&quot;), 1)-&gt;synIDtrans()-&gt;synIDattr(&quot;fg&quot;)
+</pre>
 <span id="synconcealed_0028_0029"></span><span id="index-synconcealed_0028_0029"></span>
 </dd>
 <dt>synconcealed({lnum}, {col})</dt>
@@ -8176,17 +8999,26 @@ endfor
 <p>明示的にチェックさせるには |<a href="editing_002etxt.html#g_t_003achecktime">:checktime</a>| を使ふ。
 </p></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">:echo GetCmd()-&gt;system()
+</pre>
 
 <span id="systemlist_0028_0029"></span><span id="index-systemlist_0028_0029"></span>
 </dd>
 <dt>systemlist({expr} [, {input}])</dt>
-<dd><p>|<a href="#system_0028_0029">system()</a>| と同じだが行のリスト |<a href="#List">List</a>| を返す。行は NL 文字で區切られ、NUL 文字は NL 文字に變換される。出力は |<a href="#readfile_0028_0029">readfile()</a>| の {binary} 引數に &quot;b&quot; を指定したのと同樣である。
+<dd><p>|<a href="#system_0028_0029">system()</a>| と同じだが行のリスト |<a href="#List">List</a>| を返す。行は NL 文字で區切られ、NUL 文字は NL 文字に變換される。出力は |<a href="#readfile_0028_0029">readfile()</a>| の {binary} 引數に &quot;b&quot; を指定したのと同樣である。ただし、結果が NL で終はる場合、餘分な空の項目はない。
 </p><blockquote>
 <p><strong>Note:</strong> <br>
 MS-Windows では末尾の CR 文字がつくかもしれないことに注意。
 </p></blockquote>
-<p>エラー時には空文字列が返る。
+
+<p>&quot;echo hello&quot; と &quot;echo -n hello&quot; の違ひを確認するには、|<a href="#system_0028_0029">system()</a>| および |<a href="#split_0028_0029">split()</a>| を使用します:
+</p><pre class="verbatim">echo system('echo hello')-&gt;split('\n', 1)
+</pre><p>エラー時には空文字列が返ります。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">:echo GetCmd()-&gt;systemlist()
+</pre>
 
 <span id="tabpagebuflist_0028_0029"></span><span id="index-tabpagebuflist_0028_0029"></span>
 </dd>
@@ -8207,7 +9039,9 @@ endfor
 1 つのバッファが複數のウィンドウに表示されてゐる場合があることに注意。
 </p></blockquote>
 
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetTabpage()-&gt;tabpagebuflist()
+</pre>
 <span id="tabpagenr_0028_0029"></span><span id="index-tabpagenr_0028_0029"></span>
 </dd>
 <dt>tabpagenr([{arg}])</dt>
@@ -8236,7 +9070,9 @@ endfor
 tabpagewinnr(4, '$')    &quot; タブページ 4 內のウィンドウの個數
 </pre><p>{tabarg} が無效なときは 0 を返す。
 </p>
-<span id="tagfiles_0028_0029"></span><span id="index-tagfiles_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetTabpage()-&gt;tabpagewinnr()
+</pre><span id="tagfiles_0028_0029"></span><span id="index-tagfiles_0028_0029"></span>
 </dd>
 <dt>tagfiles()</dt>
 <dd><p>カレントバッファにおいて、タグを檢索するときに使ふファイルの名前からなるリスト |<a href="#List">List</a>| を返す。オプション &rsquo;<samp>tags</samp>&rsquo; を展開したものである。
@@ -8267,6 +9103,9 @@ tabpagewinnr(4, '$')    &quot; タブページ 4 內のウィンドウの個數
 </p>
 <p>Vim が使用するタグファイルについては |<a href="options_002etxt.html#g_t_0027tags_0027">'tags'</a>| を參照。樣々な ctags によつて生成されるタグファイルのフォーマットについては |<a href="tagsrch_002etxt.html#tags_002dfile_002dformat">tags-file-format</a>| を參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetTagpattern()-&gt;taglist()
+</pre>
 <span id="tan_0028_0029"></span><span id="index-tan_0028_0029"></span>
 </dd>
 <dt>tan({expr})</dt>
@@ -8279,6 +9118,8 @@ tabpagewinnr(4, '$')    &quot; タブページ 4 內のウィンドウの個數
 0.648361
 :echo tan(-4.01)
 -1.181502
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;tan()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 
@@ -8294,14 +9135,23 @@ tabpagewinnr(4, '$')    &quot; タブページ 4 內のウィンドウの個數
 0.462117
 :echo tanh(-1)
 -0.761594
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;tanh()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 
 
+
 </dd>
 <dt>term_ 函數群</dt>
-<dd><p>これらの說明は次にあります: |<a href="terminal_002etxt.html#terminal_002dfunction_002ddetails">terminal-function-details</a>|
+<dd><p>term_ 函數群についてはここに文書化されてゐます: |<a href="terminal_002etxt.html#terminal_002dfunction_002ddetails">terminal-function-details</a>|
 </p>
+</dd>
+<dt>test_ 函數群</dt>
+<dd><p>test_ 函數群についてはここに文書化されてゐます: |<a href="testing_002etxt.html#test_002dfunctions_002ddetails">test-functions-details</a>|
+</p>
+
 <span id="tempname_0028_0029"></span><span id="temp_002dfile_002dname"></span><span id="index-tempname_0028_0029"></span>
 <span id="index-temp_002dfile_002dname"></span>
 </dd>
@@ -8331,6 +9181,10 @@ tabpagewinnr(4, '$')    &quot; タブページ 4 內のウィンドウの個數
 <tr><td width="20%">&quot;callback&quot;</td><td width="80%">コールバック</td></tr>
 <tr><td width="20%">&quot;paused&quot;</td><td width="80%">タイマーが一時停止中なら 1、それ以外は 0</td></tr>
 </table>
+
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetTimer()-&gt;timer_info()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002btimers">+timers</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 <span id="timer_005fpause_0028_0029"></span><span id="index-timer_005fpause_0028_0029"></span>
@@ -8342,6 +9196,9 @@ tabpagewinnr(4, '$')    &quot; タブページ 4 內のウィンドウの個數
 </p>
 <p>{paused} が 0 以外の數値、もしくは空でない文字列で評價される場合にタイマーが停止し、それ以外は再開する。|<a href="#non_002dzero_002darg">non-zero-arg</a>| を參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetTimer()-&gt;timer_pause(1)
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002btimers">+timers</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 <span id="timer_005fstart_0028_0029"></span><span id="timer"></span><span id="timers"></span><span id="index-timer_005fstart_0028_0029"></span>
@@ -8371,6 +9228,10 @@ let timer = timer_start(500, 'MyHandler',
         \ {'repeat': 3})
 </pre><p>これは MyHandler() を 500ms 閒隔で 3 回呼び出す。
 </p>
+
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetMsec()-&gt;timer_start(callback)
+</pre>
 <p>サンドボックス|<a href="#sandbox">sandbox</a>|の中では利用できない。
 </p>
 <p>{|<a href="various_002etxt.html#g_t_002btimers">+timers</a>| 機能を有效にしてコンパイルしたときのみ有效}
@@ -8380,6 +9241,9 @@ let timer = timer_start(500, 'MyHandler',
 <dt>timer_stop({timer})</dt>
 <dd><p>タイマーを停止する。タイマーのコールバックは以降呼び出されない。{timer} は timer_start() が返した ID である。よつて數値でなければならない。{timer} が存在しなかつた場合でもエラーは發生しない。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetTimer()-&gt;timer_stop()
+</pre>
 <p>{|<a href="various_002etxt.html#g_t_002btimers">+timers</a>| 機能を有效にしてコンパイルしたときのみ有效}
 </p>
 <span id="timer_005fstopall_0028_0029"></span><span id="index-timer_005fstopall_0028_0029"></span>
@@ -8394,11 +9258,17 @@ let timer = timer_start(500, 'MyHandler',
 <dt>tolower({expr})</dt>
 <dd><p>引數の文字列の大文字を小文字に變換してできた文字列を返す (文字列に |<a href="change_002etxt.html#gu">gu</a>| を適用するのとちやうど同じ)。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;tolower()
+</pre>
 <span id="toupper_0028_0029"></span><span id="index-toupper_0028_0029"></span>
 </dd>
 <dt>toupper({expr})</dt>
 <dd><p>引數の文字列の小文字を大文字に變換してできた文字列を返す (文字列に |<a href="change_002etxt.html#gU">gU</a>| を適用するのとちやうど同じ)。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;toupper()
+</pre>
 <span id="tr_0028_0029"></span><span id="index-tr_0028_0029"></span>
 </dd>
 <dt>tr({src}, {fromstr}, {tostr})</dt>
@@ -8410,6 +9280,9 @@ let timer = timer_start(500, 'MyHandler',
 </p><pre class="verbatim">echo tr(&quot;&lt;blob&gt;&quot;, &quot;&lt;&gt;&quot;, &quot;{}&quot;)
 </pre><p>戾り値は &quot;{blob}&quot; となる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;tr(from, to)
+</pre>
 <span id="trim_0028_0029"></span><span id="index-trim_0028_0029"></span>
 </dd>
 <dt>trim({text} [, {mask}])</dt>
@@ -8427,6 +9300,9 @@ let timer = timer_start(500, 'MyHandler',
 </p><pre class="verbatim">echo trim(&quot;rm&lt;Xrm&lt;&gt;X&gt;rrm&quot;, &quot;rm&lt;&gt;&quot;)
 </pre><p>&quot;Xrm&lt;&gt;X&quot; (中閒の文字は削除されない) を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;trim()
+</pre>
 <span id="trunc_0028_0029"></span><span id="index-trunc_0028_0029"></span>
 </dd>
 <dt>trunc({expr})</dt>
@@ -8441,6 +9317,9 @@ echo trunc(-5.456)
 -5.0
 echo trunc(4.0)
 4.0
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">Compute()-&gt;trunc()
 </pre><p>{|<a href="various_002etxt.html#g_t_002bfloat">+float</a>| 機能つきでコンパイルされたときのみ有效}
 </p>
 <span id="type_0028_0029"></span><span id="index-type_0028_0029"></span>
@@ -8472,6 +9351,9 @@ echo trunc(4.0)
 </pre><p>v:t_ 變數が存在するかを判定するにはこれを使ふ:
 </p><pre class="verbatim">:if exists('v:t_number')
 </pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;type()
+</pre>
 <span id="undofile_0028_0029"></span><span id="index-undofile_0028_0029"></span>
 </dd>
 <dt>undofile({name})</dt>
@@ -8483,6 +9365,9 @@ echo trunc(4.0)
 </p>
 <p>|<a href="various_002etxt.html#g_t_002bpersistent_005fundo">+persistent_undo</a>| オプションを無效にしてコンパイルされた場合はこの函數は常に空文字列を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetFilename()-&gt;undofile()
+</pre>
 <span id="undotree_0028_0029"></span><span id="index-undotree_0028_0029"></span>
 </dd>
 <dt>undotree()</dt>
@@ -8515,11 +9400,18 @@ echo trunc(4.0)
 </p><pre class="verbatim">:let newlist = uniq(copy(mylist))
 </pre><p>デフォルトの比較函數は各要素の文字列表現を使ふ。{func} と {dict} については |<a href="#sort_0028_0029">sort()</a>| 參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mylist-&gt;uniq()
+</pre>
+
 <span id="values_0028_0029"></span><span id="index-values_0028_0029"></span>
 </dd>
 <dt>values({dict})</dt>
 <dd><p>{dict} の全ての値からなるリスト |<a href="#List">List</a>| を返す。このリストの順序は不定である。|<a href="#items_0028_0029">items()</a>| と |<a href="#keys_0028_0029">keys()</a>| も參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">mydict-&gt;values()
+</pre>
 
 <span id="virtcol_0028_0029"></span><span id="index-virtcol_0028_0029"></span>
 </dd>
@@ -8551,16 +9443,19 @@ virtcol(&quot;'t&quot;)    &quot;    there&quot; の 'h' に 't を設定、戾�
 </p><pre class="verbatim">echo max(map(range(1, line('$')), &quot;virtcol([v:val, '$'])&quot;))
 </pre></blockquote>
 
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetPos()-&gt;virtcol()
+</pre>
 
 <span id="visualmode_0028_0029"></span><span id="index-visualmode_0028_0029"></span>
 </dd>
-<dt>visualmode([expr])</dt>
+<dt>visualmode([{expr}])</dt>
 <dd><p>結果は文字列で、カレントバッファ內で最後に使はれたビジュアルモードを敎へてくれる。初期狀態では單に空文字列を返すだけだが、一度でもビジュアルモードが使はれた場合、その種類によつて &quot;v&quot;か &quot;V&quot; か &quot;&lt;CTRL-V&gt;&quot; (CTRL-V の文字が 1 文字で) 返される。これはそれぞれ文字選擇、行選擇、矩形選擇を意味してゐる。
 </p>
 <p>例:
 </p><pre class="verbatim">exe &quot;normal &quot; . visualmode()
 </pre><p>これは最後に使はれたのと同じビジュアルモードに入る。また、スクリプトの動作を、最後に使はれたビジュアルモードに應じて變更したい場合にも便利だらう。
-ビジュアルモードにゐるときは |<a href="#mode_0028_0029">mode()</a>| を使つてビジュアルモードの種類を取得できる。(|<a href="map_002etxt.html#g_t_003avmap">:vmap</a>| などの中などで) {expr} に 0 以外の數値か空文字列以外の文字列を指定した場合は、ビジュアルモードがクリアされ、以前の値を返す。|<a href="#non_002dzero_002darg">non-zero-arg</a>| を參照。
+ビジュアルモードにゐるときは |<a href="#mode_0028_0029">mode()</a>| を使つてビジュアルモードの種類を取得できます (|<a href="map_002etxt.html#g_t_003avmap">:vmap</a>| などの中などで)。{expr} に 0 以外の數値か空文字列以外の文字列を指定した場合は、ビジュアルモードがクリアされ、以前の値を返します。|<a href="#non_002dzero_002darg">non-zero-arg</a>| を參照してください。
 </p>
 <span id="wildmenumode_0028_0029"></span><span id="index-wildmenumode_0028_0029"></span>
 </dd>
@@ -8587,13 +9482,19 @@ virtcol(&quot;'t&quot;)    &quot;    there&quot; の 'h' に 't を設定、戾�
 </p><pre class="verbatim">call win_execute(winid, 'set syntax=python')
 </pre><p>&lsquo;<code>setwinvar()</code>&lsquo; で同じことをしても自動コマンドはトリガーされず、實際には構文ハイライトは表示されない。
 <span id="E994"></span><span id="index-E994"></span>
-すべてのコマンドがポップアップウィンドウで許可されてゐるわけではない。
+すべてのコマンドがポップアップウィンドウで許可されてゐるわけではありません。ウィンドウ {id} が存在しない場合、エラーは發生しません。
 </p>
+<p>|<a href="#method">method</a>| としても使用でき、ベースは第 2 引數として渡されます:
+</p><pre class="verbatim">GetCommand()-&gt;win_execute(winid)
+</pre>
 <span id="win_005ffindbuf_0028_0029"></span><span id="index-win_005ffindbuf_0028_0029"></span>
 </dd>
 <dt>win_findbuf({bufnr})</dt>
 <dd><p>バッファ {bufnr} が含まれてゐるウィンドウについて |<a href="windows_002etxt.html#window_002dID">window-ID</a>| のリストを返す。存在しない場合は空のリストになる。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetBufnr()-&gt;win_findbuf()
+</pre>
 <span id="win_005fgetid_0028_0029"></span><span id="index-win_005fgetid_0028_0029"></span>
 </dd>
 <dt>win_getid([{win} [, {tab}]])</dt>
@@ -8601,6 +9502,9 @@ virtcol(&quot;'t&quot;)    &quot;    there&quot; の 'h' に 't を設定、戾�
 </p>
 <p>{tab} が未指定の場合現在のタブが使用され、{tab} が番號で指定された場合はそのタブとなる。最初のタブ番號は 1 である。ウィンドウが見附からない場合には 0 を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinnr()-&gt;win_getid()
+</pre>
 <span id="win_005fgotoid_0028_0029"></span><span id="index-win_005fgotoid_0028_0029"></span>
 </dd>
 <dt>win_gotoid({expr})</dt>
@@ -8608,6 +9512,9 @@ virtcol(&quot;'t&quot;)    &quot;    there&quot; の 'h' に 't を設定、戾�
 </p>
 <p>成功した場合は 1 を、ウィンドウが見附からない場合は 0 を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinid()-&gt;win_gotoid()
+</pre>
 <span id="win_005fid2tabwin_0028_0029"></span><span id="index-win_005fid2tabwin_0028_0029"></span>
 </dd>
 <dt>win_id2tabwin({expr})</dt>
@@ -8615,11 +9522,17 @@ virtcol(&quot;'t&quot;)    &quot;    there&quot; の 'h' に 't を設定、戾�
 </p>
 <p>ウィンドウが見附からなかつた場合は [0, 0] を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinid()-&gt;win_id2tabwin()
+</pre>
 <span id="win_005fid2win_0028_0029"></span><span id="index-win_005fid2win_0028_0029"></span>
 </dd>
 <dt>win_id2win({expr})</dt>
 <dd><p>{expr} の ID で示されるウィンドウのウィンドウ番號を返す。現在のタブページ內でそのウィンドウが見附からなかつた場合は 0 を返す。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinid()-&gt;win_id2win()
+</pre>
 <span id="win_005fscreenpos_0028_0029"></span><span id="index-win_005fscreenpos_0028_0029"></span>
 </dd>
 <dt>win_screenpos({nr})</dt>
@@ -8629,7 +9542,26 @@ virtcol(&quot;'t&quot;)    &quot;    there&quot; の 'h' に 't を設定、戾�
 </p>
 <p>現在のタブページでウィンドウが見つからなければ [0, 0] を返す。
 </p>
-<span id="winbufnr_0028_0029"></span><span id="index-winbufnr_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinid()-&gt;win_screenpos()
+</pre><span id="win_005fsplitmove_0028_0029"></span><span id="index-win_005fsplitmove_0028_0029"></span>
+</dd>
+<dt>win_splitmove({nr}, {target} [, {options}])</dt>
+<dd><p>ウィンドウ {nr} をウィンドウ {target} の新しい分割に移動します。これは {target} に移動し、|<a href="windows_002etxt.html#g_t_003asplit">:split</a>| を使用して新しいウィンドウを作成しますが、ウィンドウ {nr} と同じ內容を使用してから、{nr} を閉ぢることに似てゐます。
+</p>
+<p>{nr} と {target} の兩方とも、ウィンドウ番號または |<a href="windows_002etxt.html#window_002dID">window-ID</a>| です。
+</p>
+<p>成功時は 0、失敗時は非0 を返します。
+</p>
+<p>{options} は、次のオプションエントリを持つ辭書です:
+</p><table>
+<tr><td width="30%">&quot;vertical&quot;</td><td width="70%">TRUE の場合、|<a href="windows_002etxt.html#g_t_003avsplit">:vsplit</a>| と同樣に分割が垂直に作成されます。</td></tr>
+<tr><td width="30%">&quot;rightbelow&quot;</td><td width="70%">TRUE の場合、分割は下または右 (垂直の場合) に行はれます。FALSE の場合、上または左 (垂直の場合) に行はれます。未指定の場合、&rsquo;<samp>splitbelow</samp>&rsquo; および &rsquo;<samp>splitright</samp>&rsquo; の値が使用されます。</td></tr>
+</table>
+
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinid()-&gt;win_splitmove(target)
+</pre><span id="winbufnr_0028_0029"></span><span id="index-winbufnr_0028_0029"></span>
 </dd>
 <dt>winbufnr({nr})</dt>
 <dd><p>結果は數値で、{nr} 番目のウィンドウに關聯付けられてゐるバッファの番號。{nr} にはウィンドウ番號または |<a href="windows_002etxt.html#window_002dID">window-ID</a>| が使へる。
@@ -8640,6 +9572,8 @@ virtcol(&quot;'t&quot;)    &quot;    there&quot; の 'h' に 't を設定、戾�
 </p>
 <p>例:
 </p><pre class="verbatim">:echo &quot;The file in the current window is &quot; . bufname(winbufnr(0))
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">FindWindow()-&gt;winbufnr()-&gt;bufname()
 </pre><span id="wincol_0028_0029"></span><span id="index-wincol_0028_0029"></span>
 </dd>
 <dt>wincol()</dt>
@@ -8652,6 +9586,9 @@ virtcol(&quot;'t&quot;)    &quot;    there&quot; の 'h' に 't を設定、戾�
 </p>
 <p>例:
 </p><pre class="verbatim">:echo &quot;The current window has &quot; . winheight(0) . &quot; lines.&quot;
+</pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinid()-&gt;winheight()
 </pre><span id="winlayout_0028_0029"></span><span id="index-winlayout_0028_0029"></span>
 </dd>
 <dt>winlayout([{tabnr}])</dt>
@@ -8678,7 +9615,10 @@ virtcol(&quot;'t&quot;)    &quot;    there&quot; の 'h' に 't を設定、戾�
 :echo winlayout(2)
 ['col', [['leaf', 1002], ['row', ['leaf', 1003],
                      ['leaf', 1001]]], ['leaf', 1000]]
-</pre><span id="winline_0028_0029"></span><span id="index-winline_0028_0029"></span>
+</pre><p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetTabnr()-&gt;winlayout()
+</pre>
+<span id="winline_0028_0029"></span><span id="index-winline_0028_0029"></span>
 </dd>
 <dt>winline()</dt>
 <dd><p>結果は數値で、ウィンドウの最上行から數へた行番號を返す。ウィンドウでの最上行が1となる。
@@ -8708,7 +9648,9 @@ virtcol(&quot;'t&quot;)    &quot;    there&quot; の 'h' に 't を設定、戾�
 let prev_window = winnr('#')
 let wnum = winnr('3k')
 </pre>
-<span id="winrestcmd_0028_0029"></span><span id="index-winrestcmd_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinval()-&gt;winnr()
+</pre><span id="winrestcmd_0028_0029"></span><span id="index-winrestcmd_0028_0029"></span>
 </dd>
 <dt>winrestcmd()</dt>
 <dd><p>現在のウィンドウサイズを復元するための一聯の |<a href="windows_002etxt.html#g_t_003aresize">:resize</a>| コマンドを返す。これが返すコマンドは、ウィンドウを開閉せず、カレントウィンドウとカレントタブページが變更されてゐないときのみ正しく動作する。
@@ -8731,7 +9673,9 @@ let wnum = winnr('3k')
 </p>
 <p>この値を手動で變更した場合、結果は豫測できない。ウィンドウサイズが變更されてゐると、結果は必ずしも元通りにならない。
 </p>
-<span id="winsaveview_0028_0029"></span><span id="index-winsaveview_0028_0029"></span>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetView()-&gt;winrestview()
+</pre><span id="winsaveview_0028_0029"></span><span id="index-winsaveview_0028_0029"></span>
 </dd>
 <dt>winsaveview()</dt>
 <dd><p>カレントウィンドウの表示狀態を復元するための情報を持つ辭書 |<a href="#Dictionary">Dictionary</a>| を返す。この表示狀態を復元するには |<a href="#winrestview_0028_0029">winrestview()</a>| を使ふ。
@@ -8776,6 +9720,9 @@ getpos() とは異なり最初の桁番號はゼロ
 :endif
 </pre><p>端末または畫面サイズを取得するには、&rsquo;<samp>columns</samp>&rsquo; オプション參照。
 </p>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetWinid()-&gt;winwidth()
+</pre>
 
 <span id="wordcount_0028_0029"></span><span id="index-wordcount_0028_0029"></span>
 </dd>
@@ -8826,6 +9773,9 @@ getpos() とは異なり最初の桁番號はゼロ
 </p><pre class="verbatim">:let fl = readfile(&quot;foo&quot;, &quot;b&quot;)
 :call writefile(fl, &quot;foocopy&quot;, &quot;b&quot;)
 </pre>
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">GetText()-&gt;writefile(&quot;thefile&quot;)
+</pre>
 
 <span id="xor_0028_0029"></span><span id="index-xor_0028_0029"></span>
 </dd>
@@ -8836,8 +9786,9 @@ getpos() とは異なり最初の桁番號はゼロ
 </p><pre class="verbatim">:let bits = xor(bits, 0x80)
 </pre></dd>
 </dl>
-
-
+<p>|<a href="#method">method</a>| としても使用できます:
+</p><pre class="verbatim">:let bits = bits-&gt;xor(0x80)
+</pre>
 <span id="feature_002dlist"></span><span id="index-feature_002dlist"></span>
 <span id="Ji-Neng-haDa-Bie-site-4-tunoXi-Tong-niFen-kerareru_003a"></span><h4 class="unnumberedsubsec">機能は大別して 4 つの系統に分けられる:</h4>
 <ol>
@@ -8884,6 +9835,7 @@ Vim がファイル名 (MS-Windows) でバックスラッシュをサポート�
 <tr><td width="30%">cindent</td><td width="70%">&rsquo;<samp>cindent</samp>&rsquo; をサポート</td></tr>
 <tr><td width="30%">clientserver</td><td width="70%">リモート呼び出しをサポート |<a href="remote_002etxt.html#clientserver">clientserver</a>|</td></tr>
 <tr><td width="30%">clipboard</td><td width="70%">&rsquo;<samp>clipboard</samp>&rsquo; をサポート</td></tr>
+<tr><td width="30%">clipboard_working</td><td width="70%">&rsquo;<samp>clipboard</samp>&rsquo; をサポートし、使用可能</td></tr>
 <tr><td width="30%">cmdline_compl</td><td width="70%">|<a href="cmdline_002etxt.html#cmdline_002dcompletion">cmdline-completion</a>| コマンドライン補完をサポート</td></tr>
 <tr><td width="30%">cmdline_hist</td><td width="70%">|<a href="cmdline_002etxt.html#cmdline_002dhistory">cmdline-history</a>| コマンドライン履歷をサポート</td></tr>
 <tr><td width="30%">cmdline_info</td><td width="70%">&rsquo;<samp>showcmd</samp>&rsquo; と &rsquo;<samp>ruler</samp>&rsquo; をサポート</td></tr>
@@ -8932,7 +9884,7 @@ Vim がファイル名 (MS-Windows) でバックスラッシュをサポート�
 <tr><td width="30%">hangul_input</td><td width="70%">ハングル入力サポート |<a href="hangulin_002etxt.html#hangul">hangul</a>|</td></tr>
 <tr><td width="30%">hpux</td><td width="70%">HP-UX のバージョン</td></tr>
 <tr><td width="30%">iconv</td><td width="70%">iconv() をサポート</td></tr>
-<tr><td width="30%">insert_expand</td><td width="70%">插入モード時に CTRL-X の展開がサポートされる</td></tr>
+<tr><td width="30%">insert_expand</td><td width="70%">插入モード時に CTRL-X の展開がサポートされる (常に眞)</td></tr>
 <tr><td width="30%">jumplist</td><td width="70%">|<a href="motion_002etxt.html#jumplist">jumplist</a>| をサポート</td></tr>
 <tr><td width="30%">keymap</td><td width="70%">&rsquo;<samp>keymap</samp>&rsquo; をサポート</td></tr>
 <tr><td width="30%">lambda</td><td width="70%">|<a href="#lambda">lambda</a>| をサポート</td></tr>
@@ -8948,7 +9900,7 @@ Vim がファイル名 (MS-Windows) でバックスラッシュをサポート�
 <tr><td width="30%">macunix</td><td width="70%">osxdarwin と同義語</td></tr>
 <tr><td width="30%">menu</td><td width="70%">|<a href="gui_002etxt.html#g_t_003amenu">:menu</a>| をサポート</td></tr>
 <tr><td width="30%">mksession</td><td width="70%">|<a href="starting_002etxt.html#g_t_003amksession">:mksession</a>| をサポート</td></tr>
-<tr><td width="30%">modify_fname</td><td width="70%">ファイル名變換子をサポート |<a href="cmdline_002etxt.html#filename_002dmodifiers">filename-modifiers</a>|</td></tr>
+<tr><td width="30%">modify_fname</td><td width="70%">ファイル名變換子をサポート |<a href="cmdline_002etxt.html#filename_002dmodifiers">filename-modifiers</a>| (常に眞)</td></tr>
 <tr><td width="30%">mouse</td><td width="70%">マウスをサポート</td></tr>
 <tr><td width="30%">mouse_dec</td><td width="70%">DEC のターミナルマウスをサポート</td></tr>
 <tr><td width="30%">mouse_gpm</td><td width="70%">gpm をサポート (Linux のコンソールマウス)</td></tr>
@@ -9361,6 +10313,13 @@ let lines = Table(&quot;Empty Table&quot;)
 <span id="E132"></span><span id="index-E132"></span>
 <p>函數の再歸的な使用はオプション |<a href="options_002etxt.html#g_t_0027maxfuncdepth_0027">'maxfuncdepth'</a>| によつて制限することができる。
 </p>
+<p>&lsquo;<code>:eval</code>&lsquo; を使用することもできる。範圍はサポートしてゐませんが、メソッドの聯鎖は可能です。例へば:
+</p><pre class="verbatim">eval GetList()-&gt;Filter()-&gt;append('$')
+</pre>
+<p>函數は式の評價の一部として、またはメソッドとして使用されるときに呼び出すこともできます:
+</p><pre class="verbatim">let x = GetList()
+let y = GetList()-&gt;Filter()
+</pre>
 
 <span id="index-Zi-Dong-De-niDu-miIp-mareruGuan-Shu-"></span>
 <span id="Zi-Dong-De-niDu-miIp-mareruGuan-Shu-"></span><h4 class="unnumberedsubsec">自動的に讀み込まれる函數</h4>
@@ -9518,7 +10477,10 @@ endfunction
 </dd>
 <dt>:let ${env-name} = {expr1}</dt>
 <dd><p>環境變數 {env-name} に式 {expr1} の結果をセットする。型は常に文字列。
-</p></dd>
+</p>
+<p>一部のシステムでは、環境變數を空にすると環境變數が削除されます。多くのシステムは、設定されてゐない環境變數と空の環境變數を區別しません。
+</p>
+</dd>
 <dt>:let ${env-name} .= {expr1}</dt>
 <dd><p>環境變數 {env-name} に {expr1} を付け加へる。その環境變數が存在しないときは &quot;=&quot; と同樣に働く。
 </p>
@@ -9603,22 +10565,23 @@ name の個數がリスト |<a href="#List">List</a>| の要素の個數に一�
 <dt>:let [{name}, ..., ; {lastname}] -= {expr1}</dt>
 <dd><p>上と同樣だが、リスト |<a href="#List">List</a>| の各要素に對して連結・足し算・引き算を行ふ。
 </p>
-<span id="g_t_003alet_003d_003c_003c"></span><span id="g_t_003alet_002dheredoc"></span><span id="E990"></span><span id="E991"></span><span id="index-_003alet_003d_003c_003c"></span>
+<span id="g_t_003alet_003d_003c_003c"></span><span id="g_t_003alet_002dheredoc"></span><span id="E990"></span><span id="E991"></span><span id="E172"></span><span id="E221"></span><span id="index-_003alet_003d_003c_003c"></span>
 <span id="index-_003alet_002dheredoc"></span>
 <span id="index-E990"></span>
 <span id="index-E991"></span>
+<span id="index-E172"></span>
+<span id="index-E221"></span>
 </dd>
-<dt>:let {var-name} =&lt;&lt; [trim] {marker}</dt>
+<dt>:let {var-name} =&lt;&lt; [trim] {endmarker}</dt>
 <dt>text...</dt>
 <dt>text...</dt>
-<dt>{marker}</dt>
-<dd><p>內部變數 {var-name} を文字列 {marker} で圍まれたテキスト行を含む List に設定する。{marker} は空白を含んではならない。
+<dt>{endmarker}</dt>
+<dd><p>內部變數 {var-name} を文字列 {endmarker} で圍まれたテキスト行を含む List に設定する。{endmarker} は空白を含んではならない。
+{endmarker} は小文字で始めることができません。
 </p>
-<p>最後の行は {marker} 文字列だけで終はり、他の文字は含まれない。{marker} の後の空白に氣をつけること！
+<p>最後の行は {endmarker} 文字列だけで終はり、他の文字は含まれない。{endmarker} の後の空白に氣をつけること！
 </p>
-<p>{marker} が指定されてゐない場合は、&quot;.&quot; がデフォルトのマーカーとして使用される。
-</p>
-<p>&quot;trim&quot; がない場合は、テキスト行內の全ての空白文字は保持される。もし {marker} の前に &quot;trim&quot; が指定されてゐる場合、インデントが取り除かれるため以下を實行できる:
+<p>&quot;trim&quot; がない場合は、テキスト行內の全ての空白文字は保持される。もし {endmarker} の前に &quot;trim&quot; が指定されてゐる場合、インデントが取り除かれるため以下を實行できる:
 </p><pre class="verbatim">let text =&lt;&lt; trim END
    if ok
      echo 'done'
@@ -9628,7 +10591,7 @@ END
 マーカーは &quot;let&quot; のインデントと竝ばなければならず、最初の行のインデントは全てのテキスト行から取り除かれる。
 </p>
 <p>具體例: 最初の空でないテキスト行の先頭のインデントと完全に一致する全ての先頭のインデントは入力行から削除される。
-&lsquo;<code>let</code>&lsquo; の前の先頭のインデントと完全に一致する先頭のインデントはすべて {marker} を含む行から削除される。
+&lsquo;<code>let</code>&lsquo; の前の先頭のインデントと完全に一致する先頭のインデントはすべて {endmarker} を含む行から削除される。
 </p><blockquote>
 <p><strong>Note:</strong> <br>
 スペースとタブの違ひが重要であることに注意すること。
@@ -9636,16 +10599,22 @@ END
 
 <p>{var-name} がまだ存在しない場合は作成される。他のコマンドを續けることはできないが、コメントを續けることはできる。
 </p>
-<p>例:
-</p><pre class="verbatim">        let var1 =&lt;&lt; END
-Sample text 1
-    Sample text 2
-Sample text 3
+<p>行の繼續が適用されないやうにするには、&rsquo;<samp>cpoptions</samp>&rsquo; に &rsquo;<var>C</var>&rsquo; を追加することを檢討してください:
+</p><pre class="verbatim">set cpo+=C
+let var =&lt;&lt; END
+   \ leading backslash
 END
+set cpo-=C
+</pre><p>例:
+</p><pre class="verbatim">        let var1 =&lt;&lt; END
+        Sample text 1
+            Sample text 2
+        Sample text 3
+        END
 
         let data =&lt;&lt; trim DATA
-        1 2 3 4
-        5 6 7 8
+                1 2 3 4
+                5 6 7 8
         DATA
 </pre>
 <span id="E121"></span><span id="index-E121"></span>
@@ -10043,7 +11012,18 @@ Vim コマンドの &quot;:echo&quot; と、外部のシェルコマンドであ
 </p><pre class="verbatim">:echoerr &quot;This script just failed!&quot;
 </pre><p>單にメッセージを强調させたい場合には |<a href="#g_t_003aechohl">:echohl</a>| を使ふこと。ビープを鳴らしたいときには次のやうにする:
 </p><pre class="verbatim">:exe &quot;normal \&lt;Esc&gt;&quot;
-</pre><span id="g_t_003aexe"></span><span id="g_t_003aexecute"></span><span id="index-_003aexe"></span>
+</pre><span id="g_t_003aeval"></span><span id="index-_003aeval"></span>
+</dd>
+<dt>:eval {expr}</dt>
+<dd><p>{expr} を評價し結果を破毀します。例:
+</p><pre class="verbatim">:eval Getlist()-&gt;Filter()-&gt;append('$')
+</pre>
+<p>結果の値は使用されないため、式には副作用があると想定されます。この例では、&lsquo;<code>append()</code>&lsquo; 呼び出しはテキスト付きリストをバッファに追加します。これは &lsquo;<code>:call</code>&lsquo; に似てゐますが、どの式でも動作します。
+</p>
+<p>このコマンドは &lsquo;<code>:ev</code>&lsquo; や &lsquo;<code>:eva</code>&lsquo; に短縮できますが、これらは認識しにくいため、使用するべきではありません。
+</p>
+
+<span id="g_t_003aexe"></span><span id="g_t_003aexecute"></span><span id="index-_003aexe"></span>
 <span id="index-_003aexecute"></span>
 </dd>
 <dt>:exe[cute] {expr1} ..</dt>
@@ -11068,6 +12048,20 @@ unlet scriptnames_output
 </p>
 <p>以下でサポートを檢査する:
 </p><pre class="verbatim">has('vimscript-3')
+</pre><span id="scriptversion_002d4"></span></dd>
+<dt>:scriptversion 4</dt>
+<dd><p>先頭が 0 の數字は8進數として認識されません。以前のバージョンでは以下が得られます:
+</p><pre class="verbatim">echo 017   &quot; 15 を表示
+echo 018   &quot; 18 を表示
+</pre><p>script version 4 では:
+</p><pre class="verbatim">echo 017   &quot; 17 を表示
+echo 018   &quot; 18 を表示
+</pre><p>數字の中に一重引用符を使用して讀みやすくすることもできます:
+</p><pre class="verbatim">echo 1'000'000
+</pre><p>引用符は數字で圍まれてゐる必要があります。
+</p>
+<p>以下でサポートを檢査します:
+</p><pre class="verbatim">has('vimscript-4')
 </pre></dd>
 </dl>
 
